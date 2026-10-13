@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+runs/
+workspaces/
+.cache/
+node_modules/
+.vercel/
+*.log

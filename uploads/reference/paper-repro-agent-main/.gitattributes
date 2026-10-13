@@ -1,0 +1,2 @@
+web/vendor/* -text
+web/demo-runs/*.pdf binary

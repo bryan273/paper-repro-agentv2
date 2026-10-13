@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Repro Agent</title>
+<meta name="description" content="Drop a research paper PDF and watch an agent read it, write and run the code, and check the paper's number.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="vendor/pdf.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <button class="brand" id="homeBtn" type="button" aria-label="Home"><span class="logo" aria-hidden="true">R</span><span><b>Paper Repro Agent</b><span class="sub">paper in, checked result out</span></span></button>
+  <div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div>
+</header>
+
+<main>
+  <!-- ================= HOME ================= -->
+  <section id="home" class="home">
+    <div class="hero">
+      <h1>Drop a paper. Watch an agent reproduce it.</h1>
+      <p>It reads the PDF, decides what to check, writes and runs the code in a sandbox, then re-runs everything from scratch before it gives a verdict. You see what it reads, what it runs, how long it takes and what it costs.</p>
+    </div>
+
+    <div class="uploader card" id="uploader">
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="fileInput" accept="application/pdf" hidden>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6h14l10 10v24a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M28 6v10h10" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M25 36V22m-6 6 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <b>Drop a paper PDF here</b>
+        <span>or click to choose a file</span>
+        <span class="or-link">or <button type="button" class="linkish" id="useId">paste an arXiv ID or URL</button></span>
+      </label>
+
+      <div class="picked" id="picked" hidden>
+        <div class="thumbwrap"><canvas id="pickedThumb"></canvas><div class="upbar"><i id="upbar"></i></div></div>
+        <div class="pickedinfo">
+          <div class="muted small mono" id="pickedFile"></div>
+          <h2 id="pickedTitle">Reading PDF</h2>
+          <div class="muted small" id="pickedMeta"></div>
+          <div id="pickedNote" class="note"></div>
+          <div class="fields">
+            <label>Paper <span class="muted">arXiv ID or PDF URL</span><input id="paperId" placeholder="e.g. 1607.01759"></label>
+            <label>Code repository <span class="muted">optional</span><input id="repoIn" placeholder="https://github.com/..."></label>
+            <label>Which result should it check? <span class="muted">optional</span><input id="hintIn" placeholder="e.g. Table 1, AG News accuracy"></label>
+            <label id="keyLabel" hidden>Access key <span class="muted">needed to start a run on this runner</span><input id="keyIn" type="password" autocomplete="off" placeholder="ask the runner's owner"></label>
+          </div>
+          <details class="models"><summary>Models and budget</summary>
+            <label>Same model for every agent<select id="allModel"></select></label>
+            <div id="roleModels" class="roles"></div>
+            <div class="budget">
+              <label>Max cost (¥)<input id="maxCost" type="number" step="1" value="15"></label>
+              <label>Max minutes<input id="maxMin" type="number" step="5" value="60"></label>
+              <label>Max steps<input id="maxSteps" type="number" step="5" value="120"></label>
+            </div>
+          </details>
+          <div class="actions" id="pickedActions"></div>
+          <p class="muted small" id="formMsg"></p>
+        </div>
+        <button class="x" id="clearPick" type="button" aria-label="Choose another paper">&times;</button>
+      </div>
+    </div>
+
+    <h2 class="sec">Find a paper on arXiv</h2>
+    <p class="muted small sec-sub">Search by author (name in Latin letters, e.g. Yujiu Yang) or by title words. Papers already reproduced on this runner show their verdict; select it to open that run.</p>
+    <form class="card searchbox" id="searchForm" role="search">
+      <div class="seg" id="searchMode" role="group" aria-label="Search by"><button type="button" data-m="author" class="on">Author</button><button type="button" data-m="keywords">Title or keywords</button></div>
+      <input id="searchIn" type="search" placeholder="e.g. Yujiu Yang" aria-label="Search arXiv" autocomplete="off">
+      <button class="primary" type="submit">Search</button>
+    </form>
+    <p class="muted small" id="searchMsg"></p>
+    <div class="results" id="results"></div>
+
+    <h2 class="sec">Or try a sample paper</h2>
+    <p class="muted small sec-sub">One paper for each situation the agent handles: the authors' code works, the code exists but is broken, or there is no code at all.</p>
+    <div class="samples" id="samples"></div>
+
+    <h2 class="sec">How it works</h2>
+    <ol class="how">
+      <li><b>Reader</b><span>Reads the PDF and writes a claim contract: the number to check, where it is, a tolerance fixed before any run, what a faithful implementation needs, and every detail the paper leaves open.</span></li>
+      <li><b>Router</b><span>Checks what the authors released (full code, partial, or nothing) and whether this machine can run it, including whether a GPU is needed.</span></li>
+      <li><b>Planner</b><span>Lays out the files, one config, a smoke test and the checks to run before the full experiment.</span></li>
+      <li><b>Implementer</b><span>Writes and runs code in a sandbox, alone, until one command re-creates the number. It is never shown the paper's value. A repair manager steps in when it gets stuck.</span></li>
+      <li><b>Verifier</b><span>Deletes the results, re-runs everything from scratch, searches the code for copied numbers and checks it against the requirements. The verdict comes from that re-run.</span></li>
+    </ol>
+
+    <h2 class="sec">Recent runs</h2>
+    <div class="runs" id="runs"><p class="muted small">No runs yet.</p></div>
+    <button class="ghost" id="allRunsBtn" type="button" hidden></button>
+  </section>
+
+  <!-- ================= RUN ================= -->
+  <section id="run" class="run" hidden>
+    <div class="runhead">
+      <div class="rh-left">
+        <div class="muted small mono" id="rvId"></div>
+        <h1 id="rvTitle">Loading</h1>
+        <div class="badges" id="rvBadges"></div>
+      </div>
+      <div class="runactions">
+        <button class="ghost danger" id="stopBtn" type="button" hidden>Stop run</button>
+        <button class="ghost" id="reportBtn" type="button" hidden>Download report</button>
+      </div>
+      <div class="replayctl" id="replayCtl" hidden>
+        <button class="ghost" id="playBtn" type="button" aria-label="Pause">&#10074;&#10074;</button>
+        <div class="seg" id="speedSeg" role="group" aria-label="Replay speed"><button data-s="1">1&times;</button><button data-s="20">20&times;</button><button data-s="100">100&times;</button><button data-s="0">jump to end</button></div>
+      </div>
+    </div>
+
+    <ol class="stepper" id="stepper"></ol>
+
+    <div class="summary">
+      <section class="card" id="objCard" aria-label="Reproduction target">
+        <h2 class="cardh">Reproduction target</h2>
+        <div id="objBody"><p class="muted small">Defined after the paper has been analysed.</p></div>
+      </section>
+      <section class="card" id="resCard" aria-label="Result">
+        <h2 class="cardh">Result</h2>
+        <div id="resBody"><p class="muted small">Pending.</p></div>
+      </section>
+      <section class="card" id="cmpCard" aria-label="Paper and reproduction compared">
+        <h2 class="cardh">Paper and reproduction</h2>
+        <div id="cmpBody"><p class="muted small">Pending.</p></div>
+      </section>
+      <section class="card" id="effCard" aria-label="Time and cost">
+        <h2 class="cardh">Time and cost</h2>
+        <div class="metrics" id="metrics"></div>
+        <div id="stageBar"></div>
+      </section>
+    </div>
+
+    <div class="detailsbar">
+      <button class="ghost" id="detailsBtn" type="button" aria-expanded="true" aria-controls="details">Hide process details</button>
+      <span class="muted small">Annotated paper, execution timeline, agent log and verification audit</span>
+    </div>
+
+    <div id="details">
+      <section class="overview card" id="overview" aria-label="Process summary">
+        <div class="ov-grid">
+          <div><h2 class="cardh">Process summary</h2><dl class="kv wide" id="story"><dt>Status</dt><dd class="muted">Filled in as the run progresses.</dd></dl></div>
+          <div><h2 class="cardh">Time allocation</h2><div id="timeSplit"></div></div>
+        </div>
+        <div class="ov-map"><div class="maphead"><h2 class="cardh">Execution timeline</h2><span class="muted small">Scroll horizontally. Select a bar to open that step in the log.</span></div><div id="runMap"></div></div>
+      </section>
+
+      <div class="workspace">
+        <section class="paper card" aria-label="The paper">
+          <div class="phead">
+            <div><h2 class="cardh">Annotated paper</h2><div class="readchip" id="readChip">Waiting for the paper</div></div>
+            <div class="legend" id="hlLegend">
+              <button type="button" class="lg on" data-k="t"><i class="k-t"></i>target result</button>
+              <button type="button" class="lg on" data-k="r"><i class="k-r"></i>requirements</button>
+              <button type="button" class="lg on" data-k="a"><i class="k-a"></i>unspecified details</button>
+            </div>
+          </div>
+          <div class="pages" id="pages"><p class="muted small pad">The PDF appears here.</p></div>
+        </section>
+
+        <section class="timeline card" aria-label="Agent log">
+          <div class="tlhead">
+            <h2 class="cardh">Agent log</h2>
+            <div class="tlctl">
+              <div class="seg small" id="tlFilter" role="group" aria-label="Filter"><button data-f="key" class="on">key events</button><button data-f="all">all events</button></div>
+              <label class="toggle small"><input type="checkbox" id="showThinking"> model reasoning</label>
+            </div>
+          </div>
+          <div id="timeline"></div>
+        </section>
+      </div>
+
+      <div class="panels">
+        <section class="card" id="verdictCard" hidden></section>
+        <section class="card" id="contractCard" hidden></section>
+        <section class="card" id="routeCard" hidden></section>
+        <section class="card" id="ledgerCard" hidden></section>
+        <section class="card" id="costCard" hidden></section>
+        <section class="card" id="filesCard" hidden></section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
+<script src="app.js"></script>
+</body>
+</html>

@@ -6,14 +6,16 @@ status: active
 # Project Context
 
 ## Project Overview
-Current request: establish whether the user's GitHub connector and repository access are available, and explain only documented connector guidance. No application development is requested.
+Build the approved frontend-only Paper Repro Agent evidence dashboard from /workspace/uploads/paper-repro-agent-main.zip. Original project includes Python sandbox runner and static UI. Live execution is outside this round; only actual recorded demos are replayed.
 
 ## Key Decisions
 | Date | Decision | By | Rationale |
 |------|----------|-----|-----------|
-| 2026-10-13 | Do not infer GitHub authorization or clone/modify repositories. | Alex | Connector authorization has not been verified; support check only. |
+| 2026-10-13 | Approved replay-only frontend; preserve original Python runner as reference. | Alex | Actual uploaded recordings satisfy approved scope without simulated AI experiments or unsupported sandbox deployment. |
+| 2026-10-13 | Intended repository paper-repro-agentv2 main; remote sync blocked. | Alex | User reports connector UI connected, but discovery exposes no GitHub tools to this session. |
 
 ## Constraints
-- The complete atoms-info guide contains no GitHub connector setup/use instructions.
-- No application package manifest was found at app/*/package.json; no project stack is established.
+- Approved frontend-only scope has no live AI, uploads, arXiv search or sandbox execution.
+- Original ZIP and extracted Python source are reference only; supplied demo assets are copied mechanically.
+- User-reported destination: bryan273/paper-repro-agentv2 on main. Configured github remote matches; MCP discovery exposes no tools and non-interactive git ls-remote fails with missing HTTPS username/credentials. No repository creation or push occurred.
 

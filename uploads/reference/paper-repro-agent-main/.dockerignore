@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.venv
+.cache
+runs
+workspaces
+node_modules
+.vercel
+.git
+**/__pycache__
+*.pyc
+*.log
+web/runner.json
