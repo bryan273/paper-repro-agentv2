@@ -11,6 +11,7 @@ Build the approved frontend-only Paper Repro Agent evidence dashboard from /work
 ## Key Decisions
 | Date | Decision | By | Rationale |
 |------|----------|-----|-----------|
+| 2026-10-14 | 深墨侧栏、纸张档案、主次论文布局、统一回放控制台 / Ink rail, paper dossiers, asymmetric hierarchy and unified replay console | Alex | 降低扁平模板感，保留业务功能 / Reduce flat template aesthetics while preserving functionality |
 | 2026-10-13 | Approved replay-only frontend; preserve original Python runner as reference. | Alex | Actual uploaded recordings satisfy approved scope without simulated AI experiments or unsupported sandbox deployment. |
 | 2026-10-13 | Intended repository paper-repro-agentv2 main; remote sync blocked. | Alex | User reports connector UI connected, but discovery exposes no GitHub tools to this session. |
 

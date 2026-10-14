@@ -30,4 +30,5 @@ React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 Frontend implementation under app/frontend; original source under uploads/reference; copied recordings under app/frontend/public/assets.
 
 ## Implementation Guide
+视觉增量使用 src/pages/premium.css 统一材质和响应式层级，Index.tsx 去除装饰图标；数据、双语和回放逻辑不变。 / Visual update uses src/pages/premium.css for consistent materials and responsive hierarchy; decorative icons removed without changing data, language or replay logic.
 See app/frontend/DELIVERY.md for data provenance and the inspected original runner API boundary.
