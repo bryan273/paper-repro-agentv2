@@ -15,6 +15,8 @@ Approved: React/Vite dashboard based on uploaded Paper Repro Agent, three actual
 ## Task Breakdown
 | ID | Task | Assignee | Status | Deps |
 |----|------|----------|--------|------|
+| B1 | 按钮半立体材质和高度层级 / Semi-dimensional button materials and elevation | Alex | done | 顶部受光、1–4px侧壁、接触阴影、悬停抬升/按压下沉 / Highlights, sidewalls, contact shadows and press feedback |
+| B2 | 双语、移动端、按压/焦点/禁用验证 / Bilingual, mobile, press/focus/disabled validation | Alex | done | 1440px/390px中英、悬停/按压、禁用、减少动态、键盘焦点及lint/build通过；截图未取得，独立视觉评估未完成 / Bilingual desktop/mobile button states, reduced motion, focus and lint/build passed; screenshot unavailable |
 | U1 | 精致研究工作台视觉升级 / Refine research workbench visual design | Alex | done | 深墨导航、纸张档案、主次布局、统一回放材质 / Ink navigation, paper dossiers, asymmetric hierarchy, replay materials |
 | U2 | 双语、回放和响应式验证 / Validate bilingual replay and responsive layout | Alex | done | 1440px/390px 中英概览、回放结论/契约、指南、无页面溢出及 lint/build 通过；截图检查未取得图像，未完成独立视觉评估 / Bilingual desktop/mobile interaction, overflow and lint/build checks passed; screenshot unavailable, independent visual assessment incomplete |
 | L1 | 当前网站中英切换，保留原始论文与证据 / Localize existing UI without changing original evidence | Alex | done | 字典、切换入口、双语导出报告 / Dictionary, switch controls, bilingual exported reports |

@@ -1,0 +1,168 @@
+/* 半立体按钮：受光面、侧壁与接触阴影分别控制，保持业务语义不变。 */
+:is(.repro-app, .replay-dialog) :is(.replay-button, .secondary, .icon-button, .text-button, .stage, .language-switch button, .nav-item, .evidence-tabs button),
+.repro-app .replay-notice > button,
+.replay-dialog > button:last-child {
+  --face-top: #ffffff;
+  --face-bottom: #e6ede0;
+  --rim: #b2c1aa;
+  --side: #94a38a;
+  --ink-button: #294b32;
+  --depth: 2px;
+  --contact: #20352224;
+  --highlight: #ffffffed;
+  position: relative;
+  background: linear-gradient(180deg, var(--face-top), var(--face-bottom)) !important;
+  color: var(--ink-button) !important;
+  border: 1px solid var(--rim) !important;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 var(--highlight), inset 1px 0 0 #ffffff16,
+    inset 0 -1px 0 #1429170c, 0 var(--depth) 0 var(--side),
+    0 calc(var(--depth) + 2px) 5px var(--contact) !important;
+  transform: translateY(0);
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  min-height: 40px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.repro-app .replay-button {
+  --depth: 3px;
+  --face-top: #fafcf6;
+  --face-bottom: #dce8d3;
+  --side: #91a585;
+  margin-bottom: 3px;
+}
+.repro-app .demo-card:first-child .replay-button {
+  --face-top: #417451;
+  --face-bottom: #254e33;
+  --rim: #244b31;
+  --side: #143b22;
+  --ink-button: #ffffff;
+  --depth: 4px;
+  --highlight: #9dbb9d80;
+  --contact: #10271a40;
+}
+:is(.repro-app, .replay-dialog) .text-button,
+.repro-app .replay-notice > button {
+  padding: 8px 12px;
+  --depth: 1px;
+  --face-top: #fdfefb;
+  --face-bottom: #edf2e7;
+}
+:is(.repro-app, .replay-dialog) .language-switch {
+  padding: 5px 5px 7px;
+  gap: 5px;
+  background: #dde5d8;
+  border: 1px solid #b9c8b1;
+  box-shadow: inset 0 2px 4px #20352218, 0 1px 0 #ffffffc9;
+}
+:is(.repro-app, .replay-dialog) .language-switch button {
+  --depth: 1px;
+  min-height: 34px;
+  --face-top: #f0f5e9;
+  --face-bottom: #dce6d3;
+  padding: 5px 11px;
+}
+:is(.repro-app, .replay-dialog) .language-switch button[aria-pressed=true] {
+  --face-top: #ffffff;
+  --face-bottom: #edf4e4;
+  --side: #879e79;
+  --rim: #9bb28b;
+  --depth: 2px;
+  font-weight: 600;
+}
+.repro-app .sidebar .nav-item,
+.replay-dialog .viewer-header :is(.secondary, .icon-button, .language-switch button),
+.replay-dialog > button:last-child {
+  --face-top: #3e5845;
+  --face-bottom: #263e2e;
+  --rim: #5c725b;
+  --side: #10251a;
+  --ink-button: #f1f5e9;
+  --highlight: #b1c5a333;
+  --contact: #00000040;
+}
+.repro-app .sidebar .nav-item { --depth: 1px; }
+.repro-app .sidebar .nav-item.current {
+  --face-top: #4c694d;
+  --face-bottom: #304a33;
+  --rim: #7a9070;
+  --depth: 2px;
+}
+.replay-dialog .viewer-header .language-switch {
+  background: #152b1c;
+  border-color: #5c7652;
+  box-shadow: inset 0 2px 4px #00000040, 0 1px 0 #819a6d30;
+}
+.replay-dialog .viewer-header .language-switch button[aria-pressed=true] {
+  --face-top: #627b51;
+  --face-bottom: #3b562f;
+  --rim: #92a97c;
+  --side: #213c19;
+}
+.replay-dialog .stage { padding: 5px 9px; --depth: 1px; }
+.replay-dialog .stage.active {
+  --face-top: #fafff3;
+  --face-bottom: #d9e8ca;
+  --rim: #8ea67b;
+  --depth: 2px;
+}
+.replay-dialog .stage span { box-shadow: inset 0 1px 2px #17301124; }
+.replay-dialog .evidence-tabs { gap: 10px; padding-top: 8px; padding-bottom: 9px; }
+.replay-dialog .evidence-tabs button { padding: 8px 13px; --depth: 1px; min-height: 36px; }
+.replay-dialog .evidence-tabs button.selected {
+  --face-top: #426f3b;
+  --face-bottom: #284e26;
+  --rim: #3e6333;
+  --side: #1b3817;
+  --highlight: #a8c29366;
+  --ink-button: #ffffff;
+  --depth: 2px;
+}
+.replay-dialog > button:last-child { position: absolute; min-height: 28px; min-width: 28px; display: grid; place-items: center; opacity: 1; }
+@media (hover: hover) {
+  :is(.repro-app, .replay-dialog) :is(.replay-button, .secondary, .icon-button, .text-button, .stage, .language-switch button, .nav-item, .evidence-tabs button):not(:disabled):hover,
+  .repro-app .replay-notice > button:hover,
+  .replay-dialog > button:last-child:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.035);
+    box-shadow: inset 0 1px 0 var(--highlight), inset 1px 0 0 #ffffff16,
+      0 calc(var(--depth) + 1px) 0 var(--side),
+      0 calc(var(--depth) + 4px) 7px var(--contact) !important;
+  }
+}
+:is(.repro-app, .replay-dialog) :is(.replay-button, .secondary, .icon-button, .text-button, .stage, .language-switch button, .nav-item, .evidence-tabs button):not(:disabled):active,
+.repro-app .replay-notice > button:active,
+.replay-dialog > button:last-child:active {
+  transform: translateY(var(--depth));
+  filter: brightness(.98);
+  box-shadow: inset 0 2px 3px #10251526, inset 0 -1px 0 var(--highlight),
+    0 1px 0 var(--side), 0 1px 2px var(--contact) !important;
+}
+:is(.repro-app, .replay-dialog) button:focus-visible {
+  outline: 2px solid #528657;
+  outline-offset: 4px;
+}
+:is(.repro-app, .replay-dialog) button:disabled {
+  --face-top: #e9ede5;
+  --face-bottom: #dde3d7;
+  --side: #bec8b7;
+  --rim: #c2cdbb;
+  --ink-button: #697664;
+  --depth: 0px;
+  opacity: .65;
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+  box-shadow: inset 0 1px 2px #20352212 !important;
+}
+@media (max-width: 700px) {
+  .replay-dialog .stage { padding: 5px 6px; min-height: 36px; }
+  .replay-dialog .stage-bar { gap: 7px; padding: 11px 8px 14px; }
+  .replay-dialog .stage span { width: 19px; height: 19px; }
+  .repro-app .sidebar .nav-item { padding: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.repro-app, .replay-dialog) button { transition: none !important; }
+  :is(.repro-app, .replay-dialog) button:hover,
+  :is(.repro-app, .replay-dialog) button:active { transform: none !important; }
+}

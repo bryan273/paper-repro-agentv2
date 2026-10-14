@@ -6,6 +6,7 @@ import RunViewer from '@/components/RunViewer';
 import './paper-repro.css';
 import './language.css';
 import './premium.css';
+import './button-depth.css';
 
 const shortTitles: Record<string, string> = { fasttext: 'fastText', 'mc-dropout': 'MC Dropout', 'isolation-forest': 'Isolation Forest' };
 const categories: Record<string, string> = { fasttext: 'TEXT CLASSIFICATION', 'mc-dropout': 'BAYESIAN DEEP LEARNING', 'isolation-forest': 'ANOMALY DETECTION' };
