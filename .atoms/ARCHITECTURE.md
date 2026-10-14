@@ -11,6 +11,7 @@ Supported React/Vite frontend using original local demo manifests, JSONL event l
 React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 
 ## Module Design
+双语界面模块：src/lib/i18n.tsx 统一中文映射、语言切换和本地保存；src/pages/language.css 适配中文及移动端切换控件。原始 PDF、日志、代码和技术标识不翻译。 / Bilingual UI: shared translations, switch and local preference in src/lib/i18n.tsx; Chinese/mobile styling in src/pages/language.css; original PDF, logs, code and technical identifiers stay unchanged.
 | Module | Responsibility | Key Files |
 |--------|---------------|-----------|
 | Dashboard | Demo cards, recorded history search, guide | src/pages/Index.tsx, src/pages/paper-repro.css |
@@ -18,6 +19,7 @@ React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 | Recorded contract | Typed manifests and original event parsing | src/lib/replay.ts, public/assets |
 
 ## Tech Decisions
+长期交付要求：工作汇报中英双语，网站中英切换；语言偏好浏览器本地保存，无新增后端。 / Ongoing delivery requirement: bilingual reports and Chinese/English website switching; preference stored locally without a new backend.
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Backend | None for approved scope | Replays use original local assets and do not call runtime models. |

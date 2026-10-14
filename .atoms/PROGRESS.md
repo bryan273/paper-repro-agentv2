@@ -5,6 +5,7 @@ last_updated: 2026-10-13T08:38:03Z
 # Requirements & Progress
 
 ## Requirements Overview
+长期偏好：所有后续工作汇报中英双语、网站中英切换；当前网站已实施，原始证据保持来源语言。 / Ongoing preference: all future work reports bilingual Chinese/English and websites language-switchable; implemented for current UI, with original evidence preserved in its source language.
 Approved: React/Vite dashboard based on uploaded Paper Repro Agent, three actual demo replays, recorded history, PDF/evidence inspection and evidence download. No runtime AI, upload, arXiv search, or sandbox execution this round.
 
 ## User Stories
@@ -14,6 +15,8 @@ Approved: React/Vite dashboard based on uploaded Paper Repro Agent, three actual
 ## Task Breakdown
 | ID | Task | Assignee | Status | Deps |
 |----|------|----------|--------|------|
+| L1 | 当前网站中英切换，保留原始论文与证据 / Localize existing UI without changing original evidence | Alex | done | 字典、切换入口、双语导出报告 / Dictionary, switch controls, bilingual exported reports |
+| L2 | 双语页面、交互和构建验证 / Verify bilingual UI, interactions and build | Alex | done | lint/build、144 项字典检查、浏览器双语及回放交互、可见布局检查通过 / Lint/build, 144-key dictionary audit, bilingual browser/replay checks and visible layout passed |
 | F1 | Inspect archive, workflows and contracts; obtain scope approval. | Alex | done | — |
 | F2 | Preserve source and copy original demo assets. | Alex | done | F1 |
 | F3 | Implement dashboard and recorded run evidence viewer. | Alex | done | F1 |
@@ -21,6 +24,8 @@ Approved: React/Vite dashboard based on uploaded Paper Repro Agent, three actual
 | F5 | Sync intended bryan273/paper-repro-agentv2 main destination. | Alex | blocked | No MCP tools; configured github remote exists, but git ls-remote fails because HTTPS username/credentials are unavailable. |
 
 ## Progress Log
+- 2026-10-14：中英切换覆盖导航、概览、指南、演示说明、状态、错误、回放控件和双语报告；lint/build、144 项字典映射及浏览器切换/结论/契约检查通过。 / Chinese/English UI and bilingual reports implemented; lint/build, 144-key audit and browser switch/verdict/contract checks passed.
+- 2026-10-14：Playwright 自动化因缺少浏览器执行文件未运行，改用现有浏览器检查；未新增后端，未执行 GitHub 推送。 / Playwright automation unavailable due to missing browser executable; existing browser used instead; no backend or GitHub push added.
 - 2026-10-13: Safely inspected 63-entry ZIP; preserved original source, copied ten demo assets mechanically, and obtained approval for replay-only frontend scope.
 - 2026-10-13: Implemented dashboard, four-run history/search, time/stage replay navigation, original PDF fallback, contract/verdict inspection, JSONL and recorded-report downloads.
 - 2026-10-13: pnpm run lint && pnpm run build passed; available desktop visual validation passed. No dedicated functional verification tool is available; modal/mobile were not independently verified by the visual check.
