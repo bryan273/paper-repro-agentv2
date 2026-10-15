@@ -308,7 +308,13 @@
   const surname = (n) => n.trim().split(/ +/).slice(-1)[0].toLowerCase();
   const recsFor = (id) => recorded.filter((r) => r.paper === id);
   async function loadDirectory() {
-    try { dir = await (await fetch("directory.json")).json(); } catch (e) { dir = null; }
+    // one shared copy in Supabase (editable without a redeploy); the file next to the page is the fallback
+    try {
+      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_directory?key=eq.directory&select=data", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      const j = r.ok ? await r.json() : [];
+      dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
+    } catch (e) { dir = null; }
+    if (!dir) { try { dir = await (await fetch("directory.json")).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups.length) { $("#browse").hidden = true; $("#browseMsg").hidden = true; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     fillAuthors();

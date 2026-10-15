@@ -76,6 +76,7 @@
     "Could not prepare the kit:": "无法准备任务包：",
     "Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine.": "生成一个包含完整说明的链接。交给任意智能体即可，运行发生在你自己的机器上。",
     "Make the link": "生成链接",
+    "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",
     "Run it on your own agent": "用你自己的智能体运行",
     "Copy the link": "复制链接", "Copied": "已复制"

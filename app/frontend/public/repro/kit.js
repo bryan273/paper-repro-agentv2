@@ -49,6 +49,8 @@
     p("");
     p("## How to work");
     p("");
+    p(`First look whether the viewer already did steps 1 to 3 for this job: GET ${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=in.(contract,route,plan)&select=kind,payload&order=id (header apikey: ${SB_KEY}). If a contract, route and plan are there, use them and start at role 4.`);
+    p("");
     p("Play the five roles below in order. Each role has the exact instructions the hosted agent uses. Write the output of each role into your working folder (contract.json, route.json, plan.md, the code, then the verification), and post a short event after each step so the viewer shows progress.");
     p("");
     p(protocol.trim());
@@ -106,7 +108,7 @@
     return L.join(NL) + NL;
   }
 
-  async function makeKit() {
+  async function makeKit(withSteps) {
     const out = $("#kitOut");
     const paper = ($("#paperId").value || "").trim();
     if (!paper) { out.innerHTML = `<p class="muted small">${esc(T("Pick a paper first."))}</p>`; return; }
@@ -128,6 +130,11 @@
           <a class="ghost" href="${esc(link)}" target="_blank" rel="noopener">${esc(T("Open the kit"))}</a></div>
           <p class="muted small">${esc(T("Paste it into Claude Code, Codex or any agent that can read a URL and run commands. It does the experiment on your machine and posts the result back here."))}</p>
           <div id="kitStatus" class="kitstatus"></div></div>`;
+      if (withSteps === true) {
+        const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
+          body: JSON.stringify({ job: j.id, token: j.token, paper, lang }) });
+        if (!r.ok) { const e = await r.json().catch(() => ({})); $("#kitStatus").insertAdjacentHTML("afterbegin", `<div class="muted small">${esc(T("Steps 1 to 3 could not start:"))} ${esc(e.error || r.status)}</div>`); }
+      }
       watch(j.id);
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
@@ -164,7 +171,9 @@
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
       <p class="muted small">${esc(T("Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine."))}</p>
-      <button class="primary" type="button" id="kitBtn">${esc(T("Make the link"))}</button><div id="kitOut"></div>`;
+      <div class="kitbtns"><button class="ghost" type="button" id="stepsBtn">${esc(T("Run steps 1 to 3 here first"))}</button>
+      <button class="primary" type="button" id="kitBtn">${esc(T("Make the link"))}</button></div><div id="kitOut"></div>`;
+    $("#stepsBtn").onclick = () => makeKit(true);
     $("#kitBtn").onclick = makeKit;
     host.addEventListener("click", async (e) => {
       const b = e.target.closest("[data-copy]");
