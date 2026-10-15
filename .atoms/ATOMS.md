@@ -11,14 +11,27 @@ Build the approved frontend-only Paper Repro Agent evidence dashboard from /work
 ## Key Decisions
 | Date | Decision | By | Rationale |
 |------|----------|-----|-----------|
-| 2026-10-14 | 按钮采用顶部受光、1–4px 侧壁、接触阴影和按压下沉 / Button highlights, 1–4px sidewalls, contact shadows and press feedback | Alex | 聚焦按钮高度差，不改变功能 / Focused button elevation, no functional changes |
-| 2026-10-14 | 深墨侧栏、纸张档案、主次论文布局、统一回放控制台 / Ink rail, paper dossiers, asymmetric hierarchy and unified replay console | Alex | 降低扁平模板感，保留业务功能 / Reduce flat template aesthetics while preserving functionality |
 | 2026-10-13 | Approved replay-only frontend; preserve original Python runner as reference. | Alex | Actual uploaded recordings satisfy approved scope without simulated AI experiments or unsupported sandbox deployment. |
 | 2026-10-13 | Intended repository paper-repro-agentv2 main; remote sync blocked. | Alex | User reports connector UI connected, but discovery exposes no GitHub tools to this session. |
 
 ## Constraints
-- 长期偏好：今后工作汇报均提供中英双语，网站均提供中文/英文切换。 / Ongoing preference: all work reports must be bilingual Chinese/English, and websites must provide a Chinese/English switch.
 - Approved frontend-only scope has no live AI, uploads, arXiv search or sandbox execution.
 - Original ZIP and extracted Python source are reference only; supplied demo assets are copied mechanically.
 - User-reported destination: bryan273/paper-repro-agentv2 on main. Configured github remote matches; MCP discovery exposes no tools and non-interactive git ls-remote fails with missing HTTPS username/credentials. No repository creation or push occurred.
 
+
+## Frozen directory: app/frontend/public/repro/
+Decision, 2026-10-15, by Bryan: the product's viewer is the ORIGINAL Paper Repro Agent UI, not a React rebuild.
+The rebuilt React dashboard dropped the PDF highlights, the result-first cards (target, result chart, paper vs
+reproduction table), time and cost by stage, the process summary and run map, arXiv search and upload.
+
+`app/frontend/public/repro/` holds that original UI (static HTML, JS and CSS), copied byte for byte from the local
+repository `bryan273/paper-repro-agent`, folder `web/`, together with 10 recorded runs.
+
+Rules for every future edit in this project:
+- Never edit, regenerate, restyle, translate to React or "improve" any file under `public/repro/`.
+- It changes only by replacing the whole folder with a newer copy pushed from the local repository (Pull Updates).
+- `src/pages/Index.tsx` only redirects `/` to `/repro/index.html` (keeping `?runner=` and the hash). Keep it that way.
+- Legacy and not used any more: `src/components/RunViewer.tsx`, `src/pages/paper-repro.css`, `src/lib/replay.ts`,
+  `public/assets/`. Do not extend them.
+- No secrets in this folder. A `runner.json` there may contain only `{"url": "https://..."}`.

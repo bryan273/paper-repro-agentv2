@@ -11,7 +11,6 @@ Supported React/Vite frontend using original local demo manifests, JSONL event l
 React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 
 ## Module Design
-双语界面模块：src/lib/i18n.tsx 统一中文映射、语言切换和本地保存；src/pages/language.css 适配中文及移动端切换控件。原始 PDF、日志、代码和技术标识不翻译。 / Bilingual UI: shared translations, switch and local preference in src/lib/i18n.tsx; Chinese/mobile styling in src/pages/language.css; original PDF, logs, code and technical identifiers stay unchanged.
 | Module | Responsibility | Key Files |
 |--------|---------------|-----------|
 | Dashboard | Demo cards, recorded history search, guide | src/pages/Index.tsx, src/pages/paper-repro.css |
@@ -19,7 +18,6 @@ React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 | Recorded contract | Typed manifests and original event parsing | src/lib/replay.ts, public/assets |
 
 ## Tech Decisions
-长期交付要求：工作汇报中英双语，网站中英切换；语言偏好浏览器本地保存，无新增后端。 / Ongoing delivery requirement: bilingual reports and Chinese/English website switching; preference stored locally without a new backend.
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Backend | None for approved scope | Replays use original local assets and do not call runtime models. |
@@ -30,6 +28,10 @@ React 18, TypeScript, Vite, existing shadcn/ui and lucide-react.
 Frontend implementation under app/frontend; original source under uploads/reference; copied recordings under app/frontend/public/assets.
 
 ## Implementation Guide
-按钮材质集中在 src/pages/button-depth.css，以共享变量控制受光面、侧壁和高度；主回放 4px、次操作 2–3px、工具/语言 1–2px，保留禁用与键盘语义。 / Shared button material variables control highlights, sidewalls and elevation; primary 4px, secondary 2–3px, tools/language 1–2px, retaining disabled and keyboard semantics.
-视觉增量使用 src/pages/premium.css 统一材质和响应式层级，Index.tsx 去除装饰图标；数据、双语和回放逻辑不变。 / Visual update uses src/pages/premium.css for consistent materials and responsive hierarchy; decorative icons removed without changing data, language or replay logic.
 See app/frontend/DELIVERY.md for data provenance and the inspected original runner API boundary.
+
+## Update 2026-10-15
+The viewer is no longer a React component. `app/frontend/public/repro/` is the original static UI, served as is by the
+host, and `src/pages/Index.tsx` redirects to it. The Module Design table above (Dashboard, Evidence viewer) describes
+the retired React version. The Python runner stays outside this project; the viewer runs in replay mode unless a
+`runner.json` with a runner URL is placed next to it. See `.atoms/ATOMS.md`, "Frozen directory".
