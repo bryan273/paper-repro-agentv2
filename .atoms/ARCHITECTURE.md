@@ -29,3 +29,9 @@ Frontend implementation under app/frontend; original source under uploads/refere
 
 ## Implementation Guide
 See app/frontend/DELIVERY.md for data provenance and the inspected original runner API boundary.
+
+## Update 2026-10-15
+The viewer is no longer a React component. `app/frontend/public/repro/` is the original static UI, served as is by the
+host, and `src/pages/Index.tsx` redirects to it. The Module Design table above (Dashboard, Evidence viewer) describes
+the retired React version. The Python runner stays outside this project; the viewer runs in replay mode unless a
+`runner.json` with a runner URL is placed next to it. See `.atoms/ATOMS.md`, "Frozen directory".

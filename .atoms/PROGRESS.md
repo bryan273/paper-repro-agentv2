@@ -25,3 +25,4 @@ Approved: React/Vite dashboard based on uploaded Paper Repro Agent, three actual
 - 2026-10-13: Implemented dashboard, four-run history/search, time/stage replay navigation, original PDF fallback, contract/verdict inspection, JSONL and recorded-report downloads.
 - 2026-10-13: pnpm run lint && pnpm run build passed; available desktop visual validation passed. No dedicated functional verification tool is available; modal/mobile were not independently verified by the visual check.
 - 2026-10-13: No runtime AI backend was added; live runner integration is excluded from approved scope. GitHub discovery returned []; no remote repository creation or push occurred.
+- 2026-10-15: Replaced the React dashboard by the original UI under `public/repro/` (byte for byte copy of `web/`), added 6 more recorded runs (10 in total, local paths removed from the logs), and made `/` redirect to it. Frozen-directory rule added to ATOMS.md.
