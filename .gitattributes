@@ -33,3 +33,5 @@
 *.dxf filter=lfs diff=lfs merge=lfs -text
 *.wmf filter=lfs diff=lfs merge=lfs -text
 *.emf filter=lfs diff=lfs merge=lfs -text
+# Replay PDFs of the viewer are plain files: the sync with Atoms lost the ones whose LFS objects were new.
+app/frontend/public/repro/**/*.pdf -filter binary
