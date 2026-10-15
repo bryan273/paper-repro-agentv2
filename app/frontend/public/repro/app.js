@@ -241,7 +241,7 @@
     e.preventDefault();
     const q = $("#searchIn").value.trim();
     if (q.length < 2) return;
-    if (!live) { $("#searchMsg").textContent = "Searching needs a running runner."; return; }
+    if (!live) return localSearch(q);
     lastQuery = q; lastResults = []; nextStart = 0;
     $("#results").innerHTML = "";
     await searchPage();
@@ -267,33 +267,105 @@
     } catch (err) { $("#searchMsg").textContent = "Search failed: " + err.message; }
   }
 
-  function renderResults(rows, q, more) {
-    const words = searchMode === "author" ? q.toLowerCase().split(/\s+/) : [];
+  function renderResults(rows, q, more) { $("#results").innerHTML = resultHtml(rows, 0, q, more, "moreResults"); }
+  function resultHtml(rows, offset, q, more, moreId) {
+    const words = searchMode === "author" && q ? q.toLowerCase().split(/\s+/) : [];
     const isMatch = (a) => words.length && words.every((w) => a.toLowerCase().includes(w));
-    $("#results").innerHTML = rows.map((p, i) => `<div class="result">
+    return rows.map((p, i) => `<div class="result">
         <a class="t" href="https://arxiv.org/abs/${esc(p.id)}" target="_blank" rel="noopener">${esc(p.title)}</a>
         <div class="au">${p.authors.map((a) => (isMatch(a) ? `<b>${esc(a)}</b>` : esc(a))).join(", ")}</div>
+        ${p.groups && p.groups.length ? `<div class="inst">${p.groups.map((g) => `<b>${esc(L(g, "name"))}</b> · ${esc(L(g, "institute"))}`).join("; ")}</div>` : ""}
         <div class="muted small mono">${esc(p.id)} · ${esc(p.published)}${p.category ? " · " + esc(p.category) : ""}${p.comment ? " · " + esc(p.comment.slice(0, 90)) : ""}</div>
         <details><summary>Abstract</summary><p>${esc(p.summary)}</p></details>
-        <div class="ra"><span class="past">${p.runs.map((r) => `<button type="button" data-run="${esc(r.id)}" data-status="${esc(r.status)}" title="Open run ${esc(r.id)}"><span class="badge ${esc(r.verdict || (r.status === "running" ? "running" : ""))}">${esc(r.verdict ? VERDICT[r.verdict] : r.status)}</span></button>`).join("")}</span>
-          <button class="ghost" type="button" data-pick="${i}">Reproduce this paper</button></div>
-      </div>`).join("") + (more ? `<button class="ghost" type="button" id="moreResults">Load more papers</button>` : "");
+        <div class="ra"><span class="past">${(p.recs || []).map((r) => `<button type="button" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}"><span class="badge ${esc(r.verdict || "")}">${esc(VERDICT[r.verdict] || r.status)}</span></button>`).join("")}${(p.runs || []).map((r) => `<button type="button" data-run="${esc(r.id)}" data-status="${esc(r.status)}" title="Open run ${esc(r.id)}"><span class="badge ${esc(r.verdict || (r.status === "running" ? "running" : ""))}">${esc(r.verdict ? VERDICT[r.verdict] : r.status)}</span></button>`).join("")}</span>
+          <button class="ghost" type="button" data-pick="${offset + i}">Reproduce this paper</button></div>
+      </div>`).join("") + (more ? `<button class="ghost" type="button" id="${moreId}">Load more papers</button>` : "");
   }
   $("#results").onclick = (e) => {
     if (e.target.id === "moreResults") { e.target.disabled = true; return searchPage(); }
+    const rf = e.target.closest("[data-rfile]");
+    if (rf) return openReplay(rf.dataset.rfile, rf.dataset.rpdf || null);
     const run = e.target.closest("[data-run]");
     if (run) return openLive(run.dataset.run, { running: run.dataset.status === "running" });
     const b = e.target.closest("[data-pick]");
     if (!b) return;
-    const p = lastResults[+b.dataset.pick];
+    pickPaper(lastResults[+b.dataset.pick]);
+  };
+  function pickPaper(p) {
     showPicked({ mode: "id" });
     $("#paperId").value = p.id;
     $("#pickedFile").textContent = "arXiv " + p.id;
     $("#pickedTitle").textContent = p.title;
     $("#pickedMeta").textContent = `${p.authors.slice(0, 6).join(", ")}${p.authors.length > 6 ? ", et al." : ""} · ${p.published}`;
-    $("#pickedNote").textContent = p.runs.length ? `Already run here ${p.runs.length} time${p.runs.length > 1 ? "s" : ""}; a new run is saved next to the earlier ones.` : "";
+    const n = (p.runs || []).length;
+    $("#pickedNote").textContent = n ? `Already run here ${n} time${n > 1 ? "s" : ""}; a new run is saved next to the earlier ones.` : "";
     $("#uploader").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // =============================== home: browse by research group (static, no runner) ===============================
+  let dir = null, browseRows = [], browseShown = 0;
+  const L = (o, k) => (window.getLang && window.getLang() === "zh" && o[k + "_zh"]) || o[k];
+  const surname = (n) => n.trim().split(/ +/).slice(-1)[0].toLowerCase();
+  const recsFor = (id) => recorded.filter((r) => r.paper === id);
+  async function loadDirectory() {
+    try { dir = await (await fetch("directory.json")).json(); } catch (e) { dir = null; }
+    if (!dir || !dir.groups.length) { $("#browse").hidden = true; $("#browseMsg").hidden = true; return; }
+    $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
+    fillAuthors();
+  }
+  function fillAuthors() {
+    const g = dir.groups[+$("#grpSel").value];
+    const ms = g.members.slice().sort((a, b) => surname(a.name).localeCompare(surname(b.name)) || a.name.localeCompare(b.name));
+    let letter = "", html = `<option value="">All authors</option>`;
+    for (const m of ms) {
+      const l = (surname(m.name)[0] || "#").toUpperCase();
+      if (l !== letter) { html += (letter ? "</optgroup>" : "") + `<optgroup label="${esc(l)}">`; letter = l; }
+      html += `<option value="${esc(m.name)}">${esc(m.name)} (${m.papers})</option>`;
+    }
+    $("#authSel").innerHTML = html + (letter ? "</optgroup>" : "");
+    browse();
+  }
+  function browse() {
+    const g = dir.groups[+$("#grpSel").value], who = $("#authSel").value, f = $("#titleFilter").value.trim().toLowerCase();
+    browseRows = g.papers.map((id) => dir.papers[id]).filter((p) => p && (!who || p.authors.includes(who))
+      && (!f || (p.title + " " + p.authors.join(" ")).toLowerCase().includes(f))).map((p) => ({ ...p, groups: [g], recs: recsFor(p.id), runs: [] }));
+    browseShown = 0;
+    $("#browseResults").innerHTML = "";
+    $("#browseMsg").textContent = `${browseRows.length} papers in this group`;
+    browseMore();
+  }
+  function browseMore() {
+    const next = browseRows.slice(browseShown, browseShown + 20);
+    browseShown += next.length;
+    lastResults = browseRows;
+    const old = $("#moreBrowse");
+    if (old) old.remove();
+    $("#browseResults").insertAdjacentHTML("beforeend", resultHtml(next, browseShown - next.length, "", browseShown < browseRows.length, "moreBrowse"));
+  }
+  $("#grpSel").onchange = fillAuthors;
+  $("#authSel").onchange = browse;
+  $("#titleFilter").oninput = () => { clearTimeout(browse.t); browse.t = setTimeout(browse, 200); };
+  $("#browseResults").onclick = (e) => {
+    if (e.target.id === "moreBrowse") return browseMore();
+    const rf = e.target.closest("[data-rfile]");
+    if (rf) return openReplay(rf.dataset.rfile, rf.dataset.rpdf || null);
+    const b = e.target.closest("[data-pick]");
+    if (b) pickPaper(browseRows[+b.dataset.pick]);
   };
+  // the search box falls back to the same directory when no runner is connected
+  function localSearch(q) {
+    if (!dir) { $("#searchMsg").textContent = "Searching needs a running runner."; return; }
+    const w = q.toLowerCase().split(/ +/);
+    const rows = [];
+    for (const g of dir.groups) for (const id of g.papers) {
+      const p = dir.papers[id];
+      const hay = searchMode === "author" ? p.authors.join(" ").toLowerCase() : (p.title + " " + p.summary).toLowerCase();
+      if (w.every((x) => hay.includes(x)) && !rows.some((r) => r.id === id)) rows.push({ ...p, groups: [g], recs: recsFor(id), runs: [] });
+    }
+    lastResults = rows;
+    $("#searchMsg").textContent = rows.length ? `${rows.length} papers shown` : "No papers found in the built-in list. Connect a runner to search all of arXiv.";
+    $("#results").innerHTML = resultHtml(rows.slice(0, 40), 0, q, false, "moreResults");
+  }
 
   // =============================== run view ===============================
   function showView(v) {
@@ -1185,6 +1257,7 @@
     await probe();
     await loadDemos();
     loadRuns();
+    loadDirectory();
     const r = params.get("run"), rep = params.get("replay");
     if (r && live) openLive(r, {});
     else if (rep) { const rec = recorded.find((x) => x.file === rep); openReplay(rep, params.get("pdf") || (rec && rec.pdf)); }

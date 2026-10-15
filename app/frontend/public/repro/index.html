@@ -14,7 +14,7 @@
 <body>
 <header class="top">
   <button class="brand" id="homeBtn" type="button" aria-label="Home"><span class="logo" aria-hidden="true">R</span><span><b>Paper Repro Agent</b><span class="sub">paper in, checked result out</span></span></button>
-  <div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div>
+  <div class="toprt"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button><div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div></div>
 </header>
 
 <main>
@@ -58,10 +58,21 @@
           </details>
           <div class="actions" id="pickedActions"></div>
           <p class="muted small" id="formMsg"></p>
+          <div class="kitbox" id="kitBox"></div>
         </div>
         <button class="x" id="clearPick" type="button" aria-label="Choose another paper">&times;</button>
       </div>
     </div>
+
+    <h2 class="sec">Browse by research group</h2>
+    <p class="muted small sec-sub">Papers are grouped by research group, each paper once with all its authors. Pick a group, then an author from the A to Z list. Papers already reproduced show their verdict.</p>
+    <div class="card browsebox" id="browse">
+      <label>Research group<select id="grpSel"></select></label>
+      <label>Author (A to Z)<select id="authSel"></select></label>
+      <label>Filter by title or keyword<input id="titleFilter" type="search" autocomplete="off"></label>
+    </div>
+    <p class="muted small" id="browseMsg"></p>
+    <div class="results" id="browseResults"></div>
 
     <h2 class="sec">Find a paper on arXiv</h2>
     <p class="muted small sec-sub">Search by author (name in Latin letters, e.g. Yujiu Yang) or by title words. Papers already reproduced on this runner show their verdict; select it to open that run.</p>
@@ -183,6 +194,8 @@
 </main>
 
 <dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
+<script src="kit.js"></script>
 </body>
 </html>
