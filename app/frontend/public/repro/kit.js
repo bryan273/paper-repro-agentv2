@@ -130,15 +130,38 @@
           <a class="ghost" href="${esc(link)}" target="_blank" rel="noopener">${esc(T("Open the kit"))}</a></div>
           <p class="muted small">${esc(T("Paste it into Claude Code, Codex or any agent that can read a URL and run commands. It does the experiment on your machine and posts the result back here."))}</p>
           <div id="kitStatus" class="kitstatus"></div></div>`;
-      if (withSteps === true) {
-        const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
-          body: JSON.stringify({ job: j.id, token: j.token, paper, lang }) });
-        if (!r.ok) { const e = await r.json().catch(() => ({})); $("#kitStatus").insertAdjacentHTML("afterbegin", `<div class="muted small">${esc(T("Steps 1 to 3 could not start:"))} ${esc(e.error || r.status)}</div>`); }
-      }
+      if (withSteps === true) runSteps(j.id, j.token, paper, lang);
       watch(j.id);
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
     } finally { $("#kitBtn").disabled = false; }
+  }
+
+
+  // Reader, Router and Planner run one after the other: each is its own short request on the server,
+  // and the next starts when the previous one has posted its event.
+  async function runSteps(job, token, paper, lang) {
+    const want = { reader: "contract", router: "route", planner: "plan" };
+    for (const step of ["reader", "router", "planner"]) {
+      const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
+        body: JSON.stringify({ job, token, paper, lang, step }) });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        const box = $("#kitStatus");
+        if (box) box.insertAdjacentHTML("afterbegin", `<div class="muted small">${esc(T("Steps 1 to 3 could not start:"))} ${esc(e.error || r.status)}</div>`);
+        return;
+      }
+      let ok = false;
+      for (let i = 0; i < 60 && !ok; i++) {
+        await new Promise((res) => setTimeout(res, 4000));
+        try {
+          const ev = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=in.(${want[step]},note)&select=kind,payload&order=id.desc&limit=3`, { headers: hdr })).json();
+          if (ev.some((x) => x.kind === want[step])) ok = true;
+          else if (ev.some((x) => x.kind === "note" && x.payload && x.payload.error && x.payload.step === step)) return;
+        } catch (e) {}
+      }
+      if (!ok) return;
+    }
   }
 
   async function watch(job) {
