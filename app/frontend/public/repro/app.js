@@ -38,6 +38,7 @@
       if (!r.ok) throw 0;
       const h = await r.json();
       live = true;
+      $("#arxivSearch").hidden = false;   // searching all of arXiv needs the runner
       $("#status").className = "status live";
       $("#statusText").textContent = `Runner online · ${h.resources.cpu_cores} CPU cores · ${h.resources.ram_gb} GB RAM · GPU ${h.resources.gpu} · spent ¥${h.global_spend_cny}`;
       $("#keyLabel").hidden = !h.needs_key;
@@ -70,8 +71,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261016a", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261016a", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261016b", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261016b", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -277,7 +278,7 @@
         ${p.groups && p.groups.length ? `<div class="inst">${p.groups.map((g) => `<b>${esc(L(g, "name"))}</b> · ${esc(L(g, "institute"))}`).join("; ")}</div>` : ""}
         <div class="muted small mono">${esc(p.id)} · ${esc(p.published)}${p.category ? " · " + esc(p.category) : ""}${p.comment ? " · " + esc(p.comment.slice(0, 90)) : ""}</div>
         <details><summary>Abstract</summary><p>${esc(p.summary)}</p></details>
-        <div class="ra"><span class="past">${(p.recs || []).map((r) => `<button type="button" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}"><span class="badge ${esc(r.verdict || "")}">${esc(VERDICT[r.verdict] || r.status)}</span></button>`).join("")}${(p.runs || []).map((r) => `<button type="button" data-run="${esc(r.id)}" data-status="${esc(r.status)}" title="Open run ${esc(r.id)}"><span class="badge ${esc(r.verdict || (r.status === "running" ? "running" : ""))}">${esc(r.verdict ? VERDICT[r.verdict] : r.status)}</span></button>`).join("")}</span>
+        <div class="ra"><span class="past">${(p.recs || []).map((r) => `<button type="button" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}"><span class="badge ${esc(r.verdict || "")}">${esc(VERDICT[r.verdict] || r.status)}</span></button>`).join("")}${(p.jobs || []).map((j) => `<span class="badge ${esc(j.verdict || "")}" title="Run on a user's own agent">${esc(VERDICT[j.verdict] || j.verdict || "")}</span>`).join("")}${(p.runs || []).map((r) => `<button type="button" data-run="${esc(r.id)}" data-status="${esc(r.status)}" title="Open run ${esc(r.id)}"><span class="badge ${esc(r.verdict || (r.status === "running" ? "running" : ""))}">${esc(r.verdict ? VERDICT[r.verdict] : r.status)}</span></button>`).join("")}</span>
           <button class="ghost" type="button" data-pick="${offset + i}">Reproduce this paper</button></div>
       </div>`).join("") + (more ? `<button class="ghost" type="button" id="${moreId}">Load more papers</button>` : "");
   }
@@ -306,7 +307,17 @@
   let dir = null, browseRows = [], browseShown = 0;
   const L = (o, k) => (window.getLang && window.getLang() === "zh" && o[k + "_zh"]) || o[k];
   const surname = (n) => n.trim().split(/ +/).slice(-1)[0].toLowerCase();
+  let jobDone = {};   // arXiv id -> finished runs made through "run it on your own agent"
   const recsFor = (id) => recorded.filter((r) => r.paper === id);
+  const doneFor = (id) => recsFor(id).length + (jobDone[id] || []).length;
+  async function loadJobs() {
+    try {
+      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&select=arxiv_id,verdict", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      jobDone = {};
+      for (const j of r.ok ? await r.json() : []) { const id = arxivIdOf(j.arxiv_id); if (id) (jobDone[id] = jobDone[id] || []).push(j); }
+    } catch (e) {}
+  }
+  const arxivIdOf = (x) => { const m = String(x || "").match(/([0-9]{4}[.][0-9]{4,5})/); return m ? m[1] : null; };
   async function loadDirectory() {
     // one shared copy in Supabase (editable without a redeploy); the file next to the page is the fallback
     try {
@@ -314,9 +325,10 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261016a", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261016b", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
+    await loadJobs();
     fillAuthors();
   }
   function fillAuthors() {
@@ -332,12 +344,14 @@
     browse();
   }
   function browse() {
-    const g = dir.groups[+$("#grpSel").value], who = $("#authSel").value, f = $("#titleFilter").value.trim().toLowerCase();
+    const g = dir.groups[+$("#grpSel").value], who = $("#authSel").value, f = $("#titleFilter").value.trim().toLowerCase(), st = $("#statusSel").value;
     browseRows = g.papers.map((id) => dir.papers[id]).filter((p) => p && (!who || p.authors.includes(who))
-      && (!f || (p.title + " " + p.authors.join(" ")).toLowerCase().includes(f))).map((p) => ({ ...p, groups: [g], recs: recsFor(p.id), runs: [] }));
+      && (!f || (p.title + " " + p.authors.join(" ")).toLowerCase().includes(f))
+      && (!st || (st === "done") === doneFor(p.id) > 0)).map((p) => ({ ...p, groups: [g], recs: recsFor(p.id), jobs: jobDone[p.id] || [], runs: [] }));
     browseShown = 0;
     $("#browseResults").innerHTML = "";
-    $("#browseMsg").textContent = `${browseRows.length} papers in this group`;
+    const nDone = browseRows.filter((p) => p.recs.length || p.jobs.length).length;
+    $("#browseMsg").textContent = `${browseRows.length} papers in this group` + (nDone ? `, ${nDone} reproduced` : "");
     browseMore();
   }
   function browseMore() {
@@ -350,6 +364,7 @@
   }
   $("#grpSel").onchange = fillAuthors;
   $("#authSel").onchange = browse;
+  $("#statusSel").onchange = browse;
   $("#titleFilter").oninput = () => { clearTimeout(browse.t); browse.t = setTimeout(browse, 200); };
   $("#browseResults").onclick = (e) => {
     if (e.target.id === "moreBrowse") return browseMore();

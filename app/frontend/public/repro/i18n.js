@@ -28,6 +28,7 @@
       "可按作者（拉丁字母姓名，如 Yujiu Yang）或标题关键词搜索。已复现过的论文会显示结论，点击即可打开那次运行。",
     "Papers are grouped by research group, each paper once with all its authors. Pick a group, then an author from the A to Z list. Papers already reproduced show their verdict.":
       "论文按课题组归类，每篇只出现一次并列出全部作者。先选课题组，再从 A 到 Z 的列表里选作者。已复现的论文会显示结论。",
+    "Reproduction status": "复现状态", "All papers": "全部论文", "Already reproduced": "已复现", "Not reproduced yet": "尚未复现",
     "Author": "作者", "Title or keywords": "标题或关键词", "Search": "搜索",
     "Searching needs a running runner.": "联网搜索需要运行器在线。",
     "Or try a sample paper": "或试试示例论文",
@@ -85,7 +86,7 @@
     [/^([0-9]+) recorded runs?: (.+)$/, (m) => m[1] + " 次录制：" + m[2]],
     [/^([0-9]+) recorded runs?$/, (m) => m[1] + " 次录制"],
     [/^Show all ([0-9]+) runs$/, (m) => "显示全部 " + m[1] + " 次运行"],
-    [/^([0-9]+) papers in this group$/, (m) => "本组共 " + m[1] + " 篇论文"],
+    [/^([0-9]+) papers in this group(, ([0-9]+) reproduced)?$/, (m) => "本组共 " + m[1] + " 篇论文" + (m[3] ? "，其中 " + m[3] + " 篇已复现" : "")],
     [/^([0-9]+) papers shown$/, (m) => "显示 " + m[1] + " 篇论文"],
     [/^Runner online · ([0-9]+) CPU cores · ([0-9.]+) GB RAM · GPU ([^ ]+) · spent ¥([0-9.]+)$/, (m) => "运行器在线 · " + m[1] + " 个 CPU 核 · " + m[2] + " GB 内存 · GPU " + m[3] + " · 已花费 ¥" + m[4]]
   ];
