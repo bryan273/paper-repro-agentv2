@@ -18,6 +18,8 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+// an Edge Function request is cut off at about 150 s without a word, so every step works to its own deadline
+let deadline = 0;
 const sb = { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json" };
 
 async function db(path: string, init: RequestInit = {}) {
@@ -60,10 +62,15 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
   // an Edge Function request ends after about 150 s, so thinking is off here (it took 90 s+ for the Reader alone)
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const model = attempt % 2 === 1 ? SIBLING : MODEL;
+      // V4-Flash has been answering 429 "no deployments" for days; the sibling is only a last resort
+      const model = attempt === 3 ? SIBLING : MODEL;
       await note(`Calling ${model} (attempt ${attempt + 1})`);
       const ctl = new AbortController();
-      const timer = setTimeout(() => ctl.abort(), 110_000);
+      const left = deadline - Date.now();
+      if (left < 15_000) throw new Error("out of time for this step");
+      // the gateway sometimes accepts a request and then says nothing: give up after 20 s of silence and retry
+      let timer = setTimeout(() => ctl.abort(), Math.min(60_000, left - 5_000));
+      const rearm = () => { clearTimeout(timer); timer = setTimeout(() => ctl.abort(), Math.min(20_000, Math.max(deadline - Date.now() - 3_000, 1_000))); };
       const r = await fetch(`${BASE}/chat/completions`, {
         method: "POST", signal: ctl.signal,
         headers: { Authorization: `Bearer ${Deno.env.get("PARATERA_API_KEY")}`, "Content-Type": "application/json" },
@@ -77,6 +84,7 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
       const dec = new TextDecoder();
       let buf = "", out = "";
       for await (const chunk of r.body) {
+        rearm();
         buf += dec.decode(chunk, { stream: true });
         const lines = buf.split("\n");
         buf = lines.pop() ?? "";
@@ -112,6 +120,7 @@ async function latest(job: string, kind: string): Promise<unknown | null> {
 // One role per call: an Edge Function request has a wall-clock limit, so the viewer calls this three
 // times (reader, router, planner), each time after the previous event has arrived.
 async function work(job: string, step: string, paper: string, lang: string) {
+  deadline = Date.now() + 135_000;
   try {
     const zh = lang === "zh" ? "\nWrite every free-text field (summaries, why, descriptions) in Chinese; keep keys, numbers, quotes and code in their original form." : "";
     if (step === "reader") {
@@ -138,6 +147,7 @@ You cannot run commands here. Judge from the paper text and its stated links onl
 Paper text:
 
 ${text}`,
+        9000, job,
       ));
       await post(job, "route", route);
     } else {
@@ -153,6 +163,7 @@ Route:
 ${JSON.stringify(route)}
 
 Return JSON as specified.`,
+        9000, job,
       );
       let planJson: unknown;
       try { planJson = asJson(plan); } catch { planJson = { text: plan }; }
