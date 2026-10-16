@@ -118,6 +118,16 @@
     p("}");
     p("```");
     p("");
+    p("Before the result, upload the code that produced the number, so it can be audited: post one `file` event per important source file (at most 15 KB each; the main one is the file your single command runs), payload `{\"name\": \"reproduce.py\", \"content\": \"...the file text...\"}`. Put the last 40 lines of the clean re-run output in the result as `clean_run_log_tail`.");
+    p("");
+    p("After the result is posted, ask the viewer to audit it (a second model reads your code, log and numbers; it takes about 30 seconds and its findings appear next to your result):");
+    p("");
+    p("```bash");
+    p(`curl -s -X POST '${SB_URL}/functions/v1/run-steps' \\`);
+    p(`  -H 'apikey: ${SB_KEY}' -H 'Content-Type: application/json' \\`);
+    p(`  -d '{"job":"${job}","token":"${token}","paper":"${paper}","lang":"${lang}","step":"audit"}'`);
+    p("```");
+    p("");
     p("When the result is posted, tell your user the verdict and the value in one or two sentences. The viewer shows the run on the job page.");
     return L.join(NL) + NL;
   }
@@ -131,7 +141,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261016e", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261016f", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
@@ -155,8 +165,15 @@
   // Reader, Router and Planner run one after the other: each is its own short request on the server,
   // and the next starts when the previous one has posted its event.
   async function runSteps(job, token, paper, lang) {
-    const want = { reader: "contract", router: "route", planner: "plan" };
-    for (const step of ["reader", "router", "planner"]) {
+    const want = { reader: "contract", critic: "contract", router: "route", planner: "plan" };
+    const maxId = async () => {
+      try {
+        const r = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&select=id&order=id.desc&limit=1`, { headers: hdr })).json();
+        return r.length ? r[0].id : 0;
+      } catch (e) { return 0; }
+    };
+    for (const step of ["reader", "critic", "router", "planner"]) {
+      const last = await maxId();
       const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
         body: JSON.stringify({ job, token, paper, lang, step }) });
       if (!r.ok) {
@@ -166,10 +183,10 @@
         return;
       }
       let ok = false;
-      for (let i = 0; i < 60 && !ok; i++) {
+      for (let i = 0; i < 45 && !ok; i++) {
         await new Promise((res) => setTimeout(res, 4000));
         try {
-          const ev = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=in.(${want[step]},note)&select=kind,payload&order=id.desc&limit=3`, { headers: hdr })).json();
+          const ev = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&id=gt.${last}&kind=in.(${want[step]},note)&select=kind,payload&order=id.desc&limit=3`, { headers: hdr })).json();
           if (ev.some((x) => x.kind === want[step])) ok = true;
           else if (ev.some((x) => x.kind === "note" && x.payload && x.payload.error && x.payload.step === step)) return;
         } catch (e) {}
@@ -192,7 +209,9 @@
         let html = `<div><b>${esc(T(names[s.status] || "Waiting for an agent to pick it up"))}</b>${s.agent ? ` · ${esc(s.agent)}` : ""}${s.verdict ? ` · <span class="badge ${esc(s.verdict)}">${esc(T({ reproduced: "Reproduced", partially_reproduced: "Partially reproduced", not_reproduced: "Not reproduced", could_not_run: "Could not run" }[s.verdict] || s.verdict))}</span>` : ""}</div>`;
         html += er.slice().reverse().map((e) => {
           const p = e.payload || {};
-          const txt = p.text || p.summary || p.claim || (p.verdict ? p.verdict : "") || "";
+          const au = p.audit;
+          const txt = au ? `${T("Audit")}: ${au.paper_value_literal_in_code ? T("paper value found in the code") + ". " : ""}${(au.flags || []).length ? T("flags") + " " + au.flags.join(", ") + ". " : T("no flags") + ". "}${au.audit_summary || ""}`
+            : p.text || p.summary || p.claim || (p.verdict ? p.verdict : "") || "";
           return `<div class="muted small"><span class="mono">${esc(e.kind)}</span> ${esc(String(txt).slice(0, 220))}</div>`;
         }).join("");
         box.innerHTML = html;

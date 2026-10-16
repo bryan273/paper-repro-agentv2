@@ -12,7 +12,7 @@ const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const MODEL = Deno.env.get("REPRO_MODEL") ?? "DeepSeek-V4.1-Flash";
 const BASE = Deno.env.get("PARATERA_BASE_URL") ?? "https://llmapi.paratera.com/v1";
 const MAX_TEXT = 70000;
-const HOURLY_LIMIT = Number(Deno.env.get("REPRO_HOURLY_LIMIT") ?? "30");
+const HOURLY_LIMIT = Number(Deno.env.get("REPRO_HOURLY_LIMIT") ?? "60");
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
@@ -112,6 +112,13 @@ function asJson(s: string): unknown {
   return JSON.parse(s.slice(a, b + 1));
 }
 
+const CRITIC = `You are the CRITIC. A fast reader wrote a claim contract from the paper without time to think. Check it against the paper text and fix it.
+Verify: every number and its table reference; the metric and dataset of the match target; every hyperparameter, architecture size, split and schedule in the assumptions and requirements (use the paper's exact wording: for example "10 hidden units" means dimension 10); whether a validation split really exists in the released data; and the tolerance. The tolerance must follow the FIRST rule that applies and must not be widened: 1. the paper reports a std over repeated runs for the target: 3 x that std; 2. an accuracy-like percentage on a test set of 2,000+ examples: 1.0 point (0.01 as a fraction); 3. a bounded score on a smaller set: 2.0 points (0.02 as a fraction); 4. otherwise 10 percent relative.
+Return the FULL corrected contract as ONE JSON object with the same keys as the input, plus "corrections": [{"field": str, "was": str, "now": str, "evidence": str}] (an empty list if nothing was wrong). Change only what the paper text shows to be wrong. Never invent a number or a quote.`;
+
+const AUDIT_NOTE = `
+This audit has no system re-run. Judge the code, the posted clean-run log and the numbers in the result. A hard-coded or copied paper value is a flag even if the program runs. Return the JSON object described above.`;
+
 async function latest(job: string, kind: string): Promise<unknown | null> {
   const r = await db(`repro_events?job_id=eq.${job}&kind=eq.${kind}&select=payload&order=id.desc&limit=1`);
   return r.length ? r[0].payload : null;
@@ -131,6 +138,47 @@ async function work(job: string, step: string, paper: string, lang: string) {
 
 ${text}`, 9000, job)) as Record<string, unknown>;
       await post(job, "contract", contract);
+    } else if (step === "critic") {
+      const contract = await latest(job, "contract");
+      if (!contract) throw new Error("the Reader has not finished");
+      await post(job, "progress", { text: "Critic is checking the contract against the paper" });
+      const text = await paperText(paper);
+      const fixed = asJson(await chat(CRITIC + zh, `Claim contract:
+${JSON.stringify(contract)}
+
+Paper text:
+
+${text}`, 9000, job)) as Record<string, unknown>;
+      await post(job, "contract", fixed);
+    } else if (step === "audit") {
+      const contract = await latest(job, "contract"), result = await latest(job, "result") as Record<string, unknown> | null;
+      if (!result) throw new Error("no result to audit yet");
+      await post(job, "progress", { text: "Auditor is checking the code and the clean run" });
+      const files = await db(`repro_events?job_id=eq.${job}&kind=eq.file&select=payload&order=id`);
+      let code = "";
+      for (const f of files) {
+        const body = String(f.payload?.content ?? "").slice(0, 15000);
+        if (code.length + body.length < 45000) code += `
+--- ${f.payload?.name ?? "file"} ---
+${body}`;
+      }
+      // a plain check that needs no model: does a paper value appear as a literal in the code?
+      const pv = result.paper_value == null ? "" : String(result.paper_value);
+      const literal = pv.length >= 3 && code.includes(pv);
+      const { files: _drop, ...resultNoFiles } = result;
+      const audit = asJson(await chat(
+        prompts.VERIFIER + AUDIT_NOTE + zh,
+        `Claim contract:
+${JSON.stringify(contract).slice(0, 14000)}
+
+Result posted by the implementing agent:
+${JSON.stringify(resultNoFiles).slice(0, 8000)}
+
+Source code the agent uploaded (empty means none was uploaded):
+${code || "(none)"}`,
+        9000, job,
+      )) as Record<string, unknown>;
+      await post(job, "note", { audit: { ...audit, code_uploaded: code.length > 0, paper_value_literal_in_code: literal } });
     } else if (step === "router") {
       const contract = await latest(job, "contract");
       if (!contract) throw new Error("the Reader has not finished");
@@ -180,7 +228,7 @@ Deno.serve(async (req) => {
   const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
   try {
     const { job, token, paper, lang, step } = await req.json();
-    if (!["reader", "router", "planner"].includes(step)) return json({ error: "step must be reader, router or planner" }, 400);
+    if (!["reader", "critic", "router", "planner", "audit"].includes(step)) return json({ error: "step must be reader, critic, router, planner or audit" }, 400);
     if (!job || !token || !paper || String(paper).length > 300) return json({ error: "job, token and paper are required" }, 400);
     const ok = await db(`repro_job_tokens?job_id=eq.${job}&token=eq.${encodeURIComponent(token)}&select=job_id`);
     if (!ok.length) return json({ error: "bad job or token" }, 403);
@@ -190,6 +238,10 @@ Deno.serve(async (req) => {
       if (recent.length >= HOURLY_LIMIT) return json({ error: "hourly limit reached, try again later" }, 429);
       const started = await db(`repro_events?job_id=eq.${job}&kind=eq.contract&select=id&limit=1`);
       if (started.length) return json({ error: "steps already done for this job" }, 409);
+    }
+    if (step === "audit") {
+      const done = await db(`repro_events?job_id=eq.${job}&kind=eq.note&payload->audit=not.is.null&select=id&limit=1`);
+      if (done.length) return json({ error: "already audited" }, 409);
     }
     // @ts-ignore EdgeRuntime is provided by the Supabase runtime
     EdgeRuntime.waitUntil(work(job, step, String(paper), lang === "zh" ? "zh" : "en"));

@@ -131,6 +131,7 @@
     "Not run": "未运行",
     "Pending": "等待中",
     "Download": "下载",
+    "Audit": "审计", "paper value found in the code": "代码中发现论文数值", "flags": "标记", "no flags": "无标记",
     "Copy the link": "复制链接", "Copied": "已复制"
   };
   const PAT = [
