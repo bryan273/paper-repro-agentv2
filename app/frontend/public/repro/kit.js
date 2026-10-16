@@ -55,6 +55,15 @@
     p("");
     p(protocol.trim());
     p("");
+    p("## Practical notes (learned from a real test run)");
+    p("");
+    p("- The contract, route and plan were written by a model that could not run anything. Treat them as a draft. If a number in them is wrong (a class balance, a dataset size, a filename), check it against the real data, write the correction in a progress event, and carry on. Do not fail a run because a draft check was wrong.");
+    p("- If the contract's tolerance disagrees with the rule it names (for example rule 1 gives 3 x std but a wider band is written), the RULE wins. Use the rule's value for the verdict, say so in a progress event BEFORE you run, and also report the contract's value as contract_tolerance.");
+    p("- verdict_ceiling in the route only matters if you really scale down. If you ran at full scale, ignore it.");
+    p("- Datasets: if the GitHub API is rate limited, use raw.githubusercontent.com paths, a shallow `git clone --depth 1`, or a sparse checkout. Look for the exact file name before you assume one.");
+    p("- Windows: use a SHORT working path (for example C:/w/job) so pip does not hit the long-path limit; set PYTHONIOENCODING=utf-8; open files with encoding='utf-8'. If a package will not install, write the small piece yourself (for example AUC) rather than giving up.");
+    p("- Print progress while long steps run, and keep each command under a few minutes so you notice problems early.");
+    p("");
     p("## Verdict");
     p("");
     p("Compute it from your numbers, not by feel. Let band be the tolerance from the claim contract and gap = |measured - paper value|.");
@@ -94,7 +103,7 @@
     p("{");
     p('  "verdict": "reproduced | partially_reproduced | not_reproduced | could_not_run",');
     p('  "claim": "the exact result you tried to reproduce (table, dataset, metric)",');
-    p('  "paper_value": 0.0, "measured": 0.0, "tolerance": 0.0, "tolerance_rule": 1,');
+    p('  "paper_value": 0.0, "measured": 0.0, "tolerance": 0.0, "tolerance_rule": 1, "contract_tolerance": null,');
     p('  "scaled_down": false, "flags": [],');
     p('  "command": "the one command that re-creates the number",');
     p('  "runtime_seconds": 0,');
@@ -117,7 +126,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261016b", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261016c", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
