@@ -62,6 +62,11 @@
     p("- verdict_ceiling in the route only matters if you really scale down. If you ran at full scale, ignore it.");
     p("- Datasets: if the GitHub API is rate limited, use raw.githubusercontent.com paths, a shallow `git clone --depth 1`, or a sparse checkout. Look for the exact file name before you assume one.");
     p("- Windows: use a SHORT working path (for example C:/w/job) so pip does not hit the long-path limit; set PYTHONIOENCODING=utf-8; open files with encoding='utf-8'. If a package will not install, write the small piece yourself (for example AUC) rather than giving up.");
+    p("- The draft contract can misread the paper: check every assumption against the paper's own words (for example a hidden size, a split, a learning rate) and use the paper's reading when they differ. Say what you changed in the result.");
+    p("- A validation split that the draft mentions may not exist in the released data. If only train and test are shipped, hold out part of train for any model selection, then retrain on all of train. Never select on the test set.");
+    p("- Prefer a prebuilt pip wheel over compiling C or C++ code (for example fasttext-wheel instead of building fastText with make), and say which you used. If the authors' own code builds and runs, run it rather than rewriting it.");
+    p("- Write code to files with your editor tool, not through shell heredocs: a heredoc can strip backslashes and break regular expressions and Windows paths.");
+    p("- If the final number comes from several trainings or seeds, report the mean in measured and every single value in the summary or metrics file.");
     p("- Print progress while long steps run, and keep each command under a few minutes so you notice problems early.");
     p("");
     p("## Verdict");
@@ -126,7 +131,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261016d", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261016e", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
