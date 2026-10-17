@@ -108,3 +108,33 @@ drop policy if exists directory_read on public.repro_directory;
 create policy directory_read on public.repro_directory for select to anon, authenticated using (true);
 revoke all on public.repro_directory from anon, authenticated;
 grant select on public.repro_directory to anon, authenticated;
+
+-- copy the contract, route and plan of the newest earlier job on the same paper into a new job
+create or replace function public.reuse_steps(p_job uuid, p_token text)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare
+  ok boolean;
+  a text;
+  l text;
+  src uuid;
+  src_at timestamptz;
+begin
+  select true into ok from repro_job_tokens where job_id = p_job and token = p_token;
+  if not coalesce(ok, false) then raise exception 'bad job or token'; end if;
+  if exists (select 1 from repro_events where job_id = p_job) then return json_build_object('reused', false); end if;
+  select arxiv_id, lang into a, l from repro_jobs where id = p_job;
+  select j.id, j.created_at into src, src_at from repro_jobs j
+   where j.arxiv_id = a and j.id <> p_job
+     and exists (select 1 from repro_events e where e.job_id = j.id and e.kind = 'contract')
+     and exists (select 1 from repro_events e where e.job_id = j.id and e.kind = 'route')
+     and exists (select 1 from repro_events e where e.job_id = j.id and e.kind = 'plan')
+   order by (j.lang = l) desc, j.created_at desc limit 1;
+  if src is null then return json_build_object('reused', false); end if;
+  insert into repro_events (job_id, kind, agent, payload)
+    select p_job, kind, 'reused-from-' || left(src::text, 8), payload
+    from (select distinct on (kind) kind, payload from repro_events
+           where job_id = src and kind in ('contract', 'route', 'plan') order by kind, id desc) t;
+  return json_build_object('reused', true, 'from', src, 'at', src_at);
+end $$;
+revoke all on function public.reuse_steps(uuid, text) from public;
+grant execute on function public.reuse_steps(uuid, text) to anon, authenticated;

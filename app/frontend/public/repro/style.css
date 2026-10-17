@@ -348,3 +348,15 @@ table.cmp ul{margin:4px 0 0;padding-left:16px;font:11.5px var(--mono)}
 .kitbtns{display:flex;flex-wrap:wrap;gap:8px}
 .kitbtns a.ghost{text-decoration:none;display:inline-flex;align-items:center;padding:6px 11px}
 .kitstatus{display:grid;gap:4px;padding:10px 12px;border:1px solid var(--line);border-radius:9px}
+
+.pbar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:10px 0 8px}
+.pbar i{display:block;height:100%;width:0;background:var(--acc);border-radius:99px;transition:width .6s ease}
+.pbar.busy i{background-image:linear-gradient(90deg,rgba(255,255,255,0) 0,rgba(255,255,255,.35) 50%,rgba(255,255,255,0) 100%);background-size:200px 100%;animation:pshine 1.4s linear infinite}
+@keyframes pshine{from{background-position:-200px 0}to{background-position:200px 0}}
+.psteps{display:flex;flex-wrap:wrap;gap:6px 16px;list-style:none;margin:0 0 8px;padding:0;font-size:12.5px;color:var(--muted)}
+.psteps li{display:flex;align-items:center;gap:6px}
+.psteps .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.psteps li.done{color:var(--ink)}.psteps li.done .dot{background:var(--acc)}
+.psteps li.now{color:var(--ink);font-weight:600}.psteps li.now .dot{background:var(--acc);box-shadow:0 0 0 3px rgba(120,160,230,.3)}
+.psteps li.retry .dot{background:#d9a441}
+@media (prefers-reduced-motion:reduce){.pbar.busy i{animation:none}}

@@ -133,39 +133,72 @@
     return L.join(NL) + NL;
   }
 
-  async function makeKit(withSteps) {
+  const STAGES = [["reader", "Reader"], ["critic", "Critic"], ["router", "Router"], ["planner", "Planner"], ["publish", "Publishing the link"]];
+  function barHtml() {
+    return `<div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+      <ol class="psteps">${STAGES.map(([k, n]) => `<li data-k="${k}"><span class="dot"></span>${esc(T(n))}</li>`).join("")}</ol>`;
+  }
+  // stage state: "now" (running), "done", "retry"; the bar fills as stages finish
+  function setStage(k, state) {
+    const box = $(".pbar"); if (!box) return;
+    const items = Array.from(document.querySelectorAll(".psteps li"));
+    const idx = items.findIndex((li) => li.dataset.k === k);
+    items.forEach((li, i) => { li.className = i < idx ? "done" : i === idx ? (state === "done" ? "done" : state === "retry" ? "now retry" : "now") : ""; });
+    const pct = Math.round(((idx + (state === "done" ? 1 : 0.35)) / items.length) * 100);
+    box.querySelector("i").style.width = pct + "%"; box.setAttribute("aria-valuenow", String(pct));
+    box.classList.toggle("busy", state !== "done");
+  }
+
+  async function makeKit(mode) {
+    // mode: "auto" (reuse earlier steps 1 to 3 of this paper, else run them), "fresh" (run them again), "skip" (the user's agent does them)
+    mode = typeof mode === "string" ? mode : "auto";
     const out = $("#kitOut");
     const paper = ($("#paperId").value || "").trim();
     if (!paper) { out.innerHTML = `<p class="muted small">${esc(T("Pick a paper first."))}</p>`; return; }
     const title = ($("#pickedTitle").textContent || "").trim();
     const lang = window.getLang ? window.getLang() : "en";
-    $("#kitBtn").disabled = true;
+    $("#stepsBtn").disabled = true; $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017c", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017e", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
+      let reused = null, stepsOk = true;
+      if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
+      if (mode === "fresh" || (mode === "auto" && !(reused && reused.reused))) {
+        out.innerHTML = `<div class="kitlink"><p class="muted small">${esc(T("Running steps 1 to 3 on the server. The link appears when they are done (about 2 minutes)."))}</p>${barHtml()}<div id="kitStatus" class="kitstatus"></div></div>`;
+        watch(j.id, null);
+        stepsOk = await runSteps(j.id, j.token, paper, lang, setStage);
+      } else if (mode === "auto") {
+        out.innerHTML = `<div class="kitlink"><p class="muted small">${esc(T("Reusing the earlier steps 1 to 3 of this paper"))}</p>${barHtml()}</div>`;
+        setStage("planner", "done");
+      }
+      setStage("publish", "now");
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
       if (!up.ok) throw new Error("upload " + up.status);
       const link = `${SB_URL}/storage/v1/object/public/kits/${j.id}.md`;
       const prompt = `Read ${link} and do the job it describes, end to end.`;
-      out.innerHTML = `<div class="kitlink"><label>${esc(T("Kit link"))}<input readonly value="${esc(link)}" id="kitLink"></label>
+      const note = mode === "skip" ? T("Steps 1 to 3 are left to your agent.")
+        : reused && reused.reused ? `${T("Steps 1 to 3 were reused from an earlier run of this paper")} (${esc(String(reused.at || "").slice(0, 10))}).`
+        : stepsOk ? T("Steps 1 to 3 are done.") : T("Steps 1 to 3 did not finish; your agent will do the missing ones.");
+      out.innerHTML = `<div class="kitlink"><p class="small"><b>${note}</b>${reused && reused.reused ? ` <button class="linkish" type="button" id="rerunSteps">${esc(T("Run steps 1 to 3 again"))}</button>` : ""}</p>
+          <label>${esc(T("Kit link"))}<input readonly value="${esc(link)}" id="kitLink"></label>
           <div class="kitbtns"><button class="ghost" type="button" data-copy="${esc(link)}">${esc(T("Copy the link"))}</button>
           <button class="ghost" type="button" data-copy="${esc(prompt)}">${esc(T("Copy as a prompt"))}</button>
           <a class="ghost" href="${esc(link)}" target="_blank" rel="noopener">${esc(T("Open the kit"))}</a></div>
           <p class="muted small">${esc(T("Paste it into Claude Code, Codex or any agent that can read a URL and run commands. It does the experiment on your machine and posts the result back here."))}</p>
           <div id="kitStatus" class="kitstatus"></div></div>`;
-      if (withSteps === true) runSteps(j.id, j.token, paper, lang);
+      const rr = $("#rerunSteps"); if (rr) rr.onclick = () => makeKit("fresh");
       watch(j.id, { token: j.token, paper, lang, tries: 0, last: Date.now() - 30000 });
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
-    } finally { $("#kitBtn").disabled = false; }
+    } finally { $("#stepsBtn").disabled = false; $("#kitBtn").disabled = false; }
   }
-
 
   // Reader, Router and Planner run one after the other: each is its own short request on the server,
   // and the next starts when the previous one has posted its event.
-  async function runSteps(job, token, paper, lang) {
+  async function runSteps(job, token, paper, lang, onStage) {
+    const on = onStage || (() => {});
     const want = { reader: "contract", critic: "contract", router: "route", planner: "plan" };
     const maxId = async () => {
       try {
@@ -178,13 +211,14 @@
      // a step is tried up to three times: the model gateway now and then says nothing for a minute
      for (let attempt = 0; attempt < 3 && !done; attempt++) {
       const last = await maxId();
+      on(step, attempt ? "retry" : "now");
       const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
         body: JSON.stringify({ job, token, paper, lang, step }) });
       if (!r.ok) {
         const e = await r.json().catch(() => ({}));
         const box = $("#kitStatus");
         if (box) box.insertAdjacentHTML("afterbegin", `<div class="muted small">${esc(T("Steps 1 to 3 could not start:"))} ${esc(e.error || r.status)}</div>`);
-        return;
+        return false;
       }
       let ok = false, failed = false;
       for (let i = 0; i < 45 && !ok && !failed; i++) {
@@ -195,11 +229,12 @@
           else if (ev.some((x) => x.kind === "note" && x.payload && x.payload.error && x.payload.step === step)) failed = true;
         } catch (e) {}
       }
-      if (ok) done = true;
+      if (ok) { done = true; on(step, "done"); }
       else await new Promise((res) => setTimeout(res, 3000));
      }
-     if (!done) return;
+     if (!done) return false;
     }
+    return true;
   }
 
   async function watch(job, ctx) {
@@ -245,10 +280,10 @@
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
       <p class="muted small">${esc(T("Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine."))}</p>
-      <div class="kitbtns"><button class="primary" type="button" id="stepsBtn">${esc(T("Run steps 1 to 3 here, then make the link"))}</button>
-      <button class="ghost" type="button" id="kitBtn">${esc(T("Only make the link (my agent does steps 1 to 3)"))}</button></div><div id="kitOut"></div>`;
-    $("#stepsBtn").onclick = () => makeKit(true);
-    $("#kitBtn").onclick = makeKit;
+      <div class="kitbtns"><button class="primary" type="button" id="stepsBtn">${esc(T("Get the link"))}</button>
+      <button class="linkish" type="button" id="kitBtn">${esc(T("Skip: my own agent does steps 1 to 3"))}</button></div><div id="kitOut"></div>`;
+    $("#stepsBtn").onclick = () => makeKit("auto");
+    $("#kitBtn").onclick = () => makeKit("skip");
     host.addEventListener("click", async (e) => {
       const b = e.target.closest("[data-copy]");
       if (!b) return;
