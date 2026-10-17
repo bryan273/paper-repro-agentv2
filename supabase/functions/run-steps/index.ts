@@ -60,16 +60,16 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
   // the gateway sometimes answers 429 "no deployments available"; wait, then try the sibling model
   const SIBLING = MODEL === "DeepSeek-V4-Flash" ? "DeepSeek-V4.1-Flash" : "DeepSeek-V4-Flash";
   // an Edge Function request ends after about 150 s, so thinking is off here (it took 90 s+ for the Reader alone)
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     try {
       // V4-Flash has been answering 429 "no deployments" for days; the sibling is only a last resort
-      const model = attempt === 3 ? SIBLING : MODEL;
+      const model = attempt === 4 ? SIBLING : MODEL;
       await note(`Calling ${model} (attempt ${attempt + 1})`);
       const ctl = new AbortController();
       const left = deadline - Date.now();
       if (left < 15_000) throw new Error("out of time for this step");
       // the gateway sometimes accepts a request and then says nothing: give up after 20 s of silence and retry
-      let timer = setTimeout(() => ctl.abort(), Math.min(60_000, left - 5_000));
+      let timer = setTimeout(() => ctl.abort(), Math.min(30_000, left - 5_000));
       const rearm = () => { clearTimeout(timer); timer = setTimeout(() => ctl.abort(), Math.min(20_000, Math.max(deadline - Date.now() - 3_000, 1_000))); };
       const r = await fetch(`${BASE}/chat/completions`, {
         method: "POST", signal: ctl.signal,
@@ -99,8 +99,8 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
       if (out.trim()) return out;
     } catch (e) {
       await note(`Model call failed: ${(e as Error).message}`);
-      if (attempt === 3) throw e;
-      await new Promise((res) => setTimeout(res, 3000 * (attempt + 1)));
+      if (attempt === 4) throw e;
+      await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
     }
   }
   throw new Error("empty model answer");
