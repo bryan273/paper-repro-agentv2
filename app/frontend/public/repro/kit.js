@@ -142,7 +142,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017b", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017c", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
@@ -245,8 +245,8 @@
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
       <p class="muted small">${esc(T("Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine."))}</p>
-      <div class="kitbtns"><button class="ghost" type="button" id="stepsBtn">${esc(T("Run steps 1 to 3 here first"))}</button>
-      <button class="primary" type="button" id="kitBtn">${esc(T("Make the link"))}</button></div><div id="kitOut"></div>`;
+      <div class="kitbtns"><button class="primary" type="button" id="stepsBtn">${esc(T("Run steps 1 to 3 here, then make the link"))}</button>
+      <button class="ghost" type="button" id="kitBtn">${esc(T("Only make the link (my agent does steps 1 to 3)"))}</button></div><div id="kitOut"></div>`;
     $("#stepsBtn").onclick = () => makeKit(true);
     $("#kitBtn").onclick = makeKit;
     host.addEventListener("click", async (e) => {

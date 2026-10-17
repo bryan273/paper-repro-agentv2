@@ -76,7 +76,7 @@
       "把它粘贴到 Claude Code、Codex 或任何能读取网址并执行命令的智能体里。它会在你的机器上做实验，并把结果送回这里。",
     "Could not prepare the kit:": "无法准备任务包：",
     "Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine.": "生成一个包含完整说明的链接。交给任意智能体即可，运行发生在你自己的机器上。",
-    "Make the link": "生成链接",
+    "Make the link": "生成链接", "Run steps 1 to 3 here, then make the link": "先在这里运行第 1 到 3 步，再生成链接", "Only make the link (my agent does steps 1 to 3)": "只生成链接（第 1 到 3 步由我的智能体完成）",
     "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",
     "Run it on your own agent": "用你自己的智能体运行",
