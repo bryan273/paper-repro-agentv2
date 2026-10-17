@@ -49,7 +49,7 @@
     p("");
     p("## How to work");
     p("");
-    p(`First look whether the viewer already did steps 1 to 3 for this job: GET ${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=in.(contract,route,plan)&select=kind,payload&order=id (header apikey: ${SB_KEY}). If a contract, route and plan are there, use them and start at role 4.`);
+    p(`First look whether the viewer already did steps 1 to 3 for this job: GET ${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=in.(contract,route,plan)&select=kind,payload&order=id (header apikey: ${SB_KEY}). Use whatever is there: if all three exist, start at role 4; if some are missing, do only the missing roles yourself (briefly) and still post them.`);
     p("");
     p("Play the five roles below in order. Each role has the exact instructions the hosted agent uses. Write the output of each role into your working folder (contract.json, route.json, plan.md, the code, then the verification), and post a short event after each step so the viewer shows progress.");
     p("");
@@ -67,6 +67,7 @@
     p("- Prefer a prebuilt pip wheel over compiling C or C++ code (for example fasttext-wheel instead of building fastText with make), and say which you used. If the authors' own code builds and runs, run it rather than rewriting it.");
     p("- Write code to files with your editor tool, not through shell heredocs: a heredoc can strip backslashes and break regular expressions and Windows paths.");
     p("- If the final number comes from several trainings or seeds, report the mean in measured and every single value in the summary or metrics file.");
+    p("- If a prebuilt package crashes at run time (for example after a major NumPy upgrade), pin the older compatible version of the dependency and say so.");
     p("- Print progress while long steps run, and keep each command under a few minutes so you notice problems early.");
     p("");
     p("## Verdict");
@@ -120,7 +121,7 @@
     p("");
     p("Before the result, upload the code that produced the number, so it can be audited: post one `file` event per important source file (at most 15 KB each; the main one is the file your single command runs), payload `{\"name\": \"reproduce.py\", \"content\": \"...the file text...\"}`. Put the last 40 lines of the clean re-run output in the result as `clean_run_log_tail`.");
     p("");
-    p("After the result is posted, ask the viewer to audit it (a second model reads your code, log and numbers; it takes about 30 seconds and its findings appear next to your result):");
+    p("After the result is posted, ask the viewer to audit it (a second model reads your code, log and numbers; it takes about 30 seconds and its findings appear next to your result). The call only starts the audit; read the job events a minute later. If the newest note says the audit stopped with an error, call it again, up to three times:");
     p("");
     p("```bash");
     p(`curl -s -X POST '${SB_URL}/functions/v1/run-steps' \\`);
@@ -141,7 +142,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017a", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017b", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
@@ -155,7 +156,7 @@
           <p class="muted small">${esc(T("Paste it into Claude Code, Codex or any agent that can read a URL and run commands. It does the experiment on your machine and posts the result back here."))}</p>
           <div id="kitStatus" class="kitstatus"></div></div>`;
       if (withSteps === true) runSteps(j.id, j.token, paper, lang);
-      watch(j.id);
+      watch(j.id, { token: j.token, paper, lang, tries: 0, last: Date.now() - 30000 });
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
     } finally { $("#kitBtn").disabled = false; }
@@ -201,7 +202,7 @@
     }
   }
 
-  async function watch(job) {
+  async function watch(job, ctx) {
     clearInterval(pollTimer);
     async function tick() {
       const box = $("#kitStatus");
@@ -216,12 +217,23 @@
         html += er.slice().reverse().map((e) => {
           const p = e.payload || {};
           const au = p.audit;
-          const txt = au ? `${T("Audit")}: ${au.paper_value_literal_in_code ? T("paper value found in the code") + ". " : ""}${(au.flags || []).length ? T("flags") + " " + au.flags.join(", ") + ". " : T("no flags") + ". "}${au.audit_summary || ""}`
+          const txt = au ? `${T("Audit")}: ${au.paper_value_literal_in_code ? T("paper value found in the code") + ". " : ""}${(au.flags || []).length ? T("flags") + " " + au.flags.join(", ") + ". " : T("no flags") + ". "}${au.audit_summary || au.summary || ""}`
             : p.text || p.summary || p.claim || (p.verdict ? p.verdict : "") || "";
           return `<div class="muted small"><span class="mono">${esc(e.kind)}</span> ${esc(String(txt).slice(0, 220))}</div>`;
         }).join("");
         box.innerHTML = html;
-        if (s.status === "done" || s.status === "failed") clearInterval(pollTimer);
+        // the page asks for the audit itself when a result is in, and again if the model gateway let it down
+        if (s.status === "done" && ctx) {
+          const audits = er.filter((e) => e.payload && e.payload.audit);
+          const errs = er.filter((e) => e.kind === "note" && e.payload && e.payload.error && e.payload.step === "audit");
+          const now = Date.now();
+          if (!audits.length && ctx.tries < 3 && now - ctx.last > 60000) {
+            ctx.tries += 1; ctx.last = now;
+            fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
+              body: JSON.stringify({ job, token: ctx.token, paper: ctx.paper, lang: ctx.lang, step: "audit" }) }).catch(() => {});
+          }
+          if (audits.length || (ctx.tries >= 3 && errs.length >= 3 && now - ctx.last > 60000)) clearInterval(pollTimer);
+        } else if (s.status === "failed") clearInterval(pollTimer);
       } catch (e) {}
     }
     tick();
