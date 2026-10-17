@@ -71,8 +71,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261017e", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261017e", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261017f", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261017f", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -156,6 +156,7 @@
     $("#pickedTitle").textContent = p.mode === "id" ? "Paste an arXiv ID or a PDF link" : "Reading PDF";
     $("#pickedMeta").textContent = "";
     $("#pickedNote").textContent = "";
+    $("#pickedStatus").innerHTML = "";
     $("#repoIn").value = p.demo ? p.demo.repo || "" : "";
     $("#hintIn").value = p.demo ? p.demo.target_hint || "" : "";
     $("#upbar").style.width = "0";
@@ -194,7 +195,6 @@
     let html = "";
     if (picked.mode === "sample" && rec) html += `<button class="primary" data-act="replay">Watch the agent reproduce it</button>`;
     if (live) html += `<button class="${html ? "ghost" : "primary"}" data-act="live">${picked.mode === "sample" ? "Run it live now" : "Start reproduction"}</button>`;
-    if (!live && picked.mode !== "sample") html += `<span class="muted small">Starting a new run needs a running runner. Try a sample paper to see a recorded run.</span>`;
     a.innerHTML = html;
     a.onclick = (e) => {
       const b = e.target.closest("button");
@@ -300,6 +300,13 @@
     $("#pickedMeta").textContent = `${p.authors.slice(0, 6).join(", ")}${p.authors.length > 6 ? ", et al." : ""} · ${p.published}`;
     const n = (p.runs || []).length;
     $("#pickedNote").textContent = n ? `Already run here ${n} time${n > 1 ? "s" : ""}; a new run is saved next to the earlier ones.` : "";
+    const recs = p.recs || [], jobs = p.jobs || [];
+    const badge = (v, st) => `<span class="badge ${esc(v || "")}">${esc(VERDICT[v] || st || v || "")}</span>`;
+    $("#pickedStatus").innerHTML = (recs.length || jobs.length
+      ? `<div class="pstat done"><b>Already reproduced</b> ${recs.map((r) => `<button type="button" class="linkish" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}">${badge(r.verdict, r.status)}</button>`).join(" ")}${jobs.map((j) => badge(j.verdict)).join(" ")}
+          <span class="muted small">Open a recorded run, or get the link below to run it again on your own agent.</span></div>`
+      : `<div class="pstat todo"><b>Not reproduced yet</b> <span class="muted small">Get the link below, give it to your agent, and the result is saved here.</span></div>`)
+      + (p.summary ? `<details class="abs"><summary>Abstract</summary><p>${esc(p.summary)}</p></details>` : "");
     $("#uploader").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -325,7 +332,7 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017e", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017f", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     await loadJobs();
@@ -366,6 +373,10 @@
   $("#authSel").onchange = browse;
   $("#statusSel").onchange = browse;
   $("#titleFilter").oninput = () => { clearTimeout(browse.t); browse.t = setTimeout(browse, 200); };
+  $("#pickedStatus").onclick = (e) => {
+    const rf = e.target.closest("[data-rfile]");
+    if (rf) openReplay(rf.dataset.rfile, rf.dataset.rpdf || null);
+  };
   $("#browseResults").onclick = (e) => {
     if (e.target.id === "moreBrowse") return browseMore();
     const rf = e.target.closest("[data-rfile]");
