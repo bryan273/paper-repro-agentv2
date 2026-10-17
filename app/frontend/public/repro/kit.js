@@ -141,7 +141,7 @@
     $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261016f", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017a", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       const text = kitText(j.id, j.token, paper, title, lang, protocol);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
@@ -173,6 +173,9 @@
       } catch (e) { return 0; }
     };
     for (const step of ["reader", "critic", "router", "planner"]) {
+     let done = false;
+     // a step is tried up to three times: the model gateway now and then says nothing for a minute
+     for (let attempt = 0; attempt < 3 && !done; attempt++) {
       const last = await maxId();
       const r = await fetch(`${SB_URL}/functions/v1/run-steps`, { method: "POST", headers: { ...hdr, "Content-Type": "application/json" },
         body: JSON.stringify({ job, token, paper, lang, step }) });
@@ -182,16 +185,19 @@
         if (box) box.insertAdjacentHTML("afterbegin", `<div class="muted small">${esc(T("Steps 1 to 3 could not start:"))} ${esc(e.error || r.status)}</div>`);
         return;
       }
-      let ok = false;
-      for (let i = 0; i < 45 && !ok; i++) {
+      let ok = false, failed = false;
+      for (let i = 0; i < 45 && !ok && !failed; i++) {
         await new Promise((res) => setTimeout(res, 4000));
         try {
           const ev = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&id=gt.${last}&kind=in.(${want[step]},note)&select=kind,payload&order=id.desc&limit=3`, { headers: hdr })).json();
           if (ev.some((x) => x.kind === want[step])) ok = true;
-          else if (ev.some((x) => x.kind === "note" && x.payload && x.payload.error && x.payload.step === step)) return;
+          else if (ev.some((x) => x.kind === "note" && x.payload && x.payload.error && x.payload.step === step)) failed = true;
         } catch (e) {}
       }
-      if (!ok) return;
+      if (ok) done = true;
+      else await new Promise((res) => setTimeout(res, 3000));
+     }
+     if (!done) return;
     }
   }
 
