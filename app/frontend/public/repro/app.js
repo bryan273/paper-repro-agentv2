@@ -56,8 +56,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261017i", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261017i", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -147,6 +147,7 @@
     $("#upbar").style.width = "0";
     $("#formMsg").textContent = "";
     renderActions();
+    if (window.kitSetState) window.kitSetState(false);
   }
 
   async function pickFile(file) {
@@ -287,6 +288,7 @@
     $("#pickedNote").textContent = n ? `Already run here ${n} time${n > 1 ? "s" : ""}; a new run is saved next to the earlier ones.` : "";
     const recs = p.recs || [], jobs = p.jobs || [];
     const badge = (v, st) => `<span class="badge ${esc(v || "")}">${esc(VERDICT[v] || st || v || "")}</span>`;
+    if (window.kitSetState) window.kitSetState(!!(recs.length || jobs.length));
     $("#pickedStatus").innerHTML = (recs.length || jobs.length
       ? `<div class="pstat done"><b>Already reproduced</b> ${recs.map((r) => `<button type="button" class="linkish" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}">${badge(r.verdict, r.status)}</button>`).join(" ")}${jobs.map((j) => badge(j.verdict)).join(" ")}
           <span class="muted small">Open a recorded run, or get the link below to run it again on your own agent.</span></div>`
@@ -317,7 +319,7 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017i", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     await loadJobs();
