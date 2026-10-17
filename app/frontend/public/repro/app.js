@@ -43,7 +43,6 @@
       $("#statusText").textContent = `Runner online · ${h.resources.cpu_cores} CPU cores · ${h.resources.ram_gb} GB RAM · GPU ${h.resources.gpu} · spent ¥${h.global_spend_cny}`;
       $("#keyLabel").hidden = !h.needs_key;
       try { $("#keyIn").value = localStorage.getItem("accessKey") || ""; } catch (e) {}
-      loadModels();
     } catch (e) {
       live = false;
       $("#status").className = "status replay";
@@ -51,28 +50,14 @@
     }
   }
 
-  async function loadModels() {
-    try {
-      const m = await (await fetch(api("/api/models"))).json();
-      const opts = [];
-      for (const [prov, ids] of Object.entries(m.providers)) for (const id of ids) opts.push([prov, id]);
-      const html = opts.map(([p, id]) => `<option value="${esc(p)}|${esc(id)}" ${m.default && p === m.default.provider && id === m.default.model ? "selected" : ""}>${esc(id)}</option>`).join("");
-      $("#allModel").innerHTML = `<option value="">(choose per agent below)</option>` + html;
-      $("#roleModels").innerHTML = ROLES.map((r) => `<label>${r}<select data-role="${r}">${html}</select></label>`).join("");
-      $("#allModel").onchange = (e) => { if (e.target.value) $$("#roleModels select").forEach((s) => (s.value = e.target.value)); };
-    } catch (e) {}
-  }
-
+  // a live runner uses its own default models; the limits below are the runner's usual ones
   function config() {
-    const models = {};
-    $$("#roleModels select").forEach((s) => { const [provider, model] = s.value.split("|"); models[s.dataset.role] = { provider, model }; });
-    return { models: Object.keys(models).length ? models : undefined, max_cost_cny: +$("#maxCost").value,
-      max_wall_minutes: +$("#maxMin").value, max_executor_steps: +$("#maxSteps").value };
+    return { max_cost_cny: 15, max_wall_minutes: 60, max_executor_steps: 120 };
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261017g", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261017g", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -160,7 +145,6 @@
     $("#repoIn").value = p.demo ? p.demo.repo || "" : "";
     $("#hintIn").value = p.demo ? p.demo.target_hint || "" : "";
     $("#upbar").style.width = "0";
-    $(".models").hidden = !live;   // model and budget settings belong to a connected runner
     $("#formMsg").textContent = "";
     renderActions();
   }
@@ -333,7 +317,7 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017g", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017h", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     await loadJobs();

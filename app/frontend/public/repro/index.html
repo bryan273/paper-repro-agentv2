@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261017g">
+<link rel="stylesheet" href="style.css?v=20261017h">
 <script src="vendor/pdf.min.js"></script>
 </head>
 <body>
@@ -48,15 +48,6 @@
             <label>Which result should it check? <span class="muted">optional</span><input id="hintIn" placeholder="e.g. Table 1, AG News accuracy"></label>
             <label id="keyLabel" hidden>Access key <span class="muted">needed to start a run on this runner</span><input id="keyIn" type="password" autocomplete="off" placeholder="ask the runner's owner"></label>
           </div>
-          <details class="models"><summary>Models and budget</summary>
-            <label>Same model for every agent<select id="allModel"></select></label>
-            <div id="roleModels" class="roles"></div>
-            <div class="budget">
-              <label>Max cost (¥)<input id="maxCost" type="number" step="1" value="15"></label>
-              <label>Max minutes<input id="maxMin" type="number" step="5" value="60"></label>
-              <label>Max steps<input id="maxSteps" type="number" step="5" value="120"></label>
-            </div>
-          </details>
           <div class="actions" id="pickedActions"></div>
           <p class="muted small" id="formMsg"></p>
           <div class="kitbox" id="kitBox"></div>
@@ -198,8 +189,8 @@
 </main>
 
 <dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
-<script src="i18n.js?v=20261017g"></script>
-<script src="app.js?v=20261017g"></script>
-<script src="kit.js?v=20261017g"></script>
+<script src="i18n.js?v=20261017h"></script>
+<script src="app.js?v=20261017h"></script>
+<script src="kit.js?v=20261017h"></script>
 </body>
 </html>

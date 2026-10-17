@@ -160,10 +160,10 @@
     if (!paper) { out.innerHTML = `<p class="muted small">${esc(T("Pick a paper first."))}</p>`; return; }
     const title = ($("#pickedTitle").textContent || "").trim();
     const lang = window.getLang ? window.getLang() : "en";
-    $("#stepsBtn").disabled = true; $("#kitBtn").disabled = true;
+    $("#stepsBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017g", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017h", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
@@ -195,7 +195,7 @@
       watch(j.id, { token: j.token, paper, lang, tries: 0, last: Date.now() - 30000 });
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
-    } finally { $("#stepsBtn").disabled = false; $("#kitBtn").disabled = false; }
+    } finally { $("#stepsBtn").disabled = false; }
   }
 
   // Reader, Router and Planner run one after the other: each is its own short request on the server,
@@ -282,11 +282,10 @@
     const host = $("#kitBox");
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
-      <p class="muted small">${esc(T("Get a link that holds the full instructions. Give it to any agent; the run happens on your own machine."))}</p>
+      <p class="muted small">${esc(T("We read and plan the paper for you (about 2 minutes, instant if this paper was done before). You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
       <div class="kitbtns"><button class="primary" type="button" id="stepsBtn">${esc(T("Get the link"))}</button>
-      <button class="linkish" type="button" id="kitBtn">${esc(T("Skip: my own agent does steps 1 to 3"))}</button></div><div id="kitOut"></div>`;
+      </div><div id="kitOut"></div>`;
     $("#stepsBtn").onclick = () => makeKit("auto");
-    $("#kitBtn").onclick = () => makeKit("skip");
     host.addEventListener("click", async (e) => {
       const b = e.target.closest("[data-copy]");
       if (!b) return;
