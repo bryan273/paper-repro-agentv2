@@ -34,6 +34,9 @@
     p("");
     p(`- Paper: ${paper}  (arXiv id, or a PDF URL; fetch the PDF yourself)`);
     p(`- Job id: ${job}`);
+    const repo = ($("#repoIn") && $("#repoIn").value || "").trim(), hint = ($("#hintIn") && $("#hintIn").value || "").trim();
+    if (repo) p(`- Code repository the user points to: ${repo}`);
+    if (hint) p(`- Result the user wants checked (honour it when choosing the match target): ${hint}`);
     p(`- Report language for summaries: ${lang === "zh" ? "Chinese (中文); keep code, file names and numbers as they are" : "English"}`);
     p(`- Hardware assumption: CPU only. Do not plan work that needs a GPU or days of training. If the paper needs one, scale down openly and say so.`);
     p("");
@@ -160,7 +163,7 @@
     $("#stepsBtn").disabled = true; $("#kitBtn").disabled = true;
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017f", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017g", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
