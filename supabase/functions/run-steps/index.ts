@@ -31,10 +31,11 @@ async function db(path: string, init: RequestInit = {}) {
 
 async function post(job: string, kind: string, payload: unknown) {
   await db("repro_events", { method: "POST", body: JSON.stringify({ job_id: job, kind, agent: "viewer-steps-1-3", payload }) });
-  await db(`repro_jobs?id=eq.${job}`, {
-    method: "PATCH",
-    body: JSON.stringify({ status: "running", agent: "viewer-steps-1-3", updated_at: new Date().toISOString() }),
-  });
+  // a new job starts as "waiting"; after that the server only notes activity, so it can never reopen a finished job
+  // or replace the name of the agent that did the work
+  const now = new Date().toISOString();
+  await db(`repro_jobs?id=eq.${job}&status=eq.waiting`, { method: "PATCH", body: JSON.stringify({ status: "running", agent: "viewer-steps-1-3", updated_at: now }) });
+  await db(`repro_jobs?id=eq.${job}`, { method: "PATCH", body: JSON.stringify({ updated_at: now }) });
 }
 
 function arxivId(s: string): string | null {

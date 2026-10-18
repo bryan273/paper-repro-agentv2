@@ -163,7 +163,7 @@
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017k", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017m", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
@@ -260,6 +260,7 @@
             : p.text || p.summary || p.claim || (p.verdict ? p.verdict : "") || "";
           return `<div class="muted small"><span class="mono">${esc(e.kind)}</span> ${esc(String(txt).slice(0, 220))}</div>`;
         }).join("");
+        html += `<div><button class="linkish" type="button" data-openjob="${job}">${esc(T("Open the full run page (history, result, code)"))}</button></div>`;
         box.innerHTML = html;
         // the page asks for the audit itself when a result is in, and again if the model gateway let it down
         if (s.status === "done" && ctx) {
@@ -302,6 +303,8 @@
       <div class="kitbtns" id="kitBtns"></div><div id="kitOut"></div>`;
     setState(false);
     host.addEventListener("click", (e) => {
+      const oj = e.target.closest("[data-openjob]");
+      if (oj && window.openJob) { window.openJob(oj.dataset.openjob); return; }
       const el = e.target.closest("textarea.kitprompt, #kitLink");
       if (el) { el.select(); return; }
       const b = e.target.closest("[data-copy-from]");

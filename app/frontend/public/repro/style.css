@@ -366,3 +366,15 @@ table.cmp ul{margin:4px 0 0;padding-left:16px;font:11.5px var(--mono)}
 .abs{margin:6px 0}.abs summary{cursor:pointer;font-size:12.5px;color:var(--muted)}.abs p{font-size:13px;line-height:1.5;margin:6px 0}
 
 .kitprompt{width:100%;box-sizing:border-box;resize:none;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:13px/1.45 var(--mono,monospace);cursor:text}
+
+#jobView{max-width:1000px;margin:0 auto;padding:92px 16px 60px;display:grid;gap:14px}
+#jobBody{display:grid;gap:14px}
+.jobsum{font-size:13.5px;line-height:1.55;margin:10px 0}
+.jobpre{max-height:360px;overflow:auto;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font:12px/1.45 var(--mono,monospace);white-space:pre-wrap;overflow-wrap:anywhere}
+.jobtab{border-collapse:collapse;font-size:12.5px;width:100%}.jobtab td{padding:5px 8px;border-top:1px solid var(--line);vertical-align:top}
+.jobtl{display:grid;gap:2px;max-height:520px;overflow:auto}
+.jobev{display:grid;grid-template-columns:140px 70px 110px minmax(0,1fr);gap:8px;font-size:12.5px;padding:4px 0;border-top:1px solid var(--line)}
+.jobev .jk{font-weight:600}.jobev .ja{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jobev.err .jx{color:#e08a8a}
+.jobpulse{color:var(--acc)}
+@media (max-width:760px){.jobev{grid-template-columns:1fr}}
+details>summary{cursor:pointer;margin:6px 0}
