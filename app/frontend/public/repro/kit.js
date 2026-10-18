@@ -163,7 +163,7 @@
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017i", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017j", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
@@ -185,10 +185,11 @@
         : reused && reused.reused ? `${T("Steps 1 to 3 were reused from an earlier run of this paper")} (${esc(String(reused.at || "").slice(0, 10))}).`
         : stepsOk ? T("Steps 1 to 3 are done.") : T("Steps 1 to 3 did not finish; your agent will do the missing ones.");
       out.innerHTML = `<div class="kitlink"><p class="small"><b>${note}</b>${reused && reused.reused ? ` <button class="linkish" type="button" id="rerunSteps">${esc(T("Run steps 1 to 3 again"))}</button>` : ""}</p>
-          <label>${esc(T("Kit link"))}<input readonly value="${esc(link)}" id="kitLink"></label>
-          <div class="kitbtns"><button class="ghost" type="button" data-copy="${esc(link)}">${esc(T("Copy the link"))}</button>
-          <button class="ghost" type="button" data-copy="${esc(prompt)}">${esc(T("Copy as a prompt"))}</button>
+          <label>${esc(T("Paste this into your agent"))}<textarea readonly rows="3" id="kitPrompt" class="kitprompt">${esc(prompt)}</textarea></label>
+          <div class="kitbtns"><button class="primary" type="button" data-copy-from="kitPrompt">${esc(T("Copy this prompt"))}</button>
+          <button class="ghost" type="button" data-copy-from="kitLink">${esc(T("Copy only the link"))}</button>
           <a class="ghost" href="${esc(link)}" target="_blank" rel="noopener">${esc(T("Open the kit"))}</a></div>
+          <label class="muted small">${esc(T("Kit link"))}<input readonly value="${esc(link)}" id="kitLink"></label>
           <p class="muted small">${esc(T("Paste it into Claude Code, Codex or any agent that can read a URL and run commands. It does the experiment on your machine and posts the result back here."))}</p>
           <div id="kitStatus" class="kitstatus"></div></div>`;
       const rr = $("#rerunSteps"); if (rr) rr.onclick = () => makeKit("fresh");
@@ -300,12 +301,33 @@
       <p class="muted small">${esc(T("We read and plan the paper for you. You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
       <div class="kitbtns" id="kitBtns"></div><div id="kitOut"></div>`;
     setState(false);
-    host.addEventListener("click", async (e) => {
-      const b = e.target.closest("[data-copy]");
+    host.addEventListener("click", (e) => {
+      const el = e.target.closest("textarea.kitprompt, #kitLink");
+      if (el) { el.select(); return; }
+      const b = e.target.closest("[data-copy-from]");
       if (!b) return;
-      try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = T("Copied"); }
-      catch (x) { const i = $("#kitLink"); if (i) { i.select(); } }
+      const src = document.getElementById(b.dataset.copyFrom);
+      if (src) copyText(src.value, src, b);
     });
+  }
+
+  // Copy that also works inside an embedded page, where the clipboard API can be blocked:
+  // try it first, fall back to a selected text field and the old copy command, and always select the text
+  async function copyText(text, field, btn) {
+    const label = btn.textContent;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+    if (!ok) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+        document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+        ok = document.execCommand("copy"); ta.remove();
+      } catch (e) {}
+    }
+    field.focus(); field.select();   // so Ctrl+C works even if both ways were blocked
+    btn.textContent = ok ? T("Copied") : T("Press Ctrl+C to copy");
+    setTimeout(() => { btn.textContent = label; }, 2500);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

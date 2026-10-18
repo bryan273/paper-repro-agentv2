@@ -364,3 +364,5 @@ table.cmp ul{margin:4px 0 0;padding-left:16px;font:11.5px var(--mono)}
 .pstat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0;padding:8px 12px;border-radius:9px;border:1px solid var(--line)}
 .pstat.done{border-color:rgba(90,190,130,.5)}.pstat.todo{border-color:rgba(217,164,65,.5)}
 .abs{margin:6px 0}.abs summary{cursor:pointer;font-size:12.5px;color:var(--muted)}.abs p{font-size:13px;line-height:1.5;margin:6px 0}
+
+.kitprompt{width:100%;box-sizing:border-box;resize:none;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:13px/1.45 var(--mono,monospace);cursor:text}

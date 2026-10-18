@@ -90,6 +90,7 @@
     "Read and plan the paper again first (about 2 minutes)": "先重新阅读并规划论文（约 2 分钟）",
     "Get the link (reads and plans the paper first, about 2 minutes)": "获取链接（先阅读并规划论文，约 2 分钟）",
     "We read and plan the paper for you. You then get one link to paste into any agent. The experiment runs on your own machine.": "我们为你阅读并规划论文，然后给你一个链接，粘贴到任意智能体即可。实验在你自己的机器上运行。",
+    "Paste this into your agent": "把这段话粘贴给你的智能体", "Copy this prompt": "复制这段提示词", "Copy only the link": "只复制链接", "Press Ctrl+C to copy": "请按 Ctrl+C 复制",
     "Make the link": "生成链接", "Run steps 1 to 3 here, then make the link": "先在这里运行第 1 到 3 步，再生成链接", "Only make the link (my agent does steps 1 to 3)": "只生成链接（第 1 到 3 步由我的智能体完成）",
     "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",
