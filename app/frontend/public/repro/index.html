@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261017n">
+<link rel="stylesheet" href="style.css?v=20261017o">
 <script src="vendor/pdf.min.js"></script>
 </head>
 <body>
@@ -94,7 +94,8 @@
 
     <div id="agentRunsSec" hidden>
       <h2 class="sec">Runs from users' own agents</h2>
-      <div class="runs" id="agentRuns"></div>
+      <div class="runs" id="agentRuns"><p class="muted small">No runs from users' agents yet.</p></div>
+      <button class="ghost" id="historyBtn" type="button">See the full history, day by day</button>
     </div>
 
     <h2 class="sec">Recent runs</h2>
@@ -200,9 +201,9 @@
 </main>
 
 <dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
-<script src="i18n.js?v=20261017n"></script>
-<script src="app.js?v=20261017n"></script>
-<script src="kit.js?v=20261017n"></script>
-<script src="jobs.js?v=20261017n"></script>
+<script src="i18n.js?v=20261017o"></script>
+<script src="app.js?v=20261017o"></script>
+<script src="kit.js?v=20261017o"></script>
+<script src="jobs.js?v=20261017o"></script>
 </body>
 </html>

@@ -34,7 +34,7 @@
     if (!box) return;
     try {
       const rows = await api("repro_jobs?select=id,arxiv_id,title,status,verdict,agent,model,requested_by,created_at,updated_at&agent=not.in.(viewer-steps-1-3,recorded-run-seed)&order=updated_at.desc&limit=20");
-      $("#agentRunsSec").hidden = !rows.length;
+      $("#agentRunsSec").hidden = false;
       box.innerHTML = rows.map((r) => `<div class="runrow" data-job="${esc(r.id)}">
           <span class="t">${esc(r.title || r.arxiv_id)}</span>
           <span class="m">${badge(r.verdict, r.status)} ${esc(r.agent || "")}${r.model ? " · " + esc(r.model) : ""}${r.requested_by ? " · " + esc(r.requested_by) : ""} · ${esc(clock(r.created_at))}</span></div>`).join("");
@@ -183,6 +183,62 @@
     } catch (e) { $("#jobBody").innerHTML = `<p class="muted small">${esc(T("Could not load this run:"))} ${esc(e.message)}</p>`; }
   }
 
+  // ------------------------------------------------------------------ full history, grouped by day
+  let H = { rows: [], q: "", verdict: "", agent: "", src: "" };
+  const dayKey = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  function dayLabel(key) {
+    const t = new Date(); const today = dayKey(t); t.setDate(t.getDate() - 1);
+    if (key === today) return T("Today");
+    if (key === dayKey(t)) return T("Yesterday");
+    if (key === "0000") return T("Earlier sample runs");
+    const [y, m, d] = key.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString([], { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+  async function openHistory() {
+    clearInterval(timer);
+    history.replaceState(null, "", "?history=1");
+    show(true);
+    $("#jobBody").innerHTML = `<p class="muted small">${esc(T("Loading..."))}</p>`;
+    try {
+      const jobs = await api("repro_jobs?select=id,arxiv_id,title,status,verdict,agent,model,requested_by,created_at,updated_at&agent=not.in.(viewer-steps-1-3,recorded-run-seed)&order=created_at.desc&limit=500");
+      let rec = [];
+      try { rec = await (await fetch("demo-runs/index.json?v=" + Date.now(), { cache: "no-store" })).json(); } catch (e) {}
+      const rows = jobs.map((r) => ({ kind: "job", id: r.id, when: new Date(r.created_at), title: r.title || r.arxiv_id, verdict: r.verdict, status: r.status, who: [r.agent, r.model, r.requested_by].filter(Boolean).join(" · "), agent: r.agent || "" }));
+      for (const r of rec) {
+        const m = String(r.id).match(/^([0-9]{4})([0-9]{2})([0-9]{2})-([0-9]{2})([0-9]{2})([0-9]{2})/);
+        rows.push({ kind: "rec", id: r.id, file: r.file, pdf: r.pdf || "", when: m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]) : null, title: r.title || r.paper, verdict: r.verdict, status: r.status,
+          who: T("recorded run") + (r.seconds ? " · " + Math.round(r.seconds / 60) + " min" : ""), agent: "recorded run" });
+      }
+      rows.sort((a, b) => (b.when ? b.when.getTime() : 0) - (a.when ? a.when.getTime() : 0));
+      H = { rows, q: "", verdict: "", agent: "", src: "" };
+      const agents = Array.from(new Set(rows.map((r) => r.agent).filter(Boolean))).sort();
+      $("#jobBody").innerHTML = `<div class="runhead"><div class="rh-left"><h1>${esc(T("Run history"))}</h1>
+          <p class="muted small">${esc(T("Every run, newest first, grouped by day: runs on users' own agents and the recorded runs of the built-in agent."))}</p></div></div>
+        <div class="card histf">
+          <label>${esc(T("Paper or text"))}<input id="hq" type="search" autocomplete="off"></label>
+          <label>${esc(T("Result"))}<select id="hv"><option value="">${esc(T("All results"))}</option>${Object.keys(VERDICT).map((k) => `<option value="${k}">${esc(T(VERDICT[k]))}</option>`).join("")}<option value="_open">${esc(T("Not finished"))}</option></select></label>
+          <label>${esc(T("Agent"))}<select id="ha"><option value="">${esc(T("All agents"))}</option>${agents.map((a) => `<option>${esc(a)}</option>`).join("")}</select></label>
+        </div><div id="histList"></div>`;
+      const upd = () => { H.q = $("#hq").value.trim().toLowerCase(); H.verdict = $("#hv").value; H.agent = $("#ha").value; histRender(); };
+      $("#hq").oninput = upd; $("#hv").onchange = upd; $("#ha").onchange = upd;
+      histRender();
+    } catch (e) { $("#jobBody").innerHTML = `<p class="muted small">${esc(T("Could not load the history:"))} ${esc(e.message)}</p>`; }
+  }
+  function histRender() {
+    const rows = H.rows.filter((r) => (!H.q || (r.title + " " + r.who).toLowerCase().includes(H.q))
+      && (!H.verdict || (H.verdict === "_open" ? !r.verdict : r.verdict === H.verdict)) && (!H.agent || r.agent === H.agent));
+    const groups = new Map();
+    for (const r of rows) { const k = r.when ? dayKey(r.when) : "0000"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
+    $("#histList").innerHTML = rows.length ? Array.from(groups).map(([k, g]) => {
+      const c = {}; g.forEach((r) => { const v = r.verdict || "open"; c[v] = (c[v] || 0) + 1; });
+      return `<section class="card histday"><h2 class="cardh">${esc(dayLabel(k))} <span class="muted small">· ${g.length} ${esc(T(g.length === 1 ? "run" : "runs"))}</span>
+        <span class="histsum">${Object.entries(c).map(([v, n]) => `<span class="badge ${v === "open" ? "" : esc(v)}">${n} ${esc(T(VERDICT[v] || "in progress"))}</span>`).join(" ")}</span></h2>
+        ${g.map((r) => `<div class="runrow" ${r.kind === "job" ? `data-job="${esc(r.id)}"` : `data-rec="${esc(r.file)}" data-pdf="${esc(r.pdf)}"`}>
+          <span class="t"><span class="mono muted">${r.when ? esc(r.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })) : "--:--"}</span> ${esc(r.title)}</span>
+          <span class="m">${badge(r.verdict, r.status)} ${esc(r.who)}</span></div>`).join("")}</section>`;
+    }).join("") : `<p class="muted small">${esc(T("No runs match."))}</p>`;
+  }
+
   function init() {
     const sec = $("#jobView");
     if (!sec) return;
@@ -198,9 +254,17 @@
       a.download = f.payload.name || "file.txt"; a.click(); URL.revokeObjectURL(a.href);
     });
     window.openJob = openJob;
+    sec.addEventListener("click", (e) => {
+      const j = e.target.closest("#histList [data-job]");
+      if (j) return openJob(j.dataset.job);
+      const r = e.target.closest("#histList [data-rec]");
+      if (r) location.href = "?replay=" + encodeURIComponent(r.dataset.rec) + (r.dataset.pdf ? "&pdf=" + encodeURIComponent(r.dataset.pdf) : "");
+    });
+    const hb = $("#historyBtn"); if (hb) hb.onclick = openHistory;
     loadList();
-    const id = new URLSearchParams(location.search).get("job");
+    const qs = new URLSearchParams(location.search), id = qs.get("job");
     if (id) setTimeout(() => openJob(id), 0);
+    else if (qs.get("history")) setTimeout(openHistory, 0);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

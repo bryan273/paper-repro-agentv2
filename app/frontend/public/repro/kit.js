@@ -167,7 +167,7 @@
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017n", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017o", { cache: "no-store" })).text();
       const by = (($("#kitBy") && $("#kitBy").value) || "").trim();
       try { localStorage.setItem("kitBy", by); } catch (e) {}
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang, p_by: by });
