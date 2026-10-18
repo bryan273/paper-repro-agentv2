@@ -250,6 +250,11 @@
   let lang = "en";
   try { lang = localStorage.getItem("lang") || (/^zh/i.test(navigator.language) ? "zh" : "en"); } catch (e) {}
   const orig = new WeakMap();
+  const wrote = new WeakMap();   // what this file last wrote into a text node, so its own change is not taken for the app's
+  const REV = {};
+  for (const k in ZH) if (!(ZH[k] in REV)) REV[ZH[k]] = k;
+  // text the app rendered already in Chinese (through window.t) gets its English source back
+  const en = (s) => { const k = s.trim(); return k && REV[k] ? s.replace(k, REV[k]) : s; };
   const tr = (s) => {
     const k = s.trim();
     if (!k) return null;
@@ -259,17 +264,18 @@
   };
   function node(n) {
     if (n.nodeType === 3) {
-      if (!orig.has(n)) orig.set(n, n.nodeValue);
+      if (!orig.has(n)) orig.set(n, en(n.nodeValue));
       const o = orig.get(n);
       const z = lang === "zh" ? tr(o) : null;
       const want = z == null ? o : z;
       if (n.nodeValue !== want) n.nodeValue = want;
+      wrote.set(n, n.nodeValue);
     } else if (n.nodeType === 1) {
       if (/^(SCRIPT|STYLE|CANVAS|PRE|CODE|TEXTAREA)$/.test(n.tagName)) return;
       for (const a of ["placeholder", "aria-label", "title"]) {
         if (!n.hasAttribute(a) && !n.hasAttribute("data-en-" + a)) continue;
         const key = "data-en-" + a;
-        if (!n.hasAttribute(key)) n.setAttribute(key, n.getAttribute(a));
+        if (!n.hasAttribute(key)) n.setAttribute(key, en(n.getAttribute(a)));
         const o = n.getAttribute(key), z = lang === "zh" ? tr(o) : null;
         n.setAttribute(a, z == null ? o : z);
       }
@@ -282,7 +288,7 @@
     busy = true;
     for (const m of muts) {
       m.addedNodes.forEach((a) => node(a));
-      if (m.type === "characterData") { orig.delete(m.target); node(m.target); }
+      if (m.type === "characterData" && wrote.get(m.target) !== m.target.nodeValue) { orig.delete(m.target); node(m.target); }
     }
     busy = false;
   });
@@ -291,6 +297,7 @@
     document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
     const b = document.getElementById("langBtn");
     if (b) b.textContent = lang === "zh" ? "EN" : "中文";
+    document.dispatchEvent(new CustomEvent("langchange", { detail: lang }));
   }
   window.t = (s) => (lang === "zh" ? tr(s) || s : s);
   window.getLang = () => lang;
