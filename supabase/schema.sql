@@ -138,3 +138,52 @@ begin
 end $$;
 revoke all on function public.reuse_steps(uuid, text) from public;
 grant execute on function public.reuse_steps(uuid, text) to anon, authenticated;
+
+-- who ran it and on which model, so several runs of one paper can be told apart
+alter table public.repro_jobs add column if not exists model text;
+alter table public.repro_jobs add column if not exists requested_by text;
+grant select on public.repro_jobs to anon, authenticated;
+
+drop function if exists public.create_job(text, text, text);
+create or replace function public.create_job(p_arxiv text, p_title text default null, p_lang text default 'en', p_by text default null)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare
+  j uuid;
+  t text := encode(gen_random_bytes(18), 'hex');
+begin
+  if p_arxiv is null or length(p_arxiv) > 200 then raise exception 'bad paper id'; end if;
+  if (select count(*) from repro_jobs where created_at > now() - interval '1 hour') > 300 then
+    raise exception 'too many jobs, try again later';
+  end if;
+  insert into repro_jobs (arxiv_id, title, lang, requested_by)
+    values (left(p_arxiv, 200), left(p_title, 400), case when p_lang = 'zh' then 'zh' else 'en' end, nullif(left(trim(p_by), 80), ''))
+    returning id into j;
+  insert into repro_job_tokens (job_id, token) values (j, t);
+  return json_build_object('id', j, 'token', t);
+end $$;
+revoke all on function public.create_job(text, text, text, text) from public;
+grant execute on function public.create_job(text, text, text, text) to anon, authenticated;
+
+create or replace function public.post_event(p_job uuid, p_token text, p_kind text, p_payload jsonb, p_agent text default null)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare
+  ok boolean;
+  v text;
+  m text;
+begin
+  select true into ok from repro_job_tokens where job_id = p_job and token = p_token;
+  if not coalesce(ok, false) then raise exception 'bad job or token'; end if;
+  if p_kind not in ('contract', 'route', 'plan', 'progress', 'file', 'result', 'note') then raise exception 'bad kind'; end if;
+  if length(p_payload::text) > 400000 then raise exception 'payload too large'; end if;
+  insert into repro_events (job_id, kind, agent, payload) values (p_job, p_kind, left(p_agent, 80), p_payload);
+  -- the model the agent says it runs on, taken from agent_info or a plain "model" field
+  m := coalesce(p_payload #>> '{agent_info,model}', p_payload ->> 'model');
+  if p_kind = 'result' then
+    v := p_payload ->> 'verdict';
+    update repro_jobs set status = 'done', verdict = v, agent = left(p_agent, 80), model = coalesce(left(m, 120), model), updated_at = now() where id = p_job;
+  else
+    update repro_jobs set status = case when status = 'waiting' then 'running' else status end,
+      agent = coalesce(left(p_agent, 80), agent), model = coalesce(model, left(m, 120)), updated_at = now() where id = p_job;
+  end if;
+  return json_build_object('ok', true);
+end $$;

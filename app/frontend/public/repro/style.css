@@ -378,3 +378,8 @@ table.cmp ul{margin:4px 0 0;padding-left:16px;font:11.5px var(--mono)}
 .jobpulse{color:var(--acc)}
 @media (max-width:760px){.jobev{grid-template-columns:1fr}}
 details>summary{cursor:pointer;margin:6px 0}
+
+.kitby{display:grid;gap:4px;font-size:12.5px;color:var(--muted);margin:4px 0}
+.kitby input{padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;max-width:320px}
+.pjobs{display:grid;gap:4px;flex-basis:100%;margin-top:4px;font-size:12.5px}
+.pjob{text-align:left}

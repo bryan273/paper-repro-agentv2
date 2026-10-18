@@ -33,11 +33,11 @@
     const box = $("#agentRuns");
     if (!box) return;
     try {
-      const rows = await api("repro_jobs?select=id,arxiv_id,title,status,verdict,agent,created_at,updated_at&agent=not.in.(viewer-steps-1-3,recorded-run-seed)&order=updated_at.desc&limit=20");
+      const rows = await api("repro_jobs?select=id,arxiv_id,title,status,verdict,agent,model,requested_by,created_at,updated_at&agent=not.in.(viewer-steps-1-3,recorded-run-seed)&order=updated_at.desc&limit=20");
       $("#agentRunsSec").hidden = !rows.length;
       box.innerHTML = rows.map((r) => `<div class="runrow" data-job="${esc(r.id)}">
           <span class="t">${esc(r.title || r.arxiv_id)}</span>
-          <span class="m">${badge(r.verdict, r.status)} ${esc(r.agent || "")} · ${esc(ago(r.updated_at))} ${esc(T("ago"))}</span></div>`).join("");
+          <span class="m">${badge(r.verdict, r.status)} ${esc(r.agent || "")}${r.model ? " · " + esc(r.model) : ""}${r.requested_by ? " · " + esc(r.requested_by) : ""} · ${esc(clock(r.created_at))}</span></div>`).join("");
       box.onclick = (e) => { const row = e.target.closest("[data-job]"); if (row) openJob(row.dataset.job); };
     } catch (e) { $("#agentRunsSec").hidden = true; }
   }
@@ -67,6 +67,24 @@
   const kv = (rows) => `<dl class="kv wide">${rows.filter((r) => r[1] != null && r[1] !== "").map(([k, v]) => `<dt>${esc(T(k))}</dt><dd>${v}</dd>`).join("")}</dl>`;
   const item = (x) => (typeof x === "string" ? x : x && (x.text || x.statement || x.description) ? (x.id ? x.id + ": " : "") + (x.text || x.statement || x.description) : pretty(x));
   const list = (a) => (a && a.length ? `<ul>${a.map((x) => `<li>${esc(item(x))}</li>`).join("")}</ul>` : "");
+
+  function runInfoCard(j, ev, result) {
+    const first = ev.find((e) => e.agent && e.agent !== "viewer-steps-1-3" && e.agent !== "recorded-run-seed" && !String(e.agent).startsWith("reused-from"));
+    const info = (result && result.payload && result.payload.agent_info) || (ev.map((e) => e.payload && e.payload.agent_info).filter(Boolean)[0]) || {};
+    const started = first ? first.created_at : null;
+    const secs = started && result ? Math.round((new Date(result.created_at) - new Date(started)) / 1000) : null;
+    const dur = secs == null ? "" : secs < 120 ? secs + " s" : Math.round(secs / 60) + " min";
+    return `<section class="card"><h2 class="cardh">${esc(T("Who ran it"))}</h2>${kv([
+      ["Agent app", esc(info.tool || j.agent || "")],
+      ["Model", esc(j.model || info.model || T("not reported"))],
+      ["Machine", esc([info.os, info.python ? "Python " + info.python : ""].filter(Boolean).join(" · "))],
+      ["Requested by", esc(j.requested_by || "")],
+      ["Link created", esc(clock(j.created_at))],
+      ["Agent started", started ? esc(clock(started)) : ""],
+      ["Result posted", result ? esc(clock(result.created_at)) : ""],
+      ["Agent working time", esc(dur)],
+    ])}</section>`;
+  }
 
   function resultCard(res) {
     if (!res) return "";
@@ -158,6 +176,7 @@
           <h1>${esc(j.title || j.arxiv_id)}</h1>
           <div class="badges">${badge(j.verdict, j.status)} ${j.agent && j.agent !== "viewer-steps-1-3" ? `<span class="badge">${esc(j.agent)}</span>` : ""}</div>
           <p class="muted small">${esc(T("Started"))} ${esc(clock(j.created_at))} · ${esc(T("last activity"))} ${esc(idle)} ${esc(T("ago"))}${live ? ` · <span class="jobpulse">${esc(T("updating"))}</span>` : ""}</p></div></div>
+        ${runInfoCard(j, ev, result)}
         ${result ? resultCard(result) : `<section class="card"><h2 class="cardh">${esc(T("Result"))}</h2><p class="muted small">${esc(T(j.status === "waiting" ? "No agent has started on this run yet." : "The agent is still working. The history below updates by itself."))}</p></section>`}
         ${result ? auditCard(ev) : ""}${filesCard(ev)}${stepsCard(ev)}${timelineCard(ev)}`;
       if (!live) clearInterval(timer);

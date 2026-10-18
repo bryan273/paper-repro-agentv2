@@ -21,7 +21,7 @@
     return j;
   }
 
-  function kitText(job, token, paper, title, lang, protocol) {
+  function kitText(job, token, paper, title, lang, protocol, by) {
     const rest = `${SB_URL}/rest/v1/rpc/post_event`;
     const L = [];
     const p = (s) => L.push(s == null ? "" : s);
@@ -34,6 +34,7 @@
     p("");
     p(`- Paper: ${paper}  (arXiv id, or a PDF URL; fetch the PDF yourself)`);
     p(`- Job id: ${job}`);
+    if (by) p(`- Requested by: ${by}`);
     const repo = ($("#repoIn") && $("#repoIn").value || "").trim(), hint = ($("#hintIn") && $("#hintIn").value || "").trim();
     if (repo) p(`- Code repository the user points to: ${repo}`);
     if (hint) p(`- Result the user wants checked (honour it when choosing the match target): ${hint}`);
@@ -101,6 +102,8 @@
     p("    return urllib.request.urlopen(req, timeout=60).read()");
     p("```");
     p("");
+    p("Say who is running this, so every run of this paper can be told apart later: use your tool name as `p_agent` in every call, and put `agent_info` (tool, exact model name, operating system, Python version) in your FIRST progress event and again in the result. If you do not know your model name, write unknown; never guess.");
+    p("");
     p("Post these, in this order (the payload is free-form JSON, keep it under 300 KB):");
     p("");
     p("1. `contract` after the Reader: the claim contract JSON.");
@@ -110,6 +113,7 @@
     p("");
     p("```json");
     p("{");
+    p('  "agent_info": {"tool": "the app you are, e.g. Claude Code, Codex, WorkBuddy", "model": "the exact model name you run on, or unknown", "os": "...", "python": "..."},');
     p('  "verdict": "reproduced | partially_reproduced | not_reproduced | could_not_run",');
     p('  "claim": "the exact result you tried to reproduce (table, dataset, metric)",');
     p('  "paper_value": 0.0, "measured": 0.0, "tolerance": 0.0, "tolerance_rule": 1, "contract_tolerance": null,');
@@ -163,8 +167,10 @@
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017m", { cache: "no-store" })).text();
-      const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
+      const protocol = await (await fetch("kit-protocol.md?v=20261017n", { cache: "no-store" })).text();
+      const by = (($("#kitBy") && $("#kitBy").value) || "").trim();
+      try { localStorage.setItem("kitBy", by); } catch (e) {}
+      const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang, p_by: by });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
       if (mode === "fresh" || (mode === "auto" && !(reused && reused.reused))) {
@@ -176,7 +182,7 @@
         setStage("planner", "done");
       }
       setStage("publish", "now");
-      const text = kitText(j.id, j.token, paper, title, lang, protocol);
+      const text = kitText(j.id, j.token, paper, title, lang, protocol, by);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
       if (!up.ok) throw new Error("upload " + up.status);
       const link = `${SB_URL}/storage/v1/object/public/kits/${j.id}.md`;
@@ -300,7 +306,9 @@
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
       <p class="muted small">${esc(T("We read and plan the paper for you. You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
+      <label class="kitby">${esc(T("Your name (optional, shown on the run)"))}<input id="kitBy" maxlength="80" autocomplete="name"></label>
       <div class="kitbtns" id="kitBtns"></div><div id="kitOut"></div>`;
+    try { $("#kitBy").value = localStorage.getItem("kitBy") || ""; } catch (e) {}
     setState(false);
     host.addEventListener("click", (e) => {
       const oj = e.target.closest("[data-openjob]");

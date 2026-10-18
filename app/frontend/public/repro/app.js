@@ -56,8 +56,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261017m", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261017m", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261017n", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261017n", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -290,7 +290,7 @@
     const badge = (v, st) => `<span class="badge ${esc(v || "")}">${esc(VERDICT[v] || st || v || "")}</span>`;
     if (window.kitSetState) window.kitSetState(!!(recs.length || jobs.length));
     $("#pickedStatus").innerHTML = (recs.length || jobs.length
-      ? `<div class="pstat done"><b>Already reproduced</b> ${recs.map((r) => `<button type="button" class="linkish" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}">${badge(r.verdict, r.status)}</button>`).join(" ")}${jobs.map((j) => badge(j.verdict)).join(" ")}
+      ? `<div class="pstat done"><b>Already reproduced</b> ${recs.map((r) => `<button type="button" class="linkish" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}">${badge(r.verdict, r.status)}</button>`).join(" ")}</div>${jobs.length ? `<div class="pjobs"><b>${jobs.length > 1 ? jobs.length + " " + t("runs on users' own agents") : t("Run on a user's own agent")}</b>${jobs.map((j) => `<button type="button" class="linkish pjob" data-job="${esc(j.id)}">${badge(j.verdict)} ${esc(j.agent || "")}${j.model ? " · " + esc(j.model) : ""}${j.requested_by ? " · " + esc(j.requested_by) : ""} · ${esc(new Date(j.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }))}</button>`).join("")}</div>` : ""}<div>
           <span class="muted small">Open a recorded run, or get the link below to run it again on your own agent.</span></div>`
       : `<div class="pstat todo"><b>Not reproduced yet</b> <span class="muted small">Get the link below, give it to your agent, and the result is saved here.</span></div>`)
       + (p.summary ? `<details class="abs"><summary>Abstract</summary><p>${esc(p.summary)}</p></details>` : "");
@@ -306,7 +306,7 @@
   const doneFor = (id) => recsFor(id).length + (jobDone[id] || []).length;
   async function loadJobs() {
     try {
-      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&or=(agent.is.null,agent.neq.recorded-run-seed)&select=arxiv_id,verdict", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&or=(agent.is.null,agent.neq.recorded-run-seed)&select=id,arxiv_id,verdict,agent,model,requested_by,created_at&order=created_at.desc", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
       jobDone = {};
       for (const j of r.ok ? await r.json() : []) { const id = arxivIdOf(j.arxiv_id); if (id) (jobDone[id] = jobDone[id] || []).push(j); }
     } catch (e) {}
@@ -319,7 +319,7 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017m", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017n", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     await loadJobs();
@@ -361,6 +361,8 @@
   $("#statusSel").onchange = browse;
   $("#titleFilter").oninput = () => { clearTimeout(browse.t); browse.t = setTimeout(browse, 200); };
   $("#pickedStatus").onclick = (e) => {
+    const jb = e.target.closest("[data-job]");
+    if (jb && window.openJob) return window.openJob(jb.dataset.job);
     const rf = e.target.closest("[data-rfile]");
     if (rf) openReplay(rf.dataset.rfile, rf.dataset.rpdf || null);
   };
