@@ -160,10 +160,10 @@
     if (!paper) { out.innerHTML = `<p class="muted small">${esc(T("Pick a paper first."))}</p>`; return; }
     const title = ($("#pickedTitle").textContent || "").trim();
     const lang = window.getLang ? window.getLang() : "en";
-    $("#stepsBtn").disabled = true;
+    Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261017h", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261017i", { cache: "no-store" })).text();
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang });
       let reused = null, stepsOk = true;
       if (mode === "auto") { try { reused = await rpc("reuse_steps", { p_job: j.id, p_token: j.token }); } catch (e) { reused = null; } }
@@ -195,7 +195,7 @@
       watch(j.id, { token: j.token, paper, lang, tries: 0, last: Date.now() - 30000 });
     } catch (e) {
       out.innerHTML = `<p class="muted small">${esc(T("Could not prepare the kit:"))} ${esc(e.message)}</p>`;
-    } finally { $("#stepsBtn").disabled = false; }
+    } finally { Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = false)); }
   }
 
   // Reader, Router and Planner run one after the other: each is its own short request on the server,
@@ -278,14 +278,28 @@
     pollTimer = setInterval(tick, 8000);
   }
 
+  // buttons depend on the paper: one already reproduced has stored steps 1 to 3 to reuse; a new one must run them first
+  function setState(reproduced) {
+    const box = $("#kitBtns"), out = $("#kitOut");
+    if (!box) return;
+    clearInterval(pollTimer);
+    if (out) out.innerHTML = "";
+    box.innerHTML = reproduced
+      ? `<button class="primary" type="button" id="stepsBtn">${esc(T("Get the link now (uses the saved steps 1 to 3)"))}</button>
+         <button class="ghost" type="button" id="freshBtn">${esc(T("Read and plan the paper again first (about 2 minutes)"))}</button>`
+      : `<button class="primary" type="button" id="stepsBtn">${esc(T("Get the link (reads and plans the paper first, about 2 minutes)"))}</button>`;
+    $("#stepsBtn").onclick = () => makeKit("auto");
+    const f = $("#freshBtn"); if (f) f.onclick = () => makeKit("fresh");
+  }
+  window.kitSetState = setState;
+
   function init() {
     const host = $("#kitBox");
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
-      <p class="muted small">${esc(T("We read and plan the paper for you (about 2 minutes, instant if this paper was done before). You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
-      <div class="kitbtns"><button class="primary" type="button" id="stepsBtn">${esc(T("Get the link"))}</button>
-      </div><div id="kitOut"></div>`;
-    $("#stepsBtn").onclick = () => makeKit("auto");
+      <p class="muted small">${esc(T("We read and plan the paper for you. You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
+      <div class="kitbtns" id="kitBtns"></div><div id="kitOut"></div>`;
+    setState(false);
     host.addEventListener("click", async (e) => {
       const b = e.target.closest("[data-copy]");
       if (!b) return;
