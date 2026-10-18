@@ -56,8 +56,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261017j", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261017j", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261017k", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261017k", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -306,7 +306,7 @@
   const doneFor = (id) => recsFor(id).length + (jobDone[id] || []).length;
   async function loadJobs() {
     try {
-      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&select=arxiv_id,verdict", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&or=(agent.is.null,agent.neq.recorded-run-seed)&select=arxiv_id,verdict", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
       jobDone = {};
       for (const j of r.ok ? await r.json() : []) { const id = arxivIdOf(j.arxiv_id); if (id) (jobDone[id] = jobDone[id] || []).push(j); }
     } catch (e) {}
@@ -319,7 +319,7 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017j", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261017k", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
     await loadJobs();
