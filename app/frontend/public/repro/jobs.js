@@ -172,7 +172,7 @@
       const audited = ev.some((e) => e.payload && e.payload.audit);
       const idle = ev.length ? ago(ev[ev.length - 1].created_at) : "--";
       const live = j.status === "running" || (j.status === "done" && !audited);
-      $("#jobBody").innerHTML = `<div class="runhead"><div class="rh-left"><div class="muted small mono">arXiv ${esc(j.arxiv_id)} · ${esc(T("run"))} ${esc(j.id.slice(0, 8))}</div>
+      $("#jobBody").innerHTML = `<div class="runhead"><div class="rh-left"><div class="muted small mono">arXiv ${esc(j.arxiv_id)} · ${esc(T("run id"))} ${esc(j.id.slice(0, 8))}</div>
           <h1>${esc(j.title || j.arxiv_id)}</h1>
           <div class="badges">${badge(j.verdict, j.status)} ${j.agent && j.agent !== "viewer-steps-1-3" ? `<span class="badge">${esc(j.agent)}</span>` : ""}</div>
           <p class="muted small">${esc(T("Started"))} ${esc(clock(j.created_at))} · ${esc(T("last activity"))} ${esc(idle)} ${esc(T("ago"))}${live ? ` · <span class="jobpulse">${esc(T("updating"))}</span>` : ""}</p></div></div>
