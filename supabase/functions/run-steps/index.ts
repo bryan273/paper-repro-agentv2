@@ -53,7 +53,9 @@ async function paperText(paper: string): Promise<string> {
   if (buf.length > 25_000_000) throw new Error("PDF too large");
   const pdf = await getDocumentProxy(buf);
   const { text } = await extractText(pdf, { mergePages: false });
-  return (text as string[]).map((t, i) => `[page ${i + 1}]\n${t}`).join("\n\n").slice(0, MAX_TEXT);
+  const raw = (text as string[]).map((t, i) => `[page ${i + 1}]\n${t}`).join("\n\n").slice(0, MAX_TEXT);
+  // PDF text can hold NUL and other control characters and lone surrogates; the model gateway can stall on them
+  return raw.toWellFormed().replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
 }
 
 async function chat(system: string, user: string, maxTokens = 9000, job = ""): Promise<string> {
