@@ -21,14 +21,14 @@
     return j;
   }
 
-  function kitText(job, token, paper, title, lang, protocol, by) {
+  function kitText(job, token, paper, title, lang, protocol, by, limit, probe, compute) {
     const rest = `${SB_URL}/rest/v1/rpc/post_event`;
     const L = [];
     const p = (s) => L.push(s == null ? "" : s);
     p(`# Reproduction job: ${title || paper}`);
     p("");
     p(`You are an autonomous research engineer. Reproduce ONE quantitative result of a published paper on this machine, then report back.`);
-    p(`Work end to end without asking the user questions. Take your time: a careful run is worth more than a fast one.`);
+    p(`Work end to end without asking the user questions. Be careful, but stay inside the time limit (${limit} minutes, see Step 0): an honest partial result beats a run that never ends.`);
     p("");
     p("## Job");
     p("");
@@ -39,7 +39,8 @@
     if (repo) p(`- Code repository the user points to: ${repo}`);
     if (hint) p(`- Result the user wants checked (honour it when choosing the match target): ${hint}`);
     p(`- Report language for summaries: ${lang === "zh" ? "Chinese (中文); keep code, file names and numbers as they are" : "English"}`);
-    p(`- Hardware assumption: CPU only. Do not plan work that needs a GPU or days of training. If the paper needs one, scale down openly and say so.`);
+    p(`- Time limit: ${limit} minutes in total, from when you start.`);
+    p(`- Hardware: not known in advance. Step 0 measures it. Do not plan work that needs more than the machine has; scale down openly and say so, or stop early (Step 0 says when).`);
     p("");
     p("## Ground rules (these are what make the result trustworthy)");
     p("");
@@ -50,6 +51,30 @@
     p("5. Finish with a clean re-run: delete your results, then run ONE no-argument command (for example `python reproduce.py`) from scratch and use only that run's numbers.");
     p("6. Be honest about failure. 'not_reproduced' or 'could_not_run' with a clear reason is a good outcome; a faked match is not.");
     p("7. Use a fresh working folder for this job. Do not touch anything outside it. Never send secrets, API keys or personal files anywhere.");
+    p("");
+    p("## Step 0: check this machine and the clock (do this first, about a minute)");
+    p("");
+    p(`This job has a hard time limit of ${limit} minutes from the moment you start. Write down the start time now (run \`date\` or print time.time()) and check how much time has passed before every command that could take more than two minutes.`);
+    p("");
+    p("1. Save the script below as probe.py in your working folder and run it: `python probe.py`. It prints this machine (CPU cores, memory, free disk, GPU if any) and how fast the CPU and GPU are. It needs only Python; numpy and torch make the speed numbers better.");
+    if (compute) p(`2. The needs of this paper were worked out already. Save this as compute.json and run \`python probe.py compute.json ${limit}\`:
+
+   \`${JSON.stringify(compute)}\`
+
+   The output adds an estimate and a \`decision\`:`);
+    else p(`2. Get the route of this job: GET ${SB_URL}/rest/v1/repro_events?job_id=eq.${job}&kind=eq.route&select=payload&order=id.desc&limit=1 (header apikey: ${SB_KEY}). If its payload has a \`compute\` object, save that object as compute.json and run \`python probe.py compute.json ${limit}\`. The output adds an estimate and a \`decision\`:`);
+    p("   - `go`: start.");
+    p("   - `go_with_checkpoints`: start, but save partial results early.");
+    p("   - `scale_down`: shrink the protocol (fewer seeds or splits, a smaller subset, fewer epochs) until it fits, and set scaled_down=true in the result.");
+    p("   - `stop_too_big`: do NOT download or run anything big. Post a `result` with verdict could_not_run and the `why` text as the reason. This is a good outcome: the user learns early that this machine cannot do it.");
+    p("   If there is no compute information, skip the estimate, but still use the clock below.");
+    p("3. Post the printed JSON as your first progress event: payload {\"machine\": ..., \"estimate\": ..., \"decision\": ...}.");
+    p("");
+    p(`The clock: at half of the limit (${Math.round(limit / 2)} minutes) post a progress event with what you have so far. At 90% (${Math.round(limit * 0.9)} minutes) stop starting experiments: do the clean re-run on what you have and post the result (partially_reproduced with scaled_down=true, or could_not_run). Never run past ${limit} minutes. An honest partial result is worth far more than a run that never ends.`);
+    p("");
+    p("```python");
+    p(probe.trim());
+    p("```");
     p("");
     p("## How to work");
     p("");
@@ -114,6 +139,7 @@
     p("```json");
     p("{");
     p('  "agent_info": {"tool": "the app you are, e.g. Claude Code, Codex, WorkBuddy", "model": "the exact model name you run on, or unknown", "os": "...", "python": "..."},');
+    p('  "machine": "the JSON printed by probe.py in Step 0 (cpu_cores, ram_gb, gpu, cpu_gflops, ...)", "elapsed_minutes": 0, "time_limit_min": ' + limit + ',');
     p('  "verdict": "reproduced | partially_reproduced | not_reproduced | could_not_run",');
     p('  "claim": "the exact result you tried to reproduce (table, dataset, metric)",');
     p('  "paper_value": 0.0, "measured": 0.0, "tolerance": 0.0, "tolerance_rule": 1, "contract_tolerance": null,');
@@ -167,7 +193,10 @@
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));
     out.innerHTML = `<p class="muted small">${esc(T("Preparing the kit..."))}</p>`;
     try {
-      const protocol = await (await fetch("kit-protocol.md?v=20261018b", { cache: "no-store" })).text();
+      const protocol = await (await fetch("kit-protocol.md?v=20261020a", { cache: "no-store" })).text();
+      const probe = await (await fetch("kit-probe.py?v=20261020a", { cache: "no-store" })).text();
+      const limit = Math.max(10, Math.min(480, parseInt(($("#kitLimit") && $("#kitLimit").value) || "60", 10) || 60));
+      try { localStorage.setItem("kitLimit", String(limit)); } catch (e) {}
       const by = (($("#kitBy") && $("#kitBy").value) || "").trim();
       try { localStorage.setItem("kitBy", by); } catch (e) {}
       const j = await rpc("create_job", { p_arxiv: paper, p_title: title, p_lang: lang, p_by: by });
@@ -182,7 +211,14 @@
         setStage("planner", "done");
       }
       setStage("publish", "now");
-      const text = kitText(j.id, j.token, paper, title, lang, protocol, by);
+      let compute = null;   // the Router's compute numbers, or the measured ones for a paper we have run; shown as the machine-fit card
+      try {
+        const rt = await (await fetch(`${SB_URL}/rest/v1/repro_events?job_id=eq.${j.id}&kind=eq.route&select=payload&order=id.desc&limit=1`, { headers: hdr })).json();
+        compute = rt[0] && rt[0].payload && rt[0].payload.compute || null;
+        if (!compute) { const k = await (await fetch("compute.json?v=20261020a", { cache: "no-store" })).json(); compute = k[paper] && k[paper].compute || null; }
+        if (window.fitShow) window.fitShow(paper, compute, true);
+      } catch (e) {}
+      const text = kitText(j.id, j.token, paper, title, lang, protocol, by, limit, probe, compute);
       const up = await fetch(`${SB_URL}/storage/v1/object/kits/${j.id}.md`, { method: "POST", headers: { ...hdr, "Content-Type": "text/markdown" }, body: text });
       if (!up.ok) throw new Error("upload " + up.status);
       const link = `${SB_URL}/storage/v1/object/public/kits/${j.id}.md`;
@@ -306,9 +342,10 @@
     if (!host) return;
     host.innerHTML = `<h3 class="kith">${esc(T("Run it on your own agent"))}</h3>
       <p class="muted small">${esc(T("We read and plan the paper for you. You then get one link to paste into any agent. The experiment runs on your own machine."))}</p>
-      <label class="kitby">${esc(T("Your name (optional, shown on the run)"))}<input id="kitBy" maxlength="80" autocomplete="name"></label>
+      <div class="kitopts"><label class="kitby">${esc(T("Your name (optional, shown on the run)"))}<input id="kitBy" maxlength="80" autocomplete="name"></label>
+      <label class="kitby">${esc(T("Time limit for the agent"))}<select id="kitLimit"><option value="30">30 ${esc(T("minutes"))}</option><option value="60">60 ${esc(T("minutes"))}</option><option value="120">120 ${esc(T("minutes"))}</option><option value="240">240 ${esc(T("minutes"))}</option></select></label></div>
       <div class="kitbtns" id="kitBtns"></div><div id="kitOut"></div>`;
-    try { $("#kitBy").value = localStorage.getItem("kitBy") || ""; } catch (e) {}
+    try { $("#kitBy").value = localStorage.getItem("kitBy") || ""; $("#kitLimit").value = localStorage.getItem("kitLimit") || "60"; } catch (e) {}
     setState(false);
     host.addEventListener("click", (e) => {
       const oj = e.target.closest("[data-openjob]");

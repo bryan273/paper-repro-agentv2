@@ -9,8 +9,19 @@ import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
 
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const MODEL = Deno.env.get("REPRO_MODEL") ?? "DeepSeek-V4.1-Flash";
-const BASE = Deno.env.get("PARATERA_BASE_URL") ?? "https://llmapi.paratera.com/v1";
+// Any OpenAI-compatible provider. The model of a step is a secret of this function, so it can be changed without a deploy:
+// REPRO_MODEL_<STEP> (READER, CRITIC, ROUTER, PLANNER, AUDIT) or REPRO_MODEL, written "provider:model" or just "model" (Paratera).
+const PROVIDERS: Record<string, { base: string; key: string }> = {
+  paratera: { base: Deno.env.get("PARATERA_BASE_URL") ?? "https://llmapi.paratera.com/v1", key: "PARATERA_API_KEY" },
+  stepfun: { base: "https://api.stepfun.com/v1", key: "STEPFUN_API_KEY" },
+};
+function pick(step: string): { provider: string; model: string } {
+  const v = Deno.env.get(`REPRO_MODEL_${step.toUpperCase()}`) ?? Deno.env.get("REPRO_MODEL") ?? "DeepSeek-V4.1-Flash";
+  const i = v.indexOf(":");
+  return i > 0 && PROVIDERS[v.slice(0, i)] ? { provider: v.slice(0, i), model: v.slice(i + 1) } : { provider: "paratera", model: v };
+}
+let CUR = pick("reader");
+const MODEL = () => CUR.model;
 const MAX_TEXT = 70000;
 const HOURLY_LIMIT = Number(Deno.env.get("REPRO_HOURLY_LIMIT") ?? "60");
 const CORS = {
@@ -61,12 +72,12 @@ async function paperText(paper: string): Promise<string> {
 async function chat(system: string, user: string, maxTokens = 9000, job = ""): Promise<string> {
   const note = (t: string) => (job ? post(job, "progress", { text: t }).catch(() => {}) : Promise.resolve());
   // the gateway sometimes answers 429 "no deployments available"; wait, then try the sibling model
-  const SIBLING = MODEL === "DeepSeek-V4-Flash" ? "DeepSeek-V4.1-Flash" : "DeepSeek-V4-Flash";
+  const SIBLING = CUR.provider !== "paratera" ? CUR.model : MODEL() === "DeepSeek-V4-Flash" ? "DeepSeek-V4.1-Flash" : "DeepSeek-V4-Flash";
   // an Edge Function request ends after about 150 s, so thinking is off here (it took 90 s+ for the Reader alone)
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       // V4-Flash has been answering 429 "no deployments" for days; the sibling is only a last resort
-      const model = attempt === 4 ? SIBLING : MODEL;
+      const model = attempt === 4 ? SIBLING : MODEL();
       await note(`Calling ${model} (attempt ${attempt + 1})`);
       const ctl = new AbortController();
       const left = deadline - Date.now();
@@ -74,11 +85,12 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
       // the gateway sometimes accepts a request and then says nothing: give up after 20 s of silence and retry
       let timer = setTimeout(() => ctl.abort(), Math.min(30_000, left - 5_000));
       const rearm = () => { clearTimeout(timer); timer = setTimeout(() => ctl.abort(), Math.min(20_000, Math.max(deadline - Date.now() - 3_000, 1_000))); };
-      const r = await fetch(`${BASE}/chat/completions`, {
+      const prov = PROVIDERS[CUR.provider];
+      const r = await fetch(`${prov.base}/chat/completions`, {
         method: "POST", signal: ctl.signal,
-        headers: { Authorization: `Bearer ${Deno.env.get("PARATERA_API_KEY")}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${Deno.env.get(prov.key)}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model, thinking: { type: "disabled" }, stream: true, max_tokens: maxTokens, temperature: 0,
+          model, ...(CUR.provider === "paratera" && /^DeepSeek/.test(model) ? { thinking: { type: "disabled" } } : {}), stream: true, max_tokens: maxTokens, temperature: 0,
           messages: [{ role: "system", content: system }, { role: "user", content: user }],
         }),
       });
@@ -131,6 +143,7 @@ async function latest(job: string, kind: string): Promise<unknown | null> {
 // times (reader, router, planner), each time after the previous event has arrived.
 async function work(job: string, step: string, paper: string, lang: string) {
   deadline = Date.now() + 135_000;
+  CUR = pick(step);
   try {
     const zh = lang === "zh" ? "\nWrite every free-text field (summaries, why, descriptions) in Chinese; keep keys, numbers, quotes and code in their original form." : "";
     if (step === "reader") {

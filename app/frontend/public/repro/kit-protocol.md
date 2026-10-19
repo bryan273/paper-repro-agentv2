@@ -87,6 +87,24 @@ Return ONE JSON object:
     "scale_down_plan": str|null,       // if it does not fit: what to shrink (data subset, epochs, repeats)
                                        // and the expected effect on the number
     "verdict_ceiling": "reproduced"|"partially_reproduced"   // partially if anything is scaled down
+  },
+  "compute": {                         // needs that do not depend on whose machine it is, so ANY user can be told
+                                       // up front whether the paper fits their laptop and how long it takes
+    "difficulty": 1|2|3|4|5,           // 1 small library-level job (a classic model on a small table);
+                                       // 3 a real training run, several datasets or a rebuild of missing code;
+                                       // 5 large data, many moving parts, or GPU-hours
+    "needs_gpu": bool,                 // true only if the experiment cannot reasonably finish on a CPU
+    "vram_gb": number|null,            // GPU memory needed, if needs_gpu or if a GPU would be used
+    "ram_gb": number,                  // memory needed
+    "disk_gb": number,                 // downloads, data and checkpoints
+    "ref_minutes": number,             // minutes of COMMAND time (install, download, every experiment run and the clean
+                                       // re-run) on a reference laptop: 8 CPU cores, 16 GB RAM, no GPU. Not the time
+                                       // spent writing code. Count the full protocol of the match target (all seeds,
+                                       // splits, epochs), not a smoke test.
+    "gpu_speedup": number|null,        // how many times faster those same runs are on a mid GPU (RTX 3060 class);
+                                       // null if the code cannot use a GPU or gains nothing from one
+    "basis": str                       // one sentence: what the estimate rests on, e.g. "20 splits x 400 epochs of a
+                                       // 1-hidden-layer net, about 10 s per fit"
   }
 }
 Be honest about feasibility: this machine may have no GPU. A disclosed, smaller run beats a run that

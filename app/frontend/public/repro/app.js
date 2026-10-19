@@ -56,8 +56,8 @@
   }
 
   async function loadDemos() {
-    try { demos = await (await fetch("demos.json?v=20261018b", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
-    try { recorded = await (await fetch("demo-runs/index.json?v=20261018b", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
+    try { demos = await (await fetch("demos.json?v=20261020a", { cache: "no-store" })).json(); } catch (e) { try { demos = await (await fetch(api("/api/demos"))).json(); } catch (e2) { demos = []; } }
+    try { recorded = await (await fetch("demo-runs/index.json?v=20261020a", { cache: "no-store" })).json(); } catch (e) { recorded = []; }
     $("#samples").innerHTML = demos.map((d) => {
       const recs = recorded.filter((r) => r.demo_id === d.id);
       const rec = recs[0];
@@ -142,6 +142,7 @@
     $("#pickedMeta").textContent = "";
     $("#pickedNote").textContent = "";
     $("#pickedStatus").innerHTML = "";
+    if ($("#fitBox")) $("#fitBox").innerHTML = "";
     $("#repoIn").value = p.demo ? p.demo.repo || "" : "";
     $("#hintIn").value = p.demo ? p.demo.target_hint || "" : "";
     $("#upbar").style.width = "0";
@@ -266,6 +267,7 @@
         <details><summary>Abstract</summary><p>${esc(p.summary)}</p></details>
         <div class="ra"><span class="past">${(p.recs || []).map((r) => `<button type="button" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}"><span class="badge ${esc(r.verdict || "")}">${esc(VERDICT[r.verdict] || r.status)}</span></button>`).join("")}${(p.jobs || []).map((j) => `<span class="badge ${esc(j.verdict || "")}" title="Run on a user's own agent">${esc(VERDICT[j.verdict] || j.verdict || "")}</span>`).join("")}${(p.runs || []).map((r) => `<button type="button" data-run="${esc(r.id)}" data-status="${esc(r.status)}" title="Open run ${esc(r.id)}"><span class="badge ${esc(r.verdict || (r.status === "running" ? "running" : ""))}">${esc(r.verdict ? VERDICT[r.verdict] : r.status)}</span></button>`).join("")}</span>
           <button class="ghost" type="button" data-pick="${offset + i}">Reproduce this paper</button></div>
+        <div class="rtier">${tierTag(p.id)}</div>
       </div>`).join("") + (more ? `<button class="ghost" type="button" id="${moreId}">Load more papers</button>` : "");
   }
   $("#results").onclick = (e) => {
@@ -289,6 +291,7 @@
     const recs = p.recs || [], jobs = p.jobs || [];
     const badge = (v, st) => `<span class="badge ${esc(v || "")}">${esc(VERDICT[v] || st || v || "")}</span>`;
     if (window.kitSetState) window.kitSetState(!!(recs.length || jobs.length));
+    if (window.fitShow) window.fitShow(p.id);
     $("#pickedStatus").innerHTML = (recs.length || jobs.length
       ? `<div class="pstat done"><b>Already reproduced</b> ${recs.map((r) => `<button type="button" class="linkish" data-rfile="${esc(r.file)}" data-rpdf="${esc(r.pdf || "")}">${badge(r.verdict, r.status)}</button>`).join(" ")}</div>${jobs.length ? `<div class="pjobs"><b>${jobs.length > 1 ? jobs.length + " " + t("runs on users' own agents") : t("Run on a user's own agent")}</b>${jobs.map((j) => `<button type="button" class="linkish pjob" data-job="${esc(j.id)}">${badge(j.verdict)} ${esc(j.agent || "")}${j.model ? " · " + esc(j.model) : ""}${j.requested_by ? " · " + esc(j.requested_by) : ""} · ${esc(new Date(j.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }))}</button>`).join("")}</div>` : ""}<div>
           <span class="muted small">Open a recorded run, or get the link below to run it again on your own agent.</span></div>`
@@ -298,7 +301,15 @@
   }
 
   // =============================== home: browse by research group (static, no runner) ===============================
-  let dir = null, browseRows = [], browseShown = 0;
+  let dir = null, browseRows = [], browseShown = 0, computeMap = {};
+  const tierOf = (id) => { const c = computeMap[id] && computeMap[id].compute; return c && window.Fit ? window.Fit.tier(c) : null; };
+  function tierTag(id) {
+    const e = computeMap[id], c = e && e.compute, tr = tierOf(id);
+    if (!c || !tr) return `<span class="tier none">${esc(t("Not estimated yet"))}</span>`;
+    const m = window.Fit.estimate(c, window.Fit.CLASSES[1]);
+    const rel = e.release ? ` · ${esc(t("Code"))}: ${esc(t(e.release === "full" ? "released" : e.release === "partial" ? "partly released" : e.release === "none" ? "not released" : "unknown"))}` : "";
+    return `<span class="tier ${tr}">${esc(t(tr === "light" ? "Light" : tr === "medium" ? "Medium" : "Heavy"))}</span> <span class="muted small">${esc(t("Difficulty"))} ${c.difficulty || 3}/5${m.feasible ? " · ~" + window.Fit.fmt(m.minutes) : " · " + esc(t("needs a GPU"))}${rel}</span>`;
+  }
   const L = (o, k) => (window.getLang && window.getLang() === "zh" && o[k + "_zh"]) || o[k];
   const surname = (n) => n.trim().split(/ +/).slice(-1)[0].toLowerCase();
   let jobDone = {};   // arXiv id -> finished runs made through "run it on your own agent"
@@ -319,9 +330,10 @@
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }
-    if (!dir) { try { dir = await (await fetch("directory.json?v=20261018b", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
+    if (!dir) { try { dir = await (await fetch("directory.json?v=20261020a", { cache: "no-store" })).json(); } catch (e) { dir = null; } }
     if (!dir || !dir.groups || !dir.groups.length) { $("#browseMsg").textContent = "Could not load the paper list. Reload the page (Ctrl+F5)."; return; }
     $("#grpSel").innerHTML = dir.groups.map((g, i) => `<option value="${i}">${esc(g.name)} · ${esc(g.institute)}</option>`).join("");
+    try { computeMap = await (await fetch("compute.json?v=20261020a", { cache: "no-store" })).json(); } catch (e) { computeMap = {}; }
     await loadJobs();
     fillAuthors();
   }
@@ -338,10 +350,11 @@
     browse();
   }
   function browse() {
-    const g = dir.groups[+$("#grpSel").value], who = $("#authSel").value, f = $("#titleFilter").value.trim().toLowerCase(), st = $("#statusSel").value;
+    const g = dir.groups[+$("#grpSel").value], who = $("#authSel").value, f = $("#titleFilter").value.trim().toLowerCase(), st = $("#statusSel").value, tf = $("#tierSel") ? $("#tierSel").value : "";
     browseRows = g.papers.map((id) => dir.papers[id]).filter((p) => p && (!who || p.authors.includes(who))
       && (!f || (p.title + " " + p.authors.join(" ")).toLowerCase().includes(f))
-      && (!st || (st === "done") === doneFor(p.id) > 0)).map((p) => ({ ...p, groups: [g], recs: recsFor(p.id), jobs: jobDone[p.id] || [], runs: [] }));
+      && (!st || (st === "done") === doneFor(p.id) > 0)
+      && (!tf || (tf === "none" ? !tierOf(p.id) : tierOf(p.id) === tf))).map((p) => ({ ...p, groups: [g], recs: recsFor(p.id), jobs: jobDone[p.id] || [], runs: [] }));
     browseShown = 0;
     $("#browseResults").innerHTML = "";
     const nDone = browseRows.filter((p) => p.recs.length || p.jobs.length).length;
@@ -365,6 +378,7 @@
   $("#grpSel").onchange = fillAuthors;
   $("#authSel").onchange = browse;
   $("#statusSel").onchange = browse;
+  if ($("#tierSel")) $("#tierSel").onchange = browse;
   $("#titleFilter").oninput = () => { clearTimeout(browse.t); browse.t = setTimeout(browse, 200); };
   $("#pickedStatus").onclick = (e) => {
     const jb = e.target.closest("[data-job]");
@@ -486,7 +500,7 @@
     setDetails(speed !== 0);
     if (pdf) loadPaper("demo-runs/" + pdf);
     let text = "";
-    try { text = await (await fetch(file.startsWith("/") || file.startsWith("http") ? file : "demo-runs/" + file)).text(); }
+    try { text = await (await fetch(file.startsWith("/") || file.startsWith("http") || file.startsWith("bench/") ? file : "demo-runs/" + file)).text(); }
     catch (e) { $("#rvTitle").textContent = "Could not load the recording"; return; }
     const evs = text.split("\n").filter(Boolean).map((l) => JSON.parse(l));
     let i = 0;
