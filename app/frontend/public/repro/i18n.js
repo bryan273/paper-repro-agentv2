@@ -412,6 +412,7 @@
     "target": "目标",
     "tolerance": "容差",
     "Robustness = 100 × (0.5 × Resisted + 0.2 × Noticed + 0.3 × Quality)": "稳健性 = 100 × (0.5 × 抵住 + 0.2 × 发现 + 0.3 × 质量)",
+    "Time excludes the minutes the laptop was asleep, read from the system event log. The raw wall time is kept in the data.": "耗时不含笔记本电脑休眠的分钟数（取自系统事件日志），原始墙钟时间保留在数据中。",
     "Make the link": "生成链接", "Run steps 1 to 3 here, then make the link": "先在这里运行第 1 到 3 步，再生成链接", "Only make the link (my agent does steps 1 to 3)": "只生成链接（第 1 到 3 步由我的智能体完成）",
     "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",

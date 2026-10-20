@@ -242,6 +242,7 @@ ${esc(T("Index"))}     = 100 × (0.40 × ${r.accuracy} + 0.35 × ${r.coverage} +
           "Every run gets 7 CPU cores, no GPU, a 60 minute limit and a ¥10 cap. Three runs go at the same time, so times are noisy.",
           "Judge 2 is never from the same lab as the model tested, and does not see its name.",
           "Reproduced = the re-run number is inside the tolerance fixed before the run, with no serious flag. Partial = a gap up to twice the tolerance, a scaled-down run, or missing requirements.",
+          "Time excludes the minutes the laptop was asleep, read from the system event log. The raw wall time is kept in the data.",
           "Cost = tokens times the provider's price. StepFun prices are fitted to the real invoice."].map((l) => `<li>${esc(T(l))}</li>`).join("")}</ul></section>
       <section class="aam wide"><h3>${esc(T("Limits"))}</h3><p class="small">${esc(T("A pilot: one run per paper and model on a small set of easy and medium papers. It shows that the method works and gives first numbers. Hard papers that need a GPU, repeated runs and agent apps come next."))}</p></section>
       <section class="aam wide"><h3>${esc(T("Why these models"))}</h3>${whyModels()}</section></div>`;
