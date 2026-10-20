@@ -32,7 +32,7 @@ a{color:var(--acc)}
 .status.live .dot{background:var(--ok)} .status.replay .dot{background:var(--warn)}
 
 /* home */
-.home{max-width:1080px;margin:0 auto;padding:36px 20px 60px;display:grid;gap:14px}
+.home{max-width:1080px;margin:0 auto;padding:36px 20px 60px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .hero{display:grid;gap:10px;margin-bottom:8px}
 .hero h1{font:700 clamp(28px,4.4vw,44px)/1.1 var(--display);letter-spacing:-.01em;max-width:18ch}
 .hero p{margin:0;font-size:16px;color:var(--muted);max-width:68ch}
@@ -107,7 +107,7 @@ details.models summary{cursor:pointer;font-size:12.5px;font-weight:600}
 .ev.target-flash{animation:tflash 1.4s ease}
 @keyframes tflash{30%{box-shadow:0 0 0 3px var(--acc)}}
 .res .more-runs{margin-left:6px}
-@media (max-width:640px){.run{padding:10px}.rh-left h1{font-size:19px}.runhead{gap:8px}.paper{position:static}.pages{max-height:70vh}#timeline{max-height:none}.home{padding:22px 14px 40px}.picked{padding:16px}.top{padding:8px 12px}.status{font-size:11px}}
+@media (max-width:640px){.runrow{grid-template-columns:minmax(0,1fr)}.runrow .m{text-align:left;white-space:normal}.run{padding:10px}.rh-left h1{font-size:19px}.runhead{gap:8px}.paper{position:static}.pages{max-height:70vh}#timeline{max-height:none}.home{padding:22px 14px 40px}.picked{padding:16px}.top{padding:8px 12px}.status{font-size:11px}}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface)}
 .seg button{border:0;background:none;padding:6px 11px;cursor:pointer;font-size:12.5px}
 .seg button.on{background:var(--acc);color:#fff}
@@ -338,7 +338,7 @@ table.cmp ul{margin:4px 0 0;padding-left:16px;font:11.5px var(--mono)}
 .browsebox select,.browsebox input{min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit}
 .result .inst{font-size:12px;color:var(--muted);margin-top:2px}
 .result .inst b{color:var(--ink);font-weight:600}
-@media (max-width:900px){.browsebox{grid-template-columns:1fr 1fr}}@media (max-width:560px){.browsebox{grid-template-columns:1fr}}
+@media (max-width:900px){.browsebox{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:560px){.browsebox{grid-template-columns:minmax(0,1fr)}}
 
 .kitbox{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:8px}
 .kith{margin:0;font-size:15px}
