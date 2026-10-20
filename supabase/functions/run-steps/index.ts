@@ -14,9 +14,11 @@ const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const PROVIDERS: Record<string, { base: string; key: string }> = {
   paratera: { base: Deno.env.get("PARATERA_BASE_URL") ?? "https://llmapi.paratera.com/v1", key: "PARATERA_API_KEY" },
   stepfun: { base: "https://api.stepfun.com/v1", key: "STEPFUN_API_KEY" },
+  deepseek: { base: "https://api.deepseek.com/v1", key: "DEEPSEEK_API_KEY" },   // DeepSeek's own API: model "deepseek-flash" is DeepSeek-V4.1-Flash
 };
 function pick(step: string): { provider: string; model: string } {
-  const v = Deno.env.get(`REPRO_MODEL_${step.toUpperCase()}`) ?? Deno.env.get("REPRO_MODEL") ?? "DeepSeek-V4.1-Flash";
+  const v = Deno.env.get(`REPRO_MODEL_${step.toUpperCase()}`) ?? Deno.env.get("REPRO_MODEL")
+    ?? (Deno.env.get("DEEPSEEK_API_KEY") ? "deepseek:deepseek-flash" : "DeepSeek-V4.1-Flash");   // the secret DEEPSEEK_API_KEY switches steps 1 to 3 to DeepSeek direct; without it, Paratera
   const i = v.indexOf(":");
   return i > 0 && PROVIDERS[v.slice(0, i)] ? { provider: v.slice(0, i), model: v.slice(i + 1) } : { provider: "paratera", model: v };
 }
@@ -90,7 +92,7 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
         method: "POST", signal: ctl.signal,
         headers: { Authorization: `Bearer ${Deno.env.get(prov.key)}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model, ...(CUR.provider === "paratera" && /^DeepSeek/.test(model) ? { thinking: { type: "disabled" } } : {}), stream: true, max_tokens: maxTokens, temperature: 0,
+          model, ...((CUR.provider === "paratera" && /^DeepSeek/.test(model)) || CUR.provider === "deepseek" ? { thinking: { type: "disabled" } } : {}), stream: true, max_tokens: maxTokens, temperature: 0,
           messages: [{ role: "system", content: system }, { role: "user", content: user }],
         }),
       });
