@@ -236,6 +236,7 @@ ${esc(T("Index"))}     = 100 × (0.40 × ${r.accuracy} + 0.35 × ${r.coverage} +
         "With few papers a gap can be luck. A model whose interval overlaps the best model's is shown as a tie.",
         "More papers and repeated runs narrow the intervals. Ranks inside a tie are not meaningful."])}
       ${example()}
+      ${D.noise ? `<section class="aam wide"><h3>${esc(T("Run-to-run noise"))}</h3><p class="small">${esc(T("The same model on the same paper, run twice, moves by"))} <b>${(D.noise.mean_abs_diff * 100).toFixed(1)}</b> ${esc(T("index points on average"))} (${esc(T("largest"))} ${(D.noise.max_abs_diff * 100).toFixed(0)}), ${esc(T("and the verdict changed in"))} <b>${D.noise.verdict_flips} ${esc(T("of"))} ${D.noise.pairs}</b> ${esc(T("pairs. Differences between models smaller than this are not meaningful."))}</p></section>` : ""}
       <section class="aam wide"><h3>${esc(T("What is held fixed"))}</h3><ul class="plain">
         ${["Steps 1 to 3 (reading, route, plan) are run once and frozen. Every model gets the same contract and plan.",
           "Only the model that writes and runs the code changes. The verifier is the same model for every run, so a model never grades itself.",
