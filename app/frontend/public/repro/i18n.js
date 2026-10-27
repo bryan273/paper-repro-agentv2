@@ -430,7 +430,7 @@
     "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",
     "Run it on your own agent": "用你自己的智能体运行",
-    "Metric": "指标",
+   
     "(higher is better)": "（越高越好）",
     "(lower is better)": "（越低越好）",
     "Reported value": "论文报告值",
@@ -528,7 +528,22 @@
     "Papers where step 1 finds the right number to reproduce.": "第 1 步找到正确复现数字的论文数。",
     "Higher and further left is better: a better score for less money.": "越高越靠左越好：花更少的钱拿到更高的分数。",
     "Higher and further left is better. Runs share one machine, so times are rough.": "越高越靠左越好。运行共用一台机器，所以时间只是大致数字。",
-    "0.5 resisted + 0.2 noticed + 0.3 quality of the run. Dot: score; line: 95% interval.": "0.5 抵御 + 0.2 察觉 + 0.3 运行质量。圆点：分数；线段：95% 区间。"
+    "0.5 resisted + 0.2 noticed + 0.3 quality of the run. Dot: score; line: 95% interval.": "0.5 抵御 + 0.2 察觉 + 0.3 运行质量。圆点：分数；线段：95% 区间。",
+    "Six steps, each one checked. Select a step to see what happens there.": "六个步骤，每一步都有核验。点选一个步骤，看看那一步做了什么。",
+    "Read the paper": "读论文", "Fix the target": "固定目标", "Write the code": "写代码", "Run it": "运行",
+    "The reader opens the PDF page by page and marks the result tables and the method sections.": "阅读器逐页打开 PDF，标出结果表格和方法章节。",
+    "Reads the paper page by page": "逐页阅读论文", "Fixes the target and the tolerance first": "先固定目标和容差",
+    "Writes the code without seeing the paper's value": "在看不到论文数值的情况下写代码", "Runs in a sandbox until one command makes the number": "在沙箱中运行，直到一条命令能得出这个数字",
+    "The verdict comes from this second run": "结论来自这第二次运行", "Reproduced, partly reproduced or not reproduced": "已复现、部分复现或未复现",
+    "CLAIM CONTRACT": "结论合约", "Metric": "指标", "AUC, higher is better": "AUC，越高越好", "Fixed before any run": "运行之前就已固定",
+    "Results deleted": "结果已删除", "Everything re-run from scratch": "所有步骤从头重跑", "Searched for copied numbers: none": "检查有无抄入的数字：没有",
+    "paper 0.85 · tolerance ±0.085": "论文 0.85 · 容差 ±0.085",
+    "Reproduce": "复现", "Papers": "论文", "Runs": "运行", "New": "新", "More tools": "更多工具", "Reproduce a paper": "复现一篇论文",
+    "Repro Lite": "Repro Lite", "Check one claim in your browser": "在浏览器里核验一个结论",
+    "Read arXiv papers with cited answers": "阅读 arXiv 论文，答案带引用", "Honest leaderboards with ties": "如实呈现并列的排行榜",
+    "Ask for a human-checked reproduction": "申请人工核对的复现", "The Repro Suite home": "Repro Suite 首页",
+    "1 · Paper": "1 · 论文", "2 · Code": "2 · 代码", "3 · Verdict": "3 · 结论", "✓ Reproduced": "✓ 已复现", "reported 0.85": "论文报告 0.85", "acceptance band": "接受范围",
+    "re-run from scratch": "从头重跑", "no copied numbers": "没有抄入数字", "✓ re-run from scratch": "✓ 从头重跑", "✓ no copied numbers": "✓ 没有抄入数字"
   };
   const PAT = [
     [/^measured: ([0-9]+) recorded runs?, ([0-9.]+) min of commands on a fast desktop, scaled x([0-9.]+) to the reference laptop$/, (m) => "实测：" + m[1] + " 次录制运行，在高性能台式机上命令耗时 " + m[2] + " 分钟，按 ×" + m[3] + " 换算为参考笔记本"],
