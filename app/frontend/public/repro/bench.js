@@ -45,7 +45,7 @@
       <h1>${esc(T("Paper Repro Index"))}</h1>
       <p class="muted">${esc(T("How well models reproduce research papers. Same steps, same judge, only the model that writes the code changes."))}</p></div>
       <div class="aast"><div><b>${D.models.length}</b><span>${esc(T("models"))}</span></div><div><b>${new Set(c.runs.map((r) => r.paper_id)).size}</b><span>${esc(T("papers"))}</span></div>
-      <div><b>${c.runs.length + i.runs.filter((r) => r.status !== "error").length}</b><span>${esc(T("runs"))}</span></div><div><b>${yuan(spent)}</b><span>${esc(T("spent"))}</span></div></div></section>`;
+      <div><b>${c.runs.length + i.runs.filter((r) => r.status !== "error").length}</b><span>${esc(T("runs"))}: ${c.runs.length} ${esc(T("normal"))} + ${i.runs.filter((r) => r.status !== "error").length} ${esc(T("with a planted mistake"))}</span></div><div><b>${yuan(spent)}</b><span>${esc(T("spent"))}</span></div></div></section>`;
   }
 
   function tabs() {
@@ -53,8 +53,50 @@
   }
 
   // ---- charts ----
-  function card(title, sub, body, wide) {
-    return `<section class="aac ${wide ? "wide" : ""}"><h3>${esc(T(title))}</h3>${sub ? `<p class="muted small">${esc(T(sub))}</p>` : ""}${body}</section>`;
+  function card(title, sub, body, wide, cohort) {
+    return `<section class="aac ${wide ? "wide" : ""}"><h3>${esc(T(title))}</h3>${sub ? `<p class="muted small">${esc(T(sub))}</p>` : ""}${body}${cohort ? `<p class="cohort">${esc(cohort)}</p>` : ""}</section>`;
+  }
+  // what one number counts, written next to it
+  const cleanCohort = () => {
+    const c = D.tracks.clean, papers = new Set(c.runs.map((r) => r.paper_id)).size, per = Math.max(...ROWS.map((r) => r.n || 0));
+    return `${T("Sample")}: ${per} ${T("runs per model")} (${papers} ${T("papers, some run twice")}); ${c.runs.length} ${T("runs in all")}.`;
+  };
+  const robustCohort = () => { const per = Math.max(...ROWS.map((r) => r.rn || 0)); return `${T("Sample")}: ${per} ${T("runs with one planted mistake per model")}; ${D.tracks.inject.runs.filter((r) => r.status !== "error").length} ${T("runs in all")}.`; };
+  const readCohort = () => { const per = Math.max(...ROWS.map((r) => r.reading_n || 0)); return `${T("Sample")}: ${per} ${T("papers read by every model (step 1 only)")}.`; };
+  // dot and whisker on a 0 to 100 scale: the interval is the main mark, the score is printed next to the dot
+  function dotplot(rows, key, ci) {
+    const list = rows.filter((r) => r[key] != null).sort((a, b) => b[key] - a[key]);
+    if (!list.length) return `<p class="muted small">${esc(T("No finished runs yet."))}</p>`;
+    const lo = Math.max(0, Math.floor(Math.min(...list.map((r) => (r[ci] ? r[ci][0] : r[key]))) * 10) / 10), hi = 1;
+    const X = (v) => ((v - lo) / (hi - lo)) * 100;
+    const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => lo + (hi - lo) * f);
+    return `<div class="dp">${list.map((r) => {
+      const c = r[ci];
+      return `<div class="dpr"><div class="dpn"><span class="dot" style="background:${col(r.id)}"></span><b>${esc(r.id)}</b><span class="dpv">${(r[key] * 100).toFixed(1)}${c ? ` <span class="muted">(${(c[0] * 100).toFixed(0)} to ${(Math.min(1, c[1]) * 100).toFixed(0)})</span>` : ""}</span></div>
+        <div class="dpt">${ticks.map((v) => `<i class="tk" style="left:${X(v)}%"></i>`).join("")}${c ? `<u style="left:${X(c[0])}%;width:${X(Math.min(1, c[1])) - X(c[0])}%;background:${col(r.id)}"></u>` : ""}<s style="left:${X(r[key])}%;background:${col(r.id)}"></s></div></div>`;
+    }).join("")}<div class="dpx">${ticks.map((v) => `<span style="left:${X(v)}%">${Math.round(v * 100)}</span>`).join("")}</div></div>`;
+  }
+  // a metric where every model has the same value is a shared result, not a ranking
+  function allSame(rows, key) {
+    const v = rows.filter((r) => r[key] != null).map((r) => r[key]);
+    return v.length > 1 && v.every((x) => x === v[0]);
+  }
+  function sharedResult(rows, text) {
+    return `<p class="shared">${esc(text)}</p><div class="chips">${rows.map((r) => `<span class="chip"><span class="dot" style="background:${col(r.id)}"></span>${esc(r.id)}</span>`).join("")}</div>`;
+  }
+  function readingBody() {
+    if (allSame(ROWS, "reading")) {
+      const r = ROWS.find((x) => x.reading != null);
+      return sharedResult(ROWS.filter((x) => x.reading != null), `${T("All")} ${ROWS.filter((x) => x.reading != null).length} ${T("models found the right number on")} ${Math.round(r.reading * r.reading_n)} ${T("of")} ${r.reading_n} ${T("papers. No ranking: they are tied.")}`);
+    }
+    return bars(ROWS, "reading", { fmt: (v, x) => Math.round(v * x.reading_n) + "/" + x.reading_n });
+  }
+  // the plain-language reading of a cost or time chart: the cheapest (fastest) model among those tied with the best
+  function tradeoff(key, fmt, word) {
+    const top = ROWS.filter((r) => (r.tie || r.best) && r[key] != null);
+    if (top.length < 2) return "";
+    const b = top.slice().sort((a, c) => a[key] - c[key])[0];
+    return `<p class="take">${esc(T(word))}: <b>${esc(b.id)}</b> (${esc(fmt(b[key]))}), ${esc(T("with a score tied with the best"))}.</p>`;
   }
   // horizontal bars; value in 0..1 unless max is given; ci = [lo, hi] on the same scale
   function bars(rows, key, o = {}) {
@@ -87,7 +129,8 @@
   const legend = () => `<p class="aal">${[...new Set(D.models.map((m) => m.lab))].map((l) => `<span><i style="background:${LABCOL[l] || "#667"}"></i>${esc(l)}</span>`).join("")}</p>`;
   const tieNote = (rows) => {
     const t = rows.filter((r) => r.tie || r.best).map((r) => r.id);
-    return t.length > 1 ? `<p class="aatie">≈ ${esc(T("Statistical tie at the top"))}: ${esc(t.join(", "))}. ${esc(T("Their 95% intervals overlap, so the order among them is not meaningful."))}</p>` : "";
+    if (t.length < 2) return "";
+    return `<p class="aatie">≈ ${t.length === rows.filter((r) => r.detailed != null).length ? esc(T("All scores are statistically tied; the intervals overlap.")) : esc(T("Tied at the top, intervals overlap")) + ": " + esc(t.join(", ")) + "."}</p>`;
   };
 
   // ---- tabs ----
@@ -95,13 +138,13 @@
     if (!D.tracks.clean.runs.length) return `<p class="muted">${esc(T("No finished runs yet."))}</p>`;
     const maxc = Math.max(...ROWS.map((r) => r.cps || 0)) * 1.05 || 1, maxm = Math.max(...ROWS.map((r) => r.minutes || 0)) * 1.05 || 1;
     return `<div class="aag">
-      ${card("Repro Index", "Mean of the papers, 0 to 100. The whisker is the 95% interval.", bars(ROWS, "detailed", { ci: "ci", fmt: (v) => (v * 100).toFixed(1) }) + tieNote(ROWS), true)}
-      ${card("Robustness to planted mistakes", "0 to 100. How well a model resists a wrong fact, a missing requirement or a misleading hint.", bars(ROWS, "robust", { ci: "rci", fmt: (v) => (v * 100).toFixed(1) }))}
-      ${card("Reading the paper", "Share of papers where step 1 finds the right number to reproduce.", bars(ROWS, "reading", { fmt: (v, r) => Math.round(v * r.reading_n) + "/" + r.reading_n }))}
-      ${card("Repro Index vs cost per run", "Up and to the left is better. The dashed line joins models nobody beats.", scatter(ROWS, "cost", T("Cost per run (¥)"), (v) => "¥" + v.toFixed(1)))}
-      ${card("Repro Index vs median time", "Up and to the left is better. Runs share one machine, so times are rough.", scatter(ROWS, "minutes", T("Median time per run (min)"), (v) => Math.round(v) + ""))}
-      ${card("Cost per successful reproduction", "Total spent divided by runs marked reproduced. Lower is better.", bars(ROWS, "cps", { asc: true, max: maxc, fmt: (v) => yuan(v) }))}
-      ${card("Median time per run", "Minutes on 7 CPU cores. Lower is better.", bars(ROWS, "minutes", { asc: true, max: maxm, fmt: (v) => mins(v) }))}
+      ${card("Repro Index", "Score 0 to 100 (dot) with its 95% interval (line). Higher is better.", dotplot(ROWS, "detailed", "ci") + tieNote(ROWS), true, cleanCohort())}
+      ${card("Robustness to planted mistakes", "0 to 100. How well a model resists a wrong fact, a missing requirement or a misleading hint. See the Robustness tab for each kind.", dotplot(ROWS, "robust", "rci"), false, robustCohort())}
+      ${card("Reading the paper", "Papers where step 1 finds the right number to reproduce.", readingBody(), false, readCohort())}
+      ${card("Repro Index vs cost per run", "Higher and further left is better: a better score for less money.", scatter(ROWS, "cost", T("Cost per run (¥)"), (v) => "¥" + v.toFixed(1)) + tradeoff("cost", (v) => yuan(v) + " " + T("per run"), "Lower cost, similar score"), false, cleanCohort())}
+      ${card("Repro Index vs median time", "Higher and further left is better. Runs share one machine, so times are rough.", scatter(ROWS, "minutes", T("Median time per run (min)"), (v) => Math.round(v) + "") + tradeoff("minutes", (v) => mins(v), "Faster, similar score"), false, cleanCohort())}
+      ${card("Cost per successful reproduction", "Total spent divided by runs marked reproduced. Lower is better.", bars(ROWS, "cps", { asc: true, max: maxc, fmt: (v) => yuan(v) }), false, cleanCohort())}
+      ${card("Median time per run", "Minutes on 7 CPU cores. Lower is better.", bars(ROWS, "minutes", { asc: true, max: maxm, fmt: (v) => mins(v) }), false, cleanCohort())}
     </div>${legend()}${judges()}`;
   }
 
@@ -119,8 +162,9 @@
     ["reproduced", "Reproduced", (r) => (r.n ? r.reproduced + "/" + r.n : "-")], ["minutes", "Time", (r) => mins(r.minutes)], ["cost", "Cost / run", (r) => yuan(r.cost)], ["cps", "Cost / success", (r) => yuan(r.cps)]];
   function modelsTab() {
     const nul = sortDir < 0 ? -1e12 : 1e12, sorted = ROWS.slice().sort((a, b) => ((b[sortBy] == null ? nul : b[sortBy]) - (a[sortBy] == null ? nul : a[sortBy])) * -sortDir);
-    return `<div class="tw"><table class="lb"><thead><tr><th>${esc(T("Model"))}</th>${COLS.map(([k, n]) => `<th class="nm"><button type="button" class="sortb ${sortBy === k ? "on" : ""}" data-sort="${k}">${esc(T(n))}${sortBy === k ? (sortDir < 0 ? " ▾" : " ▴") : ""}</button></th>`).join("")}</tr></thead>
+    return `<div class="tw lbwrap"><table class="lb"><thead><tr><th>${esc(T("Model"))}</th>${COLS.map(([k, n]) => `<th class="nm"><button type="button" class="sortb ${sortBy === k ? "on" : ""}" data-sort="${k}">${esc(T(n))}${sortBy === k ? (sortDir < 0 ? " ▾" : " ▴") : ""}</button></th>`).join("")}</tr></thead>
       <tbody>${sorted.map((r) => `<tr><td><span class="dot" style="background:${col(r.id)}"></span><b>${esc(r.id)}</b><div class="muted small">${esc(r.lab)}</div></td>${COLS.map(([k, , f]) => `<td class="nm ${sortBy === k ? "sel" : ""}">${f(r)}${k === "detailed" && r.tie ? ` <span class="tie" title="${esc(T("Too close to the best model to call: the intervals overlap"))}">≈</span>` : ""}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      <div class="mcards">${sorted.map((r) => `<div class="mcard"><div class="mch"><span class="dot" style="background:${col(r.id)}"></span><b>${esc(r.id)}</b><span class="muted small">${esc(r.lab)}</span><span class="mci">${num(r.detailed)}${r.tie ? " ≈" : ""}</span></div><dl>${COLS.slice(1).map(([k, n, f]) => `<div class="${sortBy === k ? "sel" : ""}"><dt>${esc(T(n))}</dt><dd>${f(r)}</dd></div>`).join("")}</dl></div>`).join("")}</div>
       <p class="muted small">${esc(T("Index = 0.40 accuracy + 0.35 coverage + 0.25 fidelity. See Methodology for every formula."))} ≈ ${esc(T("marks a statistical tie with the best model."))}</p>`;
   }
 
@@ -128,7 +172,7 @@
     const r = D.reader || { runs: [], by_model: [] };
     if (!r.runs.length) return `<p class="muted">${esc(T("No finished runs yet."))}</p>`;
     const sp = r.by_model.map((m) => ({ id: m.key, s: m.seconds_median }));
-    return `<div class="aag">${card("Step 1: right number to reproduce", "Each model reads the paper and writes the claim contract. Compared with the reference contract.", bars(ROWS, "reading", { fmt: (v, x) => Math.round(v * x.reading_n) + "/" + x.reading_n }))}
+    return `<div class="aag">${card("Step 1: right number to reproduce", "Each model reads the paper and writes the claim contract. Compared with the reference contract.", readingBody(), false, readCohort())}
       ${card("Speed of step 1", "Median seconds for one paper. Lower is better.", bars(sp, "s", { asc: true, max: Math.max(...sp.map((m) => m.s)) * 1.05, fmt: (v) => Math.round(v) + " s" }))}</div>
       <div class="tw"><table class="lb"><thead><tr><th>${esc(T("Model"))}</th><th class="nm">${esc(T("Valid contract"))}</th><th class="nm">${esc(T("Same target"))}</th><th class="nm">${esc(T("Right paper value"))}</th><th class="nm">${esc(T("Tolerance close"))}</th><th class="nm">${esc(T("Requirements found"))}</th><th class="nm">${esc(T("Cost per run"))}</th></tr></thead><tbody>
       ${r.by_model.map((m) => `<tr><td><span class="dot" style="background:${col(m.key)}"></span><b>${esc(m.key)}</b></td><td class="nm">${m.ok}/${m.n}</td><td class="nm">${m.same_claim}/${m.n}</td><td class="nm"><b>${m.value_ok}/${m.n}</b></td><td class="nm">${m.tolerance_ok}/${m.n}</td><td class="nm">${Math.round(m.req_ratio * 100)}%</td><td class="nm">${yuan(m.cost_mean)}</td></tr>`).join("")}</tbody></table></div>
@@ -146,7 +190,7 @@
     const runs = inj.runs.filter((r) => r.status !== "error" && r.robust != null);
     const kind = (r) => String(r.condition || "").split(":")[1] || "";
     return `<div class="aag">
-      ${card("Robustness", "0.5 resisted + 0.2 noticed + 0.3 quality of the run. Whisker: 95% interval.", bars(ROWS, "robust", { ci: "rci", fmt: (v) => (v * 100).toFixed(1) }) + legend(), true)}
+      ${card("Robustness", "0.5 resisted + 0.2 noticed + 0.3 quality of the run. Dot: score; line: 95% interval.", dotplot(ROWS, "robust", "rci") + legend(), true, robustCohort())}
       </div>
       <h3 class="aah3">${esc(T("By kind of mistake"))}</h3>
       <div class="tw"><table class="lb"><thead><tr><th>${esc(T("Model"))}</th>${["F", "O", "H"].map((k) => `<th class="nm">${esc(T(kindName[k]))}</th>`).join("")}<th class="nm">${esc(T("Resisted"))}</th><th class="nm">${esc(T("Noticed"))}</th><th class="nm">${esc(T("False success"))}</th></tr></thead><tbody>

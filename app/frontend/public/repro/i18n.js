@@ -420,6 +420,12 @@
     "and the verdict changed in": "，结论发生变化的有",
     "of": "/",
     "pairs. Differences between models smaller than this are not meaningful.": "对。模型之间小于此值的差异没有意义。",
+    "More tools built on the same idea": "基于同一思路的更多工具",
+    "Small apps made on Atoms. They use the same honest checks as this project: tolerance fixed first, re-run from scratch, and an audit.": "在 Atoms 上做的小应用。它们使用与本项目相同的诚实检查：先固定容差、从头重跑、再做审计。",
+    "An AI agent checks one claim by running Python in your browser, then re-runs and audits itself.": "智能体在你的浏览器里运行 Python 检查一个主张，然后重跑并自我审计。",
+    "An agent that reads arXiv papers with you and answers with quoted sources.": "陪你读 arXiv 论文、并带引文作答的智能体。",
+    "A template that turns results into an honest leaderboard. This is our own benchmark in it.": "把结果变成诚实排行榜的模板。这里放的是我们自己的基准。",
+    "Request a human-reviewed reproduction check. Free pilot.": "申请人工审核的复现检查。免费试点。",
     "Make the link": "生成链接", "Run steps 1 to 3 here, then make the link": "先在这里运行第 1 到 3 步，再生成链接", "Only make the link (my agent does steps 1 to 3)": "只生成链接（第 1 到 3 步由我的智能体完成）",
     "Run steps 1 to 3 here first": "先在这里运行第 1 到 3 步", "Steps 1 to 3 could not start:": "第 1 到 3 步无法启动：",
     "Waiting for an agent to pick it up": "等待智能体领取", "An agent is working on it": "智能体正在处理", "Finished": "已完成", "Failed": "失败",
@@ -476,7 +482,53 @@
     "Pending": "等待中",
     "Download": "下载",
     "Audit": "审计", "paper value found in the code": "代码中发现论文数值", "flags": "标记", "no flags": "无标记",
-    "Copy the link": "复制链接", "Copied": "已复制"
+    "Copy the link": "复制链接", "Copied": "已复制",
+    "models compared": "个模型对比", "recorded runs": "次录制运行", "best Repro Index": "最高复现指数",
+    "index points run-to-run noise": "个指数点的重复运行波动", "See the benchmark →": "查看基准测试 →",
+    "Three ways to use it": "三种使用方式",
+    "Online · free · instant": "在线 · 免费 · 即时", "Watch a recorded run": "观看录制的运行",
+    "Pick a sample paper below. You see the agent read, code, re-run and give its verdict, step by step. Nothing runs on your side.":
+      "在下方选一篇示例论文，逐步看智能体阅读、写代码、从头重跑并给出结论。你这边不需要运行任何东西。",
+    "Local · your machine": "本地 · 你的电脑",
+    "Pick any paper and get a kit link. Paste it into Claude Code, Codex or another agent; it runs the experiment on your computer and posts progress and the verdict back to this page.":
+      "任选一篇论文并获取任务链接，粘贴到 Claude Code、Codex 或其他智能体中；它会在你的电脑上做实验，并把进度和结论送回本页。",
+    "Lab runner · access key": "实验室运行器 · 需要访问密钥", "Our full pipeline": "我们的完整流程",
+    "All five steps on our lab machine. A run needs an access key because it spends model tokens and compute. When the runner is offline, this page shows recorded runs.":
+      "在我们实验室的机器上完成全部五个步骤。每次运行都会消耗模型 token 和算力，所以需要访问密钥。运行器离线时，本页显示录制的运行。",
+    "Understand the paper first": "先读懂论文", "Sister product": "姊妹产品",
+    "Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.":
+      "输入 arXiv 编号，即可得到这篇论文的讲解短视频，配有中英文旁白。视频中的每句引文和每个数字都会与论文原文核对。",
+    "Watch an explainer →": "观看讲解视频 →", "Supporting tools": "辅助工具",
+    "Reproduce": "复现", "Learn": "学习", "Tools": "工具", "Start a reproduction": "开始复现", "Browse papers": "浏览论文",
+    "Completed runs": "已完成的运行", "All apps": "全部应用", "part of Repro Suite": "Repro Suite 的一部分", "Library": "论文库", "Results": "结果",
+    "Papers grouped by research group, with the verdict of every paper already reproduced. Pick one to start a reproduction.":
+      "按课题组整理的论文，已复现的论文会显示结论。选一篇即可开始复现。",
+    "Every recorded run, newest first. Open one to replay what the agent read, ran and decided.":
+      "所有录制的运行，最新的在前。打开任意一次，即可回放智能体读了什么、跑了什么、做了什么判断。",
+    "How a paper becomes a verdict": "一篇论文如何得出结论", "Six stages. Select one to see what happens there.": "六个阶段。点选任意一个，看看那一步做了什么。",
+    "Target claim": "目标结论", "Sandbox run": "沙箱运行", "Clean re-run": "从头重跑",
+    "The reader opens the paper page by page and marks the result tables and the method sections.": "阅读器逐页打开论文，标出结果表格和方法章节。",
+    "It writes a claim contract: the number to check, where it is, a tolerance fixed before any run, and every detail the paper leaves open.":
+      "它写出结论合约：要核验的数字、它在哪里、在任何运行之前就固定的容差，以及论文没有说清的每个细节。",
+    "The router checks what the authors released and the planner lays out the files, one config and a smoke test. The implementer writes the code without seeing the paper's value.":
+      "路由器检查作者公开了什么，规划器安排文件、一份配置和一个冒烟测试。实现者在看不到论文数值的情况下写代码。",
+    "The code runs in a sandbox until one command re-creates the number. A repair manager steps in when it gets stuck.": "代码在沙箱中运行，直到一条命令能重现这个数字。卡住时由修复管理器介入。",
+    "The verifier deletes the results, re-runs everything from scratch and searches the code for copied numbers.": "验证器删除结果，从头重跑所有步骤，并在代码里搜索被抄进去的数字。",
+    "Reproduced, partially reproduced or not reproduced, decided by the clean re-run against the tolerance fixed in the claim contract.":
+      "已复现、部分复现或未复现，由从头重跑的结果对照结论合约中固定的容差决定。",
+    "Sample": "样本", "runs per model": "次运行/每个模型", "papers, some run twice": "篇论文，部分跑了两次", "runs in all": "次运行合计",
+    "runs with one planted mistake per model": "次植入错误的运行/每个模型", "papers read by every model (step 1 only)": "篇论文由每个模型阅读（仅第 1 步）",
+    "All scores are statistically tied; the intervals overlap.": "所有分数在统计上打平：区间相互重叠。", "Tied at the top, intervals overlap": "并列第一，区间重叠",
+    "All": "全部", "models found the right number on": "个模型都在", "papers. No ranking: they are tied.": "篇论文上找到了正确数字。没有排名：它们打平。",
+    "Lower cost, similar score": "成本更低、分数相近", "Faster, similar score": "更快、分数相近", "with a score tied with the best": "分数与最佳模型打平", "per run": "每次运行",
+    "normal": "常规", "with a planted mistake": "植入错误",
+    "Score 0 to 100 (dot) with its 95% interval (line). Higher is better.": "分数 0 到 100（圆点）及其 95% 区间（线段）。越高越好。",
+    "0 to 100. How well a model resists a wrong fact, a missing requirement or a misleading hint. See the Robustness tab for each kind.":
+      "0 到 100。模型抵御错误事实、缺失要求或误导提示的能力。各类别见“稳健性”标签页。",
+    "Papers where step 1 finds the right number to reproduce.": "第 1 步找到正确复现数字的论文数。",
+    "Higher and further left is better: a better score for less money.": "越高越靠左越好：花更少的钱拿到更高的分数。",
+    "Higher and further left is better. Runs share one machine, so times are rough.": "越高越靠左越好。运行共用一台机器，所以时间只是大致数字。",
+    "0.5 resisted + 0.2 noticed + 0.3 quality of the run. Dot: score; line: 95% interval.": "0.5 抵御 + 0.2 察觉 + 0.3 运行质量。圆点：分数；线段：95% 区间。"
   };
   const PAT = [
     [/^measured: ([0-9]+) recorded runs?, ([0-9.]+) min of commands on a fast desktop, scaled x([0-9.]+) to the reference laptop$/, (m) => "实测：" + m[1] + " 次录制运行，在高性能台式机上命令耗时 " + m[2] + " 分钟，按 ×" + m[3] + " 换算为参考笔记本"],

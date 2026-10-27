@@ -7,21 +7,42 @@
 <meta name="description" content="Drop a research paper PDF and watch an agent read it, write and run the code, and check the paper's number.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261020a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css?v=20261027a">
 <script src="vendor/pdf.min.js"></script>
+<script src="theme.js?v=20261027a"></script>
 </head>
 <body>
-<header class="top">
-  <button class="brand" id="homeBtn" type="button" aria-label="Home"><span class="logo" aria-hidden="true">R</span><span><b>Paper Repro Agent</b><span class="sub">paper in, checked result out</span></span></button>
-  <nav class="topnav"><a href="index.html" class="on">Papers</a><a href="bench.html">Benchmark</a></nav>
-  <div class="toprt"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button><div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div></div>
-</header>
+<div class="shell">
+<aside class="side" id="side" aria-label="Navigation">
+  <button class="brand" id="homeBtn" type="button" aria-label="Home"><span class="logo" aria-hidden="true">R</span><span><b>Paper Repro Agent</b><span class="sub">part of Repro Suite</span></span></button>
+  <nav class="sidenav">
+    <div class="navh">Reproduce</div>
+    <a href="index.html#start" data-pane="start"><i>◎</i>Start a reproduction</a>
+    <a href="index.html#papers" data-pane="papers"><i>☰</i>Browse papers</a>
+    <a href="index.html#runs" data-pane="runs"><i>▶</i>Completed runs</a>
+    <a href="bench.html" data-page="bench"><i>▦</i>Benchmark</a>
+    <div class="navh">Learn</div>
+    <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>✦</i>Paper Explainer<span class="ext">↗</span></a>
+    <div class="navh">Tools</div>
+    <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>⚡</i>Repro Lite<span class="ext">↗</span></a>
+    <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>❝</i>Reading Companion<span class="ext">↗</span></a>
+    <a href="https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0" target="_blank" rel="noopener"><i>▤</i>IndexBoard<span class="ext">↗</span></a>
+    <a href="https://reprodesk-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>✉</i>Repro Desk<span class="ext">↗</span></a>
+    <a href="https://reprosuite-aiid.atoms.world/" target="_blank" rel="noopener"><i>⌂</i>All apps<span class="ext">↗</span></a>
+  </nav>
+  <div class="sidefoot"><div class="sidebtns" id="themeSlot"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button></div><div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div></div>
+</aside>
+<div class="sidescrim" id="sideScrim"></div>
+<div class="mainwrap">
+<header class="mtop"><button class="ghost icon" id="menuBtn" type="button" aria-label="Menu" aria-controls="side" aria-expanded="false">☰</button><b>Paper Repro Agent</b></header>
 
 <main>
   <!-- ================= HOME ================= -->
   <section id="home" class="home">
+   <div class="pane" data-pane="start">
     <div class="hero">
+      <span class="eyebrow">Paper Repro Agent</span>
       <h1>Drop a paper. Watch an agent reproduce it.</h1>
       <p>It reads the PDF, decides what to check, writes and runs the code in a sandbox, then re-runs everything from scratch before it gives a verdict. You see what it reads, what it runs, how long it takes and what it costs.</p>
     </div>
@@ -58,7 +79,49 @@
       </div>
     </div>
 
-    <h2 class="sec">Browse by research group</h2>
+
+    <a class="facts" href="bench.html" aria-label="Benchmark at a glance">
+      <span><b>6</b>models compared</span>
+      <span><b>32</b>papers</span>
+      <span><b>281</b>recorded runs</span>
+      <span><b>89.2</b>best Repro Index</span>
+      <span><b>±7</b>index points run-to-run noise</span>
+      <span class="go">See the benchmark &rarr;</span>
+    </a>
+
+    <h2 class="sec">How a paper becomes a verdict</h2>
+    <p class="muted sec-sub">Six stages. Select one to see what happens there.</p>
+    <div class="pipe" id="pipe">
+      <div class="isowrap" aria-hidden="true"><div class="iso">
+        <span class="slab" data-i="0"><em>PDF</em></span><span class="slab" data-i="1"><em>Target claim</em></span><span class="slab" data-i="2"><em>Implementation</em></span><span class="slab" data-i="3"><em>Sandbox run</em></span><span class="slab" data-i="4"><em>Clean re-run</em></span><span class="slab" data-i="5"><em>Verdict</em></span>
+      </div></div>
+      <ol class="pipesteps" id="pipeSteps">
+        <li data-i="0"><button type="button">PDF</button><span>The reader opens the paper page by page and marks the result tables and the method sections.</span></li>
+        <li data-i="1"><button type="button">Target claim</button><span>It writes a claim contract: the number to check, where it is, a tolerance fixed before any run, and every detail the paper leaves open.</span></li>
+        <li data-i="2"><button type="button">Implementation</button><span>The router checks what the authors released and the planner lays out the files, one config and a smoke test. The implementer writes the code without seeing the paper's value.</span></li>
+        <li data-i="3"><button type="button">Sandbox run</button><span>The code runs in a sandbox until one command re-creates the number. A repair manager steps in when it gets stuck.</span></li>
+        <li data-i="4"><button type="button">Clean re-run</button><span>The verifier deletes the results, re-runs everything from scratch and searches the code for copied numbers.</span></li>
+        <li data-i="5"><button type="button">Verdict</button><span>Reproduced, partially reproduced or not reproduced, decided by the clean re-run against the tolerance fixed in the claim contract.</span></li>
+      </ol>
+    </div>
+
+    <h2 class="sec">Three ways to use it</h2>
+    <div class="ways">
+      <div class="way"><span class="pill on">Online · free · instant</span><b>Watch a recorded run</b><span>Pick a sample paper below. You see the agent read, code, re-run and give its verdict, step by step. Nothing runs on your side.</span></div>
+      <div class="way"><span class="pill">Local · your machine</span><b>Run it on your own agent</b><span>Pick any paper and get a kit link. Paste it into Claude Code, Codex or another agent; it runs the experiment on your computer and posts progress and the verdict back to this page.</span></div>
+      <div class="way"><span class="pill">Lab runner · access key</span><b>Our full pipeline</b><span>All five steps on our lab machine. A run needs an access key because it spends model tokens and compute. When the runner is offline, this page shows recorded runs.</span></div>
+    </div>
+
+    <h2 class="sec">Or try a sample paper</h2>
+    <p class="muted small sec-sub">One paper for each situation the agent handles: the authors' code works, the code exists but is broken, or there is no code at all.</p>
+    <div class="samples" id="samples"></div>
+
+
+    <a class="appcard feature" href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener"><span class="pill on">Sister product</span><b>Paper Explainer</b><span>Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.</span><span class="go">Watch an explainer &rarr;</span></a>
+   </div>
+
+   <div class="pane" data-pane="papers" hidden>
+    <div class="hero small"><span class="eyebrow">Library</span><h1>Browse papers</h1><p>Papers grouped by research group, with the verdict of every paper already reproduced. Pick one to start a reproduction.</p></div>
     <p class="muted small sec-sub">Papers are grouped by research group, each paper once with all its authors. Pick a group, then an author from the A to Z list. Papers already reproduced show their verdict.</p>
     <div class="card browsebox" id="browse">
       <label>Research group<select id="grpSel"></select></label>
@@ -82,19 +145,10 @@
     <div class="results" id="results"></div>
     </div>
 
-    <h2 class="sec">Or try a sample paper</h2>
-    <p class="muted small sec-sub">One paper for each situation the agent handles: the authors' code works, the code exists but is broken, or there is no code at all.</p>
-    <div class="samples" id="samples"></div>
+   </div>
 
-    <h2 class="sec">How it works</h2>
-    <ol class="how">
-      <li><b>Reader</b><span>Reads the PDF and writes a claim contract: the number to check, where it is, a tolerance fixed before any run, what a faithful implementation needs, and every detail the paper leaves open.</span></li>
-      <li><b>Router</b><span>Checks what the authors released (full code, partial, or nothing) and whether this machine can run it, including whether a GPU is needed.</span></li>
-      <li><b>Planner</b><span>Lays out the files, one config, a smoke test and the checks to run before the full experiment.</span></li>
-      <li><b>Implementer</b><span>Writes and runs code in a sandbox, alone, until one command re-creates the number. It is never shown the paper's value. A repair manager steps in when it gets stuck.</span></li>
-      <li><b>Verifier</b><span>Deletes the results, re-runs everything from scratch, searches the code for copied numbers and checks it against the requirements. The verdict comes from that re-run.</span></li>
-    </ol>
-
+   <div class="pane" data-pane="runs" hidden>
+    <div class="hero small"><span class="eyebrow">Results</span><h1>Completed runs</h1><p>Every recorded run, newest first. Open one to replay what the agent read, ran and decided.</p></div>
     <div id="agentRunsSec" hidden>
       <h2 class="sec">Runs from users' own agents</h2>
       <div class="runs" id="agentRuns"><p class="muted small">No runs from users' agents yet.</p></div>
@@ -104,6 +158,7 @@
     <h2 class="sec">Recent runs</h2>
     <div class="runs" id="runs"><p class="muted small">No runs yet.</p></div>
     <button class="ghost" id="allRunsBtn" type="button" hidden></button>
+   </div>
   </section>
 
   <!-- ================= A RUN FROM A USER'S AGENT ================= -->
@@ -202,13 +257,16 @@
     </div>
   </section>
 </main>
+</div>
+</div>
 
 <dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
-<script src="i18n.js?v=20261020a"></script>
-<script src="app.js?v=20261020a"></script>
-<script src="fit.js?v=20261020a"></script>
-<script src="fitbox.js?v=20261020a"></script>
-<script src="kit.js?v=20261020a"></script>
-<script src="jobs.js?v=20261020a"></script>
+<script src="i18n.js?v=20261027a"></script>
+<script src="app.js?v=20261027a"></script>
+<script src="fit.js?v=20261027a"></script>
+<script src="fitbox.js?v=20261027a"></script>
+<script src="kit.js?v=20261027a"></script>
+<script src="jobs.js?v=20261027a"></script>
+<script src="nav.js?v=20261027a"></script>
 </body>
 </html>
