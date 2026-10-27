@@ -482,7 +482,23 @@
     "Pending": "等待中",
     "Download": "下载",
     "Audit": "审计", "paper value found in the code": "代码中发现论文数值", "flags": "标记", "no flags": "无标记",
-    "Copy the link": "复制链接", "Copied": "已复制"
+    "Copy the link": "复制链接", "Copied": "已复制",
+    "models compared": "个模型对比", "recorded runs": "次录制运行", "best Repro Index": "最高复现指数",
+    "index points run-to-run noise": "个指数点的重复运行波动", "See the benchmark →": "查看基准测试 →",
+    "Three ways to use it": "三种使用方式",
+    "Online · free · instant": "在线 · 免费 · 即时", "Watch a recorded run": "观看录制的运行",
+    "Pick a sample paper below. You see the agent read, code, re-run and give its verdict, step by step. Nothing runs on your side.":
+      "在下方选一篇示例论文，逐步看智能体阅读、写代码、从头重跑并给出结论。你这边不需要运行任何东西。",
+    "Local · your machine": "本地 · 你的电脑",
+    "Pick any paper and get a kit link. Paste it into Claude Code, Codex or another agent; it runs the experiment on your computer and posts progress and the verdict back to this page.":
+      "任选一篇论文并获取任务链接，粘贴到 Claude Code、Codex 或其他智能体中；它会在你的电脑上做实验，并把进度和结论送回本页。",
+    "Lab runner · access key": "实验室运行器 · 需要访问密钥", "Our full pipeline": "我们的完整流程",
+    "All five steps on our lab machine. A run needs an access key because it spends model tokens and compute. When the runner is offline, this page shows recorded runs.":
+      "在我们实验室的机器上完成全部五个步骤。每次运行都会消耗模型 token 和算力，所以需要访问密钥。运行器离线时，本页显示录制的运行。",
+    "Understand the paper first": "先读懂论文", "Sister product": "姊妹产品",
+    "Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.":
+      "输入 arXiv 编号，即可得到这篇论文的讲解短视频，配有中英文旁白。视频中的每句引文和每个数字都会与论文原文核对。",
+    "Watch an explainer →": "观看讲解视频 →", "Supporting tools": "辅助工具"
   };
   const PAT = [
     [/^measured: ([0-9]+) recorded runs?, ([0-9.]+) min of commands on a fast desktop, scaled x([0-9.]+) to the reference laptop$/, (m) => "实测：" + m[1] + " 次录制运行，在高性能台式机上命令耗时 " + m[2] + " 分钟，按 ×" + m[3] + " 换算为参考笔记本"],
