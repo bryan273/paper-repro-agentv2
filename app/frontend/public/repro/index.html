@@ -7,44 +7,66 @@
 <meta name="description" content="Drop a research paper PDF and watch an agent read it, write and run the code, and check the paper's number.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261027a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css?v=20261027c">
 <script src="vendor/pdf.min.js"></script>
-<script src="theme.js?v=20261027a"></script>
+<script src="theme.js?v=20261027c"></script>
 </head>
 <body>
-<div class="shell">
-<aside class="side" id="side" aria-label="Navigation">
-  <button class="brand" id="homeBtn" type="button" aria-label="Home"><span class="logo" aria-hidden="true">R</span><span><b>Paper Repro Agent</b><span class="sub">part of Repro Suite</span></span></button>
-  <nav class="sidenav">
-    <div class="navh">Reproduce</div>
-    <a href="index.html#start" data-pane="start"><i>◎</i>Start a reproduction</a>
-    <a href="index.html#papers" data-pane="papers"><i>☰</i>Browse papers</a>
-    <a href="index.html#runs" data-pane="runs"><i>▶</i>Completed runs</a>
-    <a href="bench.html" data-page="bench"><i>▦</i>Benchmark</a>
-    <div class="navh">Learn</div>
-    <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>✦</i>Paper Explainer<span class="ext">↗</span></a>
-    <div class="navh">Tools</div>
-    <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>⚡</i>Repro Lite<span class="ext">↗</span></a>
-    <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>❝</i>Reading Companion<span class="ext">↗</span></a>
-    <a href="https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0" target="_blank" rel="noopener"><i>▤</i>IndexBoard<span class="ext">↗</span></a>
-    <a href="https://reprodesk-aiid.pub.atoms.world/" target="_blank" rel="noopener"><i>✉</i>Repro Desk<span class="ext">↗</span></a>
-    <a href="https://reprosuite-aiid.atoms.world/" target="_blank" rel="noopener"><i>⌂</i>All apps<span class="ext">↗</span></a>
+<header class="tb" id="tb">
+  <a class="brand" href="index.html#start" id="homeBtn" aria-label="Home"><span class="logo" aria-hidden="true">R</span><b>Paper Repro Agent</b></a>
+  <nav class="tbnav" aria-label="Main">
+    <a href="index.html#start" data-pane="start">Reproduce</a>
+    <a href="index.html#papers" data-pane="papers">Papers</a>
+    <a href="index.html#runs" data-pane="runs">Runs</a>
+    <a href="bench.html" data-page="bench">Benchmark</a>
+    <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer <span class="new">New</span></a>
+    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">More tools <span aria-hidden="true">&#9662;</span></button>
+      <div class="suitemenu" id="suiteMenu" hidden>
+        <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener"><b>Repro Lite <i>&#8599;</i></b><span>Check one claim in your browser</span></a>
+        <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener"><b>Reading Companion <i>&#8599;</i></b><span>Read arXiv papers with cited answers</span></a>
+        <a href="https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0" target="_blank" rel="noopener"><b>IndexBoard <i>&#8599;</i></b><span>Honest leaderboards with ties</span></a>
+        <a href="https://reprodesk-aiid.pub.atoms.world/" target="_blank" rel="noopener"><b>Repro Desk <i>&#8599;</i></b><span>Ask for a human-checked reproduction</span></a>
+        <a href="https://reprosuite-aiid.atoms.world/" target="_blank" rel="noopener"><b>All apps <i>&#8599;</i></b><span>The Repro Suite home</span></a>
+      </div></div>
   </nav>
-  <div class="sidefoot"><div class="sidebtns" id="themeSlot"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button></div><div class="status" id="status"><span class="dot"></span><span id="statusText">connecting</span></div></div>
-</aside>
-<div class="sidescrim" id="sideScrim"></div>
-<div class="mainwrap">
-<header class="mtop"><button class="ghost icon" id="menuBtn" type="button" aria-label="Menu" aria-controls="side" aria-expanded="false">☰</button><b>Paper Repro Agent</b></header>
+  <div class="tbact" id="themeSlot"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button><div class="status" id="status" title=""><span class="dot"></span><span id="statusText">connecting</span></div><button class="ghost icon" id="menuBtn" type="button" aria-label="Menu" aria-controls="tbsheet" aria-expanded="false">&#9776;</button></div>
+</header>
+<div class="tbsheet" id="tbsheet">
+  <div class="navh">Reproduce</div>
+  <a href="index.html#start" data-pane="start">Reproduce a paper</a>
+  <a href="index.html#papers" data-pane="papers">Browse papers</a>
+  <a href="index.html#runs" data-pane="runs">Completed runs</a>
+  <a href="bench.html" data-page="bench">Benchmark</a>
+  <div class="navh">Learn</div>
+  <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer <span class="new">New</span><span class="ext">&#8599;</span></a>
+  <div class="navh">More tools</div>
+  <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener">Repro Lite<span class="ext">&#8599;</span></a>
+  <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener">Reading Companion<span class="ext">&#8599;</span></a>
+  <a href="https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0" target="_blank" rel="noopener">IndexBoard<span class="ext">&#8599;</span></a>
+  <a href="https://reprodesk-aiid.pub.atoms.world/" target="_blank" rel="noopener">Repro Desk<span class="ext">&#8599;</span></a>
+  <a href="https://reprosuite-aiid.atoms.world/" target="_blank" rel="noopener">All apps<span class="ext">&#8599;</span></a>
+</div>
 
 <main>
   <!-- ================= HOME ================= -->
   <section id="home" class="home">
    <div class="pane" data-pane="start">
-    <div class="hero">
+    <div class="herogrid">
+     <div class="hero">
       <span class="eyebrow">Paper Repro Agent</span>
-      <h1>Drop a paper. Watch an agent reproduce it.</h1>
+      <h1>Drop a paper. Watch an agent <span class="gt">reproduce it.</span></h1>
       <p>It reads the PDF, decides what to check, writes and runs the code in a sandbox, then re-runs everything from scratch before it gives a verdict. You see what it reads, what it runs, how long it takes and what it costs.</p>
+      <div class="cta"><a class="primary" data-scroll="#uploader">Start a reproduction</a><a class="ghost" data-scroll="#samples">Watch a recorded run</a></div>
+     </div>
+     <div class="stage" id="stage" aria-hidden="true">
+      <div class="glow"></div>
+      <div class="stack" id="stack">
+       <div class="sheet s1"><span class="tag">1 · Paper</span><div class="ln w9"></div><div class="ln w7"></div><div class="ln hl">Table 3 · AUC 0.85</div><div class="ln w9"></div><div class="ln w5"></div><div class="ln w7"></div></div>
+       <div class="sheet s2"><span class="tag">2 · Code</span><div class="code"><span><span class="k">$</span> python run.py</span><span>fitting 100 trees</span><span>AUC = 0.849</span><span class="g">&#10003; re-run from scratch</span><span class="g">&#10003; no copied numbers</span></div></div>
+       <div class="sheet s3"><span class="tag">3 · Verdict</span><div class="big">0.849</div><small>reported 0.85</small><span class="okp">&#10003; Reproduced</span><div class="band"><i></i><b></b></div><small>acceptance band</small></div>
+      </div>
+     </div>
     </div>
 
     <div class="uploader card" id="uploader">
@@ -90,16 +112,24 @@
     </a>
 
     <h2 class="sec">How a paper becomes a verdict</h2>
-    <p class="muted sec-sub">Six stages. Select one to see what happens there.</p>
-    <div class="pipe" id="pipe">
-      <div class="isowrap" aria-hidden="true"><div class="iso">
-        <span class="slab" data-i="0"><em>PDF</em></span><span class="slab" data-i="1"><em>Target claim</em></span><span class="slab" data-i="2"><em>Implementation</em></span><span class="slab" data-i="3"><em>Sandbox run</em></span><span class="slab" data-i="4"><em>Clean re-run</em></span><span class="slab" data-i="5"><em>Verdict</em></span>
-      </div></div>
+    <p class="muted sec-sub">Six steps, each one checked. Select a step to see what happens there.</p>
+    <div class="pipe2" id="pipe">
+      <div class="pleft">
+       <div class="pstage" aria-hidden="true">
+        <div class="pscene" data-i="0"><div class="pg"><b class="ptit">Isolation Forest</b><u></u><u class="s"></u><u></u><div class="hlrow">Table 3 · iForest AUC 0.85</div><u class="s"></u><u></u><u class="s"></u></div><div class="scan"></div><span class="cap">Reads the paper page by page</span></div>
+        <div class="pscene" data-i="1"><div class="ccard"><span class="k">CLAIM CONTRACT</span><div class="row"><span>Metric</span><b>AUC, higher is better</b></div><div class="row"><span>Paper value</span><b class="n">0.85</b></div><div class="row"><span>Tolerance</span><b>±0.085</b></div><div class="band2"><i></i></div><div class="lock">Fixed before any run</div></div><span class="cap">Fixes the target and the tolerance first</span></div>
+        <div class="pscene" data-i="2"><div class="ed"><div class="bar"><i></i><i></i><i></i><span>run.py</span></div><div class="lines"><p><span class="a">def</span> experiment(X):</p><p>    forest = IsolationForest(100)</p><p>    forest.fit(X)</p><p>    return auc(forest, X)</p><p class="dim"># written without seeing 0.85</p></div></div><span class="cap">Writes the code without seeing the paper's value</span></div>
+        <div class="pscene" data-i="3"><div class="term"><p>$ python run.py</p><p>loading Ionosphere, 351 rows</p><p>fitting 100 trees</p><div class="pb"><i></i></div><p class="g">AUC = 0.849</p></div><span class="cap">Runs in a sandbox until one command makes the number</span></div>
+        <div class="pscene" data-i="4"><div class="rerun"><div class="spin"></div><ul><li>Results deleted</li><li>Everything re-run from scratch</li><li>Searched for copied numbers: none</li></ul></div><span class="cap">The verdict comes from this second run</span></div>
+        <div class="pscene" data-i="5"><div class="verd"><div class="vn">0.849</div><small>paper 0.85 · tolerance ±0.085</small><div class="band3"><i></i><b></b></div><div class="stamp">Reproduced</div></div><span class="cap">Reproduced, partly reproduced or not reproduced</span></div>
+       </div>
+       <div class="ptrack" id="ptrack"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
       <ol class="pipesteps" id="pipeSteps">
-        <li data-i="0"><button type="button">PDF</button><span>The reader opens the paper page by page and marks the result tables and the method sections.</span></li>
-        <li data-i="1"><button type="button">Target claim</button><span>It writes a claim contract: the number to check, where it is, a tolerance fixed before any run, and every detail the paper leaves open.</span></li>
-        <li data-i="2"><button type="button">Implementation</button><span>The router checks what the authors released and the planner lays out the files, one config and a smoke test. The implementer writes the code without seeing the paper's value.</span></li>
-        <li data-i="3"><button type="button">Sandbox run</button><span>The code runs in a sandbox until one command re-creates the number. A repair manager steps in when it gets stuck.</span></li>
+        <li data-i="0"><button type="button">Read the paper</button><span>The reader opens the PDF page by page and marks the result tables and the method sections.</span></li>
+        <li data-i="1"><button type="button">Fix the target</button><span>It writes a claim contract: the number to check, where it is, a tolerance fixed before any run, and every detail the paper leaves open.</span></li>
+        <li data-i="2"><button type="button">Write the code</button><span>The router checks what the authors released and the planner lays out the files, one config and a smoke test. The implementer writes the code without seeing the paper's value.</span></li>
+        <li data-i="3"><button type="button">Run it</button><span>The code runs in a sandbox until one command re-creates the number. A repair manager steps in when it gets stuck.</span></li>
         <li data-i="4"><button type="button">Clean re-run</button><span>The verifier deletes the results, re-runs everything from scratch and searches the code for copied numbers.</span></li>
         <li data-i="5"><button type="button">Verdict</button><span>Reproduced, partially reproduced or not reproduced, decided by the clean re-run against the tolerance fixed in the claim contract.</span></li>
       </ol>
@@ -112,7 +142,7 @@
       <div class="way"><span class="pill">Lab runner · access key</span><b>Our full pipeline</b><span>All five steps on our lab machine. A run needs an access key because it spends model tokens and compute. When the runner is offline, this page shows recorded runs.</span></div>
     </div>
 
-    <h2 class="sec">Or try a sample paper</h2>
+    <h2 class="sec" id="samples">Or try a sample paper</h2>
     <p class="muted small sec-sub">One paper for each situation the agent handles: the authors' code works, the code exists but is broken, or there is no code at all.</p>
     <div class="samples" id="samples"></div>
 
@@ -257,16 +287,14 @@
     </div>
   </section>
 </main>
-</div>
-</div>
 
 <dialog id="fileDlg"><div class="dlghead"><b id="fileDlgName"></b><button id="fileDlgClose" aria-label="Close">&times;</button></div><pre id="fileDlgBody"></pre></dialog>
-<script src="i18n.js?v=20261027a"></script>
-<script src="app.js?v=20261027a"></script>
-<script src="fit.js?v=20261027a"></script>
-<script src="fitbox.js?v=20261027a"></script>
-<script src="kit.js?v=20261027a"></script>
-<script src="jobs.js?v=20261027a"></script>
-<script src="nav.js?v=20261027a"></script>
+<script src="i18n.js?v=20261027c"></script>
+<script src="app.js?v=20261027c"></script>
+<script src="fit.js?v=20261027c"></script>
+<script src="fitbox.js?v=20261027c"></script>
+<script src="kit.js?v=20261027c"></script>
+<script src="jobs.js?v=20261027c"></script>
+<script src="nav.js?v=20261027c"></script>
 </body>
 </html>
