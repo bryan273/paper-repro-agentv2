@@ -42,15 +42,14 @@ Deno.serve(async (req) => {
     const body: Record<string, unknown> = { model: MODEL, messages, max_tokens: Math.min(Number(max_tokens) || 2000, 4000), temperature: 0.2, thinking: { type: "disabled" } };
     if (Array.isArray(tools) && tools.length && tools.length <= 12) body.tools = tools;
     if (json_mode) body.response_format = { type: "json_object" };
-    // DeepSeek first; if its account is out of credit and a StepFun key is set, StepFun answers instead
-    const STEP = Deno.env.get("STEPFUN_API_KEY");
-    const ask = (base: string, key: string, model: string, extra: Record<string, unknown>) =>
-      fetch(`${base}/chat/completions`, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...body, model, ...extra }), signal: AbortSignal.timeout(110_000) });
-    let r = await ask("https://api.deepseek.com/v1", KEY, MODEL, {});
-    if (!r.ok && [401, 402, 429].includes(r.status) && STEP) {
-      const { thinking: _t, ...rest } = body as Record<string, unknown>;
-      r = await fetch("https://api.stepfun.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${STEP}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...rest, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" }), signal: AbortSignal.timeout(110_000) });
-    }
+    // DeepSeek first; if its account is out of credit the same model family on the Paratera gateway answers, then StepFun if a key is set
+    const PARA = Deno.env.get("PARATERA_API_KEY"), STEP = Deno.env.get("STEPFUN_API_KEY");
+    const post = (url: string, key: string, b: Record<string, unknown>) =>
+      fetch(url, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(b), signal: AbortSignal.timeout(110_000) });
+    const { thinking: _t, ...plain } = body as Record<string, unknown>;
+    let r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
+    if (!r.ok && [401, 402, 429].includes(r.status) && PARA) r = await post("https://llmapi.paratera.com/v1/chat/completions", PARA, { ...plain, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" });
+    if (!r.ok && [401, 402, 429, 502, 503].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });
     const out = await r.json();
     if (!r.ok) {
       if ([401, 402].includes(r.status)) return json({ error: "The AI service is temporarily out of credit. Please try again later.", code: "no_credit" }, 503);
