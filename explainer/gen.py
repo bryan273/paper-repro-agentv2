@@ -78,12 +78,37 @@ Schema: {"title":str,"scenes":[scene,...]}. Each scene has: "type", "en" (one sp
 - "end": {"big":str,"sub":str,"note":str}  (last scene)
 Order: title, problem (cards), key idea (tokens or flow), how it works (flow or cards), result (number), end. Total spoken length about {SECONDS} seconds at normal speed (about {WORDS} words in all)."""
 
-def llm(system, user):
-    body = json.dumps({"model": "deepseek-flash", "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-                       "temperature": 0.3, "max_tokens": 2600, "response_format": {"type": "json_object"}, "thinking": {"type": "disabled"}}).encode()
-    r = urllib.request.Request("https://api.deepseek.com/v1/chat/completions", body, {"Authorization": "Bearer " + ENV["DEEPSEEK_API_KEY"], "Content-Type": "application/json"})
-    out = json.load(urllib.request.urlopen(r, timeout=120))
-    return json.loads(out["choices"][0]["message"]["content"]), out.get("usage", {})
+MODELS = {   # selectable script writers: id -> (base url, model name, env key, extra body)
+    "deepseek": ("https://api.deepseek.com/v1", "deepseek-flash", "DEEPSEEK_API_KEY", {"thinking": {"type": "disabled"}}),
+    "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
+}
+MODEL_ORDER = ["deepseek", "stepfun"]
+
+def llm_one(mid, system, user):
+    base, name, keyname, extra = MODELS[mid]
+    if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
+    body = json.dumps({"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                       "temperature": 0.3, "max_tokens": 6000, "response_format": {"type": "json_object"}, **extra}).encode()
+    r = urllib.request.Request(base + "/chat/completions", body, {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json"})
+    out = json.load(urllib.request.urlopen(r, timeout=180))
+    txt = out["choices"][0]["message"]["content"] or ""
+    m = re.search(r"\{.*\}", txt, re.S)
+    return json.loads(m.group(0) if m else txt), out.get("usage", {})
+
+def llm(system, user, model="deepseek"):
+    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem."""
+    order = [model] + [m for m in MODEL_ORDER if m != model]
+    last = None
+    for mid in order:
+        for attempt in range(2):
+            try:
+                sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
+            except urllib.error.HTTPError as e:
+                last = e
+                if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
+            except Exception as e:
+                last = e
+    raise RuntimeError(f"all script models failed: {last}")
 
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
@@ -118,17 +143,18 @@ def dur_ms(path):
     return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path]).decode().strip()) * 1000
 
 async def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--seconds", type=int, default=24)
+    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
     ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true")
     a = ap.parse_args()
-    out = os.path.join(ROOT, "out", a.arxiv.replace("/", "_")); os.makedirs(out, exist_ok=True)
+    out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
     LABEL = (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     title, abstract, text = paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
         sysmsg = SYSTEM.replace("{SECONDS}", str(a.seconds)).replace("{WORDS}", str(int(a.seconds * 2.4)))
-        sc, usage = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}"); print("llm usage", usage)
+        sc, usage = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model); print("llm usage", usage)
+        sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
         bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if a.url else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

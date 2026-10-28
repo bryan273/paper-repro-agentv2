@@ -5,6 +5,8 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.abspath(__file__))
 arxiv, lang = sys.argv[1], sys.argv[2]
 d = os.path.join(ROOT, "out", arxiv)
+try: LABEL = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8")).get("label") or f"arXiv:{arxiv}"
+except Exception: LABEL = f"arXiv:{arxiv}"
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 src = os.path.join(d, f"{arxiv}_{lang}.mp4")
 W, H = 1080, 1920
@@ -31,8 +33,8 @@ for ln in lines:
 hook = {"en": "The whole paper in under a minute", "zh": "一分钟看懂这篇论文"}[lang]
 g.text((60, y + 18), hook, font=mid, fill=(148, 163, 184))
 by = VY + VH + 90
-foot = {"en": ["Every quote and number on screen", "is checked against the paper text.", "", f"arXiv:{arxiv}", "paperexplainer-aiid.pub.atoms.world"],
-        "zh": ["画面里的每句引文和每个数字", "都和论文原文核对过。", "", f"arXiv:{arxiv}", "paperexplainer-aiid.pub.atoms.world"]}[lang]
+foot = {"en": ["Every quote and number on screen", "is checked against the paper text.", "", LABEL, "paperexplainer-aiid.pub.atoms.world"],
+        "zh": ["画面里的每句引文和每个数字", "都和论文原文核对过。", "", LABEL, "paperexplainer-aiid.pub.atoms.world"]}[lang]
 for i, ln in enumerate(foot):
     g.text((60, by), ln, font=small if i < 3 else mid, fill=(203, 213, 225) if i < 3 else (52, 211, 153)); by += 54 if i < 3 else 62
 bg = os.path.join(d, f"vbg_{lang}.png"); im.save(bg)

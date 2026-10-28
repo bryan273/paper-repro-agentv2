@@ -29,12 +29,16 @@ def upload(local, name):
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
-arxiv = row["arxiv"]
+key = row["arxiv"]
+model, voice = row.get("model") or "deepseek", row.get("voice") or "female"
+VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-US-GuyNeural", "zh-CN-YunxiNeural")}
+# files and uploads are named by this slug, so one paper can exist in several model / voice versions
+arxiv = key if (model, voice) == ("deepseek", "female") else f"{key}-{model}-{voice}"
 d = os.path.join(ROOT, "out", arxiv)
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
 try:
     update(status="running", stage="reading the paper and writing the script")
-    run("gen.py", arxiv, "--seconds", "36", *(["--url", row["source_url"]] if row.get("source_url") else []))
+    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", "36", *(["--url", row["source_url"]] if row.get("source_url") else []))
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
     update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the English video")

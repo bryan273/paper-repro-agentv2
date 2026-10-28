@@ -9,7 +9,7 @@ const GH_REPO = Deno.env.get("GH_REPO") ?? "bryan273/paper-repro-agent";
 const PER_VISITOR_DAY = Number(Deno.env.get("EXPLAINER_PER_VISITOR_DAY") ?? "3");
 const DAILY = Number(Deno.env.get("EXPLAINER_DAILY") ?? "40");
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
-const PUBLIC = "id,arxiv,source_url,status,stage,title,videos,checks,error,created_at,updated_at";
+const PUBLIC = "id,arxiv,source_url,model,voice,style,status,stage,title,videos,checks,error,created_at,updated_at";
 
 async function db(path: string, init: RequestInit = {}) {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, { ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) } });
@@ -58,11 +58,15 @@ Deno.serve(async (req) => {
       }
       return json(j);
     }
-    const { arxiv, visitor } = await req.json();
+    const body = await req.json();
+    const { arxiv, visitor } = body;
+    const model = ["deepseek", "stepfun"].includes(body.model) ? body.model : "deepseek";
+    const voice = ["female", "male"].includes(body.voice) ? body.voice : "female";
+    const style = ["classic"].includes(body.style) ? body.style : "classic";
     const url = arxivId(arxiv) ? null : sourceUrl(arxiv);
     const a = arxivId(arxiv) ?? (url ? "u" + (await sha(url)) : null);
     if (!a) return json({ error: "Paste a paper link: an arXiv link or id, a link to a PDF, or a DOI." }, 400);
-    const done = await db(`explainer_jobs?arxiv=eq.${a}&status=in.(done,queued,running)&select=${PUBLIC}&order=created_at.desc&limit=1`);
+    const done = await db(`explainer_jobs?arxiv=eq.${a}&model=eq.${model}&voice=eq.${voice}&style=eq.${style}&status=in.(done,queued,running)&select=${PUBLIC}&order=created_at.desc&limit=1`);
     if (done.length) return json({ ...done[0], cached: true });
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
     const vid = await sha(`${ip}|${String(visitor ?? "").slice(0, 64)}|explainer`);
@@ -80,7 +84,7 @@ Deno.serve(async (req) => {
       title = (entry.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "").replace(/\s+/g, " ").trim();
       if (!title || /Error/.test(title)) return json({ error: "That arXiv id was not found." }, 404);
     }
-    const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: a, title, source_url: url, visitor: vid, stage: "waiting for a renderer" }) });
+    const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: a, title, source_url: url, model, voice, style, visitor: vid, stage: "waiting for a renderer" }) });
     if (!GH_TOKEN) return json({ ...row, note: "queued; the renderer is started by hand until GH_DISPATCH_TOKEN is set" });
     const gh = await fetch(`https://api.github.com/repos/${GH_REPO}/actions/workflows/explainer-render.yml/dispatches`, {
       method: "POST", headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "paper-explainer" },
