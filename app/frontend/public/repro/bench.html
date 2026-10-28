@@ -5,11 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Paper Repro Benchmark</title>
 <meta name="description" content="Which model reproduces research papers best, cheapest and most honestly? Same task, same steps, same judge.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261028a">
-<script src="theme.js?v=20261028a"></script>
+<style id="critical">/* shown even if style.css is slow or blocked */
+body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.tb{display:flex;align-items:center;gap:8px;height:64px;padding:0 18px;background:#F8F7F4;border-bottom:1px solid #E7E5DF}
+.tb a{color:inherit;text-decoration:none}.tbnav{display:flex;gap:14px;align-items:center}.tbact{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tbsheet,.suitemenu,.helpmodal[hidden]{display:none}
+</style>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="style.css?v=20261028d">
+<script src="theme.js?v=20261028d"></script>
 </head>
 <body class="benchpage" data-page="bench">
 <header class="tb" id="tb">
@@ -19,8 +23,8 @@
     <a href="index.html#papers" data-pane="papers">Papers</a>
     <a href="index.html#runs" data-pane="runs">Runs</a>
     <a href="bench.html" data-page="bench">Benchmark</a>
-    <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer <span class="new">New</span></a>
-    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">More tools <span aria-hidden="true">&#9662;</span></button>
+    <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer</a>
+    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">Paper Repro Suite <span aria-hidden="true">&#9662;</span></button>
       <div class="suitemenu" id="suiteMenu" hidden>
         <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener"><b>Repro Lite <i>&#8599;</i></b><span>Check one claim in your browser</span></a>
         <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener"><b>Reading Companion <i>&#8599;</i></b><span>Read arXiv papers with cited answers</span></a>
@@ -38,8 +42,8 @@
   <a href="index.html#runs" data-pane="runs">Completed runs</a>
   <a href="bench.html" data-page="bench">Benchmark</a>
   <div class="navh">Learn</div>
-  <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer <span class="new">New</span><span class="ext">&#8599;</span></a>
-  <div class="navh">More tools</div>
+  <a href="https://paperexplainer-aiid.pub.atoms.world/" target="_blank" rel="noopener">Paper Explainer<span class="ext">&#8599;</span></a>
+  <div class="navh">Paper Repro Suite</div>
   <a href="https://reprolite-aiid.pub.atoms.world/" target="_blank" rel="noopener">Repro Lite<span class="ext">&#8599;</span></a>
   <a href="https://readingcompanion-aiid.pub.atoms.world/" target="_blank" rel="noopener">Reading Companion<span class="ext">&#8599;</span></a>
   <a href="https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0" target="_blank" rel="noopener">IndexBoard<span class="ext">&#8599;</span></a>
@@ -48,8 +52,8 @@
 </div>
 
 <main class="bench" id="bench"><p class="muted">Loading...</p></main>
-<script src="i18n.js?v=20261028a"></script>
-<script src="bench.js?v=20261028a"></script>
-<script src="nav.js?v=20261028a"></script>
+<script src="i18n.js?v=20261028d"></script>
+<script src="bench.js?v=20261028d"></script>
+<script src="nav.js?v=20261028d"></script>
 </body>
 </html>

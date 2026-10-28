@@ -16,7 +16,12 @@ def req(method, path, body=None, ctype="application/json", extra=None):
 
 def update(**f):
     f["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    req("PATCH", f"/rest/v1/explainer_jobs?id=eq.{job}", f, extra={"Prefer": "return=minimal"})
+    for k in range(5):   # the connection from a home network can drop; a lost status write must not leave a job stuck
+        try:
+            return req("PATCH", f"/rest/v1/explainer_jobs?id=eq.{job}", f, extra={"Prefer": "return=minimal"})
+        except Exception:
+            if k == 4: raise
+            import time; time.sleep(3 * (k + 1))
 
 def upload(local, name):
     with open(local, "rb") as fh:
@@ -29,7 +34,7 @@ d = os.path.join(ROOT, "out", arxiv)
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
 try:
     update(status="running", stage="reading the paper and writing the script")
-    run("gen.py", arxiv, "--seconds", "36")
+    run("gen.py", arxiv, "--seconds", "36", *(["--url", row["source_url"]] if row.get("source_url") else []))
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
     update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the English video")
@@ -45,5 +50,8 @@ try:
     print("done", videos)
 except Exception as e:
     traceback.print_exc()
-    update(status="failed", stage=None, error=str(e)[:400])
+    msg = str(e)
+    if "402" in msg or "Insufficient" in msg or "gen.py" in msg and "non-zero" in msg:
+        msg = "The video service is temporarily out of credit or unavailable. Please try again later; no daily quota was used."
+    update(status="failed", stage=None, error=msg[:400])
     sys.exit(1)

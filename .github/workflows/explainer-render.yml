@@ -30,7 +30,7 @@ jobs:
       - name: Install
         run: |
           sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-cjk
-          pip install -q edge-tts playwright pillow
+          pip install -q edge-tts playwright pillow pymupdf
           python -m playwright install --with-deps chromium
       - name: Render
         run: python render_job.py "${{ inputs.job_id }}"

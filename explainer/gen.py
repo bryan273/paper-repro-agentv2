@@ -20,6 +20,41 @@ def clean(h):
     h = re.sub(r"</(p|div|h\d|li|tr)>", "\n", h); h = re.sub(r"<[^>]+>", " ", h)
     return re.sub(r"[ \t]+", " ", html.unescape(h)).strip()
 
+import ipaddress, socket
+def safe_url(url):
+    from urllib.parse import urlparse
+    u = urlparse(url)
+    if u.scheme not in ("http", "https") or not u.hostname: raise RuntimeError("That link is not a web address.")
+    for ai in socket.getaddrinfo(u.hostname, None):
+        ip = ipaddress.ip_address(ai[4][0])
+        if any(ip in ipaddress.ip_network(n) for n in ("198.18.0.0/15", "fdfe:dcba:9876::/48") if ip.version == ipaddress.ip_network(n).version): continue   # fake-ip range used by local proxies, not a real internal host
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved: raise RuntimeError("That link points to a private address.")
+    return url
+
+def paper_url(url):
+    """Any paper that is not on arXiv: a direct PDF, a paper page, or a DOI. Returns (title, abstract, text)."""
+    safe_url(url)
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (paper-explainer)", "Accept": "application/pdf,text/html;q=0.9,*/*;q=0.5"})
+    r = urllib.request.urlopen(req, timeout=60); data = r.read(30_000_000); ctype = (r.headers.get("content-type") or "").lower()
+    safe_url(r.geturl())
+    if "pdf" in ctype or data[:5] == b"%PDF-" or url.lower().split("?")[0].endswith(".pdf"):
+        import fitz
+        doc = fitz.open(stream=data, filetype="pdf"); text = "\n".join(p.get_text() for p in doc)
+        title = (doc.metadata or {}).get("title") or ""
+        if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
+    else:
+        h = data.decode("utf-8", "ignore")
+        m = re.search(r"<meta[^>]+name=[\"']citation_title[\"'][^>]+content=[\"']([^\"']+)", h, re.I) or re.search(r"<title>(.*?)</title>", h, re.S | re.I)
+        title = html.unescape(re.sub(r"\s+", " ", m.group(1))).strip() if m else "Paper"
+        text = clean(h)
+        pm = re.search(r"<meta[^>]+href=[\"']([^\"']+\.pdf)[\"']|<meta[^>]+name=[\"']citation_pdf_url[\"'][^>]+content=[\"']([^\"']+)", h, re.I)
+        if len(text) < 3000 and pm:   # a landing page: follow its PDF link
+            from urllib.parse import urljoin
+            return paper_url(urljoin(r.geturl(), pm.group(1) or pm.group(2)))
+    text = re.sub(r"[ \t]+", " ", text).strip()
+    if len(text) < 1500: raise RuntimeError("Could not read enough text from that link. Try a direct PDF link.")
+    return title[:200], text[:1500], text[:60000]
+
 def paper(arxiv):
     xml = get(f"https://export.arxiv.org/api/query?id_list={arxiv}")
     title = re.sub(r"\s+", " ", re.search(r"<title>(.*?)</title>", xml.split("<entry>")[1], re.S).group(1)).strip()
@@ -83,18 +118,19 @@ def dur_ms(path):
     return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path]).decode().strip()) * 1000
 
 async def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--seconds", type=int, default=24)
+    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--seconds", type=int, default=24)
     ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true")
     a = ap.parse_args()
     out = os.path.join(ROOT, "out", a.arxiv.replace("/", "_")); os.makedirs(out, exist_ok=True)
-    title, abstract, text = paper(a.arxiv); print("paper:", title, "| text chars", len(text))
+    LABEL = (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
+    title, abstract, text = paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
         sysmsg = SYSTEM.replace("{SECONDS}", str(a.seconds)).replace("{WORDS}", str(int(a.seconds * 2.4)))
         sc, usage = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}"); print("llm usage", usage)
         bad = verify(sc, text); print("unverified:", bad)
-        sc["arxiv"] = a.arxiv; sc["paper_title"] = title; sc["unverified"] = [str(b) for b in bad]
+        sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if a.url else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for lang, voice in (("en", a.voice_en), ("zh", a.voice_zh)):
         scenes = json.loads(json.dumps(sc["scenes"]))
@@ -104,7 +140,7 @@ async def main():
             s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 900, 3200))
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 4200)
             if s.get("evidence") is not None: s["evidence"] = f"arXiv:{a.arxiv} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else f"arXiv:{a.arxiv}"
-            elif s["type"] not in ("title", "end"): s["evidence"] = f"arXiv:{a.arxiv}"
+            elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
         json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))

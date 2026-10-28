@@ -22,6 +22,18 @@
   addEventListener("keydown", (e) => { if (e.key === "Escape") { openMenu(false); openSuite(false); } });
   addEventListener("resize", () => { if (innerWidth > 980) openMenu(false); });
 
+
+  // how-to-use guide: opens from the top bar, once automatically on a first visit
+  const helpM = $("#helpModal"), helpB = $("#helpBtn");
+  function help(on) { if (helpM) helpM.hidden = !on; }
+  if (helpB) helpB.onclick = () => help(true);
+  if (helpM) {
+    $("#helpClose").onclick = () => help(false);
+    helpM.addEventListener("click", (e) => { if (e.target === helpM) help(false); });
+    addEventListener("keydown", (e) => { if (e.key === "Escape") help(false); });
+    try { if (onIndex && !localStorage.getItem("repro.helpSeen")) { localStorage.setItem("repro.helpSeen", "1"); setTimeout(() => help(true), 900); } } catch (e) {}
+  }
+
   // the status text is hidden in the bar; keep it as the dot's tooltip
   const st = $("#status"), stt = $("#statusText");
   if (st && stt) { const sync = () => { st.title = stt.textContent; }; sync(); new MutationObserver(sync).observe(stt, { childList: true, characterData: true, subtree: true }); }
