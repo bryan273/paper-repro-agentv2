@@ -14,7 +14,8 @@ from pathlib import Path
 import pytest
 
 playwright = pytest.importorskip("playwright.sync_api")
-WEB = Path(__file__).resolve().parent.parent / "web"
+_ROOT = Path(__file__).resolve().parent.parent
+WEB = _ROOT / "web" if (_ROOT / "web").exists() else _ROOT / "app" / "frontend" / "public" / "repro"
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
@@ -53,6 +54,7 @@ def browser():
 @pytest.fixture
 def page(browser):
     pg = browser.new_page(viewport={"width": 1600, "height": 1000}, accept_downloads=True)
+    pg.add_init_script("try{localStorage.setItem('repro.helpSeen','1')}catch(e){}")   # the how-to guide opens by itself on a first visit
     pg.errors = []
     pg.on("pageerror", lambda e: pg.errors.append(str(e)))
     yield pg
@@ -248,3 +250,43 @@ def test_search_by_author_lists_papers_marks_past_runs_and_picks_one(page, base_
     assert page.input_value("#paperId") == "2601.03664"
     assert "Stochastic Voronoi" in page.inner_text("#pickedTitle")
     assert page.locator("#pickedActions [data-act=live]").count() == 1
+
+
+def test_help_guide_opens_closes_and_auto_opens_once(browser, base_url):
+    ctx = browser.new_context(viewport={"width": 1280, "height": 800}); pg = ctx.new_page()
+    pg.goto(base_url + "index.html"); pg.wait_for_selector("#helpBtn", timeout=15000)
+    pg.wait_for_function("document.querySelector('#helpModal') && !document.querySelector('#helpModal').hidden", timeout=5000)  # first visit
+    pg.keyboard.press("Escape"); assert pg.locator("#helpModal").is_hidden()
+    pg.reload(); pg.wait_for_timeout(1800); assert pg.locator("#helpModal").is_hidden()           # not again
+    pg.click("#helpBtn"); assert pg.locator("#helpModal").is_visible()
+    pg.click("#helpClose"); assert pg.locator("#helpModal").is_hidden()
+    ctx.close()
+
+
+def test_start_guide_and_nav_without_new_badge(page, base_url):
+    page.goto(base_url + "index.html"); page.wait_for_selector("#startguide")
+    assert page.locator("#startguide .sgs li").count() == 3
+    assert page.locator(".tbnav .new").count() == 0
+    assert "Paper Repro Suite" in page.locator("#suiteBtn").inner_text()
+
+
+def test_kit_takes_arxiv_id_from_uploaded_file_name(browser, base_url):
+    ctx = browser.new_context(viewport={"width": 1280, "height": 800}); pg = ctx.new_page()
+    pg.add_init_script("localStorage.setItem('repro.helpSeen','1')")
+    pg.goto(base_url + "index.html"); pg.wait_for_selector("#fileInput", state="attached")
+    pg.set_input_files("#fileInput", {"name": "2312.15235v1.pdf", "mimeType": "application/pdf", "buffer": b"%PDF-1.4 test"})
+    pg.wait_for_selector("#picked:not([hidden])", timeout=10000)
+    btn = pg.locator("#kitBtns button").first
+    if btn.count():
+        btn.click(); pg.wait_for_timeout(800)
+        assert "Pick a paper first" not in pg.locator("#kitOut").inner_text()
+        assert pg.input_value("#paperId") == "2312.15235"
+    ctx.close()
+
+
+def test_no_google_fonts_requests(browser, base_url):
+    ctx = browser.new_context(); pg = ctx.new_page(); hits = []
+    pg.on("request", lambda r: hits.append(r.url) if "googleapis" in r.url or "gstatic" in r.url else None)
+    pg.goto(base_url + "index.html"); pg.wait_for_timeout(1200); pg.goto(base_url + "bench.html"); pg.wait_for_timeout(1200)
+    assert not hits, hits
+    ctx.close()
