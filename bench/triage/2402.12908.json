@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "RealCompo achieves a CLIP Score of 0.334 on 3K COCO validation prompts, outperforming Stable Diffusion v1.4 (0.307), SD v2.1 (0.321), SDXL (0.322), GLIGEN (0.301), and LMD+ (0.298).",
+  "table_ref": "Table 2",
+  "dataset": "COCO validation set (3K randomly selected prompts)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/YangLing0818/RealCompo"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": 20,
+  "basis": "Generating 3K images with a training-free composition of two diffusion models (SD v1.5 + GLIGEN) requires GPU acceleration; on CPU, each image would take minutes, making the full evaluation infeasible within a few hours."
+ },
+ "blockers": [
+  "Requires GPT-4 API for layout generation (closed-source, paid)",
+  "Needs GPU for reasonable runtime (CPU generation of 3K images is too slow)",
+  "Code repository may not include exact evaluation scripts or pre-generated layouts"
+ ],
+ "suitable": false,
+ "id": "2402.12908",
+ "title": "RealCompo: Balancing Realism and Compositionality Improves Text-to-Image Diffusion Models",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

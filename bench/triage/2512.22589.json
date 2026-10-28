@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Top association rule for Cluster 1 (SAE Level 4 ADS): [Roadway Surface = Dry] + [Reporting Entity = Zoox, Inc.] -> [Make = Toyota] with support 0.08, confidence 1.00, lift 13.26",
+  "table_ref": "Table 5, Rule 1",
+  "dataset": "NHTSA Standing General Order (SGO) AV crash data, 2021-Jul 2024 (2,703 raw rows; 2,380 cleaned)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "K-means + Apriori on ~2,380 rows is trivial compute; the effort is downloading/merging NHTSA SGO files and re-implementing the paper's undocumented cleaning, feature engineering, and clustering pipeline from scratch."
+ },
+ "blockers": [
+  "No code or configs released; full pipeline (missing-value handling, text-mined automation level, binning, label encoding, K-means seed/features) must be reverse-engineered",
+  "Exact cluster membership and rule counts depend on undocumented preprocessing choices, so the specific cell may not reproduce exactly",
+  "NHTSA SGO data is public but must be assembled from multiple downloadable files"
+ ],
+ "suitable": true,
+ "id": "2512.22589",
+ "title": "Data-Driven Analysis of Crash Patterns in SAE Level 2 and Level 4 Automated Vehicles Using K-means Clustering and Association Rule Mining",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

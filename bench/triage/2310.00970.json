@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "EALM achieves a Samples F1 score of 44.5% on the MP-ETHICS test set, outperforming RoBERTa-base (35.7%), DeBERTa-base (37.3%), and DeBERTa3-large (38.1%).",
+  "table_ref": "Table 4: MP-ETHICS leaderboard",
+  "dataset": "MP-ETHICS (public scaled-down version: 100 train / 100 test samples)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/wanng-ide/ealm"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "gpu_speedup": 3,
+  "basis": "MP-ETHICS is tiny (100 train / 100 test), but reproducing EALM requires implementing the cross-attention ethical reasoning module on top of DeBERTa-v3-large and fine-tuning for 20 epochs; on CPU this is slow but feasible within a couple of hours, and the paper only releases a scaled-down dataset so exact numbers may not match."
+ },
+ "blockers": [
+  "Only a scaled-down MP-ETHICS (100/100 samples) is publicly released; the full dataset is withheld, so the reported 44.5% may not be exactly reproducible.",
+  "The EALM cross-attention ethical reasoning module is described but not guaranteed to be fully implemented in the linked repo; reimplementation may be needed.",
+  "Paper reports training on a single A100 GPU; CPU-only reproduction will be slower and may need hyperparameter adjustment."
+ ],
+ "suitable": true,
+ "id": "2310.00970",
+ "title": "EALM: Introducing Multidimensional Ethical Alignment in Conversational Information Retrieval",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

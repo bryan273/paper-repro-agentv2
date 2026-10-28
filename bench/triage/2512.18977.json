@@ -1,0 +1,27 @@
+{
+ "target": {
+  "statement": "AUC-ROC of COD on the Audiology dataset with 5 labeled outliers (value 0.877 in Table 3)",
+  "table_ref": "Table 3",
+  "dataset": "Audiology"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ChenBaiyang/COD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "COD is a simple fuzzy-rough algorithm with O(mn^2) complexity; Audiology has only 226 samples and 69 attributes, so a single run takes seconds on CPU; the main cost is downloading the dataset and implementing the method from the paper (code may be available but not verified)."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2512.18977",
+ "title": "Consistency-guided semi-supervised outlier detection in heterogeneous data using fuzzy rough sets",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

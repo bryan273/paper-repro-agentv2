@@ -1,0 +1,110 @@
+{
+ "approach": "Use the authors' GitHub repository as the source of truth. First check whether Rscript exists; if it does, reproduce.py invokes the authors' code_11_table3.R as-is and parses the Lymphoma MNAR0 30% row. Because the sandbox is Python-only, the executable fallback is a faithful Python transliteration of code_01_functions.R and only the C1 block of code_11_table3.R: it loads Lymphoma, reproduces the exact MNAR0 30% mask generator, selects lambda by the repository's instability criterion, fits MNAR-k-means and k-POD (lambda=0), computes pairwise CER over 10 repetitions, and writes results/metrics.json. The port changes language only, not the method, and is validated by checking that k-POD lands near the paper's 0.279 before trusting the proposed 0.029.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin Python packages used by the fallback: numpy, scipy, pandas, scikit-learn.",
+   "requirement_ids": []
+  },
+  {
+   "path": "data_utils.py",
+   "purpose": "Load lymphoma.x/y, reproduce the author MNAR0 mask from code_11_table3.R, and compute pairwise CER and optional MSE.",
+   "requirement_ids": [
+    "R5",
+    "R7",
+    "R8",
+    "R12"
+   ]
+  },
+  {
+   "path": "mnar_kmeans.py",
+   "purpose": "Core MNAR-k-means: mean-imputation + k-means++ initialization, binary membership update, penalized center update, loss, and full fit; k-POD is the lambda=0 path.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R6",
+    "R10",
+    "R11",
+    "R14"
+   ]
+  },
+  {
+   "path": "instability.py",
+   "purpose": "Port the repository instability criterion for selecting lambda from {2,4,6,8,10}; fall back to A8 only if the author code lacks an explicit implementation.",
+   "requirement_ids": [
+    "R13"
+   ]
+  },
+  {
+   "path": "run_c1.py",
+   "purpose": "Run C1: 10 repetitions of Lymphoma k=3 MNAR0 30%, proposed vs k-POD, collecting per-repetition CERs and selected lambdas.",
+   "requirement_ids": [
+    "R7",
+    "R9",
+    "R10",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint. Prefer Rscript code_11_table3.R if R is available; otherwise call run_c1.py. Write results/metrics.json.",
+   "requirement_ids": [
+    "R9"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/GXguanxin/MNAR-k-means (paper code link)",
+  "lymphoma_x": "realdata/lymphoma.x.txt (repo)",
+  "lymphoma_y": "realdata/lymphoma.y.txt (repo)",
+  "n": "62 (Table 3)",
+  "p": "4026 (Table 3)",
+  "k": "3 (Table 3)",
+  "missing_mechanism": "MNAR0, 30% (C1; copy exact generator from code_11_table3.R)",
+  "missing_rate": "0.30 (C1)",
+  "n_repetitions": "10 (C1)",
+  "lambda_grid": "[2,4,6,8,10] (R13)",
+  "lambda_kpod": "0 (R10)",
+  "n_init_final": "100 (R14)",
+  "n_init_instability": "20 (runtime assumption for lambda selection; final fits use 100)",
+  "max_iter": "100 (R14)",
+  "tol": "relative loss change < 1e-6 or U unchanged (A3)",
+  "empty_cluster": "retain previous center (A4)",
+  "tie_break": "smallest cluster index (A5)",
+  "standardize": "False (A9)",
+  "instability_repeats": "10 (A8)",
+  "instability_train_size": "floor(n/3) (A8)",
+  "random_seed": "0 (assumption)",
+  "cer_metric": "pairwise CER, Eq. Section 5 (R7)",
+  "mse_metric": "sum_l min_l' ||mu_l - mu_l'||^2 (R8; report only if true centers are available)",
+  "smoke": "2 repetitions, lambda grid {2,10}, 5 initializations, max_iter=20"
+ },
+ "steps": [
+  "Clone https://github.com/GXguanxin/MNAR-k-means into repo/ with git if it is not already present.",
+  "Inspect code_11_table3.R, code_01_functions.R, and initcenters_oncepkpod_functions.cpp; record the exact C1 block: Lymphoma loading, MNAR0 30% mask generation, lambda grid, instability selection, CER, and random seeds.",
+  "Check for R with python -c \"import shutil; print(shutil.which('Rscript'))\".",
+  "If Rscript exists: run the authors' code_11_table3.R as-is (or the smallest existing invocation that produces Table 3), capture the MNAR0 30% proposed and k-POD CER values, and write them to results/metrics.json. Do not alter the method.",
+  "If Rscript is absent: create requirements.txt and pip-install any missing Python packages from it.",
+  "Implement data_utils.py by direct transliteration of the author data loader and MNAR0 mask code; verify X is 62x4026, y has 62 labels, and the three class counts match the Lymphoma labels.",
+  "Implement mnar_kmeans.py with k-means++ initialization on column-mean-imputed data, membership update Eq.(7)/(8), center update Algorithm 1 line 4, empty-cluster retention, and lambda=0 as k-POD.",
+  "Implement instability.py to match the repository criterion; if the repository does not expose it clearly, use A8 (10 repeats, m=floor(n/3)).",
+  "Implement run_c1.py: for each of 10 repetitions, generate the MNAR0 30% mask, select lambda on {2,4,6,8,10}, fit proposed with 100 initializations, fit k-POD with 100 initializations, compute pairwise CER against the true labels, and store per-repetition results.",
+  "Implement reproduce.py to prefer the R path and otherwise call run_c1.py; always write results/metrics.json with claim_id C1, proposed CER, k-POD CER, SD, per-repetition CERs, selected lambdas, config, and elapsed time.",
+  "Run the smoke test, then the full C1 run, then validate the result against the paper's 0.029 +/- 0.03 tolerance and the k-POD sanity value near 0.279."
+ ],
+ "smoke_test": "python reproduce.py --smoke: load Lymphoma, use 2 repetitions, lambda grid {2,10}, 5 initializations, max_iter=20, and write results/smoke_metrics.json. Assert CERs are finite, the k-POD CER is above 0.20, and the proposed CER is no worse than k-POD on the smoke run.",
+ "intermediate_checks": [
+  "Confirm lymphoma.x.txt loads as X with shape (62, 4026) after any necessary transpose, and lymphoma.y.txt has length 62 with exactly 3 classes.",
+  "Confirm the reproduced MNAR0 30% mask has missing rate approximately 0.30 and that no row is entirely missing; if any all-missing rows occur, drop them per R12.",
+  "Confirm the pairwise CER implementation gives 0 when two labelings are identical up to permutation and approximately 0.5-0.7 for random balanced labelings on n=62.",
+  "Confirm k-POD (lambda=0) on Lymphoma MNAR0 30% gives CER in the paper's neighborhood, about 0.279 +/- 0.03; this is the strongest check that the mask and clustering port are faithful.",
+  "Confirm the proposed method with lambda=0 is exactly the k-POD path.",
+  "Confirm the objective decreases monotonically within each fit and that selected lambdas are not all at a grid boundary.",
+  "Confirm final fits use 100 initializations and max 100 iterations; if runtime forces a scale-down, record the reduced values in metrics.json and use at least 5 repetitions."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "0-5 min: clone repo, inspect the two R files and C++ helper, check Rscript. 5-10 min: if R exists, set up/run author Table 3; otherwise implement the Python transliteration. 10-12 min: smoke test and the k-POD sanity check. 12-24 min: full C1 run with 10 repetitions and 100 initializations per final fit. 24-25 min: write results/metrics.json and validate the reported CER against C1. If the full run exceeds budget, reduce to 5 repetitions and 20 initializations for lambda selection only, keeping 100 initializations for final proposed/k-POD fits."
+}

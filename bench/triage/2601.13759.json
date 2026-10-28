@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Chauvenet-type boxplot with n=31 yields fence coefficient k=1.28 and upper fence Q3+1.28*IQR=2.67%, flagging Qinghai (2.7%) as an additional borderline outlier beyond Tianjin, Beijing, Shanghai, Jilin",
+  "table_ref": "Section 5 text / Figure 2 (985 Rate panels)",
+  "dataset": "Gaokao 2024 provincial 985 admission rates (31 provinces, Table 1)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/tiejuntong/ChauBoxplot"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Install two small CRAN R packages and run a handful of boxplot calls on a 31-row table; the only real work is transcribing the 31 admission rates from Table 1."
+ },
+ "blockers": [
+  "Admission-rate data must be transcribed from Table 1 (source website gk100.com may be unavailable), though the values are printed in the paper",
+  "Repo link is a personal GitHub account; exact analysis script may not be present"
+ ],
+ "suitable": true,
+ "id": "2601.13759",
+ "title": "ChauBoxplot and AdaptiveBoxplot: Two R packages for boxplot-based outlier detection",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Number of successful runs (out of 100) forming the expected number of clusters for a given algorithm/dataset/cluster-count combination, e.g. FGWC+ABC on the East Java dengue dataset (Case 2) with c=2",
+  "table_ref": "Figure 1b (Case 2 success counts)",
+  "dataset": "East Java dengue fever (Case 2, 9 indicators, district level)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/bmlmcmc/naspaclust/tree/main/data",
+  "https://cran.r-project.org/package=naspaclust"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "The R package and bundled census data are public, but the East Java dengue dataset is not clearly downloadable and the full protocol is 100 stochastic runs x 7 algorithms x 5 cluster counts x 3 datasets at 1000 iterations, so a single cell still requires re-running a large simulation grid on CPU."
+ },
+ "blockers": [
+  "East Java dengue dataset (Case 2) not clearly provided in the linked repo",
+  "Full protocol is 100 repetitions x 7 algorithms x 5 cluster counts x 3 datasets, expensive on CPU",
+  "Results are stochastic; exact success counts may not match without the original seeds"
+ ],
+ "suitable": true,
+ "id": "2610.16356",
+ "title": "naspaclust: A hybridisation of spatial fuzzy clustering with nature-inspired optimisation",
+ "pages": 42,
+ "model": "DeepSeek-V4.1-Flash"
+}

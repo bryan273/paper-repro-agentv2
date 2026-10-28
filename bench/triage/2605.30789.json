@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "S2L-PO with a 1.7B explorer guiding an 8B model achieves 23.8 Pass@1 on AIME24, versus 15.0 for the standard GRPO baseline (+8.8), the paper's headline improvement.",
+  "table_ref": "Table 1",
+  "dataset": "AIME24 (with training on DAPO17k)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/qishisuren123/S2L-PO"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 100000,
+  "gpu_speedup": null,
+  "basis": "The target is a full 8B-parameter GRPO training run on DAPO17k using 8 NVIDIA L20 GPUs, so it cannot be reproduced on an 8-core CPU-only laptop; the time estimate is effectively unbounded on such hardware."
+ },
+ "blockers": [
+  "needs 8 NVIDIA L20 GPUs (or equivalent multi-GPU training)",
+  "8B GRPO training exceeds 16 GB laptop RAM and CPU-only compute",
+  "requires long RL rollout generation and large model checkpoints"
+ ],
+ "suitable": false,
+ "id": "2605.30789",
+ "title": "Smaller Models are Natural Explorers for Policy-Level Diversity in GRPO",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

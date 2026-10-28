@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MEAN achieves 84.5% accuracy on the MR dataset (sentence-level binary sentiment classification)",
+  "table_ref": "Table 1, row 'MEAN(our model)', column 'MR'",
+  "dataset": "Movie Review (MR)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code released; the model (Char-CNN + 4 GRUs + multi-resource attention) must be reimplemented from the paper, and the MR dataset plus GloVe and sentiment/negation/intensity lexicons must be assembled, then trained on CPU."
+ },
+ "blockers": [
+  "No code or configs released, so the full MEAN architecture (coupled char/word embeddings, three attention paths, diversity penalty) must be reimplemented from scratch",
+  "Sentiment lexicon is a combination of Qian et al. 2017 and Hu & Liu 2004; negation and intensity word lists were 'collected manually' and are not released",
+  "Exact data split of Qian et al. 2017 must be inferred",
+  "Training on CPU is feasible but slow; no GPU available"
+ ],
+ "suitable": false,
+ "id": "1807.04990",
+ "title": "A Multi-sentiment-resource Enhanced Attention Network for Sentiment Classification",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GMC test accuracy on the WDBC breast cancer dataset (0.970 ± 0.010, mean over 3 seeds)",
+  "table_ref": "Table 2 (Main results, accuracy), row 'wdbc', column 'GMC'",
+  "dataset": "WDBC (UCI Breast Cancer Wisconsin Diagnostic), 569 samples, 2 classes, 30 features"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Abitsfhuusrtyt/-Geometric-Mixture-Classifier-GMC---A-Discriminative-Per-Class-Mixture-of-Hyperplanes",
+  "https://github.com/Abitsfhuusrtyt/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Tiny tabular dataset (569x30) and a small per-class hyperplane model trained on CPU in <1s per the paper's own timing table; the main cost is re-implementing the GMC training recipe (k-means init, alpha annealing, usage-aware L2, early stopping) from the paper since the linked repo is unverified, plus 3 seeds and baseline comparison."
+ },
+ "blockers": [
+  "Linked GitHub repo is unverified/possibly empty or incomplete; the GMC training recipe must likely be re-implemented from the paper text",
+  "Exact splits, seeds, and preprocessing details are only partially specified (60/20/20 stratified, seeds {0,1,2})",
+  "Exact reproduction of 0.970 ± 0.010 may be sensitive to unspecified hyperparameter details"
+ ],
+ "suitable": true,
+ "id": "2509.16769",
+ "title": "Geometric Mixture Classifier (GMC): A Discriminative Per-Class Mixture of Hyperplanes",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Faster R-CNN + APDI + Box IoU head with ResNet-50 FPN, 1x schedule, achieves 42.0 AP on COCO test-dev (vs 38.3 AP for reimplemented Faster R-CNN baseline)",
+  "table_ref": "Table 2",
+  "dataset": "MS COCO 2017 (train-2017 / test-dev)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/facebookresearch/detectron2"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 50,
+  "basis": "The paper's own implementation details state all experiments ran on 8 Tesla V100-16GB GPUs; a 1x COCO training schedule is ~90k iterations of Faster R-CNN with ResNet-50 FPN, which is many GPU-hours even on a single V100 and infeasible on an 8-core CPU laptop within a few hours."
+ },
+ "blockers": [
+  "No code released: the paper only links to the generic detectron2 repo, not to APDI/Box IoU head implementations; the APDI training loop and Box IoU head would have to be re-implemented from scratch.",
+  "Training requires GPU: the paper used 8x V100-16GB; a 1x COCO schedule on CPU is not feasible in a few hours.",
+  "COCO train-2017 (~18 GB) plus test-dev must be downloaded and preprocessed.",
+  "The headline number is on test-dev, which requires submitting to the COCO evaluation server (or at least running full inference on 20k test images)."
+ ],
+ "suitable": false,
+ "id": "2101.11789",
+ "title": "Augmenting Proposals by the Detector Itself",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

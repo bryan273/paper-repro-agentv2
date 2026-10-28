@@ -1,0 +1,272 @@
+{
+ "title": "The Bag-and-Whisker Plot: A New Bagplot for Bivariate Data",
+ "summary": "The paper addresses two limitations of the classical bagplot: a fixed inflation factor for outlier detection and an unstable convex-hull visualization of the fence. It recasts bivariate outlier detection as a multiple-testing problem using robust MCD-based Mahalanobis distances and χ²₂ p-values, then defines a data-adaptive fence via λ=max(λstat,λdata) with FWER/FDR/PFER control, and renders that fence directly with gradient whiskers. In the n=8 toy example all three error-control procedures flag only z8, and the final inflation factor is λ=8.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "In the n=8 toy example, the final data-adaptive inflation factor is λ=8 under FWER and FDR control.",
+   "metric": "final inflation factor λ",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 8,
+   "unit": "dimensionless multiplier",
+   "higher_is_better": false,
+   "table_ref": "Section 4, Step 5 (pp. 17-18)",
+   "config_for_value": "Depth median z1=(7,5); MCD covariance diag(53/3,17); χ²₂ p-values; Holm-Bonferroni FWER q=0.1 and BH FDR q=0.1; λstat≈3.27, λdata=8.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For FWER and FDR, λ = max(3.27, 8) = 8.",
+   "page": 18
+  },
+  {
+   "id": "C2",
+   "statement": "In the same toy example, PFER control also yields final λ=8.",
+   "metric": "final inflation factor λ",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 8,
+   "unit": "dimensionless multiplier",
+   "higher_is_better": false,
+   "table_ref": "Section 4, Step 5 (p. 18)",
+   "config_for_value": "Depth median z1=(7,5); MCD covariance diag(53/3,17); χ²₂ p-values; PFER q=0.5; λstat≈1.67, λdata=8.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For PFER, λ = max(1.67, 8) = 8.",
+   "page": 18
+  },
+  {
+   "id": "C3",
+   "statement": "In the toy example, the sole rejected observation across all three error-control procedures is z8.",
+   "metric": "index of sole rejected observation",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 8,
+   "unit": "observation index (z8)",
+   "higher_is_better": false,
+   "table_ref": "Section 4, Step 4 (p. 17)",
+   "config_for_value": "Holm-Bonferroni FWER q=0.1; BH FDR q=0.1; PFER q=0.5; χ²₂ p-values; MCD covariance; depth median z1.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "In this example, the rejection set is identical across all three procedures, consisting solely of the extreme observation z8.",
+   "page": 17
+  },
+  {
+   "id": "C4",
+   "statement": "In the toy example, z8 has squared Mahalanobis distance d²=21.39.",
+   "metric": "squared Mahalanobis distance d² for z8",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 21.39,
+   "unit": "squared Mahalanobis distance",
+   "higher_is_better": false,
+   "table_ref": "Section 4, Step 3 (p. 16)",
+   "config_for_value": "Robust μ depth median z1=(7,5); MCD covariance diag(53/3,17); d²=(zi−μ)ᵀΣ⁻¹(zi−μ).",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "d2 = {0.00, 0.24, 0.29, 0.29, 3.71, 3.71, 3.76, 21.39},",
+   "page": 16
+  },
+  {
+   "id": "C5",
+   "statement": "In the toy example, z8 has χ²₂ upper-tail p-value 2.27×10−5.",
+   "metric": "p-value for z8",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 2.27e-05,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Section 4, Step 3 (p. 16)",
+   "config_for_value": "χ²₂ reference distribution; d² for z8=21.39; p_i=P(χ²₂≥d²_i).",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "p-value = {1.00, 0.89, 0.87, 0.87, 0.16, 0.16, 0.15, 2.27 × 10−5}.",
+   "page": 16
+  },
+  {
+   "id": "C6",
+   "statement": "With the conventional fixed inflation factor 3, the original bagplot excludes four toy points (z5-z8) from its fence.",
+   "metric": "number of points excluded by fence",
+   "dataset": "Toy example Z={z1,...,z8} from Section 4",
+   "split": "all 8 observations (no train/test split)",
+   "value": 4,
+   "unit": "excluded points",
+   "higher_is_better": false,
+   "table_ref": "Section 4, final paragraph (p. 19)",
+   "config_for_value": "Original Rousseeuw et al. bagplot; fixed inflation factor 3; n=8 toy data.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "Applying the conventional fixed inflation factor of 3 to this dataset excludes four points (z5, z6, z7 and z8) from the fence.",
+   "page": 19
+  },
+  {
+   "id": "C7",
+   "statement": "Under bivariate normality the original bagplot's fixed factor 3 flags only 0.195% of observations.",
+   "metric": "outlier flag rate",
+   "dataset": "Theoretical bivariate normal distribution",
+   "split": "population/theoretical",
+   "value": 0.195,
+   "unit": "% of observations",
+   "higher_is_better": false,
+   "table_ref": "Section 2.2.1 (p. 6)",
+   "config_for_value": "Original bagplot; fixed inflation factor 3; bivariate normal null distribution.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s (theoretical calculation)",
+   "quote": "Under a bivariate normal distribution, however, the bagplot’s inflation factor of 3 results in only 0.195% of observations being outside of the fence.",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint specifically targets the toy example λ=8; C1 is the cheapest central target because it uses only n=8 data and exercises the full MCD→χ² p-value→multiple-testing→λ=max(λstat,λdata) pipeline, with C2/C3 confirming the same qualitative result under PFER and all three procedures."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: λ is an unbounded positive multiplier and the paper reports no standard deviation or CI for the toy example, so the prescribed 10% relative band applies."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Estimate the location parameter by the halfspace depth median.",
+   "cite": "Section 3.1, Step 1",
+   "quote": "Specifically, we estimate the location vector μ with the depth median.",
+   "page": 10
+  },
+  {
+   "id": "R2",
+   "stmt": "Estimate the covariance matrix with the Minimum Covariance Determinant (MCD) estimator.",
+   "cite": "Section 3.1, Step 1",
+   "quote": "For the covariance matrix Σ, we employ the highly robust Minimum Covariance Determinant (MCD) estimator",
+   "page": 10
+  },
+  {
+   "id": "R3",
+   "stmt": "Construct the bag as the central 50% deepest observations.",
+   "cite": "Section 3.1, Step 2",
+   "quote": "we construct the central “bag” to contain about 50% of observations with the maximum halfspace depth.",
+   "page": 10
+  },
+  {
+   "id": "R4",
+   "stmt": "Compute each point's squared Mahalanobis distance from the robust center using the robust covariance.",
+   "cite": "Section 3.1, Step 3, Eq. (1)",
+   "quote": "we first measure its standardized distance from the robustly estimated center using the squared Mahalanobis distance",
+   "page": 10
+  },
+  {
+   "id": "R5",
+   "stmt": "Convert each squared Mahalanobis distance to an upper-tail χ²₂ p-value.",
+   "cite": "Section 3.1, Step 3, Eq. (2)",
+   "quote": "Under the null hypothesis H0i that an observation zi is not an outlier, its squared Mahalanobis distance can be compared to a χ2 2 distribution.",
+   "page": 10
+  },
+  {
+   "id": "R6",
+   "stmt": "Apply a multiple-testing procedure at a specified error level q to obtain tadj.",
+   "cite": "Section 3.1, Step 4",
+   "quote": "we apply a standard multiple testing procedure to control a desired error rate (e.g., FWER, FDR, PFER) at a specified level q.",
+   "page": 10
+  },
+  {
+   "id": "R7",
+   "stmt": "Use Holm-Bonferroni for FWER at q=0.1, BH for FDR at q=0.1, and PFER at q=0.5.",
+   "cite": "Section 4, Step 4 and Section 5",
+   "quote": "For FWER and FDR we set the nominal levels to 0.1. For PFER we set the nominal level to 0.5",
+   "page": 20
+  },
+  {
+   "id": "R8",
+   "stmt": "Convert the adjusted significance threshold back to a squared Mahalanobis critical value d²adj.",
+   "cite": "Section 3.1, Step 4, Eq. (3)",
+   "quote": "We then convert this threshold back to the critical value for the squared Mahalanobis distance",
+   "page": 11
+  },
+  {
+   "id": "R9",
+   "stmt": "Define λstat using the median squared Mahalanobis distance as the scale for the bag boundary.",
+   "cite": "Section 3.1, Step 5",
+   "quote": "Since the bag’s boundary represents the 50th percentile of data depth, it should correspond approximately to the median of the squared Mahalanobis distances.",
+   "page": 11
+  },
+  {
+   "id": "R10",
+   "stmt": "Define λdata as the maximum magnification needed to enclose every non-rejected point.",
+   "cite": "Section 3.1, Step 5",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R11",
+   "stmt": "Set the final inflation factor to λ=max(λstat,λdata).",
+   "cite": "Section 3.1, Step 5, Eq. (4)",
+   "quote": "The final data-adaptive inflation factor λ is chosen to satisfy both the statistical criterion and the geometric constraint:",
+   "page": 12
+  },
+  {
+   "id": "R12",
+   "stmt": "Draw the fence directly and flag exactly the points outside it.",
+   "cite": "Section 3.2, principle 1",
+   "quote": "a point is flagged as an outlier if and only if it lies outside this line.",
+   "page": 14
+  },
+  {
+   "id": "R13",
+   "stmt": "Draw individual whisker lines from the bag boundary to each outer point.",
+   "cite": "Section 3.2, principle 2",
+   "quote": "Our approach draws individual lines from the bag’s boundary to each outer point",
+   "page": 14
+  },
+  {
+   "id": "R14",
+   "stmt": "Use FAST-MCD with consistency scaling via the MASS cov.mcd implementation.",
+   "cite": "Remark 6",
+   "quote": "we utilize this algorithm, including the necessary consistency scaling, via the cov.mcd function available in the MASS package in R.",
+   "page": 20
+  },
+  {
+   "id": "R15",
+   "stmt": "Reject H0i whenever pi≤tadj.",
+   "cite": "Section 3.1, Step 4",
+   "quote": "Any hypothesis H0i with pi ≤tadj will be rejected.",
+   "page": 11
+  }
+ ],
+ "data": [
+  {
+   "name": "Toy bivariate dataset (n=8)",
+   "how_to_get": "Hardcode Z = {(7,5), (7,7), (9,4), (5,4), (14,9), (0,9), (7,-3), (19,20)} from Section 4."
+  },
+  {
+   "name": "Simulated normal-mixture datasets (Examples 1-2)",
+   "how_to_get": "Generate from the Section 5 equations: n=5000, Bernoulli(0.05) mixture with μ0=(100,300), μ1=(103,298), I2 or correlation 0.3; set a seed because none is given."
+  },
+  {
+   "name": "Simulated log-normal dataset (Example 3)",
+   "how_to_get": "Generate n=500 independent log-normal(0,0.5) coordinates as in Section 5; set a seed because none is given."
+  },
+  {
+   "name": "Automobile weight/displacement data (n=60)",
+   "how_to_get": "Obtain from Rousseeuw et al. (1999) Figure 1 / Chambers and Hastie (1993); not tabulated in the paper."
+  },
+  {
+   "name": "Plasma cholesterol/triglycerides data (n=320)",
+   "how_to_get": "Obtain from Rousseeuw et al. (1999) Figure 3 / Hand et al. (1994); not tabulated in the paper."
+  },
+  {
+   "name": "PCB/eggshell-thickness pelican-egg data (n=65)",
+   "how_to_get": "Obtain from Rousseeuw et al. (1999) Figure 6 / Hand et al. (1994); not tabulated in the paper."
+  }
+ ],
+ "code_links": [
+  "https://github.com/seanq31/BagWhiskerPlot"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2512.06314",
+  "kind": "arxiv",
+  "arxiv_id": "2512.06314",
+  "url": "https://arxiv.org/abs/2512.06314",
+  "title": "The Bag-and-Whisker Plot: A New Bagplot for Bivariate Data",
+  "pages": 36
+ }
+}

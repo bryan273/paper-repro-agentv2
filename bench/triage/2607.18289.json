@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "ROC-AUC of the Naive sequential-training strategy on the CAD-CICUNSW scenario (smallest single-dataset scenario, 5 tasks, ~1.08M samples), averaged over the six orderings, for one detector (e.g. VAE: 54.5±11.5)",
+  "table_ref": "Table 2, row CAD-CICUNSW / VAE / Naive / ROC",
+  "dataset": "CAD-CICUNSW (derived from CIC-UNSW-NB15)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lifelonglab/CAD-Benchmarks-Framework",
+  "https://huggingface.co/collections/lifelonglab/tabular-cad-benchmarks"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 15,
+  "ref_minutes": 480,
+  "gpu_speedup": 3,
+  "basis": "Requires downloading the released scenario artifacts plus the underlying CIC-UNSW-NB15 data, then training 4 deep AD detectors (VAE, Deep SVDD, DAGMM, NeutralAD) sequentially over 5 tasks x 6 orderings on ~1M samples; even one detector's Naive cell is ~30 sequential training runs, and the repo's exact configs/hyperparameters must be matched from Appendix D."
+ },
+ "blockers": [
+  "Repo link in PDF is malformed ('hhttps://...') and code completeness/configs unverified",
+  "Table 2 averages over 6 orderings and 4 detectors; reproducing a single cell still needs the full ordering protocol",
+  "Deep AD models (DAGMM, NeutralAD, Deep SVDD) on ~1M tabular samples are slow on CPU; several hours likely",
+  "Exact preprocessing/hyperparameters only in appendix; risk of mismatch"
+ ],
+ "suitable": false,
+ "id": "2607.18289",
+ "title": "Towards Principled Continual Anomaly Detection: A Systematic Framework and Benchmark Scenarios",
+ "pages": 47,
+ "model": "DeepSeek-V4.1-Flash"
+}

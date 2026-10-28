@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "GPT-4V achieves an average ASD of 25.32 across the five safety dimensions on the English subset of MLLMGuard.",
+  "table_ref": "Table 4, row GPT-4V, column Avg.",
+  "dataset": "MLLMGuard English subset (1,500 samples)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Carol-gutianle/MLLMGuard"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "Requires running GPT-4V (closed-source API) on 1,500 samples and training GuardRank evaluators (LLaMA-2 7B with LoRA and RoBERTa-large) on human-annotated data, which is not publicly released."
+ },
+ "blockers": [
+  "GPT-4V is a closed-source model accessible only via API, not runnable locally.",
+  "Human-annotated training data for GuardRank is not publicly available.",
+  "Training GuardRank requires a GPU with at least 24GB VRAM (e.g., RTX 3090/4090).",
+  "The full dataset (2,282 samples) is not fully public; only 1,500 samples are released, and non-anonymized data requires an application."
+ ],
+ "suitable": false,
+ "id": "2406.07594",
+ "title": "MLLMGuard: A Multi-dimensional Safety Evaluation Suite for Multimodal Large Language Models",
+ "pages": 37,
+ "model": "DeepSeek-V4.1-Flash"
+}

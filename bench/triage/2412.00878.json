@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SUPIR w/ Ours achieves LIQE 4.056 on RealIR (Cameras), compared to SUPIR's 2.983",
+  "table_ref": "Table 1, row 'SUPIR w/ Ours', column 'RealIR (Cameras)', metric LIQE",
+  "dataset": "RealIR (Cameras) - 152 real LQ images from 8 imaging devices"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 480,
+  "gpu_speedup": 10,
+  "basis": "Requires running SUPIR (SDXL-based diffusion restoration) on 152 images, plus the Res-Captioner (LLaVA-1.5-13B with LoRA) to generate captions; both are large models needing GPU memory and many diffusion steps per image."
+ },
+ "blockers": [
+  "No code or model weights released for Res-Captioner",
+  "RealIR benchmark not publicly available",
+  "Requires GPU (24GB VRAM) for SUPIR and LLaVA-1.5-13B",
+  "Training data for Res-Captioner (5,500 pairs) not released",
+  "Dependencies on multiple large pretrained models (SUPIR, LLaVA-1.5-13B, SDXL) with complex integration"
+ ],
+ "suitable": false,
+ "id": "2412.00878",
+ "title": "Beyond Pixels: Text Enhances Generalization in Real-World Image Restoration",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

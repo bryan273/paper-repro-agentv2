@@ -1,0 +1,41 @@
+{
+ "route": "full_release",
+ "why": "The paper's contribution IS the ctsfeatures R package, and that package is released on CRAN with all four datasets used by the claims (GeneticSequences, SyntheticData1, SyntheticData3) bundled, plus the exact functions the target claim needs (total_correlation, marginal_probabilities, outlier_score, dist/colSums/boxplot). No training, no weights, no missing configs: the target C1 is a deterministic ~1-minute R script over 32 packaged sequences. The only work is installing R + the CRAN package on this machine, which is a small environment step, not a rebuild.",
+ "repo": "https://cran.r-project.org/package=ctsfeatures",
+ "entrypoints": [
+  "R: library(ctsfeatures); data(GeneticSequences); features <- cbind(total_correlation(GeneticSequences$data, categories=factor(c('a','g','c','t')), features=TRUE), marginal_probabilities(GeneticSequences$data, categories=factor(c('a','g','c','t')))); dist_db <- as.matrix(dist(features)); outlier_score <- colSums(dist_db); boxplot(outlier_score, range=1); order(outlier_score, decreasing=TRUE)[1:2]",
+  "R (secondary claims): caret::train(method='knn'/'rf', trControl=trainControl(method='LOOCV')) on cbind(gini_index(...), cramers_vi(lag=1, ...))"
+ ],
+ "missing_artifacts": [
+  "No standalone author analysis script: the paper's code is inline in the article/vignette, so a short driver script must be assembled from the printed snippets (verbatim, given in the claim contract)",
+  "R runtime is not listed among installed tooling (only Python 3.12.10 is); R must be installed if absent"
+ ],
+ "blockers_seen": [
+  "Machine is Windows 11 with no GPU and Python-based tooling; the experiment is R-only, so an R installation and CRAN binary download are prerequisites",
+  "ctsfeatures depends on a chain of CRAN packages (Rcpp, ggplot2, caret, forecast-family deps for the classification examples); binary install on Windows is straightforward but pulls ~50-100 MB of dependencies"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~8-15 min total: ~5 min R install + CRAN binary package and dependency download, <10 s to load GeneticSequences and compute the dB distance matrix, outlier scores and boxplot; C2/C3/C4 add ~1-2 min (caret LOOCV on 32 series is near-instant; a single random-forest LOOCV fit is seconds)",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.5,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "A single 32x32 distance matrix and colSums on the packaged GeneticSequences data (sub-second), plus a one-time R + ctsfeatures CRAN binary install that dominates the wall clock; caret kNN/RF LOOCV over 32 two-feature rows adds under two minutes."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

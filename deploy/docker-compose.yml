@@ -1,0 +1,25 @@
+# One server: the runner behind Caddy, which gets an HTTPS certificate for your domain automatically.
+#   cp ../.env.example ../.env   # fill PARATERA_API_KEY and REPRO_ACCESS_KEY
+#   DOMAIN=runner.example.com docker compose up -d --build
+services:
+  runner:
+    build: ..
+    env_file: ../.env
+    environment:
+      REPRO_CORS: "*"            # the UI on Atoms or Vercel calls this server from another origin
+    volumes:
+      - repro-data:/data
+    restart: unless-stopped
+    mem_limit: 12g             # a run that eats memory stops here, not the whole server
+
+  caddy:
+    image: caddy:2
+    command: caddy reverse-proxy --from ${DOMAIN:?set DOMAIN to the server's domain name} --to runner:8765
+    ports: ["80:80", "443:443"]
+    volumes:
+      - caddy-data:/data
+    restart: unless-stopped
+
+volumes:
+  repro-data:
+  caddy-data:

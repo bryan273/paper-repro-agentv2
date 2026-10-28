@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Gini KNN (ν*) achieves the highest average rank (3.12) in precision across 16 UCI datasets, compared to 11 other distance-based KNN models.",
+  "table_ref": "Table 3",
+  "dataset": "16 UCI datasets (Iris, Wine, Breast-Cancer, Sonar, QSAR, Vehicle, Australian, Glass, Ionosphere, Banknote, German, Heart, Balance, Haberman, Wholesale, Indian Liver)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/giniknnkmeans/KNN_Kmeans_Gini_prametric"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "16 small UCI datasets, KNN with k=1..11 and ν grid search, 3-fold CV; CPU-only, but requires implementing Gini prametric and conditional ranks, and verifying code completeness."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated; need to verify it reproduces the exact ranking.",
+  "Conditional rank computation for test points is non-trivial and must be implemented correctly.",
+  "No GPU needed, but careful implementation and debugging may take time."
+ ],
+ "suitable": true,
+ "id": "2501.18028",
+ "title": "KNN and K-means in Gini Prametric Spaces",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

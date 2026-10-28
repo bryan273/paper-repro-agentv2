@@ -1,0 +1,156 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper archives more than one certificate for the 16-element bounds (a 329-function and a 365-function depth-28 certificate, and a 252-function depth-29 certificate for rank 8); it does not say which is canonical for verification.",
+  "options": [
+   "Use the 329-function certificate listed in Table 3 (SHA-256 prefix eb8f064c12bb)",
+   "Use the alternative 365-function certificate",
+   "Verify both"
+  ],
+  "chosen": "Verify the 329-function certificate from Table 3, and optionally the 365-function one as a second witness",
+  "rationale": "Table 3 lists SHA-256 prefixes for the certificates used in the Lean proofs, so the 329-function file is the one whose hash is pinned and whose Lean theorem is named.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Further certificates for the 16-element bounds, with 365 and 252 functions, are archived.",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The certificate file format is only described as 'Rust programs in the format of the search code of [5]'; the accepted grammar of the static checker is not specified in the paper.",
+  "options": [
+   "Use the archived Rust files and the shipped checker verbatim",
+   "Re-implement the grammar from Section 3.1's example",
+   "Translate to a new format and re-verify"
+  ],
+  "chosen": "Use the archived Rust certificate files and the archived checker/parser unchanged",
+  "rationale": "Any re-implementation of the grammar is an independent source of divergence; the archived pair is the object the Lean proof and SHA-256 hashes refer to.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "Our certificates are such graphs, written as Rust programs in the format of the search code of [5].",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Theorem 1's equality V7(16) = 28 needs the lower bound V7(16) ≥ 28, which the paper imports rather than derives.",
+  "options": [
+   "Report only the upper bound V7(16) ≤ 28 as this paper's result",
+   "Import the lower bound from [5, Table 3] entry 28–33",
+   "Re-derive the lower bound"
+  ],
+  "chosen": "Report V7(16) ≤ 28 as reproduced and take V7(16) ≥ 28 from [5] to state the equality",
+  "rationale": "The paper states explicitly that it uses the lower bound without rederiving it, so a faithful reproduction of this paper alone cannot establish the equality.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The lower bound of Theorem 1 is the entry 28–33 of [5, Table 3], obtained there by computer search; we use it without rederiving it.",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Two rank conventions coexist: Vi(n) is 1-based (V7 = 7th smallest) while certificates declare a 0-based rank, so the target triple is (n, r) = (16, 6).",
+  "options": [
+   "Use 0-based r = i − 1 internally and report 1-based Vi(n)",
+   "Use 1-based rank throughout"
+  ],
+  "chosen": "Internal/certificate ranks are 0-based (r = 6 for the 7th smallest); all reported V values are 1-based",
+  "rationale": "Every checker rule (m − r successors, r + 1 predecessors) and every Lean triple (16, 6, 28) uses the 0-based convention.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "A doc comment declares the size, the 0-based rank, and known relations.",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The df-pn cost predictor, its pessimistic shift and the initialization of unexplored nodes are not specified numerically, so regenerating the certificate from scratch is under-determined.",
+  "options": [
+   "Re-run df-pn with a predictor refitted to a self-generated corpus",
+   "Skip search and verify the archived certificate",
+   "Tune the shift until budget 28 for (16, 7) is solved quickly"
+  ],
+  "chosen": "Skip certificate search; verify the archived 329-function certificate. If search must be reproduced, fit the predictor to a self-collected corpus of solved small instances.",
+  "rationale": "The paper states the heuristics need not be correct for the results to hold; only the certificate matters for the theorem.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "We initialize unexplored nodes from a cost predictor fitted to the corpus of solved small problems, shifted pessimistically, which mattered by factors of 10–100.",
+  "page": 9
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The cost model for known-outcome comparisons: the Lean lower-bound development allows comparing already-ordered elements, while the checker rejects them; which is normative for a certificate.",
+  "options": [
+   "Forbid comparing elements whose order is already implied (checker rule 1)",
+   "Allow them and let the counter count them anyway"
+  ],
+  "chosen": "Forbid redundant comparisons in produced certificates (checker rule 1), while noting soundness does not require it",
+  "rationale": "Rule 1 is part of the accepted grammar; certificates that compare known-ordered pairs would be rejected even though they might be sound.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "compared elements are incomparable before the comparison (this rejects wasted comparisons; soundness does not need it)",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The pseudorandom permutation generator and seed used for the 2·10^7 compiled executions are not stated.",
+  "options": [
+   "Uniform random permutations from a fixed seeded PRNG",
+   "All permutations for small n plus random for n = 16, 17"
+  ],
+  "chosen": "Uniform random permutations of 0..n−1 from a fixed documented seed, 2·10^7 draws per certificate",
+  "rationale": "This test is a sanity check on top of the proof, not part of the bound; any fixed seed reproduces the intent.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "Each certificate also passes 2 · 107 compiled executions on pseudorandom permutations.",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The Lean 4 toolchain version and (for the lower-bound development) the Mathlib pin are not given; only the axiom set and leanchecker replay are stated.",
+  "options": [
+   "Use the version pinned by the archived repository",
+   "Use the latest Lean 4 release"
+  ],
+  "chosen": "Use whatever Lean/Mathlib versions the archived repository pins",
+  "rationale": "Kernel evaluation of the checker on certificate data is version-sensitive; the archive is the only pinned source.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "It uses only Lean’s core library, so every definition the theorems depend on is contained in our own short specification.",
+  "page": 4
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Search wall-clock times are machine-specific and single-thread; the paper reports times but the hardware is only named, not benchmarked.",
+  "options": [
+   "Report times on the stated hardware (AMD Ryzen 7 5800X, single thread)",
+   "Report only that a certificate of the stated depth was found/verified"
+  ],
+  "chosen": "Treat search time as informational; the acceptance criterion is the certificate's verified depth",
+  "rationale": "Times in Table 3/4 vary by machine and by heuristic tuning; they are not part of any theorem.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "found by proof-number search (single thread, AMD Ryzen 7 5800X)",
+  "page": 5
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The input domain: elements are distinct and only their relative order matters, but the paper does not spell out the reduction used in testing.",
+  "options": [
+   "Test on permutations of 0..n−1 (ranks)",
+   "Test on arbitrary distinct integers/reals"
+  ],
+  "chosen": "Test on permutations of 0..n−1; the certificate accesses inputs only by comparison, so this is without loss of generality",
+  "rationale": "The paper argues that replacing n distinct elements of any totally ordered set by their ranks leaves every execution unchanged, which cleanly separates the certificate from the input representation.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "replacing n distinct elements of any totally ordered set by their ranks 0, . . . , n −1 leaves every execution unchanged",
+  "page": 4
+ }
+]

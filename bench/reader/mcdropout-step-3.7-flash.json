@@ -1,0 +1,174 @@
+{
+ "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+ "summary": "Deep learning tools for regression and classification fail to capture model uncertainty, while Bayesian models provide a mathematically grounded but computationally expensive framework. This paper develops a theoretical framework casting dropout training in deep neural networks as approximate Bayesian inference in deep Gaussian processes, enabling the extraction of uncertainty estimates from existing dropout models via Monte Carlo (MC) dropout. The method achieves considerable improvement in predictive log-likelihood and RMSE compared to variational inference and probabilistic back-propagation baselines across multiple regression datasets, without sacrificing computational complexity or test accuracy.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "MC dropout achieves average test RMSE of 2.97 on Boston Housing",
+   "metric": "RMSE",
+   "dataset": "Boston Housing",
+   "split": "20 random splits (test)",
+   "value": 2.97,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Boston Housing, column Dropout",
+   "config_for_value": "1 hidden layer, 50 units, dropout probabilities 0.05 and 0.005, Adam optimiser, mini-batch size 32, 400 epochs (10× PBP's 40 epochs), prior length-scale l=10^-2, Bayesian optimisation for τ, MC dropout with T forward passes (T unspecified), averaged over 20 random splits",
+   "reported_spread": "±0.19 (standard error)",
+   "est_compute": "CPU, ~10 minutes total (20 splits)",
+   "quote": "Boston Housing 506 13 4.32 ±0.29 3.01 ±0.18 2.97 ±0.19",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "MC dropout achieves average test predictive log-likelihood of -2.46 on Boston Housing",
+   "metric": "Predictive log-likelihood",
+   "dataset": "Boston Housing",
+   "split": "20 random splits (test)",
+   "value": -2.46,
+   "unit": "log-likelihood",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Boston Housing, column Dropout",
+   "config_for_value": "Same as C1",
+   "reported_spread": "±0.06 (standard error)",
+   "est_compute": "CPU, ~10 minutes total",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C3",
+   "statement": "MC dropout achieves average test RMSE of 5.23 on Concrete Strength",
+   "metric": "RMSE",
+   "dataset": "Concrete Strength",
+   "split": "20 random splits (test)",
+   "value": 5.23,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Concrete Strength, column Dropout",
+   "config_for_value": "Same architecture and training protocol as C1",
+   "reported_spread": "±0.12 (standard error)",
+   "est_compute": "CPU, ~20 minutes total",
+   "quote": "Concrete Strength 1,030 8 7.19 ±0.12 5.67 ±0.09 5.23 ±0.12",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "MC dropout achieves average test RMSE of 1.11 on Yacht Hydrodynamics",
+   "metric": "RMSE",
+   "dataset": "Yacht Hydrodynamics",
+   "split": "20 random splits (test)",
+   "value": 1.11,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Yacht Hydrodynamics, column Dropout",
+   "config_for_value": "Same architecture and training protocol as C1",
+   "reported_spread": "±0.09 (standard error)",
+   "est_compute": "CPU, ~5 minutes total",
+   "quote": "Yacht Hydrodynamics 308 6 6.89 ±0.67 1.02 ±0.05 1.11 ±0.09",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "Dropout achieves median RMSE of 2.68 on Boston Housing",
+   "metric": "RMSE (median)",
+   "dataset": "Boston Housing",
+   "split": "20 random splits (test)",
+   "value": 2.68,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Text (section 5.3)",
+   "config_for_value": "Same as C1",
+   "reported_spread": "IQR [2.45, 3.35]",
+   "est_compute": "CPU, ~10 minutes total",
+   "quote": "on the Boston Housing dataset dropout achieves median RMSE of 2.68 with an IQR interval of [2.45, 3.35]",
+   "page": 7
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 targets the exact Table 1 Boston Housing MC dropout test RMSE result (2.97) requested in the user hint; Boston Housing is the smallest dataset in Table 1 (506 examples), making it the cheapest to reproduce while still demonstrating the paper's central claim that MC dropout improves RMSE over VI and PBP."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.57,
+  "why": "Rule 1: Paper reports standard error of 0.19 for Boston Housing Dropout RMSE across 20 splits; 3×0.19 = 0.57 absolute band (rounded to 2 decimal places matching paper precision)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement the theoretical framework casting dropout as approximate Bayesian inference in a deep Gaussian process, recovering the standard dropout objective L_dropout (eq. 1) from the GP objective L_GP-MC (eq. 4) via the KL divergence (eq. 3).",
+   "cite": "Section 3, eq. 1, 3, 4",
+   "quote": "Setting E(yn, by(xn, bωn)) = -log p(yn|xn, bωn)/τ we recover eq. (1) for an appropriate setting of the precision hyper-parameter τ and length-scale l.",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Use MC dropout to estimate the predictive mean by averaging T stochastic forward passes through the network (eq. 6).",
+   "cite": "Section 4, eq. 6",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R3",
+   "stmt": "Estimate predictive variance as the sample variance of T stochastic forward passes plus the inverse model precision τ^{-1} (section 4).",
+   "cite": "Section 4",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R4",
+   "stmt": "Compute model precision τ from weight-decay λ and prior length-scale l using τ = sqrt(l^2 / (2Nλ)) (eq. 7).",
+   "cite": "Eq. 7",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R5",
+   "stmt": "Find optimal τ via Bayesian optimisation (e.g., Spearmint) over validation log-likelihood, with BO runs of 40 iterations and subsequent training with 10x more epochs than PBP's 40 epochs.",
+   "cite": "Section 5.3",
+   "quote": "The BO runs used 40 iterations following the original setup, but after finding the optimal parameter values we used 10x more iterations, as dropout takes longer to converge.",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Use a network with 1 hidden layer containing 50 units and dropout probabilities 0.05 and 0.005.",
+   "cite": "Section 5.3",
+   "quote": "We used dropout with probabilities 0.05 and 0.005 since the network size is very small (with 50 units following (Hernández-Lobato & Adams, 2015))",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Use the Adam optimiser with mini-batches of size 32.",
+   "cite": "Section 5.3",
+   "quote": "Finally, we used mini-batches of size 32 and the Adam optimiser (Kingma & Ba, 2014).",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Average results over 20 random splits of the data.",
+   "cite": "Section 5.3",
+   "quote": null,
+   "page": null
+  }
+ ],
+ "data": [
+  {
+   "name": "Boston Housing",
+   "how_to_get": "UCI Machine Learning Repository (https://archive.ics.uci.edu/ml/datasets/Housing); also available via scikit-learn datasets.fetch_california_housing? No, Boston Housing is sklearn.datasets.load_boston (though deprecated in recent versions). The paper references Hernández-Lobato & Adams (2015) for dataset details."
+  }
+ ],
+ "code_links": [
+  "http://yarin.co",
+  "https://github.com/JasperSnoek/spearmint",
+  "https://github.com/fchollet/keras",
+  "https://github.com/karpathy/convnetjs"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "1506.02142",
+  "kind": "arxiv",
+  "arxiv_id": "1506.02142",
+  "url": "https://arxiv.org/abs/1506.02142",
+  "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+  "pages": 12
+ }
+}

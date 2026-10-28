@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Network-level p-value for the April-2020 dissolution (Z) anomaly in the international trade network, reported as 0.002 (significant) under the primary specification (US$15m threshold, D=8, baseline 2017.02-2019.12)",
+  "table_ref": "Table 2, Panel B, row '2017.02-2019.12', column 'Apr. 2020 Z'",
+  "dataset": "UN Comtrade monthly bilateral trade flows, 104-economy continuous panel, Jan 2017-Dec 2020"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "basis": "No code released; agent must reimplement the full pipeline (event-matrix construction, UASE SVDs over 48 monthly layers of a 104x104 panel, baseline stationarity BH checks, empirical p-values) from the paper text, plus download and clean UN Comtrade monthly data for 104 reporters over 48 months, which is the dominant cost and error-prone."
+ },
+ "blockers": [
+  "No code or supplementary implementation released (arXiv link list empty)",
+  "UN Comtrade monthly bilateral data must be downloaded/cleaned by hand; exact edge-thresholding and reporter filtering must be reverse-engineered",
+  "Exact p-value 0.002 depends on precise baseline window, threshold, and embedding dimension choices not fully specified"
+ ],
+ "suitable": false,
+ "id": "2608.15047",
+ "title": "Anomaly detection in autoregressive networks",
+ "pages": 71,
+ "model": "DeepSeek-V4.1-Flash"
+}

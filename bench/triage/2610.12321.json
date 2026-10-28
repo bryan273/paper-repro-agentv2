@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Cooperator clustering IU = 24.7 (mean over 10 training seeds) under cooperator-only learning (alpha_C=0.05, alpha_D=0) with frozen-policy evaluation",
+  "table_ref": "Table 2, row 'Only C learns', column IU",
+  "dataset": "Synthetic agent-based simulation (ring of M=64 patches, NC=448 cooperators, ND=192 defectors); no external dataset"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code released; the agent must reimplement the coupled PDE (Euler substeps, dt=0.05, K=10), 729-state tabular Q-learning for 640 agents over 200 episodes x 200 time units (~8e4 decisions/agent), plus 10 seeds and 400-unit frozen evaluation; pure Python would be slow, so a vectorized NumPy/Numba implementation is needed, and the exact IU=24.7 depends on matching all thresholds, phases, and update order from the appendix."
+ },
+ "blockers": [
+  "No code or configs released (links list empty)",
+  "Exact reproduction of the specific IU value requires matching many undocumented implementation details (update order, tie-breaking, phase draws, bootstrap seeds)",
+  "Full protocol is 10 training seeds x 200 episodes; a single-seed check is cheaper but will not match the reported mean"
+ ],
+ "suitable": true,
+ "id": "2610.12321",
+ "title": "Spatial Pattern Formation from Multi-Agent Learning in Public Goods Dilemmas",
+ "pages": 45,
+ "model": "DeepSeek-V4.1-Flash"
+}

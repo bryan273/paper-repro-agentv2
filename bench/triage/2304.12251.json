@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Adjusted Rand Index (ARI) of 0.6545303 for PAM clustering using distance dCC on SyntheticData2",
+  "table_ref": "Section 4.3.2 (text, not a table)",
+  "dataset": "SyntheticData2 (included in otsfeatures package)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://cran.r-project.org/web/packages/otsfeatures/index.html"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The target is a single ARI value from clustering 80 short synthetic series (T=600, 6 states) using the otsfeatures package; all data and functions are on CRAN, and the computation is trivial on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2304.12251",
+ "title": "Ordinal time series analysis with the R package otsfeatures",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,9 @@
+[
+ {
+  "at": "reader->router",
+  "type": "omission",
+  "path": "requirements.3",
+  "marker": "INJ-O2",
+  "what": "requirement R4 (hierarchical softmax) removed"
+ }
+]

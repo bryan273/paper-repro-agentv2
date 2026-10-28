@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "KOD achieves P@N = 1.00 on the Salt-Pepper Ring toy dataset at 5% contamination (averaged over 10 replications).",
+  "table_ref": "Table 1, row KOD, column Salt-Pepper Ring 5%",
+  "dataset": "Salt-Pepper Ring (synthetic, n=1000, 20% contamination in main text but 5% for this cell)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://wis.kuleuven.be/statdatascience/code/kod_r_code_script.zip"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The method is lightweight (kernel matrix 1000x1000, PCA, projection pursuit) and the toy dataset is synthetic; the provided R code likely runs in minutes on a laptop, but the exact data generation and replication seeds may need to be inferred."
+ },
+ "blockers": [
+  "Toy dataset generation code not explicitly provided; may need to reverse-engineer from description.",
+  "R code provided but no explicit configuration for the 10 replications or contamination levels."
+ ],
+ "suitable": true,
+ "id": "2506.22994",
+ "title": "Kernel Outlier Detection",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

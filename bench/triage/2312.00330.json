@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "CLIP-Style score of 0.4836 for StyleCrafter (SD 2.1) on single-reference style-guided T2I generation",
+  "table_ref": "Table 1",
+  "dataset": "WikiArt + Laion-Aesthetics-6.5+ (test set of 400 pairs)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 16,
+  "disk_gb": 500,
+  "ref_minutes": 4320,
+  "gpu_speedup": null,
+  "basis": "Training the style adapter requires 40k steps with batch size 32 on 8 A100 GPUs (3 days), plus data preprocessing and evaluation; no code is provided."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires 8 A100 GPUs for training",
+  "Large-scale training (40k steps) not feasible on a laptop"
+ ],
+ "suitable": false,
+ "id": "2312.00330",
+ "title": "StyleCrafter: Enhancing Stylized Text-to-Video Generation with Style Adapter",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

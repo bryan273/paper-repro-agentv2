@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "RM-NLHF-Qwen-7B overall accuracy of 0.6481 across 7 benchmarks (or its HelpSteer3 cell 0.7381)",
+  "table_ref": "Table 2",
+  "dataset": "HelpSteer3 + 6 other benchmarks (RewardBench V2, SCAN-HPD, HREF, LitBench, WQ-Arena, WPB)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "partial",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 256,
+  "disk_gb": 500,
+  "ref_minutes": 10080,
+  "gpu_speedup": 8,
+  "basis": "Reproducing the headline requires GRPO RL training of a 7B GRM over 164K preference samples with an online MetaRM, plus gpt-5-mini/gemini-2.5-pro API calls for critique-similarity rewards; the paper reports ~196s per training step on 7B, implying hundreds of GPU-hours, and no code or configs are released."
+ },
+ "blockers": [
+  "No code or training configs released",
+  "Requires closed-source model APIs (gpt-5-mini, gemini-2.5-pro) for process-reward computation",
+  "164K-sample GRPO RL training of 7B model needs multi-GPU cluster",
+  "Online MetaRM training loop adds further compute",
+  "Human critiques in HelpSteer3 needed for MetaRM supervision"
+ ],
+ "suitable": false,
+ "id": "2601.07349",
+ "title": "Reward Modeling from Natural Language Human Feedback",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "DBM Fbefore AUROC on Bank Marketing (mean over 20 seeds) = 0.713 ± 0.009",
+  "table_ref": "Table 2, row 'DBM Fbefore', column AUROC",
+  "dataset": "UCI Bank Marketing (id=222), binarized to D=69 visible bits"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": 0.3,
+  "basis": "Paper reports DBM training at ~176 s per seed on CPU (Table 8), so 20 seeds ≈ 60 min of training alone; but no code is released, so the DBM (PCD pretraining + mean-field fine-tuning, early stopping, binarization pipeline) must be reimplemented from the text, and the 20-seed protocol plus baselines and fusion add substantial debugging/command time; GPU is slower per the paper's own Metal measurement."
+ },
+ "blockers": [
+  "No code or repository linked anywhere in the paper",
+  "DBM training protocol (PCD, mean-field fine-tuning, early stopping, checkpointing) must be reimplemented from prose",
+  "Exact binarization/quantile-binning pipeline and 90/10 inlier split details must be inferred",
+  "20-seed protocol with paired t-tests required for the headline mean±SE"
+ ],
+ "suitable": false,
+ "id": "2608.14186",
+ "title": "Revisiting Energy-based Tabular Anomaly Detection: Energy and Reconstruction are Complementary",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

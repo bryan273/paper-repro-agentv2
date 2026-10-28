@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Mean peak infection rate of 0.823 for the no-intervention baseline across all network structures and amplification levels (Table IV, 'none' row, peak_infection_rate column)",
+  "table_ref": "Table IV",
+  "dataset": "Synthetic multi-agent simulation (1,000 agents, 6 network structures, 3 amplification levels, 5 runs/condition, 540 runs total)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "No code released; the entire trust-weighted contagion model (agent types, transition rules, amplification, six network generators, six interventions) must be reimplemented from prose, and exact parameter values are not given, so matching 0.823 requires guessing the authors' stylized parameters; the 540 runs of 1,000-agent, 20-step simulations themselves are trivial on CPU."
+ },
+ "blockers": [
+  "No code or configs released (only NetworkX cited)",
+  "Agent parameter values and transition-rule details are not specified, so exact numeric match is unlikely",
+  "Results are explicitly 'directional rather than conclusive' and depend on undocumented random seeds"
+ ],
+ "suitable": false,
+ "id": "2610.07407",
+ "title": "Simulating Strategies for Defense Against Brand-Targeted Online Disinformation",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,45 @@
+{
+ "route": "full_release",
+ "why": "The AIDA repository is a complete, self-contained R package: it ships the intCars.rda data, the IMCD estimator (R/IMCD.r), farness transform (R/farness.r), outlier flagging (R/int_outliers.r), and two vignettes (IMCD_examples.Rmd, Shapley_examples.Rmd) plus executed scripts in inst/doc/ that perform exactly the Cars analysis behind C1-C6 (reweighted IMCD with ~75% subset, 0.9 farness cutoff, Shapley barplot of the six largest distances). No weights, no downloads and no dead frameworks: the only needs are an R runtime and CRAN dependencies.",
+ "repo": "https://github.com/catarinaploureiro/AIDA",
+ "entrypoints": [
+  "vignettes/Shapley_examples.Rmd",
+  "inst/doc/Shapley_examples.R",
+  "vignettes/IMCD_examples.Rmd",
+  "inst/doc/IMCD_examples.R",
+  "tests/testthat/test-IMCD.R",
+  "tests/testthat/test-farness.R",
+  "tests/testthat/test-int_outliers.R"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "This is an R package, not Python: requires installing R plus CRAN dependencies (MAINT.Data, rrcov/robustbase, ggplot2, etc.), which is the bulk of the setup time",
+  "MAINT.Data is pinned at version 2.8.0 in the paper; newer CRAN versions may change the Cars import path slightly",
+  "IMCD subset selection is stochastic: reaching exactly the five named flags may require fixing the seed / repeating the random subset draw",
+  "Nothing renders offline: vignette figures need ggplot2 and the package built/installed (R CMD INSTALL) before the .Rmd will knit"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~20-30 min: ~10-15 min to install R (if absent) and compile/install AIDA + CRAN deps, ~1-2 min to run the Cars IMCD + farness + Shapley vignette chunk",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 25,
+  "gpu_speedup": null,
+  "basis": "27x4 interval matrix: a reweighted IMCD on a handful of observations plus a closed-form Shapley decomposition, seconds of CPU per fit; the 25 min is dominated by installing R and the CRAN dependency tree (MAINT.Data, rrcov, ggplot2), not by the experiment."
+ },
+ "repo_info": {
+  "url": "https://github.com/catarinaploureiro/AIDA",
+  "cloned": true,
+  "n_files": 138,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

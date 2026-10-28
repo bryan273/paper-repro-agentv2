@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "PCNSA detects the pseudo-null space FDIA on the IEEE 14-bus DC system (anomaly indicator clearly elevated during the attack interval, F1/accuracy comparable to or better than LSTM/XTM/AE baselines)",
+  "table_ref": "Fig. 3 (IEEE 14-bus panel) / Fig. 6 (IEEE 14 heat map)",
+  "dataset": "IEEE 14-bus DC power-flow time series generated with MATPOWER + Duquesne Light load profiles + Gaussian noise"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "basis": "No code released; the whole pipeline (MATPOWER DC power flow, Duquesne load profiles, pseudo-null attack construction, PSCP+SVD detector, and LSTM/XTM/AE/Isolation Forest baselines) must be re-implemented from the text, but all components are small and CPU-friendly on IEEE 14-bus."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Duquesne Light load profiles must be sourced separately",
+  "ML baselines (LSTM, XTM, AE) must be re-implemented to match Fig. 3",
+  "Exact attack/noise parameters and threshold details only partially specified"
+ ],
+ "suitable": true,
+ "id": "2606.08473",
+ "title": "Physically Consistent Null Space Alignment for Detection of Low-Magnitude False Data Injection Attacks",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

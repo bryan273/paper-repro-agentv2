@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Reproduce the qualitative validation result that the reference-performance dataset is internally coherent: compressor outlet air temperature vs compressor pressure ratio shows a clear monotonic trend across the 30-90% load range (Fig. 6a), i.e., a positive monotonic relationship between T15 and Pturb in Reference_Data.csv.",
+  "table_ref": "Fig. 6(a) (Section 4.1, Technical Validation)",
+  "dataset": "Marine Engine Fault Dataset - Reference_Data.csv (Zenodo 10.5281/zenodo.19857425)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://doi.org/10.5281/zenodo.19857425"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The paper releases only CSV data plus metadata (no code); the target is a simple monotonic-trend check on a small reference CSV, so an agent can download the Zenodo archive, parse the multi-row header, and compute a correlation/plot in minutes on a CPU."
+ },
+ "blockers": [
+  "No code released (paper states 'No custom code is associated with the released dataset'), so parsing/plotting must be written from scratch",
+  "Multi-row headers and mixed units (some pressures in volts) require care in column mapping",
+  "Target is a qualitative validation figure, not a quantitative benchmark number"
+ ],
+ "suitable": true,
+ "id": "2607.19444",
+ "title": "Marine Engine Fault Dataset: Open-Access Data under Controlled Reference and Fault Scenario Conditions",
+ "pages": 34,
+ "model": "DeepSeek-V4.1-Flash"
+}

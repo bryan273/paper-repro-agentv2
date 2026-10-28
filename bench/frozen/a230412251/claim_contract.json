@@ -1,0 +1,263 @@
+{
+ "title": "Ordinal time series analysis with the R package otsfeatures",
+ "summary": "Ordinal time series lack dedicated software despite growing interest, so the paper introduces the R package otsfeatures for feature extraction, inference, and data-mining tasks on ordinal sequences. The package implements distance-based marginal and serial-dependence features, cumulative-probability distances, and includes synthetic and financial OTS datasets. It illustrates the toolkit on SyntheticData2, where PAM with the cumulative-probability distance dCC reaches an Adjusted Rand Index of 0.6545303 against the four generating groups.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "PAM clustering on SyntheticData2 using the cumulative-probability distance dCC gives an Adjusted Rand Index of 0.6545303 against the four true classes.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "SyntheticData2",
+   "split": "80 series, 4 true clusters of 20; clustering on all 80 (no train/test split)",
+   "value": 0.6545303,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.2, PAM on distance_matrix_1 (cumulative features; dCC), output [1] 0.6545303",
+   "config_for_value": "SyntheticData2$data; c_marginal_probabilities(states=0:5); c_joint_probabilities(states=0:5, lag=1 and 2); cbind into dataset_1; dist(dataset_1); pam(k=4); external_validation against SyntheticData2$classes",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (80 series, T=600, 55 features, PAM k=4)",
+   "quote": "> library(ClusterR)\n> external_validation(clustering_pam_1,\notsfeatures::SyntheticData2$classes)\n[1] 0.6545303",
+   "page": 22
+  },
+  {
+   "id": "C2",
+   "statement": "PAM clustering on SyntheticData2 using the PMF-based distance dPMF gives an Adjusted Rand Index of 0.6535088 against the four true classes.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "SyntheticData2",
+   "split": "80 series, 4 true clusters of 20; clustering on all 80 (no train/test split)",
+   "value": 0.6535088,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.2, PAM on distance_matrix_2 (PMF features), output [1] 0.6535088",
+   "config_for_value": "SyntheticData2$data; marginal_probabilities(states=0:5); joint_probabilities(states=0:5, lag=1 and 2); cbind into dataset_2; dist(dataset_2); pam(k=4); external_validation against SyntheticData2$classes",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (80 series, T=600, PAM k=4)",
+   "quote": "> external_validation(clustering_pam_2,\notsfeatures::SyntheticData2$classes)\n[1] 0.6535088\nThe ARI index is bounded between -1 and 1 and admits a simple interpretation:",
+   "page": 22
+  },
+  {
+   "id": "C3",
+   "statement": "K-means clustering on the dCC feature set for SyntheticData2 gives an Adjusted Rand Index of 0.6545303.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "SyntheticData2",
+   "split": "80 series, 4 true clusters of 20; clustering on all 80",
+   "value": 0.6545303,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.2, K-means on dataset_1 (cumulative features), output [1] 0.6545303",
+   "config_for_value": "set.seed(123); kmeans(dataset_1, c=4); external_validation against SyntheticData2$classes",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "set.seed(123)\nclustering_kmeans_1 <- kmeans(dataset_1, c = 4)$cluster\nexternal_validation(clustering_kmeans_1,\notsfeatures::SyntheticData2$classes)\n[1] 0.6545303",
+   "page": 22
+  },
+  {
+   "id": "C4",
+   "statement": "K-means clustering on the dPMF feature set for SyntheticData2 gives an Adjusted Rand Index of 0.7237974.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "SyntheticData2",
+   "split": "80 series, 4 true clusters of 20; clustering on all 80",
+   "value": 0.7237974,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.2, K-means on dataset_2 (PMF features), output [1] 0.7237974",
+   "config_for_value": "set.seed(123); kmeans(dataset_2, c=4); external_validation against SyntheticData2$classes",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "> set.seed(123)\n> clustering_kmeans_2 <- kmeans(dataset_2, c = 4)$cluster\n> external_validation(clustering_kmeans_2,\notsfeatures::SyntheticData2$classes)\n[1] 0.7237974",
+   "page": 22
+  },
+  {
+   "id": "C5",
+   "statement": "The kNN classifier trained on six Block-distance ordinal features reaches 0.95 accuracy on SyntheticData1 under LOOCV.",
+   "metric": "accuracy",
+   "dataset": "SyntheticData1",
+   "split": "LOOCV on 80 series, 4 classes",
+   "value": 0.95,
+   "unit": "accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.1, kNN with Block distance, output [1] 0.95",
+   "config_for_value": "Features: ordinal_location_1, ordinal_dispersion_2, ordinal_asymmetry, ordinal_skewness, ordinal_cohens_kappa(lag=1 and 2), all with distance='Block'; caret train method='knn'; LOOCV; default grid search",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes (80x6 feature matrix, LOOCV)",
+   "quote": "The kNN classifier achieves an accuracy of 0.95 in the dataset SyntheticData1.",
+   "page": 17
+  },
+  {
+   "id": "C6",
+   "statement": "Random forest and LDA trained on the same Block-distance features both reach perfect accuracy of 1 on SyntheticData1 under LOOCV.",
+   "metric": "accuracy",
+   "dataset": "SyntheticData1",
+   "split": "LOOCV on 80 series, 4 classes",
+   "value": 1.0,
+   "unit": "accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.1, random forest and LDA with Block distance, output [1] 1",
+   "config_for_value": "Same six Block-distance features; caret train method='rf' and method='lda'; LOOCV; default grid search",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes",
+   "quote": "Both approaches reach a perfect accuracy of 1, thus improving the predictive effectiveness of the random forest classifier.",
+   "page": 18
+  },
+  {
+   "id": "C7",
+   "statement": "The kNN classifier trained on six Hamming-distance ordinal features reaches 0.975 accuracy on SyntheticData1 under LOOCV.",
+   "metric": "accuracy",
+   "dataset": "SyntheticData1",
+   "split": "LOOCV on 80 series, 4 classes",
+   "value": 0.975,
+   "unit": "accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.1, kNN with Hamming distance, output [1] 0.975",
+   "config_for_value": "Features: ordinal_location_1, ordinal_dispersion_2, ordinal_asymmetry, ordinal_skewness, ordinal_cohens_kappa(lag=1 and 2), all with distance='Hamming'; caret train method='knn'; LOOCV",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes",
+   "quote": "> model_knn <- train(Class~., data = df_feature_dataset,\ntrControl = train_control, method = ‘knn’)\n> max(model_knn$results$Accuracy)\n[1] 0.975",
+   "page": 18
+  },
+  {
+   "id": "C8",
+   "statement": "The distance dCC ranks the two injected anomalous OTS at positions 81 and 82 in the 82-series outlier dataset.",
+   "metric": "top-2 outlier recall",
+   "dataset": "data_outliers (SyntheticData3 plus first two SyntheticData2 series)",
+   "split": "82 series; positions 81-82 are true anomalies",
+   "value": 2,
+   "unit": "of 2 anomalous series in top 2",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.3, order(colSums(...))[1:2], output [1] 81 82",
+   "config_for_value": "82-series data_outliers; cumulative marginal probabilities and cumulative joint probabilities at lags 1 and 2; dist(); colSums of pairwise distance matrix; sort decreasing; inspect top 2",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "Then, we apply the mentioned two-step procedure to matrix distance matrix outl by running\n> order(colSums(as.matrix(distance_matrix_outl)), decreasing = T)[1:2]\n[1] 81 82",
+   "page": 23
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is exactly the user hint and the cheapest central clustering result: it needs only the packaged SyntheticData2 data, cumulative-probability features, Euclidean distances, PAM(k=4), and ARI, with no model training or tuning."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: ARI is a bounded score in [0,1] on a small 80-series dataset (<2,000 examples), and the paper prints it as a fraction, so the band is 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the exact otsfeatures SyntheticData2 collection: 80 ordinal series, T=600, 6 states, and 4 true groups of 20.",
+   "cite": "Section 3.1 and Table 2",
+   "quote": "80 series with n + 1 = 6 categories and length T = 600, which are split into 4 groups of 20 series each.",
+   "page": 9
+  },
+  {
+   "id": "R2",
+   "stmt": "Represent every OTS through its integer-valued count process with states 0,...,5.",
+   "cite": "Section 4.1",
+   "quote": "is defined through a vector of length T whose possible values are the integer numbers from 0 to n.",
+   "page": 12
+  },
+  {
+   "id": "R3",
+   "stmt": "Estimate cumulative marginal probabilities f_i by empirical indicator counts, using i=0,...,n-1.",
+   "cite": "Section 2, equations (3) and (5)",
+   "quote": "In practice, the quantities pi, pij(l), fi, and fij(l) must be estimated from a T-length realization of the ordinal process",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "Estimate cumulative joint probabilities f_ij(l) at lags 1 and 2, with L=2.",
+   "cite": "Section 4.3.2 and equation (17)",
+   "quote": "we consider only the first two lags to construct the distance, i.e., we set L = 2 (default option).",
+   "page": 19
+  },
+  {
+   "id": "R5",
+   "stmt": "Concatenate each series' cumulative marginal vector, cumulative joint-lag-1 matrix, and cumulative joint-lag-2 matrix into dataset_1.",
+   "cite": "Section 4.3.2 code",
+   "quote": "dataset_1 <- cbind(dataset_marginal_1, dataset_serial_1_1, dataset_serial_1_2)",
+   "page": 20
+  },
+  {
+   "id": "R6",
+   "stmt": "Compute the pairwise dissimilarity matrix from dataset_1 with R dist(), whose default is Euclidean.",
+   "cite": "Section 4.3.2 code",
+   "quote": "distance_matrix_1 <- dist(dataset_1)",
+   "page": 20
+  },
+  {
+   "id": "R7",
+   "stmt": "Run PAM with k=4 on the pairwise distance matrix.",
+   "cite": "Section 4.3.2",
+   "quote": "This function needs the pairwise distance matrix and the number of clusters. The latter argument is set to 4",
+   "page": 21
+  },
+  {
+   "id": "R8",
+   "stmt": "Compare the PAM partition with SyntheticData2$classes using the Adjusted Rand Index.",
+   "cite": "Section 4.3.2",
+   "quote": "which can be done by using the Adjusted Rand Index (ARI)",
+   "page": 21
+  },
+  {
+   "id": "R9",
+   "stmt": "Treat the four generating-process groups as ground truth and evaluate clustering on all 80 series, not a train/test split.",
+   "cite": "Section 4.3.2",
+   "quote": "the ground truth is given by the 4 groups involving the 20 series from the same generating process",
+   "page": 19
+  },
+  {
+   "id": "R10",
+   "stmt": "Use cumulative-probability discrepancies for both marginals and serial dependence; do not substitute a simple marginal-only distance.",
+   "cite": "Section 4.3.2 and equation (17)",
+   "quote": "Both dissimilarities assess discrepancies between the marginal distributions (first terms) and the serial dependence structures (last terms) of both series.",
+   "page": 19
+  },
+  {
+   "id": "R11",
+   "stmt": "Pass states=0:5 explicitly so absent states are not silently dropped.",
+   "cite": "Section 4.1",
+   "quote": "most commands in otsfeatures require the corresponding states to be specified in a vector of the form (0, 1, . . . , n).",
+   "page": 12
+  },
+  {
+   "id": "R12",
+   "stmt": "Use all four class labels as the fixed ground truth for ARI computation.",
+   "cite": "Section 3.1",
+   "quote": "According to the structure of these data objects, the existence of 4 different classes can be assumed.",
+   "page": 9
+  }
+ ],
+ "data": [
+  {
+   "name": "SyntheticData2",
+   "how_to_get": "R package otsfeatures from CRAN: install.packages('otsfeatures'); library(otsfeatures); use SyntheticData2$data and SyntheticData2$classes. Package page: https://cran.r-project.org/web/packages/otsfeatures/index.html"
+  },
+  {
+   "name": "SyntheticData1",
+   "how_to_get": "R package otsfeatures from CRAN; object SyntheticData1 contains $data (80 matrices) and $classes."
+  },
+  {
+   "name": "SyntheticData3",
+   "how_to_get": "R package otsfeatures from CRAN; object SyntheticData3 contains $data (80 matrices) and $classes."
+  },
+  {
+   "name": "CreditRatings",
+   "how_to_get": "R package otsfeatures from CRAN; object CreditRatings$data contains 28 monthly credit-rating series of length T=216."
+  },
+  {
+   "name": "AustrianWages",
+   "how_to_get": "R package otsfeatures from CRAN; object AustrianWages$data contains 9402 variable-length wage-category series."
+  }
+ ],
+ "code_links": [
+  "https://cran.r-project.org/web/packages/otsfeatures/index.html"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2304.12251",
+  "kind": "arxiv",
+  "arxiv_id": "2304.12251",
+  "url": "https://arxiv.org/abs/2304.12251",
+  "title": "Ordinal time series analysis with the R package otsfeatures",
+  "pages": 28
+ }
+}

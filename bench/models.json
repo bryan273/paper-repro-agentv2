@@ -1,0 +1,25 @@
+{
+  "snapshot": "2026-10-19",
+  "source": "artificialanalysis.ai/leaderboards/models (Intelligence Index and cost per task), fetched on the snapshot date; Step 3.7 Flash is not in the part of the table we could read",
+  "pilot": [
+    {"id": "step-3.7-flash", "provider": "stepfun", "lab": "StepFun", "aa_index": null, "aa_cost_per_task_usd": null,
+     "why": "The model of the partner that sponsors this project, built for agent and coding work (released and open-sourced 2026-05-29). Must be in the study; its AA score was not readable, so the pilot measures it directly."},
+    {"id": "step-5-preview", "provider": "stepfun", "lab": "StepFun", "aa_index": 44, "aa_cost_per_task_usd": 1.03, "aa_tok_s": 93,
+     "why": "StepFun's flagship. Same lab as the Flash model, so the pair shows what the bigger model buys. AA 44."},
+    {"id": "DeepSeek-V4.1-Flash", "provider": "paratera", "lab": "DeepSeek", "aa_index": 39, "aa_cost_per_task_usd": 0.49, "aa_tok_s": 231,
+     "why": "Our baseline: every earlier run used it, so it anchors the comparison. Cheap and the fastest of the set."},
+    {"id": "GLM-5.3-Flash", "provider": "paratera", "lab": "Z AI", "aa_index": 42, "aa_cost_per_task_usd": 0.28, "aa_tok_s": 78,
+     "why": "Best score for its price among models we can call (AA 42 at $0.28 per task): the value pick."},
+    {"id": "Kimi-K3", "provider": "paratera", "lab": "Moonshot", "aa_index": 44, "aa_cost_per_task_usd": 2.0, "aa_tok_s": 42,
+     "why": "Top of the open models we can call (AA 44), built for long agent work. Slow and costly, so it shows whether the extra cost pays."},
+    {"id": "Qwen3.8-Flash", "provider": "paratera", "lab": "Alibaba", "aa_index": 40, "aa_cost_per_task_usd": 0.37, "aa_tok_s": 52,
+     "why": "A fourth lab at a low price (AA 40 for the Flash-Next listing, which we assume matches this endpoint)."}
+  ],
+  "considered_not_in_pilot": [
+    {"id": "Qwen3.8-Max", "why": "AA 45 but $5.41 per task and 38 tokens/s: too costly for a pilot. Candidate for the full benchmark."},
+    {"id": "MiMo-V2.6-Pro", "why": "AA 46 at $0.13 per task is the best value on the board, but our Paratera key gets 403 (team not allowed). Ask Paratera for access."},
+    {"id": "DeepSeek-V4-Pro-0813", "why": "AA 36, below the Flash model, and slower and costlier. No reason to include."},
+    {"id": "MiniMax-M3", "why": "AA 29 and it failed our JSON-mode smoke test."},
+    {"id": "GLM-5.3", "why": "AA 45 but $2.01 per task; the Flash version gives 42 for $0.28. Candidate for the full benchmark."}
+  ]
+}

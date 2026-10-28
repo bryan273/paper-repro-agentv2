@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "BalLOT achieves one-step recovery (exact recovery of planted clusters) on synthetic data from the balanced stochastic ball model with k=2 and separation Δ > 2√2, using diameter initialization.",
+  "table_ref": "Corollary 11 / Experiment 19 (Figure 5 left)",
+  "dataset": "Synthetic balanced stochastic ball model (k=2, d=2, n=1000, Δ=3)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Synthetic data generation and a few iterations of a small LP (n=1000, k=2) using scipy.optimize.linprog or POT; no training, no GPU, runs in seconds per trial."
+ },
+ "blockers": [
+  "No code released; must implement BalLOT (alternating LP and centroid update) from scratch",
+  "Requires an LP solver for the transportation problem (e.g., scipy or POT), but this is standard"
+ ],
+ "suitable": true,
+ "id": "2512.05926",
+ "title": "BalLOT: Balanced $k$-means clustering with optimal transport",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

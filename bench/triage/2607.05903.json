@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Test accuracy of K-ABENA v3 (canonical compensated estimator) on Breast Cancer dataset, matching full-batch SGD baseline (0.9706) while saving 28.5% of backward passes.",
+  "table_ref": "Table 1, row 'LogReg / Breast Cancer', column 'v3 (canonical)'",
+  "dataset": "Breast Cancer (scikit-learn bundled, n=569)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/Bonbhel/kabena-ml"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Paper states all experiments are CPU-scale (NumPy/scikit-learn) and full table suite runs under one CPU-hour; this single cell is a logistic regression on 569 samples, trivially fast."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2607.05903",
+ "title": "K-ABENA: K-Adaptive Backpropagation with Error-based N-exclusion Algorithm : (Compensated Loss-Based Sample Exclusion with Unbiased Gradient Estimation)",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

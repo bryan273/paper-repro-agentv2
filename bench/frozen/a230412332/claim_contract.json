@@ -1,0 +1,181 @@
+{
+ "title": "Analyzing categorical time series with the R package ctsfeatures",
+ "summary": "Most time-series methodology targets real-valued data, leaving categorical time series without a broad R toolkit for feature extraction and exploratory analysis. The paper presents ctsfeatures, which implements marginal and serial-dependence features, visualization tools, packaged biological and synthetic datasets, and examples of classification, clustering and outlier detection. In the GeneticSequences example, the distance-based outlier score and boxplot flag two sequences as anomalous, while other examples report high classification accuracy and clustering ARI.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "For GeneticSequences, the two highest dB-based outlier scores (sums of pairwise distances) correspond to the two series above the upper boxplot whisker, which the paper flags as anomalous.",
+   "metric": "number of top-2 highest-score series flagged as anomalous",
+   "dataset": "GeneticSequences",
+   "split": "all 32 sequences; no train/test split",
+   "value": 2,
+   "unit": "series",
+   "higher_is_better": true,
+   "table_ref": "Figure 7 and Section 4.3.3",
+   "config_for_value": "distance dB from Eq. (18) with L=1, total_correlation(features=TRUE) and marginal_probabilities for categories factor(c('a','g','c','t')), Euclidean dist() on cbind features, outlier_score=colSums(as.matrix(dist_db)), boxplot(outlier_score, range=1).",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min in R",
+   "quote": "The resulting boxplot is shown in Figure 7 and suggests the existence of two series with abnormally high outlying scores.",
+   "page": 29
+  },
+  {
+   "id": "C2",
+   "statement": "For the combined 82-series outlier example (SyntheticData1 plus the first two SyntheticData3 series), ordering total dB outlier scores decreasingly puts the two injected NDARMA anomalies at positions 81 and 82.",
+   "metric": "number of injected anomalies ranked in the top 2",
+   "dataset": "SyntheticData1 plus first two series of SyntheticData3",
+   "split": "all 82 series; anomaly labels used only after ranking",
+   "value": 2,
+   "unit": "anomalies",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.3, output of order(colSums(as.matrix(dist_db_outl)), decreasing = T)[1:2]",
+   "config_for_value": "data_outliers <- c(SyntheticData1$data,SyntheticData3$data[1:2]); dB with L=1, categories factor(1:3); total_correlation(features=TRUE)+marginal_probabilities; dist(); colSums; sort decreasing; top 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min in R",
+   "quote": "Thus corroborating that dB is able to properly identify the two series generated from an anomalous stochastic process.",
+   "page": 28
+  },
+  {
+   "id": "C3",
+   "statement": "A kNN classifier trained on gini index and lag-1 Cramer's v features for GeneticSequences reaches LOOCV accuracy 0.78125.",
+   "metric": "LOOCV accuracy",
+   "dataset": "GeneticSequences",
+   "split": "leave-one-out cross-validation over 32 sequences",
+   "value": 0.78125,
+   "unit": "accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.1, max(model_kNN$results$Accuracy) with gini_index + cramers_vi lag=1",
+   "config_for_value": "features = cbind(gini_index(categories=factor(c('a','c','g','t'))), cramers_vi(lag=1, same categories)); caret train(method='knn'), trainControl(method='LOOCV'); max accuracy.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "The kNN classifier achieves an accuracy of 0.78 in the dataset of genetic sequences.",
+   "page": 21
+  },
+  {
+   "id": "C4",
+   "statement": "A random forest on the same gini index and lag-1 Cramer's v features for GeneticSequences reaches LOOCV accuracy 0.90625.",
+   "metric": "LOOCV accuracy",
+   "dataset": "GeneticSequences",
+   "split": "leave-one-out cross-validation over 32 sequences",
+   "value": 0.90625,
+   "unit": "accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section 4.3.1, max(model_RF$results$Accuracy) with gini_index + cramers_vi lag=1",
+   "config_for_value": "same two-feature dataset; caret train(method='rf'), trainControl(method='LOOCV'); max accuracy.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to a minute",
+   "quote": "The random forest obtains a much higher accuracy, around 0.91.",
+   "page": 22
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It directly matches the user hint and is the cheapest faithful demonstration: no model training, just deterministic feature extraction, dist(), colSums() and a boxplot on 32 packaged sequences."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "No std is reported and the target is a count, not an accuracy-like bounded score; rule 4 (10% relative) is the first applicable rule, giving an effective band of 0.2 around the value 2, i.e. effectively exact 2 after integer rounding."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the packaged GeneticSequences dataset: 32 DNA sequences from 4 virus families, with 4 categorical bases and variable sequence lengths.",
+   "cite": "Section 3.1 and Table 2",
+   "quote": "The first biological dataset contains the genome of 32 viruses pertaining to 4 different families.",
+   "page": 8
+  },
+  {
+   "id": "R2",
+   "stmt": "Represent each DNA sequence as a categorical factor and use one consistent category order for all series when computing features.",
+   "cite": "Section 4.1",
+   "quote": "most functions in ctsfeatures require the categories to be specified in the desired order.",
+   "page": 16
+  },
+  {
+   "id": "R3",
+   "stmt": "Compute lag-1 serial-dependence features from the binarized series and pairwise correlations ψ_ij(l), using features=TRUE to expose individual terms.",
+   "cite": "Section 2, Eq. (2), Table 1; Section 3.3",
+   "quote": "An alternative way of evaluating serial dependence within a categorical process is by considering pairwise correlations in the binarization",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Compute marginal probabilities p_i by observed frequencies over the T sequence positions and include them in the distance feature vector.",
+   "cite": "Section 2, Eq. (3)",
+   "quote": "a standard estimate is directly obtained by replacing in the corresponding formulae the probabilities",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Implement distance dB as in Eq. (18): sum over lags up to L of squared differences between ψ_ij(l) values plus squared differences between marginal probabilities.",
+   "cite": "Section 4.3.2, Eq. (18)",
+   "quote": "where L denotes the largest lag and superscripts (1) and (2) indicate that the corresponding estimates are based on the realizations",
+   "page": 24
+  },
+  {
+   "id": "R6",
+   "stmt": "Use the default lag L=1 for the distance in these illustrative examples.",
+   "cite": "Section 4.3.2",
+   "quote": "we consider only one lag to construct the distance, i.e., we set L = 1 (default option).",
+   "page": 24
+  },
+  {
+   "id": "R7",
+   "stmt": "Form the feature matrix by cbind(total correlation features, marginal probabilities) and compute the pairwise Euclidean distance matrix with dist().",
+   "cite": "Section 4.3.3",
+   "quote": "we consider the dataset GeneticSequences and compute the pairwise distance matrix according to distance dB.",
+   "page": 28
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute each outlier score as the sum of that series' distances to all remaining series, matching colSums(as.matrix(dist_db)); the zero diagonal has no effect on ranking.",
+   "cite": "Section 4.3.3, Step 1",
+   "quote": "For each element, compute the sum of its distances from the remaining objects in the dataset",
+   "page": 27
+  },
+  {
+   "id": "R9",
+   "stmt": "Flag outliers by drawing boxplot(outlier_score, range=1) and taking points above the upper whisker as anomalous.",
+   "cite": "Section 4.3.3 and Figure 7",
+   "quote": "A simple way to detect these series consists of visualizing a boxplot based on the elements of outlier score",
+   "page": 29
+  },
+  {
+   "id": "R10",
+   "stmt": "Report the series with extremely large outlier scores as potential outliers, without fitting a supervised classifier.",
+   "cite": "Section 4.3.3",
+   "quote": "those genetic sequences associated with extremely large values in this vector are potential outliers.",
+   "page": 29
+  }
+ ],
+ "data": [
+  {
+   "name": "ctsfeatures R package (CRAN)",
+   "how_to_get": "install.packages('ctsfeatures') from CRAN: https://cran.r-project.org/package=ctsfeatures"
+  },
+  {
+   "name": "GeneticSequences",
+   "how_to_get": "Load with library(ctsfeatures); data are in GeneticSequences$data (32 DNA sequences) and labels in GeneticSequences$classes."
+  },
+  {
+   "name": "SyntheticData1",
+   "how_to_get": "Load with library(ctsfeatures); SyntheticData1$data and SyntheticData1$classes (80 series, 3 categories, T=600, 4 classes)."
+  },
+  {
+   "name": "SyntheticData3",
+   "how_to_get": "Load with library(ctsfeatures); SyntheticData3$data and SyntheticData3$classes (80 NDARMA series)."
+  }
+ ],
+ "code_links": [
+  "https://cran.r-project.org/package=ctsfeatures"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2304.12332",
+  "kind": "arxiv",
+  "arxiv_id": "2304.12332",
+  "url": "https://arxiv.org/abs/2304.12332",
+  "title": "Analyzing categorical time series with the R package ctsfeatures",
+  "pages": 33
+ }
+}

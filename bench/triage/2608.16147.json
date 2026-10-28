@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "Random Forest with plain strategy (default 0.5 threshold) on credit-card fraud dataset attains F1 = 0.861 ± 0.021 under 5-fold nested CV",
+  "table_ref": "Table 1, row 'Random Forest / plain', column F1",
+  "dataset": "Kaggle credit-card fraud (Dal Pozzolo et al., 284,807 rows, 492 positives)"
+ },
+ "release": "partial",
+ "code_links": [
+  "code/fraud_pipeline.py",
+  "code/multi_dataset_study.py",
+  "code/results_nested_cv/per_fold_metrics.csv",
+  "code/results_multi/per_run_metrics.csv"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Paper states Study A runs in ~9 minutes on a consumer laptop with only scikit-learn/imbalanced-learn; 5-fold RF (100 trees, depth 16) on 285k rows is CPU-trivial, plus Kaggle download and install time."
+ },
+ "blockers": [
+  "Code links are relative paths in the PDF with no repository URL; the actual code/data release location is not given, so the harness may need to be re-implemented from the protocol description",
+  "Kaggle dataset requires a free Kaggle account/API token to download",
+  "Exact fold seeds and preprocessing details must be matched to hit 0.861 ± 0.021 precisely"
+ ],
+ "suitable": true,
+ "id": "2608.16147",
+ "title": "When Single-Dataset Conclusions Fail: A 45-Task Study of Threshold Tuning and Resampling for Imbalanced Classification",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

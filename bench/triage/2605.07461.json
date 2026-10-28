@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Think-with-Rubrics trained with mixed reward achieves 65.61 prompt-level accuracy on IFEval.",
+  "table_ref": "Table 1, row 'Think-with-Rubrics (Ours) + DAPO (Mixed reward)', column IFEval Prompt",
+  "dataset": "IFEval"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 256,
+  "disk_gb": 200,
+  "ref_minutes": 1000000,
+  "gpu_speedup": null,
+  "basis": "Appendix A.3 states RL uses 8x H20 for ~16 hours per run plus 4x H20 SFT; an 8B policy plus 8B verifier RL pipeline cannot run on a 16GB CPU-only laptop."
+ },
+ "blockers": [
+  "No code or training configs released (paper has no code links).",
+  "Requires 8x H20 GPUs for RL (~16h) and 4x H20 for SFT; not feasible on 8 CPU cores/16GB RAM.",
+  "SFT data is distilled from closed Gemini-2.5-Flash; verifier distills Qwen3-32B-Instruct rollouts.",
+  "Full training splits, prompts, and verifier data are not released."
+ ],
+ "suitable": false,
+ "id": "2605.07461",
+ "title": "Think-with-Rubrics: From External Evaluator to Internal Reasoning Guidance",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

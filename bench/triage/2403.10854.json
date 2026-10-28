@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SRCC of GPT-4V with single-stimulus chain-of-thought prompting on the FR-KADID dataset (value 0.809)",
+  "table_ref": "Table 1, row 'GPT-4V-C' under Single-stimulus Method, column 'FR-KADID'",
+  "dataset": "FR-KADID"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TianheWu/MLLMs-for-IQA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The target requires querying GPT-4V (closed-source API) on 150 images with a specific prompt; the main cost is API calls and data preparation, not local compute, but the closed model makes reproduction impossible without access."
+ },
+ "blockers": [
+  "requires closed-source GPT-4V API access",
+  "exact prompt and API version not fully specified",
+  "sample selection procedure may require expert IQA models and human scores"
+ ],
+ "suitable": false,
+ "id": "2403.10854",
+ "title": "A Comprehensive Study of Multimodal Large Language Models for Image Quality Assessment",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

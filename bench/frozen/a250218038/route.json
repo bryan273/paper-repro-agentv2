@@ -1,0 +1,39 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository contains a pure NumPy/SciPy implementation of the proposed full method (called 'sequential' in code), and C1 is a synthetic no-outlier simulation cell that needs no external data or weights. The core run should work on Python 3.12 after installing standard scientific packages and avoiding optional competitor-method imports (rpy2/tensorflow/river), which are not needed for C1.",
+ "repo": "https://github.com/FlorianHeinrichs/outlier_detection",
+ "entrypoints": [
+  "experiments.py",
+  "experiments_config.py",
+  "data_generation.py"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "No requirements.txt/pyproject; core dependencies must be installed manually (numpy, scipy, pandas, matplotlib, tueplots).",
+  "alternative_methods.py imports optional rpy2/tensorflow/river for competitor methods; these are not needed for C1 and may be unavailable on Windows/Python 3.12."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-15 minutes with 22-core parallelization over series; roughly 25-30 minutes if the authors' code is run single-process.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The claim contract estimates 10-30 CPU minutes for 1,000 series; C1 uses n=50 and horizon 550 with only local smoothing/CV/GEV calculations, and the 1,000 series are embarrassingly parallel."
+ },
+ "repo_info": {
+  "url": "https://github.com/FlorianHeinrichs/outlier_detection",
+  "cloned": true,
+  "n_files": 12,
+  "n_python": 9,
+  "python2_style_files": 0
+ }
+}

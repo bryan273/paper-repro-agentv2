@@ -1,0 +1,219 @@
+{
+ "title": "Explainable Outlier Detection for Interval-valued Data",
+ "summary": "Outlier detection for interval-valued data has lacked an explanation layer. The paper derives closed-form Shapley values and a Shapley interaction index for the squared robust Interval-Mahalanobis distance under the IMCD estimator, decomposing outlyingness into centers, ranges, and cross-terms. On the Cars and Spotify datasets it illustrates variable-level explanations and flags outliers consistent with domain knowledge.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The 0.9-farness Cars analysis flags five observations as outliers: MercedesClasseS, Ferrari, Porsche, MercedesSL, and HondaNSK.",
+   "metric": "number of observations flagged as outliers",
+   "dataset": "Cars (MAINT.Data), 27 observations x 4 interval variables",
+   "split": "full dataset",
+   "value": 5,
+   "unit": "observations",
+   "higher_is_better": false,
+   "table_ref": "Figure 1; Section 5.1",
+   "config_for_value": "lnPrice; uniform latent microdata; reweighted IMCD with subset approximately 75%; 0.9 farness cutoff for outlier detection",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "five observations were identified as outliers: MercedesClasseS, Ferrari, Porsche, MercedesSL, and HondaNSK.",
+   "page": 10
+  },
+  {
+   "id": "C2",
+   "statement": "The Cars dataset contains 27 observations and four interval-valued variables: Price, Engine Capacity, Top Speed, and Acceleration.",
+   "metric": "number of observations in dataset",
+   "dataset": "Cars (MAINT.Data)",
+   "split": "full dataset",
+   "value": 27,
+   "unit": "observations",
+   "higher_is_better": true,
+   "table_ref": "Section 5.1, Cars dataset description",
+   "config_for_value": "Original interval-valued Cars data; four variables; class variable used for plotting only",
+   "reported_spread": null,
+   "est_compute": "CPU, negligible",
+   "quote": "It is composed of 27 observations corresponding to different car models, with four interval-valued variables",
+   "page": 10
+  },
+  {
+   "id": "C3",
+   "statement": "The Cars Shapley barplot displays the six observations with the largest squared robust Interval-Mahalanobis distances.",
+   "metric": "number of observations shown in Shapley barplot",
+   "dataset": "Cars (MAINT.Data)",
+   "split": "full dataset",
+   "value": 6,
+   "unit": "observations",
+   "higher_is_better": false,
+   "table_ref": "Figure 2a caption; Section 5.1",
+   "config_for_value": "Six largest squared robust Interval-Mahalanobis distances, ordered greatest to smallest; includes Bmwserie7 even though it is not flagged",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "only the six observations with the largest distances are shown, ordered from greatest to smallest distance",
+   "page": 12
+  },
+  {
+   "id": "C4",
+   "statement": "The Cars IMCD fit uses a reweighted subset of approximately 75% of the observations with a farness cutoff of 0.9.",
+   "metric": "IMCD subset size as percent of total observations",
+   "dataset": "Cars (MAINT.Data)",
+   "split": "full dataset",
+   "value": 75,
+   "unit": "% of observations",
+   "higher_is_better": false,
+   "table_ref": "Section 5.1, IMCD settings",
+   "config_for_value": "Reweighted IMCD; subset approximately 75% of total observations; farness cutoff 0.9",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "with a subset of approximately 75% of the total observations and a farness cutoff of 0.9",
+   "page": 10
+  },
+  {
+   "id": "C5",
+   "statement": "Outliers in the Cars dataset are flagged using the farness concept with a cutoff of 0.9.",
+   "metric": "farness cutoff used to flag outliers",
+   "dataset": "Cars (MAINT.Data)",
+   "split": "full dataset",
+   "value": 0.9,
+   "unit": "farness score threshold",
+   "higher_is_better": false,
+   "table_ref": "Section 5.1; Figure 1",
+   "config_for_value": "Outlier scores from the farness transformation; threshold 0.9",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "used the farness concept with a cutoff of 0.9 to flag outliers",
+   "page": 10
+  },
+  {
+   "id": "C6",
+   "statement": "For the Cars dataset, the cross centers-ranges Shapley contributions are zero, so the decomposition reduces to centers and ranges.",
+   "metric": "cross centers-ranges Shapley contribution",
+   "dataset": "Cars (MAINT.Data)",
+   "split": "full dataset",
+   "value": 0,
+   "unit": "Shapley value units",
+   "higher_is_better": false,
+   "table_ref": "Section 5.1; Figure 3a",
+   "config_for_value": "Symmetric identically distributed uniform latent variables, giving Psi = 0 and zero cross center-range terms",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "Since we assumed symmetric and identically distributed latent variables, the cross centers-ranges contributions are zero",
+   "page": 11
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the cheapest claim that still tests the paper's central result: on the tiny 27x4 Cars data, the reweighted IMCD plus 0.9 farness cutoff must reproduce the five Figure 1 outlier flags; the Shapley figures depend on the same robust fit."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 2.0,
+  "why": "Rule 3 applies: no repeated-run std is reported and this is not a 2,000+ test-set percentage; the outlier count is bounded on the small 27-observation set, so use 2.0 absolute points, while also checking the exact five labels qualitatively against Figure 1."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Represent each interval by its center c=(a+b)/2 and range r=b-a; for Cars use the uniform microdata distribution because no microdata are available.",
+   "cite": "Section 2; Section 5.1",
+   "quote": "since no microdata are available, assuming a continuous uniform distribution for the latent variables",
+   "page": 10
+  },
+  {
+   "id": "R2",
+   "stmt": "Apply a logarithmic transform to Price only; retain EngCap, Top Speed, and Acceleration as interval variables.",
+   "cite": "Section 5.1, Cars preprocessing",
+   "quote": "applying a logarithmic transformation to the Price variable (denoted as lnPrice)",
+   "page": 10
+  },
+  {
+   "id": "R3",
+   "stmt": "Use the 27 Cars observations and four interval-valued variables; the class variable is not part of the distance computation.",
+   "cite": "Section 5.1, Cars dataset",
+   "quote": "It is composed of 27 observations corresponding to different car models, with four interval-valued variables",
+   "page": 10
+  },
+  {
+   "id": "R4",
+   "stmt": "Estimate the barycenter and symbolic covariance matrix with the reweighted IMCD algorithm using an approximately 75% subset and farness cutoff 0.9.",
+   "cite": "Section 3; Section 5.1",
+   "quote": "with a subset of approximately 75% of the total observations and a farness cutoff of 0.9",
+   "page": 10
+  },
+  {
+   "id": "R5",
+   "stmt": "Compute the squared robust Interval-Mahalanobis distance using Definition 3.1/Equation (5) with the robust barycenter and robust symbolic covariance matrix.",
+   "cite": "Definition 3.1, Equation (5)",
+   "quote": "a robust version of the Interval-Mahalanobis distance can be obtained by using the robust estimates of the barycenter and symbolic covariance matrix",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Convert squared distances to farness outlier scores by median/MAD standardization, robust Yeo-Johnson transformation, second median/MAD standardization, and Normal-CDF scoring.",
+   "cite": "Section 3, farness outlier scores",
+   "quote": "the squared distances are standardized using the median and the median absolute deviation (MAD)",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Flag observations whose farness outlier score exceeds 0.9; for Cars this is the reported cutoff.",
+   "cite": "Section 3; Section 5.1",
+   "quote": "observations with an outlier score exceeding this threshold are flagged as outliers",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute Shapley values with the closed-form expression in Theorem 4.1/Corollary 4.2 and verify the efficiency property numerically.",
+   "cite": "Theorem 4.1; Corollary 4.2; Equation (7)-(8)",
+   "quote": "the sum of the Shapley values of all variables equals the squared Interval-Mahalanobis distance of the observation to the barycenter",
+   "page": 8
+  },
+  {
+   "id": "R9",
+   "stmt": "For Cars, because the latent variables are symmetric and identically distributed, set Psi=0 and the cross center-range Shapley terms to zero; report the center and range decomposition in Figure 3a.",
+   "cite": "Section 5.1; Corollary 4.2",
+   "quote": "Since we assumed symmetric and identically distributed latent variables, the cross centers-ranges contributions are zero",
+   "page": 11
+  },
+  {
+   "id": "R10",
+   "stmt": "Produce the Figure 2a barplot for the top six Cars observations by descending distance, including Bmwserie7 even though it is not flagged.",
+   "cite": "Figure 2a; Section 5.1",
+   "quote": "only the six observations with the largest distances are shown, ordered from greatest to smallest distance",
+   "page": 12
+  },
+  {
+   "id": "R11",
+   "stmt": "Implement the Shapley interaction index with off-diagonal terms from Equation (10) and diagonal terms defined so that each Shapley value is the row sum; reproduce the Ferrari tile plot in Figure 3b.",
+   "cite": "Theorem 4.3; Corollary 4.4; Equations (10)-(12)",
+   "quote": "the diagonal elements Φjj(x) are defined so that each Shapley value can be decomposed as",
+   "page": 10
+  },
+  {
+   "id": "R12",
+   "stmt": "Report and plot the five Cars outliers named in the paper, ordered from largest to smallest squared distance alongside the 0.9 cutoff.",
+   "cite": "Figure 1; Section 5.1",
+   "quote": "five observations were identified as outliers: MercedesClasseS, Ferrari, Porsche, MercedesSL, and HondaNSK.",
+   "page": 10
+  }
+ ],
+ "data": [
+  {
+   "name": "Cars interval-valued dataset (MAINT.Data)",
+   "how_to_get": "Install the CRAN package MAINT.Data (version 2.8.0 is cited) and load the Cars interval data; the AIDA repository also includes raw-data and the Shapley examples vignette."
+  },
+  {
+   "name": "AIDA R package and replication files",
+   "how_to_get": "Clone https://github.com/catarinaploureiro/AIDA; see the raw-data folder and the vignette named Shapley examples."
+  }
+ ],
+ "code_links": [
+  "https://github.com/catarinaploureiro/AIDA"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2606.26307",
+  "kind": "arxiv",
+  "arxiv_id": "2606.26307",
+  "url": "https://arxiv.org/abs/2606.26307",
+  "title": "Explainable Outlier Detection for Interval-valued Data",
+  "pages": 24
+ }
+}

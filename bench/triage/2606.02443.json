@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "First-Act@1.0 for Gemini 3.1 Pro on the PaSBench-Video risk split (overall) is 20.0%",
+  "table_ref": "Figure 4 / Section 4.2 (Overall panel, First-Act@1)",
+  "dataset": "PaSBench-Video risk split (481 videos)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://huggingface.co/datasets/beingbetter11643/PaSBench-Video"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The target requires running a proprietary closed-source model (Gemini 3.1 Pro) via API over 481 videos with a sliding-window streaming protocol (~10 windows/video), which is impossible to reproduce locally without API access and would cost significant API fees; no code is released, only the dataset."
+ },
+ "blockers": [
+  "Target model (Gemini 3.1 Pro) is a proprietary closed-source API model, not runnable locally",
+  "No evaluation code released, only the dataset",
+  "Streaming protocol requires many API calls per video (3s windows, 0.3s stride), making API cost and time prohibitive",
+  "Reproducing the exact number requires the same model version and API behavior, which may change"
+ ],
+ "suitable": false,
+ "id": "2606.02443",
+ "title": "PaSBench-Video: A Streaming Video Benchmark for Proactive Safety Warning",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "KinRT-LoRA attains an average success count of 40.8 on the RoboTwin Clean setting, the best overall average and the basis for the abstract's +23.26% improvement over π0.5-LoRA.",
+  "table_ref": "Table 1, RoboTwin Clean Avg. column, row KinRT-LoRA",
+  "dataset": "RoboTwin benchmark (8 manipulation tasks; 50 clean + 50 random demonstrations per task; Clean evaluation subset)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://gleeacast.github.io/KinRT/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 48,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 43200,
+  "gpu_speedup": 50,
+  "basis": "The target requires fine-tuning multi-billion-parameter VLA backbones for 10,000 optimization steps at batch size 32, which the paper runs on two NVIDIA L20 GPUs; on an 8-core/16GB CPU-only laptop this is not practically runnable."
+ },
+ "blockers": [
+  "requires fine-tuning large VLA models (π0/OpenVLA-class backbones) rather than small models",
+  "paper uses two NVIDIA L20 GPUs for training; CPU-only laptop is insufficient",
+  "no explicit code/config link is given in the PDF, only a project homepage",
+  "full RoboTwin reproduction also requires the large RoboTwin demonstration set and VLA training pipeline"
+ ],
+ "suitable": false,
+ "id": "2607.26807",
+ "title": "Route by Kinematics, Act by Observation: Kinematics-Supervised Expert Routing in MoE-Augmented VLA",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

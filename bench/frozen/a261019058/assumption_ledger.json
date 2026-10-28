@@ -1,0 +1,289 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper does not give the random seed or specify whether the Table 2 PIWR value 0.124 % is from one noise realization, a median over realizations, or a repeated-fit median.",
+  "options": [
+   "single fixed-seed noise realization",
+   "median over 1,000 noise realizations",
+   "median over 30 repeated fits"
+  ],
+  "chosen": "Use a single fixed-seed realization for the point estimate, then check stability over 1,000 realizations at the literature values.",
+  "rationale": "Table 2 prints one Found value per estimator, while the text only mentions 1,000 noise realizations for coverage; exact reproduction requires a draw that the paper does not specify.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "for ε = 1 %, on 1,000 noise realizations at the literature values.",
+  "page": 9
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper says row scaling is selected per model on tuning draws but does not state whether the SIDR PIWR run uses Dn=In or compartment-max scaling.",
+  "options": [
+   "no row scaling Dn=In",
+   "compartment-max row scaling Dn=diag(1/max|xc|)"
+  ],
+  "chosen": "Use Dn=In for SIDR unless a separate tuning run on 100 draws says otherwise.",
+  "rationale": "SIDR compartments differ in scale but the paper does not report the selected SIDR setting; this choice can change the exact 0.124 % value.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "whether to use it (Dn = In otherwise) is decided per model and estimator on a tuning set (section 5.1).",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The exact definition of the reported single-parameter % error for α is not given beyond the general metric sentence.",
+  "options": [
+   "|αhat−α|/α·100",
+   "|αhat−α|·100",
+   "normalized by standard deviation"
+  ],
+  "chosen": "Compute |αhat−0.191|/0.191·100.",
+  "rationale": "The paper states errors are percent of the actual value; for one parameter the median over parameters is the parameter itself.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Errors are reported in percent of the actual value, as the median over the estimated parameters of a model.",
+  "page": 9
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The initial state x0 is estimated jointly but the paper does not state whether positivity or bounds are imposed on x0.",
+  "options": [
+   "unconstrained least squares",
+   "nonnegative constrained least squares",
+   "fixed at the first noisy sample"
+  ],
+  "chosen": "Unconstrained least squares, as in the augmented linear system.",
+  "rationale": "Equation (14) adds x0 as free unknowns and no constraint is described; SIDR x0 estimates are effectively nonnegative anyway.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The initial state x0 is treated as n additional unknowns",
+  "page": 6
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The exact ODE solver tolerances for the synthetic SIDR data generation are not stated in the main text.",
+  "options": [
+   "LSODA rtol=atol=1e-10",
+   "LSODA defaults",
+   "Runge-Kutta fixed step"
+  ],
+  "chosen": "LSODA with rtol=atol=1e-10.",
+  "rationale": "Appendix A states this for the benchmark models and notes the Anthrax exception separately.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "integrated with LSODA (Petzold, 1983) at relative and absolute tolerances of 10−10.",
+  "page": 19
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The printed Δt=5.05 days is rounded; the exact grid construction is not shown.",
+  "options": [
+   "numpy.linspace(0,500,100) including endpoints",
+   "100 points with rounded Δt=5.05",
+   "101 points including both endpoints"
+  ],
+  "chosen": "numpy.linspace(0,500,100).",
+  "rationale": "The paper says 100 equally spaced samples on [0,500] days; including endpoints gives Δt=500/99=5.0505.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "100 equally spaced samples on [0, 500] days",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The population is printed as 59·10^6 in OCR text; the exact integer is not otherwise specified.",
+  "options": [
+   "59,000,000",
+   "59·10^6 floating literal",
+   "59,100,000"
+  ],
+  "chosen": "59,000,000.",
+  "rationale": "Direct reading of N=59·10^6; population enters the SIDR equations only through ratios.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "known population N = 59 · 106",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The paper does not say whether any smoothing is applied to noisy states before evaluating the library inside the PIWR integrals.",
+  "options": [
+   "no smoothing; use noisy states directly in A",
+   "spline-smooth states before A",
+   "filter states before A"
+  ],
+  "chosen": "No smoothing; use noisy states directly in the library and integrate by spline.",
+  "rationale": "The weak form is described as averaging noise through integration, and smoothing is only suggested as a future improvement.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Both PIR and PIWR evaluate the library at the noisy samples.",
+  "page": 17
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The least-squares rank-deficiency threshold and exact SVD/LAPACK routine are not specified.",
+  "options": [
+   "numpy.linalg.lstsq default rcond",
+   "explicit QR with pivoting",
+   "normal equations with pseudo-inverse"
+  ],
+  "chosen": "numpy.linalg.lstsq with default rcond in float64.",
+  "rationale": "The paper explicitly recommends numpy.linalg.lstsq and notes it handles rank deficiency.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "which also handles rank deficiency",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The exact joint prior box for α, β, γ in the SIDR calibration is not tabulated parameter by parameter.",
+  "options": [
+   "independent uniform [0.5x,1.5x] for each",
+   "capped at 1 for all probabilities",
+   "same box but correlated draws"
+  ],
+  "chosen": "Independent uniform [0.5α*,1.5α*], [0.5β*,1.5β*], [0.5γ*,1.5γ*], with no cap binding since all values are below 1.",
+  "rationale": "The paper states a ±50 % prior box around literature values, capped at 1 for probabilities.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The prior box is ±50 % around the literature values (capped at 1 for probabilities, and [0, c] for the three parameters whose literature value is zero)",
+  "page": 8
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The random seeds for the 100 row-scaling tuning draws and 200 Rbar tuning draws are not given.",
+  "options": [
+   "fixed independent seeds per tuning purpose",
+   "same draws for row scaling and Rbar",
+   "reuse calibration draws"
+  ],
+  "chosen": "Use separate fixed seeds for row-scaling tuning, Rbar tuning, calibration, and testing.",
+  "rationale": "The paper requires tuning draws not used for calibration or testing but does not specify seeds.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Every estimator is tuned on draws that are not used for calibration or testing: the row scaling on 100 draws,  ̄R on 200 draws.",
+  "page": 8
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The seed splitting for 999 calibration problems and 2,000 test problems is not specified.",
+  "options": [
+   "one fixed seed and disjoint index ranges",
+   "separate fixed seeds",
+   "random split of a larger pool"
+  ],
+  "chosen": "Use fixed seed 0 and disjoint generated pools for calibration and testing.",
+  "rationale": "The paper requires 999 calibration and 2,000 independent test problems; exact seeds are absent.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "The calibration uses n = 999 problems and α = 0.1. The coverage is measured on 2,000 independent test problems",
+  "page": 8
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Whether coverage is evaluated for all parameters simultaneously or marginally is not fully explicit in the table rows.",
+  "options": [
+   "simultaneous max-score coverage",
+   "per-parameter marginal coverage",
+   "average of per-parameter coverage"
+  ],
+  "chosen": "Use simultaneous coverage of all parameters in the model, matching the conformal score.",
+  "rationale": "The intervals are simultaneous by construction and the guarantee is stated for all parameters at once.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "The numerical precision and implementation language for the least-squares solve are not part of the mathematical method but affect exact values.",
+  "options": [
+   "float64 NumPy/SciPy",
+   "float32",
+   "arbitrary precision"
+  ],
+  "chosen": "float64 NumPy/SciPy dense least squares.",
+  "rationale": "The paper states double precision and NumPy/SciPy usage.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "all estimates are dense least-squares solves (numpy.linalg.lstsq) in double precision.",
+  "page": 19
+ },
+ {
+  "id": "A15",
+  "by": "reader",
+  "gap": "Whether the RACC h factor is used for the point estimate or only for interval widths is not explicit in the score formula text.",
+  "options": [
+   "h only in score and interval width",
+   "h also rescales point estimates",
+   "h only in calibration"
+  ],
+  "chosen": "Apply h only to scores and interval widths; point estimate remains the PIWR least-squares estimate.",
+  "rationale": "The residual-adaptive factor is introduced for scores and intervals, not for the regression estimate itself.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Scaling the conformal scores and intervals by a factor that increases with this residual widens the intervals for difficult data sets and narrows them for easy ones",
+  "page": 3
+ },
+ {
+  "id": "A16",
+  "by": "reader",
+  "gap": "The paper does not state whether the first and last samples are included in the PIWR linear system beyond saying all samples are used.",
+  "options": [
+   "include all m samples including endpoints",
+   "exclude endpoints as in PIR finite differences",
+   "use only interior samples for library quadrature"
+  ],
+  "chosen": "Include all m samples, with J0=0 and the measured x0 on the right-hand side.",
+  "rationale": "PIWR uses the integrated relation at every sample and explicitly lists J0=0.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "uses all samples, including the end points",
+  "page": 7
+ },
+ {
+  "id": "A17",
+  "by": "reader",
+  "gap": "The paper does not constrain the SIDR parameter estimates to be positive or within a physical range.",
+  "options": [
+   "unconstrained linear least squares",
+   "nonnegative least squares",
+   "bounded least squares within the prior box"
+  ],
+  "chosen": "Unconstrained linear least squares for the point estimate.",
+  "rationale": "PIR and PIWR are described as searching an unbounded parameter space and identifiability is handled by library structure rather than bounds.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "PIR and PIWR search an unbounded parameter space",
+  "page": 10
+ },
+ {
+  "id": "A18",
+  "by": "reader",
+  "gap": "The noise scale uses the maximum true compartment value, but the paper does not state whether that maximum is computed before or after adding noise.",
+  "options": [
+   "maximum of the true noise-free trajectory",
+   "maximum of the noisy sample",
+   "per-time-point scale"
+  ],
+  "chosen": "Maximum of the true noise-free trajectory per compartment.",
+  "rationale": "The formula uses xc(ti)+ε max_t|xc(t)| ξi, which implies the true trajectory.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "add noise per compartment c as  ̃xc(ti) = xc(ti)+ε maxt|xc(t)| ξi, ξi ∼N(0, 1)",
+  "page": 8
+ }
+]

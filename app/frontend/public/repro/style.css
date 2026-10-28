@@ -7,8 +7,8 @@
   --ok:#15803D; --okt:#E6F4EA; --warn:#B45309; --warnt:#FDF2E3;
   --bad:#C62828; --badt:#FBE7E7; --think:#6D5BD0; --thinkt:#F1EEFC;
   --hl-t:rgba(255,196,0,.42); --hl-r:rgba(91,75,255,.18); --hl-a:rgba(120,130,145,.24);
-  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; --body:"Inter","Noto Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --display:"Space Grotesk","Inter","Noto Sans SC",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; --body:"Inter","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Space Grotesk","Inter","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
   --r:18px; --shadow:0 1px 2px rgba(20,20,40,.04),0 10px 30px rgba(40,30,90,.07); --shadow-lg:0 2px 4px rgba(20,20,40,.05),0 24px 60px rgba(60,40,160,.16);
   --tb:64px;
 }
@@ -725,3 +725,28 @@ input,select{border-radius:12px;background:var(--surface);padding:11px 13px}
   .bench .tw{-webkit-overflow-scrolling:touch;background:linear-gradient(to right,var(--surface) 30%,transparent),linear-gradient(to left,var(--surface) 30%,transparent) right,radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.14),transparent) right;background-repeat:no-repeat;background-size:40px 100%,40px 100%,14px 100%;background-attachment:local,local,scroll}
 }
 @media (max-width:600px){.aast{display:grid;grid-template-columns:1fr 1fr;width:100%}.aast div{min-width:0}}
+
+/* how-to-use guide */
+.helpmodal{position:fixed;inset:0;z-index:90;background:rgba(15,15,25,.5);backdrop-filter:blur(6px);display:grid;place-items:center;padding:18px;overflow:auto}
+.helpmodal[hidden]{display:none}
+.helpcard{position:relative;max-width:860px;width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:30px 30px 24px;box-shadow:0 30px 80px rgba(20,20,40,.25)}
+.helpcard h2{font:700 26px/1.15 var(--display);margin:0 0 6px;padding-right:36px}
+.helpcard h3{font:600 16px/1.3 var(--display);margin:0 0 8px}
+.helpcols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:18px 0}
+.helpcols section{background:var(--soft);border-radius:16px;padding:18px}
+.helpcols ol{margin:0 0 12px;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.5}
+.helpcols .primary{display:inline-block;text-decoration:none}
+.helpx{position:absolute;top:14px;right:16px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+@media (max-width:760px){.helpcols{grid-template-columns:1fr}.helpcard{padding:22px 18px}.tbact #helpBtn{padding:6px 10px;font-size:12px}}
+
+/* start guide */
+.startguide{margin:18px 0 0}
+.sgh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}.sgh b{font:700 18px var(--display)}
+.sgs{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.sgs li{display:flex;gap:12px;background:var(--soft);border-radius:14px;padding:14px}
+.sgs .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font:700 13px var(--display)}
+.sgs b{display:block;margin-bottom:4px}.sgs p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.sgs a{display:inline-block;cursor:pointer;text-decoration:none;font-size:13.5px}
+.sgfoot{margin:12px 0 0}
+@media (max-width:860px){.sgs{grid-template-columns:1fr}}
+@media (max-width:520px){.tbact #helpBtn .hl{display:none}.tbact #helpBtn{padding:6px 11px}}

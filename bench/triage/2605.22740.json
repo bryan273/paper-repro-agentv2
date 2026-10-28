@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Decided accuracy of the Margin method (probabilistic routing) on the OpenML-CC18 dataset 'credit-g' is 0.6808 (with boundary-uncertain rate 48.1%).",
+  "table_ref": "Table 5 (per-dataset results, credit-g row, Margin column)",
+  "dataset": "credit-g (OpenML-CC18, N=1000, d=20)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/smitswil/ternary_tree"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Single small dataset (1000x20), 5-fold CV with depth-4 trees; the paper reports total CC18 runtime of ~4.7h on 8 cores, so one dataset is a few minutes; code is provided."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2605.22740",
+ "title": "Ternary Decision Trees with Locally-Adaptive Uncertainty Zones",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

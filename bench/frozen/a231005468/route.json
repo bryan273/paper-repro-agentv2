@@ -1,0 +1,41 @@
+{
+ "route": "full_release",
+ "why": "The official ExIFFI repository is cloned and includes the model implementation (model_reboot/EIF_reboot.py), the synthetic Bisect data (data/syn/bisect.csv), experiment scripts for the metric table, and the EIF+ eta code. The only expected work is creating a compatible Python environment on Windows/Python 3.12 and invoking the authors' scripts; no model, data, or core logic must be rebuilt.",
+ "repo": "https://github.com/alessioarcudi/ExIFFI",
+ "entrypoints": [
+  "experiments/test_metrics.py",
+  "experiments/launch_metrics_exp.sh",
+  "experiments/test_eifplus_eta.py",
+  "experiments/get_metrics.py"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "exiffi_env.yml is a conda environment likely pinned to older Python/numba/sklearn versions; may need a pip fallback on Python 3.12.",
+  "Launch scripts are bash .sh files and will not run directly on Windows; Python entrypoints must be invoked directly.",
+  "No GPU on this machine, but the Bisect Scenario II experiment is CPU-sized."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes total: roughly 5-10 minutes to install/repair dependencies, then under 5 minutes for 40 EIF+ and 40 EIF fits on the 1,100 x 6 Bisect dataset.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 18,
+  "gpu_speedup": null,
+  "basis": "C1/C2 only require repeated EIF/EIF+ fits on the bundled 1,100-point, 6-feature Bisect dataset; each fit is seconds on CPU, with environment setup dominating the command time."
+ },
+ "repo_info": {
+  "url": "https://github.com/alessioarcudi/ExIFFI",
+  "cloned": true,
+  "n_files": 7167,
+  "n_python": 27,
+  "python2_style_files": 0
+ }
+}

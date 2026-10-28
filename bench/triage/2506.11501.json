@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Neural Network achieves 78.57% accuracy (highest) on Pima Indians Diabetes classification",
+  "table_ref": "Abstract/Results (no numbered table; reported in abstract and results text)",
+  "dataset": "Pima Indians Diabetes Database (768 samples, UCI)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Tiny 768-row UCI table; training 8 classic ML models incl. a small MLP takes seconds-minutes on CPU, but no code/configs are released so the exact preprocessing, split, and NN architecture must be guessed, making exact 78.57% unlikely to match."
+ },
+ "blockers": [
+  "No code or configs released despite 'will be published' claim",
+  "Preprocessing/split/feature-selection details vague and internally inconsistent (70/30 split vs 5-fold CV)",
+  "Exact NN architecture and hyperparameters unspecified"
+ ],
+ "suitable": true,
+ "id": "2506.11501",
+ "title": "Diabetes Prediction and Management Using Machine Learning Approaches",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

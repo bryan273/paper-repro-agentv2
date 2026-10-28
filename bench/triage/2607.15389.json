@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Accuracy of Random Forest with Choquet-based feature at k=4 features (YChoquet = 0.953)",
+  "table_ref": "Table III, row k=4, column YChoquet",
+  "dataset": "CIC-DDoS2019"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code is released; the Choquet/C-alpha-C aggregation with Poisson moving-average fuzzy measure and the exact preprocessing/splits must be reimplemented from the paper, then RF trained on ~693k rows x 79 cols (reduced to 10 features) on CPU."
+ },
+ "blockers": [
+  "No code or configs released; aggregation pipeline (copula choice, alpha, fuzzy measure, window W) must be reverse-engineered",
+  "Exact preprocessing, train/test split and repetition protocol not specified, so the exact 0.953 value is unlikely to be matched",
+  "CIC-DDoS2019 is large (~several GB raw) and must be downloaded and cleaned"
+ ],
+ "suitable": false,
+ "id": "2607.15389",
+ "title": "Improving Network Anomaly Detection via Choquet-Integral-Based Feature Aggregation",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

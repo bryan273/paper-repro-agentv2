@@ -1,0 +1,10 @@
+[
+ {
+  "at": "planner->implementer",
+  "type": "false_info",
+  "path": "config.t_ensemble_size",
+  "value": "10 (paper Sec 5.1, requirement R7)",
+  "marker": "INJ-F1",
+  "what": "ensemble size t is 10; the paper says 100"
+ }
+]

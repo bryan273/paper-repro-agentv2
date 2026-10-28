@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Mean percentage improvement in MSE over RF(10) for EST-PD(Norm) on the CCPP dataset (12.39, SE 0.15), averaged over training sizes 50-500 with 100 bootstrap replications each",
+  "table_ref": "Table 1, row CCPP, column EST-PD(Norm)",
+  "dataset": "UCI Combined Cycle Power Plant (CCPP)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/Neal-Liu-Ziyi/SmoothedRandomForest.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "10-tree random forests on <=500-sample bootstrap subsets of a small UCI table, with gradient-based OOB smoothing-parameter optimisation; 6 training sizes x 100 replications x several baselines is pure CPU sklearn work, minutes to ~1-2 hours on 8 cores."
+ },
+ "blockers": [
+  "Full 100-replication x 6-size protocol is somewhat long on CPU; a reduced-replication run may not match the SE exactly",
+  "Requires reimplementing/using the repo's custom smoothed-RF code and OOB optimiser"
+ ],
+ "suitable": true,
+ "id": "2505.06852",
+ "title": "Improving Random Forests by Smoothing",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "Wan-Weaver achieves Overall 8.43 on WeaverBench for interleaved text-image generation",
+  "table_ref": "Table 2, row 'Wan-Weaver (Ours)', column 'Overall'",
+  "dataset": "WeaverBench (512 interleaved-generation test cases)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 640,
+  "ram_gb": 512,
+  "disk_gb": 20000,
+  "ref_minutes": 1000000,
+  "gpu_speedup": null,
+  "basis": "The target requires the paper's full Wan-Weaver model: a 32B-class in-house planner plus a from-scratch DiT visualizer trained for 9.6T tokens and planner-tuned for 35.72G tokens, with no released code or checkpoints."
+ },
+ "blockers": [
+  "No code, configs, or checkpoints are linked in the paper",
+  "Planner is initialized from an in-house Qwen2.5-VL-32B-Think model, not a public checkpoint",
+  "Visualizer is trained from scratch on 9.6T tokens with a large multi-stage data pipeline",
+  "Planner tuning uses 35.72G tokens of synthesized/proprietary textual-proxy data and large understanding data",
+  "WeaverBench prompts and evaluation protocol are not released/linked",
+  "Evaluation relies on GPT-4o-as-judge and large-scale model generation, requiring a multi-GPU cluster",
+  "Laptop/CPU-only reproduction of the 32B planner plus DiT visualizer is not feasible"
+ ],
+ "suitable": false,
+ "id": "2603.25706",
+ "title": "Wan-Weaver: Interleaved Multi-modal Generation via Decoupled Training",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

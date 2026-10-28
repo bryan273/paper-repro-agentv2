@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "SLEID achieves F1 = 96.80% (and precision 97.86%, recall 95.78%, accuracy 99.44%) for illicit account detection, outperforming supervised and semi-supervised baselines",
+  "table_ref": "Table 1",
+  "dataset": "Custom Ethereum DeFi dataset (581 curated illicit seeds expanded to 44,675 core addresses / 1,888,553 accounts, 6,903,860 transactions, 2015-2024)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The headline number depends on a bespoke dataset built by crawling Ethereum (Etherscan/DeFi) from 581 manually curated illicit seeds, expanding via network neighbors, and computing ~100 graph/temporal/transaction/neighborhood features over 1.9M accounts; no code or data is released, so the entire data-construction and feature pipeline would have to be rebuilt before any RF/XGBoost training (which itself is cheap)."
+ },
+ "blockers": [
+  "No code released (no repository link in paper)",
+  "No dataset released; requires re-crawling Ethereum via Etherscan/DeFi APIs and manual curation of 581 illicit seeds",
+  "Labeling protocol (risk-score <0.2, DeFi-priority expansion) is only partially specified and not reproducible exactly",
+  "Feature extraction over 1.9M accounts / 6.9M transactions is heavy and depends on external blockchain data services"
+ ],
+ "suitable": false,
+ "id": "2412.02408",
+ "title": "Leveraging Ensemble-Based Semi-Supervised Learning for Illicit Account Detection in Ethereum DeFi Transactions",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

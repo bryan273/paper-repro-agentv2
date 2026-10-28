@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "AutoConv achieves F1 of 50.48 on QuAC with 50 human dialogues (vs. 46.57 for finetuning baseline)",
+  "table_ref": "Table 2, row 'AutoConv' under 'Data Augmentation (50 Human Dialogues)', column 'QuAC F1'",
+  "dataset": "QuAC"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 1380,
+  "gpu_speedup": 10,
+  "basis": "Paper reports 5 hours for LLM finetuning and 18 hours for generation on 8 Tesla V100 32GB GPUs; no code released, so agent must implement full pipeline including OPT-13B finetuning and synthetic dialogue generation."
+ },
+ "blockers": [
+  "No code released",
+  "Requires finetuning OPT-13B (13B parameters) which needs ~80GB VRAM for full finetuning",
+  "Generation of 40K synthetic dialogues takes 18 hours on 8 V100 GPUs",
+  "Training small task model on synthetic dialogues adds additional compute"
+ ],
+ "suitable": false,
+ "id": "2308.06507",
+ "title": "AutoConv: Automatically Generating Information-seeking Conversations with Large Language Models",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

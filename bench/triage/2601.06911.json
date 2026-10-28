@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Qwen2.5-7B + DAPO-Silhouette achieves 18.1 avg@256 on AIME24, improving over DAPO's 12.2, validating the Silhouette-Aware Reweighting contribution.",
+  "table_ref": "Table 1, Qwen Family, row '+ DAPO-Silhouette', column AIME24",
+  "dataset": "AIME 2024"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 256,
+  "disk_gb": 200,
+  "ref_minutes": 1000000,
+  "gpu_speedup": null,
+  "basis": "The target is a full DAPO RLVR training run on Qwen2.5-7B using 8 NVIDIA H800 GPUs, batch size 512, 16 rollouts per prompt, and 200 steps; this cannot be run on an 8-core/16GB laptop CPU."
+ },
+ "blockers": [
+  "requires 8 NVIDIA H800 GPUs for training",
+  "no code or training checkpoints released",
+  "RLVR training of 7B/8B models is far beyond laptop CPU capability",
+  "generation/evaluation protocols require large-scale sampling (e.g., K=256 on AIME)"
+ ],
+ "suitable": false,
+ "id": "2601.06911",
+ "title": "Distributional Clarity: The Hidden Driver of RL-Friendliness in Large Language Models",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

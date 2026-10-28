@@ -1,0 +1,40 @@
+{
+ "route": "paper_only",
+ "why": "No repository URL or code link was provided, and the authors released no usable implementation to inspect. The match target C1 is nevertheless a small, well-specified CPU experiment: a regression tree on 7,211 QM7b molecules with 14 original properties. We can reimplement it from the paper using public QM7b data and standard scikit-learn regression trees.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "author code for data loading, preprocessing, and regression-tree training",
+  "exact regression-tree implementation and hyperparameters (depth, pruning, min samples per leaf, etc.)",
+  "random 90/10 split seed",
+  "preprocessing details such as z-scoring and any target transformation"
+ ],
+ "blockers_seen": [
+  "no repository or code link was provided",
+  "exact split seed and regression-tree hyperparameters are unspecified, so an exact numeric match is not guaranteed"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "a few minutes: download QM7b, load 7,211 x 14 features, fit and evaluate one regression tree",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "QM7b is only 7,211 x 14; a single scikit-learn regression-tree fit and evaluation takes seconds, dominated by package installation and data download."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

@@ -1,0 +1,261 @@
+{
+ "title": "When to Treeify Hash Table Buckets: A Reproducible C Study of List, Hybrid, and Red-Black Tree Chaining",
+ "summary": "The paper asks when C hash tables should replace long separate-chaining buckets with red-black trees, and whether hybrid-batch versus hybrid-incremental conversion timing matters as much as Java's k=8 threshold. It builds one chain_ht C API with list, hybrid-batch, hybrid-incremental, and always-tree modes, then benchmarks uniform FNV, forced-bucket stress, a same-API scale run, and trigram posting-list replay. The central result is that forced-bucket list lookups average about 31,250 comparisons while incremental hybrid or always-tree average about 15, with tree buckets using about 1.7x more heap and hybrid-batch paying large mid-load list costs.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Under forced-bucket stress with 500,000 keys and eight hot bins, list chaining averages 31,250.5 strcmp comparisons per successful lookup.",
+   "metric": "average strcmp comparisons per successful lookup",
+   "dataset": "forced-bucket chaining stress",
+   "split": "5x10^5 keys, 4096 buckets, 8 hot bins, seed 1; single run",
+   "value": 31250.5,
+   "unit": "comparisons per successful lookup",
+   "higher_is_better": false,
+   "table_ref": "Table 6, row List, column Avg. comparisons",
+   "config_for_value": "List chaining only; fixed m=4096; forced bucket hash returns embedded bucket id; 5x10^5 unique string keys concentrated into eight hot bins of ~62,500 each; seed 1",
+   "reported_spread": null,
+   "est_compute": "single CPU core, ~10 min (insert 271.5 s + lookup 338.3 s on Apple M4 Pro)",
+   "quote": "Table 6 isolates forced-bucket stress: the stable signal is avg. comparisons (∼31,250 list vs ∼15 tree/hybrid), not the absolute list wall-clock.",
+   "page": 5
+  },
+  {
+   "id": "C2",
+   "statement": "Under the same forced-bucket stress, hybrid-incremental tree chaining (k=8) averages 15.3 comparisons per successful lookup after load.",
+   "metric": "average strcmp comparisons per successful lookup",
+   "dataset": "forced-bucket chaining stress",
+   "split": "5x10^5 keys, 4096 buckets, 8 hot bins, seed 1; single run",
+   "value": 15.3,
+   "unit": "comparisons per successful lookup",
+   "higher_is_better": false,
+   "table_ref": "Table 6, row Hybrid-incremental (k=8), column Avg. comparisons",
+   "config_for_value": "Hybrid-incremental k=8; each bin converts as soon as its chain reaches 8 during insert; fixed m=4096; eight hot bins; seed 1",
+   "reported_spread": null,
+   "est_compute": "single CPU core, seconds-scale (insert 0.20 s + lookup 0.044 s)",
+   "quote": "post-load lookup converges to ∼15.3 for batch hybrid, incremental hybrid, and always-tree",
+   "page": 5
+  },
+  {
+   "id": "C3",
+   "statement": "Forced-bucket stress with interleaved mid-load lookups under hybrid-batch performs 36,898,600 mid-load strcmp comparisons.",
+   "metric": "aggregate mid-load strcmp comparisons",
+   "dataset": "forced-bucket chaining stress with mid-load probes",
+   "split": "5x10^5 keys, 8 hot bins, seed 1; probes every 10,000 inserts, 64 random earlier keys",
+   "value": 36898600,
+   "unit": "mid-load strcmp comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row Hybrid-batch, column Mid comparisons",
+   "config_for_value": "Hybrid-batch k=8; inserts go into lists and finalize converts eligible bins after load; probe mix every=10,000 with 64 probes; fixed forced-bucket stress",
+   "reported_spread": null,
+   "est_compute": "single CPU core, ~2 min (insert+mid 93.1 s plus final lookup 0.040 s)",
+   "quote": "Under hybrid-batch those probes still walk growing lists (∼37M comparisons); hybrid-incremental already holds trees (∼46k comparisons).",
+   "page": 5
+  },
+  {
+   "id": "C4",
+   "statement": "Forced-bucket stress with interleaved mid-load lookups under hybrid-incremental performs 46,275 mid-load strcmp comparisons.",
+   "metric": "aggregate mid-load strcmp comparisons",
+   "dataset": "forced-bucket chaining stress with mid-load probes",
+   "split": "5x10^5 keys, 8 hot bins, seed 1; probes every 10,000 inserts, 64 random earlier keys",
+   "value": 46275,
+   "unit": "mid-load strcmp comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row Hybrid-incremental, column Mid comparisons",
+   "config_for_value": "Hybrid-incremental k=8; bin converts when chain reaches 8 during insert; probe mix every=10,000 with 64 probes; fixed forced-bucket stress",
+   "reported_spread": null,
+   "est_compute": "single CPU core, seconds-scale (insert+mid 0.19 s plus final lookup 0.042 s)",
+   "quote": "Under hybrid-batch those probes still walk growing lists (∼37M comparisons); hybrid-incremental already holds trees (∼46k comparisons).",
+   "page": 5
+  },
+  {
+   "id": "C5",
+   "statement": "On the uniform-hash fixed table at alpha≈122, list chaining averages 62.1 comparisons per successful lookup.",
+   "metric": "average strcmp comparisons per successful lookup",
+   "dataset": "uniform-hash FNV fixed table",
+   "split": "5x10^5 keys, 4096 buckets, seed 1; no resize; five uniform-only runs",
+   "value": 62.1,
+   "unit": "comparisons per successful lookup",
+   "higher_is_better": false,
+   "table_ref": "Table 5, row List, column Avg. comparisons",
+   "config_for_value": "Uniform FNV keys, fixed m=4096, no resize, alpha≈122, seed 1; mean over five uniform-only runs",
+   "reported_spread": null,
+   "est_compute": "single CPU core, ~2 s (mean insert 1.07 s + lookup 1.00 s)",
+   "quote": "list avg. comparisons ∼62 and max chain 167 (Table 5).",
+   "page": 4
+  },
+  {
+   "id": "C6",
+   "statement": "On the same-API moderate-load scale baseline at alpha=16, list chaining averages 9.0 comparisons per successful lookup.",
+   "metric": "average strcmp comparisons per successful lookup",
+   "dataset": "same-API scale baseline",
+   "split": "2^20 keys, 2^16 buckets, FNV, seed 1; alpha=16; single run",
+   "value": 9.0,
+   "unit": "comparisons per successful lookup",
+   "higher_is_better": false,
+   "table_ref": "Table 9, row List, column Avg. comparisons",
+   "config_for_value": "In-memory insert then lookup, 2^20 FNV keys, 2^16 buckets, seed 1, no disk I/O",
+   "reported_spread": null,
+   "est_compute": "single CPU core, ~1.5 s (insert 0.89 s + lookup 0.65 s)",
+   "quote": "tree/hybrid cut average comparisons from 9.0 to ∼3.6 and lookup time from 0.65 s to ∼0.16 s.",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "Tree buckets use about 1.7 times more heap than list buckets in the uniform workload.",
+   "metric": "heap memory ratio versus list chaining",
+   "dataset": "uniform-hash FNV fixed table heap measurement",
+   "split": "5x10^5 keys, 4096 buckets, seed 1",
+   "value": 1.7,
+   "unit": "x heap vs list",
+   "higher_is_better": false,
+   "table_ref": "Table 7 and abstract; List 23.1 MB, tree/hybrid 39.1 MB",
+   "config_for_value": "Heap after uniform-workload inserts; list cells versus RB nodes plus bucket arrays and stored key strings; k=8 for hybrid rows",
+   "reported_spread": null,
+   "est_compute": "single CPU core, seconds; heap measurement after inserts",
+   "quote": "Tree buckets use about 1.7× more heap than lists.",
+   "page": 1
+  },
+  {
+   "id": "C8",
+   "statement": "Replaying the hottest 256 trigram posting lengths as synthetic bucket chains, list chaining averages 2880.7 comparisons per successful lookup.",
+   "metric": "average strcmp comparisons per successful lookup",
+   "dataset": "trigram posting-length replay (hottest 256 lists)",
+   "split": "1,065,810 keys total; one bucket per posting list; seed-independent lengths",
+   "value": 2880.7,
+   "unit": "comparisons per successful lookup",
+   "higher_is_better": false,
+   "table_ref": "Table 12, row List, column Avg. comparisons",
+   "config_for_value": "Replay hottest 256 trigram posting lengths from words_alpha.txt as forced bucket chains; list policy; one bucket per trigram; insert L synthetic keys per list",
+   "reported_spread": null,
+   "est_compute": "single CPU core, ~13 s (insert 6.62 s + lookup 6.57 s)",
+   "quote": "List lookup averages thousands of comparisons; hybrid-batch still pays list insert cost before conversion; hybrid-incremental matches always-tree.",
+   "page": 8
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is exactly the user's target hint and the cheapest central run: list-only chaining under forced-bucket stress needs no RB-tree or hybrid conversion code while reproducing the paper's headline stress baseline."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the target forced-bucket comparison count is a single-run unbounded counter with no reported std for comparisons, so use a 10% relative band (about ±3,125 comparisons around 31,250)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement one shared chaining API with list, always-tree, hybrid-batch, and hybrid-incremental modes behind the same insert/lookup interface.",
+   "cite": "Section 4, Chaining comparison API; Section 5.1",
+   "quote": "chain ht.c exposes list, always-tree, and hybrid bucket modes with either batch or incremental treeify policy behind the same insert/lookup interface",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Represent each non-empty bucket as an RB tree ordered by key when using tree buckets.",
+   "cite": "Section 2, RB-tree chaining definition",
+   "quote": "each non-empty bucket holds an RB tree ordered by key [10].",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Use the Java-style threshold k=8 for hybrid conversion by default.",
+   "cite": "Section 5.1, Two hybrid policies",
+   "quote": "Hybrid mode shares the familiar threshold k (default eight, after Java [1]), but conversion timing differs:",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "For hybrid-batch, insert into lists and convert eligible bins only at finalize after the load phase.",
+   "cite": "Section 5.1, Hybrid-batch bullet",
+   "quote": "inserts always go into lists; chain ht finalize converts eligible bins after the load phase",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "For hybrid-incremental, convert a bin to an RB tree as soon as its chain reaches k during insert.",
+   "cite": "Section 5.1, Hybrid-incremental bullet",
+   "quote": "a bin converts to an RB tree as soon as its chain reaches k during insert",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Build forced-bucket stress keys with an embedded bucket id and make the table hash return that id, concentrating keys into eight hot bins.",
+   "cite": "Section 5.1, Structural chaining stress",
+   "quote": "keys embed a bucket id in the prefix and the table hash returns that id, concentrating keys into eight hot bins of ∼62,500 entries each",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "For the controlled microbenchmark, insert 500,000 unique string keys into a fixed table of 4096 buckets using FNV without resizing.",
+   "cite": "Section 5.1, Uniform-hash workload",
+   "quote": "Inserts 500 000 unique string keys into a fixed table of 4096 buckets using FNV (no resize).",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Fix the pseudorandom seed to 1 for synthetic key generation so repetitions use the same key sequence.",
+   "cite": "Appendix A.4, Datasets and workload sizes",
+   "quote": "Synthetic workloads fix the pseudorandom seed (--seed 1 by default) so key sequences repeat across runs.",
+   "page": 11
+  },
+  {
+   "id": "R9",
+   "stmt": "Count strcmp calls during chained-hash lookup and report average comparisons as comparisons divided by successful lookups.",
+   "cite": "Appendix A.5, Table 17 metric definitions",
+   "quote": "Number of strcmp calls during chained-hash lookup (chain ht)",
+   "page": 12
+  },
+  {
+   "id": "R10",
+   "stmt": "For mid-load probes, inject lookups every 10,000 inserts using 64 random earlier keys.",
+   "cite": "Section 5.1, Interleaved mid-load lookups",
+   "quote": "Table 3 adds probes during insertion (every 10,000 inserts, 64 random earlier keys).",
+   "page": 5
+  },
+  {
+   "id": "R11",
+   "stmt": "Measure heap bytes including bucket arrays, list cells or RB nodes, and stored key strings through the chain_ht heap-bytes function.",
+   "cite": "Table 7 caption; Appendix A.5",
+   "quote": "heap bytes counts bucket arrays, list cells or RB nodes, and stored key strings via chain ht heap bytes().",
+   "page": 6
+  },
+  {
+   "id": "R12",
+   "stmt": "Do not implement Java HashMap's untreeify hysteresis, resize packaging, or Comparable tree-bin details for hybrid-incremental.",
+   "cite": "Section 5.1, protocol note on Java approximation",
+   "quote": "we omit untreeify hysteresis, resize packaging, and Comparable tree-bin details",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "For trigram replay, force one bucket per posting list of length L and insert L synthetic keys so chain length equals posting length.",
+   "cite": "Section 5.3.1, posting-list replay",
+   "quote": "for each posting list of length L we force one bucket and insert L synthetic keys, so the bucket chain length equals that posting length",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "words_alpha.txt from dwyl/english-words",
+   "how_to_get": "Clone https://github.com/dwyl/english-words and use words_alpha.txt; the paper reports 370,105 words for trigram statistics."
+  },
+  {
+   "name": "Synthetic uniform and forced-bucket key streams",
+   "how_to_get": "Generate locally with the paper's repository drivers using --seed 1; no external download required."
+  }
+ ],
+ "code_links": [
+  "https://github.com/rbtreechainingforhashtable/project",
+  "https://github.com/rbtreechainingforhashtable/",
+  "https://github.com/dwyl/english-words",
+  "https://github.com/google/cpp-btree"
+ ],
+ "stated_compute": "CPU: Apple M4 Pro; RAM: 48 GB; OS: macOS 26.5.1 (build 25F80); compiler: Apple Clang 16.0.0 (cc, Xcode command-line tools)",
+ "paper_meta": {
+  "source": "2607.26530",
+  "kind": "arxiv",
+  "arxiv_id": "2607.26530",
+  "url": "https://arxiv.org/abs/2607.26530",
+  "title": "When to Treeify Hash Table Buckets: A Reproducible C Study of List, Hybrid, and Red-Black Tree Chaining",
+  "pages": 14
+ }
+}

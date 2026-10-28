@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "AnyCharV achieves FVD 622.01 on the 200-video evaluation set, the best FVD among compared methods in Table 1.",
+  "table_ref": "Table 1",
+  "dataset": "CharVG evaluation set (20 character images × 10 target driving videos; 200 generated videos)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://anycharv.github.io"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 128,
+  "disk_gb": 300,
+  "ref_minutes": 1000000,
+  "gpu_speedup": 100,
+  "basis": "The paper reports four training stages totaling tens of thousands of steps on 8 NVIDIA H800 GPUs for about 3 days, and even inference takes 5 minutes per 5-second video on an H800; CharVG and the evaluation media are not released as downloadable data."
+ },
+ "blockers": [
+  "No public code release for AnyCharV",
+  "CharVG dataset and the 20/10 evaluation media are not released",
+  "Training requires 8 NVIDIA H800 GPUs for about 3 days",
+  "Inference alone takes 5 minutes per 5-second 24 FPS video on an H800",
+  "Evaluating FVD requires 200 generated videos plus 1,000 real CharVG videos"
+ ],
+ "suitable": false,
+ "id": "2502.08189",
+ "title": "AnyCharV: Bootstrap Controllable Character Video Generation with Fine-to-Coarse Guidance",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

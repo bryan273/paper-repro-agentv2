@@ -1,0 +1,194 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The η value used for EIF+ in the Table 2 benchmark is not stated.",
+  "options": [
+   "η=1.0 for all datasets",
+   "η=0.5 for all datasets",
+   "tune η per dataset on a validation set"
+  ],
+  "chosen": "η=1.0 for all datasets; target Bisect is insensitive over 0.5–5.",
+  "rationale": "Appendix A.4 reports Bisect AP is unaffected by η, while the main text does not pin the benchmark value.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "for the Bisect, Breastw, Ionosphere and Shuttle the Average Precision of EIF+is not affected by the value of the parameter η.",
+  "page": 34
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Number of isolation trees N is not specified for Table 2.",
+  "options": [
+   "100 trees",
+   "200 trees",
+   "500 trees"
+  ],
+  "chosen": "100 trees",
+  "rationale": "Isolation Forest convention and the paper's low-compute emphasis.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "the EIF model [19] generates a forest of N binary trees:",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Subsample size and sampling scheme per tree are not specified.",
+  "options": [
+   "full dataset n",
+   "random subsample ψ=256 without replacement",
+   "bootstrap n with replacement"
+  ],
+  "chosen": "random subsample ψ=min(256,n) without replacement",
+  "rationale": "Standard IF subsampling convention; paper only says a random subsample is used per tree.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "it is better to build the forest using only a random subsample  ̃X with  ̃n elements for each tree.",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Maximum tree depth / stopping rule is not specified.",
+  "options": [
+   "unlimited until one element",
+   "max_depth=ceil(log2 ψ)",
+   "preset max_depth=10"
+  ],
+  "chosen": "max_depth=ceil(log2 ψ) (8 for ψ=256), also stop at one element",
+  "rationale": "Standard isolation-tree depth rule; paper says stop at preset max depth or one element.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "until the max number of splits is reached, which corresponds to the preset max depth of the tree or when the set to split has only one element.",
+  "page": 5
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether Table 2 AP values are single runs or averages over seeds is not stated.",
+  "options": [
+   "single run",
+   "10-run mean",
+   "40-run mean"
+  ],
+  "chosen": "40-run mean, matching the 40 model runs used for GFI score plots",
+  "rationale": "Paper reports 40 runs to account for stochasticity of EIF/EIF+; using the same repetition count for AP is the closest documented choice.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "The GFI Score Plot represents the outcome of multiple model runs, 40 in this paper (Section 6), to account for the stochastic nature of IF-based models like EIF and EIF+.",
+  "page": 10
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Feature scaling/preprocessing before EIF/EIF+ is not described.",
+  "options": [
+   "no scaling",
+   "standardize to zero mean unit variance",
+   "min-max scale"
+  ],
+  "chosen": "no scaling",
+  "rationale": "Isolation forests are typically applied to raw numeric features; no scaling is mentioned.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Bisect generation parameters are not all restated together in Appendix A.1.1.",
+  "options": [
+   "r=5, d=5, min=0, max=5, k=2, v=[1,1,0,0,0,0]",
+   "use repository defaults",
+   "tune r/d to match Table 1 contamination"
+  ],
+  "chosen": "r=5, d=5, min=0, max=5, k=2, v=[1,1,0,0,0,0], Gaussian noise N(0,1)",
+  "rationale": "Section 6 gives r=5,d=5,min=0,max=5 for synthetic examples; Appendix gives Bisect direction v; Table 1 fixes n=1100 and 100 anomalies.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "The outliers are positioned along the bisector of the subspace formed by Feature 0 and Feature 1, using the direction vector v = [1, 1, 0, 0, 0, 0].",
+  "page": 27
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Whether Scenario II uses a separate train/test split or evaluates on the same fitted data.",
+  "options": [
+   "fit on inliers and evaluate on the same full dataset",
+   "held-out test split",
+   "cross-validation"
+  ],
+  "chosen": "fit on inliers, evaluate on the same full dataset",
+  "rationale": "Paper explicitly says models are fitted on inliers and then AP is assessed on the entirety of the dataset.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We fit the models exclusively on the inliers within the dataset, that correspond to the scenario of 0 contamination of outliers.",
+  "page": 12
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How ExIFFI's binary inlier/outlier threshold is chosen for GFI is not specified.",
+  "options": [
+   "contamination-rate quantile of anomaly scores",
+   "0.5 on normalized anomaly scores",
+   "sklearn predict default"
+  ],
+  "chosen": "threshold at the dataset's contamination-rate quantile of anomaly scores",
+  "rationale": "The paper defines QI/QO by a thresholding operation but does not give the threshold rule.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "the binary label produced by the thresholding operation indicating whether the corresponding data point xi is anomalous",
+  "page": 9
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Average Precision implementation details are not specified.",
+  "options": [
+   "sklearn.metrics.average_precision_score",
+   "area under the precision-recall curve by trapezoidal integration",
+   "custom step-wise AP"
+  ],
+  "chosen": "sklearn.metrics.average_precision_score on anomaly scores and binary labels",
+  "rationale": "Standard AP implementation; paper only names the Average Precision metric.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "using the Average Precision metric",
+  "page": 1
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "ExIFFI GFI division by zero / near-zero inlier importance is not discussed.",
+  "options": [
+   "add epsilon 1e-12 to denominator",
+   "nan_to_num after division",
+   "skip features with zero inlier importance"
+  ],
+  "chosen": "add epsilon 1e-12 to the denominator",
+  "rationale": "GFI is a ratio of normalized importance vectors; a guard is needed for exact zeros.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Tie-breaking in feature rankings is not specified.",
+  "options": [
+   "stable sort by score descending",
+   "random tie-break",
+   "original feature order"
+  ],
+  "chosen": "stable sort by score descending, preserving original feature order on ties",
+  "rationale": "Needed for deterministic feature-selection order in AUCFS; paper does not specify.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ }
+]

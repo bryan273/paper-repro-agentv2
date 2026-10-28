@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Final LightGBM model achieves Recall = 1.0 on the test set after Optuna tuning (Fβ optimization with beta=2.7).",
+  "table_ref": "Table 4 (Final Models Results), row LightGBM, column Recall",
+  "dataset": "Breast Cancer Wisconsin (Diagnostic), UCI (569 instances, 30 features)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/joaomh/article-breast-cancer-classification-boosting"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "Dataset is tiny (569x30) and gradient boosting on CPU is fast, but reproducing the exact tuned result requires running Optuna for ~3000 trials per model (LightGBM alone ~3000 trials) plus verifying the repo's split/seed; estimate covers install, data download, and a full Optuna run on 8 CPU cores."
+ },
+ "blockers": [
+  "Exact recall=1.0 depends on the specific 65/35 train-test split and random seed, which may not be fully specified in the paper",
+  "Optuna trial counts (thousands) and beta=2.7 are reported but the exact search space and seed are only in the GitHub repo; if repo is incomplete/outdated, exact reproduction is uncertain",
+  "Recall=1.0 on a 35% test split (~200 samples) is a small-sample result and may not be stable across seeds"
+ ],
+ "suitable": true,
+ "id": "2403.09548",
+ "title": "Breast Cancer Classification Using Gradient Boosting Algorithms Focusing on Reducing the False Negative and SHAP for Explainability",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "TABFAIRGDT achieves ROC AUC 0.906 ± 0.002 and Stat. Par. 0.078 ± 0.009 on the Adult dataset (vs. real data 0.926/0.178), i.e. the fairness-utility tradeoff cell for the smallest benchmark dataset.",
+  "table_ref": "Table IV (Adult column)",
+  "dataset": "Adult Census (45k samples, 4 num/8 cat features)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Panagiotou/TABFAIRGDT"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Method is CPU-only decision-tree autoregressive generation (paper reports ~1s generation for 10 feats/10k samples); cost is dominated by downloading Adult data, 3-fold pipeline, LightGBM downstream eval, and verifying the repo runs."
+ },
+ "blockers": [
+  "Repo may be incomplete/outdated relative to paper (only a GitHub link given, no configs verified)",
+  "Exact 3-fold splits and feature ordering must be reconstructed to match reported numbers",
+  "Baseline comparisons (TabularARGN, TabFairGAN, CuTS, PreFair) need GPU/deep models if full table is desired, but the single TABFAIRGDT cell does not"
+ ],
+ "suitable": true,
+ "id": "2509.19927",
+ "title": "TABFAIRGDT: A Fast Fair Tabular Data Generator using Autoregressive Decision Trees",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

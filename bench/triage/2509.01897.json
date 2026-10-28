@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Tuned Random Forest test-set accuracy of 0.8918 (and ROC AUC 0.9586) for predicting 5-star NCAP overall rating",
+  "table_ref": "Table 3, Random Forest row, Accuracy column",
+  "dataset": "Safercar_data.csv (NHTSA NCAP, ~5,128 vehicle variants, MY2011-2025)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Small tabular dataset (~5k rows, 24 features) with sklearn RandomForest + RandomizedSearchCV (20 iters x 5 folds) fits in minutes on 8 CPU cores; main cost is downloading/cleaning the NHTSA CSV and re-deriving the exact preprocessing, which is described but not released as code."
+ },
+ "blockers": [
+  "No code released; preprocessing (ADAS category mapping, column selection, missing-value handling) must be re-implemented from prose",
+  "Exact Safercar_data.csv snapshot/version not pinned, so row count and results may drift",
+  "Exact hyperparameter search space and random seeds not reported, so exact 0.8918 may not be bit-reproducible"
+ ],
+ "suitable": true,
+ "id": "2509.01897",
+ "title": "Predicting NCAP Safety Ratings: An Analysis of Vehicle Characteristics and ADAS Features Using Machine Learning",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

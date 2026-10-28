@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Optimal number of clusters K=3 for NASDAQ 100 stocks under first-order ASD-K-means, selected by maximizing the SD-SC coefficient",
+  "table_ref": "Section 4.2.1 (text: 'the optimal number of clusters for the NASDAQ 100 stocks is determined to be 3')",
+  "dataset": "NASDAQ 100 constituent weekly log-returns (83 stocks, 2014-2024)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "basis": "No code or data released; data comes from the proprietary Choice Financial Terminal, so the 83-stock weekly panel must be rebuilt from another vendor, and the full SD test-statistic + bootstrap + modified K-means pipeline (with SD-SC over a K range) must be re-implemented from the paper's formulas."
+ },
+ "blockers": [
+  "No code released",
+  "Data from proprietary Choice Financial Terminal (East Money), not freely downloadable",
+  "Exact stock filtering (83 of 100) and weekly aggregation rules must be reverse-engineered",
+  "Bootstrap SD test statistics and modified K-means must be re-implemented from equations"
+ ],
+ "suitable": false,
+ "id": "2605.24422",
+ "title": "Clustering based on Stochastic Dominance with application for risk averters and risk seekers",
+ "pages": 44,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "FedKAD achieves the best F1 score on the SMAP dataset under the PA%K protocol (single table cell: FedKAD F1 on SMAP)",
+  "table_ref": "Main results table (F1 on four benchmarks; SMAP is the smallest/edge-benchmark dataset)",
+  "dataset": "SMAP (multivariate spacecraft telemetry, NASA)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "basis": "No code is released, so the full federated Stiefel-ADMM pipeline (fixed random tanh lifting, OMD low-rank fit, ADMM consensus, PA%K evaluation, non-IID client partitioning) must be reimplemented from the text; SMAP itself is small and CPU-only, so the cost is mostly reimplementation and tuning, not compute."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Exact non-IID client partitioning, window length W, rank r, dlift, rho, and PA%K threshold details not fully specified",
+  "Reproducing the exact F1 cell requires matching unspecified hyperparameters and evaluation protocol"
+ ],
+ "suitable": false,
+ "id": "2607.08978",
+ "title": "Federated Low-Rank Koopman Learning for Multivariate Time-Series Anomaly Detection in IoT Systems",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "G-mean of GESSVDD-kNN-G-min on Dataset-1 (linear version) = 0.906",
+  "table_ref": "Table I, row GESSVDD-kNN-G-min, column Dataset-1 G-m",
+  "dataset": "Dataset-1 (ULB credit card fraud dataset, 284,807 transactions, 29 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "basis": "No code provided; must implement GESSVDD from equations, including graph construction, gradient-based optimization, and hyperparameter tuning via 5-fold CV over a grid of C, d, eta, and sigma, which is computationally intensive on CPU."
+ },
+ "blockers": [
+  "No code released",
+  "Complex model implementation from paper equations",
+  "Extensive hyperparameter tuning required"
+ ],
+ "suitable": false,
+ "id": "2309.14880",
+ "title": "Credit Card Fraud Detection with Subspace Learning-based One-Class Classification",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

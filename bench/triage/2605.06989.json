@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Classical K-means on the SMARVUS empirical data (6 psychometric features, cleaned N=8,360) selects k=2 with average silhouette ≈ 0.31 and ARI ≈ 0.999 (SD 0.001) across initializations",
+  "table_ref": "Section 3.5, Figure 24 (empirical data silhouette/SSE vs k)",
+  "dataset": "SMARVUS (Terry et al. 2023), 6 features: STARS, R-TAS, BFNE-S, LSAS-SR, CAS, IUS-SF"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://osf.io/dtbxw/overview?view_only=b040b4a9458b43439cdc189a5745d3f9"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "K-means with k=2..10 and multiple K-means++ restarts on ~8k x 6 data plus silhouette/ARI is seconds of CPU; most time is downloading SMARVUS and re-deriving the attention-check cleaning to N=8,360, which the paper describes only in prose."
+ },
+ "blockers": [
+  "Cleaning pipeline (attention-check and attention-amnesty exclusions reducing 12,570 to 8,360) is described only in prose; exact item-level rules must be inferred from the SMARVUS codebook",
+  "OSF repo link is view-only and may not contain the exact empirical cleaning/analysis script",
+  "Exact silhouette value depends on random seed and number of restarts, so ~0.31 may not match to the decimal"
+ ],
+ "suitable": true,
+ "id": "2605.06989",
+ "title": "Drawing Lines in Psychological Space: What K-means Clustering Reveals in Simulated and Real Psychometric Data",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,139 @@
+{
+ "approach": "The authors' repository is already cloned and ships the full FE-GNN implementation (train_FEGNN.py, FEGNN_model.py, utils.py), the per-dataset best hyper-parameters (FEGNN_params.csv) and all eight datasets, so this is a pure environment port: keep the author code verbatim, install a CPU-only modern stack (torch 2.4.1+cpu, torch_geometric 2.6.1, numpy<2), and force the CPU path with --no_cuda because the pinned torch 1.9.1 / PyG 2.0.1 / ogb 1.3.3 wheels cannot exist on Python 3.12. A small, idempotent, fully logged compatibility patch (backups + unified diff) is applied only where an import/API probe actually fails: guard the unused OGB import, fix PyG 2.x API drift (gcn_norm / torch_sparse), and force single-process loading on Windows. reproduce.py then drives the unmodified train_FEGNN.py as a subprocess on the shipped chameleon.npz with FEGNN_params.csv's row (K=3, |S|=700, lr=0.01, weight_decay=0.0005, nhid=64, poly='gpr', warmup=50, patience=200), first reproducing the README-documented seed-42/10-run anchor (~0.7332) and then extending over seeds 0-9 until the time budget trips, aggregating the per-run 'test acc' values into a mean with a 95% confidence interval written to results/metrics.json and compared against the claim 73.33 with a 2.0-absolute tolerance.",
+ "files": [
+  {
+   "path": "requirements_port.txt",
+   "purpose": "Pinned Python-3.12-portable replacement for the repo's requirements.txt: torch==2.4.1 (CPU wheel index), torch_geometric==2.6.1, numpy==1.26.4 (<2), pandas==2.2.3, scipy, scikit-learn, tqdm. Deliberately omits torch==1.9.1 / torch_geometric==2.0.1 / ogb==1.3.3, which have no cp312 wheels. torch is pinned to 2.4.1 (not >=2.6) so torch.load of the shipped PyG processed/*.pt keeps weights_only=False and no serialization patch is needed.",
+   "requirement_ids": [
+    "R14"
+   ]
+  },
+  {
+   "path": "setup_env.py",
+   "purpose": "Installs the ported stack (torch from https://download.pytorch.org/whl/cpu, then the rest), then runs an import probe for torch / torch_geometric / numpy / pandas / scipy / sklearn / tqdm and for `from torch_geometric.datasets import Planetoid, Amazon, WikipediaNetwork, Actor`. Prints versions, asserts torch.cuda.is_available() is False, writes logs/pip-freeze.txt, and exits non-zero with a machine-readable list of the failing imports so compat_patch.py knows what to fix. Does not touch the authors' scripts.",
+   "requirement_ids": [
+    "R14"
+   ]
+  },
+  {
+   "path": "compat_patch.py",
+   "purpose": "Idempotent, minimal, reversible port of the authors' code to the new environment. Backs up every touched file to <name>.orig, applies each edit only if the exact old text is found and the new text is absent, writes a unified diff to logs/patch.diff, and refuses to touch already-patched files. Candidate edits (apply only on a failed probe): (a) wrap `from ogb.nodeproppred import Evaluator` in try/except with a local accuracy-only Evaluator stub (no requested dataset uses OGB); (b) PyG 2.x drift - fall back to `from torch_geometric.nn.conv.gcn_conv import gcn_norm`, and guard/unwrap any `import torch_sparse` (PyG 2.6 dropped torch_sparse); (c) neutralise DataLoader num_workers>0 (Windows hang); (d) numpy-2 removals if any (np.float/np.int). Every edit is logged with file, line and reason.",
+   "requirement_ids": [
+    "R14",
+    "R11"
+   ]
+  },
+  {
+   "path": "inspect_data.py",
+   "purpose": "Pre-run dataset and model sanity check that never trains: loads dataset/chameleon.npz, prints N / edge count / feature dim / class count / per-class node counts, builds A_hat = (D+I)^-1/2 (A+I) (D+I)^-1/2, verifies the 60/20/20 random split sizes (1366/455/456 for N=2277) have no overlap and cover all nodes, computes the truncated SVD of A_hat and reports (i) the rank at 94% cumulative singular values (R7) and (ii) how many components the code actually keeps when nl=700 (A3), and prints the Eq. (11) parameter count (K+1)*d*c + |S|*c together with the count the built model/optimizer actually has (to detect an unintended hidden layer, A1), plus the majority-class baseline accuracy. Also echoes the Chameleon row of FEGNN_params.csv to confirm set_best_train_args() will inject K=3, nl=700, lr=0.01, weight_decay=0.0005, nhid=64.",
+   "requirement_ids": [
+    "R3",
+    "R7",
+    "R9",
+    "R11",
+    "R13"
+   ]
+  },
+  {
+   "path": "fe_runner.py",
+   "purpose": "Importable helper (no side effects on import). `run_seed(dataset, seed, runs, log_dir)` launches the authors' script verbatim as a subprocess (`python train_FEGNN.py --dataset <ds> --no_cuda --runs <runs> --seed <seed>`, cwd = repo root, PYTHONIOENCODING=utf-8), tees stdout/stderr to logs/<ds>_seed<seed>.log and to the console, and returns the exit code. `parse_log(path)` extracts every per-run line of the form `Best epoch <e> for run <i>: ... test acc <v>` and the trailing `Average Test acc for <ds>: <v>`, returning per-run test accuracies, per-run best epochs and the script's own average. `ci95(values)` returns the 1.96*std/sqrt(n) interval (the paper's CI style, R15) alongside a Student-t interval for small n.",
+   "requirement_ids": [
+    "R9",
+    "R10",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "The single entrypoint. Runs the seed schedule in order (42 first as the README anchor, then 0-9), skipping any seed whose log already exists so the run is resumable, and stops adding seeds when the wall-clock budget (--max-minutes) would be exceeded. Aggregates all parsed runs into: value = mean test accuracy over every completed run (the closest analogue of the paper's 100-run protocol), plus anchor_value = mean over the seed-42 ten runs, std, 95% CI, median, min/max, n_runs, n_seeds and per-seed means. Writes results/metrics.json (claim C1: metric, dataset, value, paper_value 73.33, tolerance 2.0 absolute, abs_diff, within_tolerance, config echo, environment versions, wall clock, and an explicit note that fewer than 100 runs were averaged so the CI is wider than the paper's +/-0.35), results/per_run.csv and results/summary.md. It never edits or reimplements the authors' model.",
+   "requirement_ids": [
+    "C1",
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "check_claim.py",
+   "purpose": "Tiny verifier: reads results/metrics.json, asserts the required keys exist and that 0 <= value <= 100, recomputes abs(value - 73.33) and prints an explicit REPRODUCED / NOT REPRODUCED verdict for C1 against the 2.0-absolute tolerance (using anchor_value when no extra seeds completed). Used by the smoke test of the deliverable.",
+   "requirement_ids": [
+    "C1",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "Chameleon, PyG WikipediaNetwork semantics, loaded from the repo-shipped dataset/chameleon.npz (R14)",
+  "split": "random 60/20/20, unstratified, regenerated independently for each run (R9, A7, A13)",
+  "runs_per_seed": "10 (repo default and README Step 2); paper's 100 runs on 10 seeds is the full protocol and is scaled down (R9, A6)",
+  "seeds": "seed 42 first (repo default; README documents 0.7332), then 0-9 while the budget lasts (A6)",
+  "model": "FE-GNN (C): H = sum_{k=0..K} P_k(L_hat) X W_k + S W_s, no bias, no activation, no dropout (R1, R2, R6, A11)",
+  "poly": "'gpr' repo default, i.e. Chebyshev recurrence P0=1, P1=x, Pk=2xP_{k-1}-P_{k-2} (R4, A4: no extra [-1,1] rescaling unless the code does it)",
+  "K": "3 (Chameleon row of FEGNN_params.csv / Table 8) (R8)",
+  "nl (|S|)": "700 structural principal components (R8, A3); paper's general default rule is 94% cumulative singular values (R7)",
+  "svd_source": "truncated SVD of the renormalized adjacency A_hat, Eq. (10) (R3, R13, A2)",
+  "adjacency": "A_hat = (D+I)^-1/2 (A+I) (D+I)^-1/2 (R11, A12)",
+  "lr": "0.01 (R8)",
+  "weight_decay": "0.0005 (R8)",
+  "nhid": "64 (R8); unused by FE-GNN's direct d->c linear map per Eq. (11) (A1, high risk - verified in inspect_data.py)",
+  "optimizer": "Adam, repo default betas (R10)",
+  "loss": "cross-entropy (R12)",
+  "epochs": "repo default 1000 with early stopping warmup=50 + patience=200 (effective ~252 epochs) (R10, A15: the appendix's 'maximum of 100 epochs' is treated as a typo, since 252 is what Table 4 and the README show)",
+  "warmup": "50 (R10)",
+  "patience": "200 (R10)",
+  "early_stop_metric": "validation accuracy (A8)",
+  "column_wise_normalization": "on, applied per feature subspace before recombination (R5, A9)",
+  "init": "PyTorch default Linear init (A5)",
+  "svd_precompute": "once per run, before the training loop (A14)",
+  "device": "CPU via --no_cuda (no GPU on this machine; the authors used an RTX 3090)",
+  "torch": "2.4.1+cpu (ported; 1.9.1 predates Python 3.10)",
+  "torch_geometric": "2.6.1 (ported; 2.0.1 has no cp312 wheel)",
+  "numpy": "1.26.4 (<2, for safety with 2021-era code)",
+  "pandas": "2.2.3 (only used to read FEGNN_params.csv)",
+  "tolerance": "+/-2.0 absolute accuracy points (claim contract)",
+  "target": "73.33 % test accuracy, C1 / Table 2 FE-GNN (C) Chameleon"
+ },
+ "steps": [
+  "1. Locate the cloned repo (e.g. ./Feature-Extension-Graph-Neural-Networks, or the repo_info path) and record `git rev-parse HEAD`. Assert train_FEGNN.py, FEGNN_model.py, utils.py, FEGNN_params.csv and dataset/chameleon.npz all exist. Create logs/ and results/. Treat the three .py files and FEGNN_params.csv as read-only, except via compat_patch.py.",
+  "2. Write requirements_port.txt and run setup_env.py (torch CPU wheel from https://download.pytorch.org/whl/cpu first, then the rest). Verify `python -c \"import torch, torch_geometric; print(torch.__version__, torch_geometric.__version__)\"` and that the four dataset classes import. Save logs/pip-freeze.txt.",
+  "3. Import probe of the authors' code: `python -c \"import utils, FEGNN_model, train_FEGNN\"`. Record every ImportError/AttributeError. If none, skip step 4.",
+  "4. If probes failed, run compat_patch.py (idempotent). It backs up each touched file to <name>.orig, applies only the pre-listed minimal edits actually needed (OGB import guard, gcn_norm/torch_sparse drift, DataLoader num_workers=0, numpy-2 removals), writes logs/patch.diff and re-runs the probe. Re-read the diff by eye: no model logic, no hyper-parameter and no split code may change.",
+  "5. Run inspect_data.py and check its gate output: N=2277, feature dim 2325, 5 classes, split sizes 1366/455/456 with no overlap, 94%-cumulative SVD rank vs the fixed |S|=700 (report which one the code uses), FE-GNN parameter count = (K+1)*d*c + |S|*c (about 50k, i.e. no hidden layer -> A1 resolved), and the majority-class baseline. Record the FEGNN_params.csv Chameleon row (0.01 / 0.0005 / 700 / 64 / 3) confirming set_best_train_args() will inject R8.",
+  "6. Smoke run through the authors' script: `python train_FEGNN.py --dataset chameleon --no_cuda --runs 1 --seed 42 --epochs 5` from the repo root. It must exit 0 and print a `Best epoch ... test acc ...` line within ~2 minutes (5 epochs, so early stopping never fires). This exercises npz loading, A_hat construction, SVD, Chebyshev subspaces, the CPU path and the metric printout.",
+  "7. Smoke run through the entrypoint: `python reproduce.py --dataset chameleon --seed-list 42 --runs 1 --smoke`, which shells out to the same command, parses the log, and writes results/smoke_metrics.json (one run, 0 <= acc <= 1). Then `python check_claim.py --metrics results/smoke_metrics.json` must run without error. Delete smoke_metrics.json before the full run.",
+  "8. Full run, phase 1 (anchor, ~8-15 min on CPU): `python reproduce.py --dataset chameleon --runs 10 --seed-list 42 --max-minutes 20`. Expect mean test accuracy close to the README's 0.7332.",
+  "9. Gate: if the anchor mean is outside roughly [0.71, 0.76] (i.e. >2 points from 73.32), stop scaling out and diagnose instead - inspect logs/patch.diff, the log's val/test trajectory, and the SVD/|S| choice - because more seeds will not fix a systematic port error.",
+  "10. Full run, phase 2 (scale-out): `python reproduce.py --dataset chameleon --runs 10 --seed-list 0 1 2 3 4 5 6 7 8 9 --max-minutes 60 --resume`. reproduce.py runs seeds in order, skips any seed whose log exists (resumable across sessions), and stops before starting a seed that would overrun the remaining budget, always keeping a ~10 minute reserve.",
+  "11. Aggregate in reproduce.py over all completed runs: mean (the reported value), std, 95% CI (1.96*std/sqrt(n) and t-based), median, min/max, per-seed means, anchor mean, n_runs, n_seeds, wall clock. Write results/metrics.json, results/per_run.csv and results/summary.md.",
+  "12. Compare against the claim: abs(value - 73.33) <= 2.0 -> within tolerance. Run check_claim.py to print the verdict, and record in metrics.json the caveat that fewer than the paper's 100 runs were averaged (so the spread is wider than +/-0.35) and that CPU float ordering may shift the last digit.",
+  "13. Preserve reproducibility evidence: logs/*.log, logs/patch.diff, logs/pip-freeze.txt, git rev-parse HEAD, and the exact command lines into results/run_manifest.txt.",
+  "14. Stretch goal only if >=20 minutes remain after phase 2 and the anchor already matched: rerun `python reproduce.py --dataset citeseer --runs 10 --seed-list 42 --max-minutes 15` (claim C4 = 81.96, CiteSeer is the cheapest Table-2 entry per the contract) and, if that also matches, `--dataset cora` (C3 = 89.45). Store them as separate sections in results/metrics.json; never overwrite the Chameleon number."
+ ],
+ "smoke_test": "From the repo root: `python train_FEGNN.py --dataset chameleon --no_cuda --runs 1 --seed 42 --epochs 5` - it must finish in ~2 minutes, exit 0, and print one `Best epoch <e> for run 0: ... test acc <v>` line plus `Average Test acc for chameleon: <v>`. Then `python reproduce.py --dataset chameleon --seed-list 42 --runs 1 --smoke` must produce results/smoke_metrics.json with exactly one run and 0 <= value <= 100, and `python check_claim.py --metrics results/smoke_metrics.json` must exit 0. This proves dataset loading, A_hat, the truncated SVD, the Chebyshev subspaces, the CPU training loop, log parsing and metrics writing all work end to end.",
+ "intermediate_checks": [
+  "Environment: torch.__version__ == 2.4.1+cpu (or the pinned CPU build), torch_geometric.__version__ == 2.6.1, torch.cuda.is_available() is False, numpy < 2; `from torch_geometric.datasets import Planetoid, Amazon, WikipediaNetwork, Actor` succeeds.",
+  "Authors' modules import cleanly (`import utils, FEGNN_model, train_FEGNN`) or every failure is covered by an entry in logs/patch.diff that touches only imports/plumbing, never model math, splits or hyper-parameters.",
+  "Dataset: chameleon.npz loads with 2277 nodes, 2325 features, 5 classes; edge count > 0 and matches the PyG WikipediaNetwork figure (31421 undirected edges); print per-class counts and the majority-class baseline accuracy (~0.2x) that the model must vastly exceed.",
+  "Split: random 60/20/20 gives 1366/455/456 nodes, disjoint, union = 2277, and the split is regenerated per run (the README log shows ten different test accuracies at seed 42).",
+  "Config injection: FEGNN_params.csv's Chameleon row equals K=3, nl=700, lr=0.01, weight_decay=0.0005, nhid=64; after set_best_train_args() the parsed Namespace shows these exact values and poly='gpr', warmup=50, patience=200.",
+  "SVD: report the number of singular values reaching 94% cumulative energy versus the fixed nl=700 actually used (A3); confirm both are <= min(N, d) and that S has shape (N, |S|).",
+  "Model: trainable parameter count equals (K+1)*d*c + |S|*c (no bias, no hidden layer) - about 46.5k + 3.5k; a mismatch means an unintended projection (A1) is present.",
+  "Smoke trajectory: after 5 epochs the reported test accuracy is in (0.2, 1.0) exclusive, not constant across runs, and the loss is finite.",
+  "Anchor gate: the seed-42/10-run mean and the printed per-run spread should sit within ~1-2 points of the README's 0.7332 (documented runs: 0.7536, 0.7332, 0.7012, 0.7332, 0.7464, 0.7128, 0.7216, 0.7536, 0.7157, 0.7609); a large deviation means stop and diagnose before consuming the rest of the budget.",
+  "Epoch count in the logs should be ~251-252, confirming the warmup-50 + patience-200 interpretation (A15) rather than a 100-epoch cap."
+ ],
+ "entrypoint": "python reproduce.py --dataset chameleon --runs 10 --seed-list 42 0 1 2 3 4 5 6 7 8 9 --max-minutes 60 --resume",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "~90 minutes total. (1) Setup/port, 0-15 min: requirements_port.txt + setup_env.py (the ~200 MB CPU torch wheel dominates), import probe, and compat_patch.py only if the probe fails; add ~3 min for inspect_data.py. (2) Smoke, 15-23 min: the 5-epoch one-run check plus the reproduce.py smoke path and check_claim.py (~3 min), then the seed-42 ten-run anchor (~8-15 min on CPU, 30-90 s per run after the one-time 10-20 s SVD prep; the authors' 3090 took 4 s/run). (3) Gate at ~23 min: proceed to scale-out only if the anchor is within ~2 points of 0.7332. (4) Full run, 23-80 min: additional seeds 0-9 at roughly 5-12 min per 10-run seed, ordered by seed number, with reproduce.py stopping before a seed that would overrun --max-minutes 60 measured from its own start and always leaving a ~10 min reserve; the run is resumable so a later session can add the remaining seeds. (5) Aggregation and write-up, 80-90 min: metrics.json, per_run.csv, summary.md, patch diff, pip freeze, manifest checkout. The paper's full 100-runs-on-10-seeds protocol (~1.5-3 h on CPU) does not fit; the deliverable is therefore the mean over however many runs complete, with the reduced-sample spread stated explicitly and the seed-42 anchor reported separately."
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "EMODM detects 22 abnormal time points in the current ioa output of a three-phase inverter, with an abnormal probability of 2.09%.",
+  "table_ref": "Table 5, row 'Current ioa'",
+  "dataset": "7kVA three-phase three-wire inverter current output (real-world data)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code or data provided; the real inverter data is not publicly available, so the target cannot be reproduced without obtaining proprietary data or re-simulating the circuit, which requires domain-specific setup and is not described in enough detail."
+ },
+ "blockers": [
+  "No code released",
+  "Real-world inverter data not publicly available",
+  "Simulation details (e.g., exact fault injection, noise characteristics) insufficient for exact replication"
+ ],
+ "suitable": false,
+ "id": "2407.04248",
+ "title": "Machine Learning for Complex Systems with Abnormal Pattern by Exception Maximization Outlier Detection Method",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

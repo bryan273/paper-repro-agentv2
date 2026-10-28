@@ -1,0 +1,46 @@
+{
+ "route": "full_release",
+ "why": "The authors' full simulation code is present in the clone: synthetic data generators (simulation/utils/data_utils.py), the theorem power functionals (simulation/utils/theory.py, theory_finite_fixed.py), and directly runnable Python drivers for the point-mass (fixed) case (simulation/all_procedures_fixed.py with the config JSONs in simulation/scripts/fixed_scripts/). No data file or weights are needed because every dataset is generated from equations (1)-(3). The only things that do not transfer to this machine are the SGE/bash job-submission wrappers (Linux cluster scheduler) and the Python 3.10 pin; both are environment-level workarounds rather than missing science, so the authors' own entrypoint can be invoked directly with a JSON config.",
+ "repo": "https://github.com/Katsevich-Lab/masking-power",
+ "entrypoints": [
+  "simulation/all_procedures_fixed.py  (BONuS / Split BH / In-sample BH simulation, point-mass prior; driven by a JSON config)",
+  "simulation/scripts/fixed_scripts/fixed_default.json  (default (gamma,c,h,m)=(0.2,0.2,4,1000) config; tilde_m / pi_aug set to m/2=1000/1000 for the C1 setting)",
+  "simulation/utils/theory.py  (Theorem 1 / asymptotic TPR_BH functional to evaluate numerically at the C1 setting)",
+  "simulation/utils/theory_finite_fixed.py  (refined finite-m approximation, useful to check the m=1000, tilde_m=1000 point)"
+ ],
+ "missing_artifacts": [
+  "No missing data or weights: all data are synthetic and generated in-code.",
+  "Pre-computed result CSVs live on an external Dropbox link and are not in the clone (not needed for C1; only needed for Option-1 replotting).",
+  "No plain-CLI instructions for running the Python driver without SGE; the JSON configs allow it, but the argument plumbing must be read off argparse."
+ ],
+ "blockers_seen": [
+  "All experiment launching is via SGE job arrays (simulation/scripts/*.sh, run_all_publication_sge_jobs.sh) plus jq; unusable on Windows 11 without an SGE cluster.",
+  "Code targets Python 3.10.4 and depends on numba; requirements.txt is unpinned (50 B), so numba/numpy versions must be resolved for Python 3.12.10.",
+  "Plotting layer is R (ggplot2 etc.); irrelevant for C1, which is a numeric comparison of Theorem 1 TPR against the BONuS simulation.",
+  "The paper prints no numeric power at the C1 setting, so the target is formula-vs-simulation agreement, not a digit-for-digit table match."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Theorem 1 numerical evaluation: seconds. BONuS/Split BH at (gamma,c,h,m)=(0.2,0.2,4,1000), tilde_m=1000, d=200, 1000 Monte Carlo replications: roughly 10-25 min of wall clock across the 22 CPU cores (each replication is a few 1000x200 normal draws plus a mean-learner fit and a BH step on ~2000 p-values; numba-compiled paths make this fast). Pilot with 100 replications in ~1-3 min.",
+  "fits_budget": true,
+  "scale_down_plan": "If the 1000-replication run overruns: (a) run 100 reps first as a timing/agreement pilot, then (b) the production run at 300-500 reps. Effect on the number: Monte Carlo SE of a TPR near 0.5 is sqrt(p(1-p)/R) = 0.016 at R=1000, 0.029 at R=300, 0.05 at R=100 - i.e. the Theorem-1-vs-simulation gap is still resolvable at 300 reps, only the third decimal is lost. Also restrict the h grid to the single h=4 value instead of sweeping h.",
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "C1 is a 1000-replication Monte Carlo over m=1000 hypotheses with d=200 and tilde_m=1000 null augmentations - each fit is a mean-learner update plus a BH sort on ~2000 p-values, so it is CPU-bound numba/numpy work with no meaningful GPU path, and the Theorem 1 side is a closed-form evaluation taking seconds."
+ },
+ "repo_info": {
+  "url": "https://github.com/Katsevich-Lab/masking-power",
+  "cloned": true,
+  "n_files": 80,
+  "n_python": 23,
+  "python2_style_files": 0
+ }
+}

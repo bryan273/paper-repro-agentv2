@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "EmpHi achieves a BLEU recall of 0.4723 on the EmpatheticDialogues test set, outperforming MIME (0.3278) and other baselines.",
+  "table_ref": "Table 1",
+  "dataset": "EmpatheticDialogues"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/mattc95/EmpHi"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 180,
+  "gpu_speedup": 2.0,
+  "basis": "Training a small GRU-based CVAE (11M params) on 25k dialogues for ~10 epochs on CPU is feasible but slow; with GPU it would be faster, but not strictly required."
+ },
+ "blockers": [
+  "Code repository may be incomplete or not maintained",
+  "Requires training a BERT intent classifier on EmpatheticIntents dataset (additional step)",
+  "No pre-trained model provided, so training from scratch is necessary"
+ ],
+ "suitable": true,
+ "id": "2204.12191",
+ "title": "EmpHi: Generating Empathetic Responses with Human-like Intents",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

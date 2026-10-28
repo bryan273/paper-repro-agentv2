@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Average coincidence similarity between Fruchterman-Reingold layout distances and Ward-linkage cophenetic distances (and the full 6x6 similarity matrix) over 5,000 synthetic 2D datasets",
+  "table_ref": "Figure 5 (average coincidence similarity matrix, 2D data)",
+  "dataset": "Synthetic hierarchically generated 2D point clouds (5,000 datasets)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "All components (synthetic data generation, scipy linkage/cophenetic, networkx spring_layout, coincidence similarity) are standard and cheap; the only cost is 5,000 FR layouts on small graphs, which is minutes-to-an-hour on CPU."
+ },
+ "blockers": [
+  "No code released; data generator parameters (n1, N2, sigma, number of points) not fully specified",
+  "Coincidence similarity index must be reimplemented from cited references",
+  "FR layout is stochastic, so exact matrix values will not match without the authors' seeds"
+ ],
+ "suitable": true,
+ "id": "2609.35073",
+ "title": "Interrelating Fruchterman-Reingold Graph Visualization and Agglomerative Clustering",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

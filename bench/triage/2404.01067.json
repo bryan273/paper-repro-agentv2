@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "QaDS achieves 31.3% average accuracy on Sbase-69K with LLaMA-2, outperforming other selection strategies.",
+  "table_ref": "Table 3, row 'QaDS', column 'All' under 'LLaMA-2 base model'",
+  "dataset": "Sbase-69K (a subset of 69K samples from 10 datasets: AQuA-RAT, Camel-Math, College-Math, GSM8K, GSM8K-RFT, MATH, Number-Comparison, TheoremQA, CoT, Evol-Instruct-v2)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 4320,
+  "gpu_speedup": null,
+  "basis": "Fine-tuning a 7B model on 69K samples for 3 epochs requires ~72 GPU-hours on 4 A100s (estimated from typical throughput), which is infeasible on a CPU-only laptop; data selection and quality scoring add further overhead."
+ },
+ "blockers": [
+  "No code or data release",
+  "Requires fine-tuning a 7B LLM (LLaMA-2) on 69K samples for 3 epochs",
+  "Needs 4 NVIDIA A100 GPUs (80GB each) for training",
+  "Quality scoring requires running inference on many samples with a 7B model",
+  "Data selection involves training a pre-experienced model and computing embeddings"
+ ],
+ "suitable": false,
+ "id": "2404.01067",
+ "title": "Exploring the Mystery of Influential Data for Mathematical Reasoning",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

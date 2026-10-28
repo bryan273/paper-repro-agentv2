@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Repeated-CV accuracy of the selected-feature (8 named fields) + KNN imputation + Extra Trees pipeline on the development sample: 0.9869 (SD 0.0218)",
+  "table_ref": "Abstract / Section 3.5 (selected-feature display representative)",
+  "dataset": "UCI Chronic Kidney Disease dataset (400 records, 24 predictors)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Small 400-row tabular dataset with 9 sklearn/XGBoost classifiers and 5x3 CV; the target cell is one pipeline's repeated-CV accuracy, but the paper's code is not linked in the PDF so the leakage-controlled pipeline (fold-wise imputation, mutual-information selection, seed 12 split) must be re-implemented from the methods."
+ },
+ "blockers": [
+  "No code link in the PDF; pipeline must be rebuilt from prose (exact tie-breaking, selector details, fold registries)",
+  "Exact numeric match (0.9869) depends on reproducing seed-12 partition and fold assignments precisely"
+ ],
+ "suitable": true,
+ "id": "2610.04926",
+ "title": "Reproducibility and Leakage-Controlled Evaluation of Machine-Learning Models for Chronic Kidney Disease Classification",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

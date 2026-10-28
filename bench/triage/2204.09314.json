@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Average PSNR of 29.90 dB for the unenhanced compressed video baseline in Track 1 (quality enhancement), computed over 15 test videos.",
+  "table_ref": "Table 1, row 'Compressed video', column 'Ave.'",
+  "dataset": "LDV 2.0 (NTIRE 2022 Track 1 test set, 15 videos)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RenYang-home/LDV_dataset",
+  "https://github.com/RenYang-home/NTIRE22_VEnh_SR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 20,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The baseline is just the compressed test videos; reproducing it requires downloading the LDV 2.0 test split, running the provided HEVC HM 16.20 encoding command (or using pre-encoded files if available), and computing PSNR against ground truth. No training or GPU is needed, but the HM encoder is slow and the dataset is large."
+ },
+ "blockers": [
+  "HM 16.20 encoder must be built from source (no prebuilt binary provided)",
+  "Dataset download is large (hundreds of GB for full LDV 2.0; test split alone may be tens of GB)",
+  "Exact PSNR may differ slightly due to encoder version/configuration details"
+ ],
+ "suitable": true,
+ "id": "2204.09314",
+ "title": "NTIRE 2022 Challenge on Super-Resolution and Quality Enhancement of Compressed Video: Dataset, Methods and Results",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

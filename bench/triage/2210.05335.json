@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MAP achieves 73.35 VQA2.0 test-dev accuracy with random initialization (no pre-training)",
+  "table_ref": "Table 13",
+  "dataset": "VQA2.0"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/MAP"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Training a base-size VLP model from scratch on VQA2.0 requires GPU compute; paper used 8 A100 GPUs, so a single GPU would take many hours."
+ },
+ "blockers": [
+  "Training from scratch requires significant GPU compute (paper used 8 A100 GPUs)",
+  "Code may not include exact training scripts for random initialization on VQA2.0"
+ ],
+ "suitable": false,
+ "id": "2210.05335",
+ "title": "MAP: Multimodal Uncertainty-Aware Vision-Language Pre-training Model",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

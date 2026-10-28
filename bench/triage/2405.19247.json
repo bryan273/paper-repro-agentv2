@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Average AUC of FP-RKNN-SS on the Lymphography dataset for K from 5 to 50",
+  "table_ref": "Table 3, row FP-RKNN-SS, column Lympho",
+  "dataset": "Lymphography (UCI)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code is provided; the agent must implement LOF with RKNN neighbors and static sorting from scratch, download the small UCI Lymphography dataset, and run for K=5..50, which is feasible on a CPU but requires careful implementation and debugging."
+ },
+ "blockers": [
+  "No code or implementation details released",
+  "Requires re-implementing LOF and RKNN neighbor construction from paper description"
+ ],
+ "suitable": true,
+ "id": "2405.19247",
+ "title": "Comparative Study of Neighbor-based Methods for Local Outlier Detection",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

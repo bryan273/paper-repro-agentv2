@@ -1,0 +1,122 @@
+{
+ "approach": "Use the released TabMini repository as the reference harness, but reproduce C1 directly because PMLBmini's parity5 is not packaged in the 25-dataset TabMini tree. Fetch parity5 from PMLB with an OpenML fallback, shuffle with seed 42, encode labels to {0,1}, then to {-1,1} for logistic regression. Evaluate a min-max-scaled L2 logistic regression over the paper's lambda grid [0.5,0.1,0.02,0.004] using nested stratified 3-fold CV with deviance selection for the inner grid. Write mean outer-fold test AUC, per-fold AUCs, per-fold lambdas, and full-data lambda* to results/metrics.json, then compare the computed mean AUC to 0.17 with a 0.02 absolute tolerance. Avoid AutoGluon/AutoPrognosis/HyperFast/TabPFN because they are irrelevant to C1 and may not install cleanly on CPU/Python 3.12.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Minimal dependencies only: numpy, pandas, scikit-learn, pmlb; openml is installed only as a fallback if PMLB fetch fails.",
+   "requirement_ids": [
+    "R1",
+    "R6"
+   ]
+  },
+  {
+   "path": "config.py",
+   "purpose": "Central configuration for dataset name, seeds, lambda grid, CV settings, LR solver options, tolerance, and output paths.",
+   "requirement_ids": [
+    "R2",
+    "R4",
+    "R5",
+    "R7",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "data_utils.py",
+   "purpose": "Fetch parity5 from PMLB or OpenML, save raw CSV, shuffle with seed 42, encode labels to {0,1}, coerce features to float, and validate shape/class balance.",
+   "requirement_ids": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "path": "lr_model.py",
+   "purpose": "Implement the paper-equivalent L2 logistic-regression pipeline, nested stratified 3-fold CV, deviance-based lambda selection, AUC scoring, and full-data lambda* selection.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "CLI entrypoint that runs smoke or full evaluation, writes results/metrics.json, and reports pass/fail against the 0.17 +/- 0.02 target.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R9",
+    "R10"
+   ]
+  }
+ ],
+ "config": {
+  "claim_id": "C1",
+  "dataset_name": "parity5",
+  "dataset_expected_M": "32 (C1)",
+  "dataset_expected_N": "5 (C1)",
+  "target_mean_test_auc": "0.17 (C1)",
+  "tolerance_abs": "0.02 (claim contract Rule 3)",
+  "data_fetch_primary": "pmlb.fetch_data('parity5', return_X_y=True) (PMLB)",
+  "data_fetch_fallback": "OpenML search for a dataset named like parity5 with 32 rows and 5 features",
+  "shuffle_seed": "42 (A1)",
+  "label_encoding_initial": "map original labels to {0,1} (R2)",
+  "label_encoding_lr": "map {0,1} to {-1,1} (R4, A10)",
+  "scaler": "MinMaxScaler fit on training folds only (R4, A4)",
+  "lr_penalty": "l2 (R3)",
+  "lr_solver": "lbfgs (A6)",
+  "lr_max_iter": "10000 (A6)",
+  "lr_fit_intercept": "True (A6)",
+  "lr_random_state": "42 (A14)",
+  "lambda_grid": "[0.5, 0.1, 0.02, 0.004] (R5)",
+  "C_grid": "[2.0, 10.0, 50.0, 250.0] (A6/A7, C=1/lambda)",
+  "validation_score": "neg_log_loss (deviance) (R5)",
+  "outer_cv": "StratifiedKFold(n_splits=3, shuffle=True, random_state=42) (R7, A2, A15)",
+  "inner_cv": "StratifiedKFold(n_splits=3, shuffle=True, random_state=42) (A3)",
+  "auc_metric": "sklearn.metrics.roc_auc_score (R6)",
+  "fold_aggregation": "arithmetic mean of outer-fold AUCs (A8)",
+  "lambda_star": "best lambda from full-data stratified 3-fold CV with the same grid and deviance scoring (R9, A5)",
+  "n_jobs": "1 (tiny data; R14 hardware is not a bottleneck)",
+  "smoke_config": "outer/inner 2-fold, lambda grid [0.5], first 18 stratified rows or full 32 if class counts allow",
+  "seed_sensitivity": "seeds 0..20 diagnostic only if primary seed 42 misses tolerance (A1 risk)",
+  "expected_classes": "both classes present; full parity5 should have 16/16 balance"
+ },
+ "steps": [
+  "Clone the released repository if it is not already present: `git clone https://github.com/RicardoKnauer/TabMini vendor/TabMini`; record `git -C vendor/TabMini rev-parse HEAD` in results/provenance.json.",
+  "Install minimal dependencies only: `pip install pmlb scikit-learn pandas numpy`; install `openml` only if the PMLB fetch fails. Do not install AutoGluon, AutoPrognosis, HyperFast, or TabPFN.",
+  "Inspect `vendor/TabMini/example.py` and `vendor/TabMini/tabmini/data/data_handler.py`; reuse the LR estimator definition only if it imports without heavy optional estimators. Otherwise implement an equivalent local `PaperLogisticRegression` pipeline in `lr_model.py` and document the solver substitution from MOSEK to sklearn lbfgs as assumption A6.",
+  "Implement `config.py` with all values above; implement `data_utils.py` to fetch parity5, save `data/parity5_raw.csv`, shuffle with seed 42, encode labels to {0,1}, convert features to float, and assert shape (32,5) and two classes.",
+  "Implement `lr_model.py`: Pipeline(MinMaxScaler, LogisticRegression(penalty='l2', C=1/lambda, solver='lbfgs', max_iter=10000, fit_intercept=True, random_state=42)); use labels {-1,1}; run outer StratifiedKFold(3, shuffle=True, random_state=42).",
+  "For each outer fold, run inner GridSearchCV over C_grid with scoring='neg_log_loss' and inner StratifiedKFold(3, shuffle=True, random_state=42); refit the best C on the outer training fold, predict_proba on the outer test fold, and compute roc_auc_score. Record fold AUC, best C/lambda, fold sizes, and class counts.",
+  "Implement full-data lambda*: run the same GridSearchCV over all 32 samples with inner 3-fold and deviance scoring; record best C/lambda.",
+  "Implement `reproduce.py` CLI: `--smoke` uses reduced CV/grid; default runs full protocol; write `results/metrics.json` and smoke writes `results/smoke_metrics.json`. Include target, computed mean AUC, absolute error, tolerance, passed boolean, fold AUCs, fold lambdas, lambda_star, seed, commit SHA, data hash, and command.",
+  "Run smoke: `python reproduce.py --smoke`; confirm it writes smoke JSON and no NaN/invalid AUC.",
+  "Run full: `python reproduce.py`; confirm `results/metrics.json` exists and `passed` is computed against 0.17 +/- 0.02.",
+  "If |computed_mean_auc - 0.17| > 0.02, run seed sensitivity over seeds 0..20 with the same full protocol; write `results/seed_sensitivity.json` and report the distribution. Keep seed 42 as the primary reported run; do not silently replace it.",
+  "Validate all JSON values are finite, fold AUCs are in [0,1], lambdas are in the grid, and print a concise summary to stdout."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` — fetch parity5, use an 18-row stratified subset or full 32 if class counts require it, outer/inner 2-fold CV, lambda grid [0.5], write results/smoke_metrics.json, and assert finite AUC.",
+ "intermediate_checks": [
+  "Repo clone succeeds and commit SHA is recorded; example.py is inspected for an importable LR class and for heavy optional imports.",
+  "Dependency check: `python -c \"import sklearn, pandas, numpy, pmlb\"` succeeds.",
+  "parity5 fetch yields exactly 32 rows and 5 feature columns; labels contain two classes with 16/16 balance; no missing values.",
+  "After shuffle and encoding, y maps exactly to {0,1}; LR y maps exactly to {-1,1}.",
+  "Outer and inner stratified folds each contain both classes; print fold sizes and class counts.",
+  "LR parameter count is 5 coefficients plus 1 intercept = 6; no unexpected feature expansion.",
+  "Sanity baseline: a constant predictor gives AUC 0.5, and roc_auc_score on anti-correlated synthetic scores gives <0.5, confirming AUC direction.",
+  "No leakage: MinMaxScaler is inside the Pipeline and fitted only on training folds; verify pipeline steps and fold-local scaler ranges.",
+  "All best lambdas from inner CV belong to [0.5, 0.1, 0.02, 0.004]; full-data lambda* is recorded separately from per-fold lambdas.",
+  "JSON schema check: required keys present, numeric types, passed boolean consistent with the 0.02 tolerance."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup: 3-5 min (git clone, pip install pmlb/scikit-learn, fetch parity5). Smoke: ~1 min. Full nested CV: <1 min on 32x5 data with 4 lambda values and 3 outer x 3 inner folds. Optional seed sensitivity: 2-3 min. Total ~6-10 min, CPU only, no GPU."
+}

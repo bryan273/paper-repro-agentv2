@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ADABORD's MAE (or other headline metric) on the smallest TOC-UCO dataset (e.g., tae or newthyroid) as reported in the main results table.",
+  "table_ref": "Main results table (not fully shown in provided text; likely Table 2 or 3)",
+  "dataset": "TOC-UCO repository, smallest dataset (e.g., tae: 105 train, 46 test, 54 features, 3 classes)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/ayrna/adabord"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (105 train, 46 test, 54 features, 3 classes) with a decision-tree-based AdaBoost; code and data are publicly available, so a single run should take minutes on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2607.21003",
+ "title": "ADABORD: a novel AdaBoost approach for ordinal classification",
+ "pages": 42,
+ "model": "DeepSeek-V4.1-Flash"
+}

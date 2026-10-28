@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "RINSE mean AUPRC (%) of 39.18 across eight target graphs under the standard normalization protocol (or the single Cora cell 50.44±0.45)",
+  "table_ref": "Table 1",
+  "dataset": "Cora (target); source: PubMed, CiteSeer, Questions, YelpChi"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 600,
+  "gpu_speedup": 3,
+  "basis": "No code is released; the frozen truncated-attention scorer (OwlEye-style, 2-layer MLP, 4 hops, width 384, 2048-entry bank) must be re-implemented and trained on 4 source graphs for 5 ensemble members x 5 runs, plus the full gradient-free target pipeline, all from prose only."
+ },
+ "blockers": [
+  "No code or configs released (empty code_links)",
+  "Source training recipe depends on Zheng et al. 2026 (OwlEye) code, not provided",
+  "Exact preprocessing/normalization protocol and hyperparameter details only partially specified",
+  "5 ensemble members x 5 runs of source training required for the reported mean±std"
+ ],
+ "suitable": false,
+ "id": "2609.02497",
+ "title": "RINSE: Robust Target-Time Normality Estimation for Zero-Shot Graph Anomaly Detection",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

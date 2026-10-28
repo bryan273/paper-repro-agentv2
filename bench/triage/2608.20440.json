@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Post-pruned Decision Tree test accuracy of 0.8635 on the paper-subtracted chips Raman dataset (5 oil classes)",
+  "table_ref": "Table 2, row 'Chips (Subtracted Paper Contribution)', column 'Post-pruning'",
+  "dataset": "NNLS paper-subtracted fried-food Raman spectra (900 spectra, 5 classes, 1866 features)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/klndeepak/Physics-Informed-AI-Approach-K-Means-and-Decision-Tree-for-Oil-"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "basis": "Small tabular CSVs (~900x1866) with sklearn DecisionTree and precomputed NNLS-corrected datasets; only install, download, and a few seconds of tree fitting per config."
+ },
+ "blockers": [
+  "NNLS reference spectra and exact train/test split may need to be inferred from notebooks",
+  "Reported accuracy varies slightly across figures (0.8630 vs 0.8635) so exact cell may need split/seed matching"
+ ],
+ "suitable": true,
+ "id": "2608.20440",
+ "title": "Decision Tree and K-Means Analysis of Raman Spectra for Edible Oils: A Physics-Informed AI Approach",
+ "pages": 46,
+ "model": "DeepSeek-V4.1-Flash"
+}

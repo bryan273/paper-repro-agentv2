@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Dynamic-I2V achieves a DIVE Dynamic Range (DR) score of 45.77, a 42.5% improvement over CogVideoX-I2V-5B.",
+  "table_ref": "Table 3, row 'Dynamic-I2V', column 'DR'",
+  "dataset": "VBench-I2V test set (355 image-text pairs) evaluated with DIVE"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 1000,
+  "ref_minutes": 1000000,
+  "gpu_speedup": 100,
+  "basis": "Reproducing the headline DIVE DR score requires fine-tuning CogVideoX-I2V-5B with Qwen2VL-2B on 123k OpenVid videos, reported as ~38 h/epoch on 16 GPUs, then running DIVE evaluation with GPT-4o; no code or trained model is released."
+ },
+ "blockers": [
+  "No code release or model checkpoint",
+  "Requires 16 GPUs for fine-tuning (~608 GPU-hours per epoch)",
+  "DIVE evaluation uses GPT-4o, a closed-source API",
+  "Filtered 123k OpenVid subset and prompt details are not released",
+  "5B video diffusion model cannot be trained/evaluated on an 8-core CPU laptop within hours"
+ ],
+ "suitable": false,
+ "id": "2505.19901",
+ "title": "Dynamic-I2V: Exploring Image-to-Video Generation Models via Multimodal LLM",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

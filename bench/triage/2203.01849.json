@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Ours-BERT achieves 86.16 accuracy on the BQ dataset (short text matching), outperforming the BERT baseline (84.8).",
+  "table_ref": "Table 1, row 'Ours-BERT*', column 'BQ ACC'",
+  "dataset": "BQ (Bank Question corpus)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "The method requires crawling search-engine contexts for every short text, training a BERT-based context selector and a context-enhanced BERT matcher on the full BQ dataset; no code or crawled contexts are released, and the paper reports all experiments on V100 GPUs."
+ },
+ "blockers": [
+  "No code or model release",
+  "No released crawled context data; contexts must be re-crawled from a search engine, which is non-deterministic and may be blocked",
+  "Requires training/fine-tuning BERT-based models on a large Chinese dataset",
+  "Paper reports V100 GPU training; CPU-only reproduction would be impractically slow"
+ ],
+ "suitable": false,
+ "id": "2203.01849",
+ "title": "Context Enhanced Short Text Matching using Clickthrough Data",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

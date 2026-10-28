@@ -1,0 +1,157 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The Methods say the stacking meta-learner is XGBoost (n_estimators=100, max_depth=3, learning_rate=0.05), while the Abstract/Discussion and user target say logistic regression.",
+  "options": [
+   "logistic regression",
+   "XGBoost with n_estimators=100, max_depth=3, learning_rate=0.05"
+  ],
+  "chosen": "logistic regression",
+  "rationale": "The user target and the paper's Abstract/Discussion both name logistic regression as the meta-learner; Section 2.9.3 contradicts this.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "with logistic regression acting as a meta-learner",
+  "page": 1
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The final stack composition is inconsistent: Discussion names RF, XGBoost, LightGBM, SVC; Section 3.4 describes Full Features as DT, KNN, XGBoost, LightGBM, MLP; CR-based and RF-based descriptions differ again.",
+  "options": [
+   "Random Forest + XGBoost + LightGBM + SVC",
+   "Decision Tree + KNN + XGBoost + LightGBM + MLP",
+   "Decision Tree + LightGBM + KNN + Random Forest + MLP"
+  ],
+  "chosen": "Random Forest + XGBoost + LightGBM + SVC",
+  "rationale": "This is the user target and exactly the composition stated in the Discussion for the 97.2% result.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "the final stack (Random Forest, XGBoost, LightGBM and SVC feeding a logistic meta-learner)",
+  "page": 14
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Base-model hyperparameters conflict between the illustrative Section 2.7.2 settings (100 estimators, lr 0.1, depth 4) and Table 7's GridSearchCV optima (200, 0.2, 7).",
+  "options": [
+   "use Table 7 GridSearchCV optima",
+   "use Section 2.7.2 illustrative settings"
+  ],
+  "chosen": "use Table 7 optima for XGBoost/LightGBM; use Table 7 RF-based optima for RF (200 trees, min_samples_split=2, max_depth=15); use Section 2.7.3 for SVC",
+  "rationale": "Section 2.9.2 says the final hyperparameters in Table 7 were optimized for ROC-AUC and used for ensemble construction.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "It is not explicit whether IQR outlier removal is fitted on the full dataset before the train/test split or only on training data.",
+  "options": [
+   "remove outliers on the full dataset before splitting",
+   "fit IQR bounds on training data only"
+  ],
+  "chosen": "remove outliers on the full dataset before splitting",
+  "rationale": "Section 2.3 precedes Section 2.5, and Table 5 totals 4,337 records before the split.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "After outlier removal, the dataset was reduced from 4,981 to 4,337 records",
+  "page": 6
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "It is unclear whether SMOTE is applied to the whole training set before 5-fold CV or inside each CV training fold.",
+  "options": [
+   "SMOTE full training set before CV",
+   "SMOTE inside each CV training fold"
+  ],
+  "chosen": "SMOTE full training set before CV",
+  "rationale": "Table 6 reports a 6,624-row SMOTE-balanced training set and the paper says base models are trained on the complete SMOTE-balanced dataset.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "trained on the complete SMOTE-balanced dataset",
+  "page": 12
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Seeds for SMOTE, RF, XGBoost, LightGBM, SVC, logistic regression, and OOF generation are not specified.",
+  "options": [
+   "42 for all stochastic steps",
+   "0 for all stochastic steps",
+   "library defaults"
+  ],
+  "chosen": "42 for all stochastic steps",
+  "rationale": "The paper's only stated seed is the train/test split random_state=42; using it everywhere is the least-surprising reproducible convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Correlation feature selection is inconsistent: the 0.02 threshold names 6 features, Table 4 lists 7 including work type, and avg glucose is excluded despite 0.03 correlation.",
+  "options": [
+   "use Table 4's 7 listed correlation features",
+   "use the 6 threshold-named features",
+   "recompute threshold >0.02"
+  ],
+  "chosen": "use Table 4's 7 listed correlation features",
+  "rationale": "Table 5 uses 7 correlation-based features, so the table listing is the only choice consistent with the reported dimensions.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Based on a selection threshold of 0.02, the significant predictors included age, hypertension, ever married, heart disease, BMI, and smoking status.",
+  "page": 7
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Class weighting after SMOTE is ambiguous: SMOTE makes the training set 50/50, so scale_pos_weight=1; the paper still describes class-balanced weights.",
+  "options": [
+   "keep balanced class weights and scale_pos_weight=1 after SMOTE",
+   "set XGBoost scale_pos_weight to the original imbalance ratio",
+   "drop class weights after SMOTE"
+  ],
+  "chosen": "keep balanced class weights and set XGBoost scale_pos_weight=1 after SMOTE",
+  "rationale": "Class weighting is explicitly stated, and the class ratio after SMOTE is 1:1.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "scale pos weight parameter defined as the ratio of the classes",
+  "page": 9
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The decision threshold for converting predicted probabilities into class labels is not stated.",
+  "options": [
+   "0.5",
+   "tune threshold on CV",
+   "threshold that maximizes F1"
+  ],
+  "chosen": "0.5",
+  "rationale": "Accuracy and F1 are reported without mentioning threshold tuning, so default 0.5 is the conventional reading.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "StandardScaler could be applied to all columns or only numerical columns; categorical variables are already integer-encoded.",
+  "options": [
+   "scale numerical features only",
+   "scale all 10 columns"
+  ],
+  "chosen": "scale numerical features only",
+  "rationale": "The paper explicitly says numerical features were standardized.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Numerical features were standardized using StandardScaler",
+  "page": 8
+ }
+]

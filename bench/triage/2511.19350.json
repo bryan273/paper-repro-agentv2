@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Cohesion Ratio (rho) for HAC (k-est) averaged over dataset-model pairs, reported as 1.2786 in Table 3",
+  "table_ref": "Table 3",
+  "dataset": "BLESS (200 instances, 17 classes) — smallest dataset; single dataset-model cell of the Cohesion Ratio"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/towards_clustering-0C2E"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 120,
+  "gpu_speedup": 2,
+  "basis": "BLESS is tiny (200 texts) and the spectral estimator caps subsamples at tau=1000, so eigendecompositions are cheap on CPU; the main cost is downloading/loading one embedding model (e5-large-instruct ~560M params) and running HAC + Cohesion Ratio, but the paper's exact pipeline (62 variants, 4 models) and any missing configs mean rebuilding the protocol, and the 8B models would be infeasible on 16GB RAM."
+ },
+ "blockers": [
+  "Anonymous code repo may be incomplete or unavailable after review",
+  "Full Table 3 averages over 248 dataset-model pairs including 7B/8B embedding models that exceed 16GB RAM",
+  "Exact embedding model versions and sampling seeds not fully specified"
+ ],
+ "suitable": true,
+ "id": "2511.19350",
+ "title": "Scalable Parameter-Light Spectral Method for Clustering Short Text Embeddings with a Cohesion-Based Evaluation Metric",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

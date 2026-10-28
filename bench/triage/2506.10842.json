@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Anomaly detection rate of 95% with false-positive rate below 5% using the composite ARF framework (Isolation Forest, One-Class SVM, Autoencoder, K-Means, DBSCAN) on credit card transaction data.",
+  "table_ref": "Conclusion (Section 7) and Research Objectives (Section 1.4)",
+  "dataset": "Proprietary credit-card transaction data from a mid-sized financial institution over 12 months, enriched with external risk indicators and cardholder profiles."
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "No code or data are provided; the dataset is proprietary and cannot be obtained, making reproduction impossible."
+ },
+ "blockers": [
+  "Proprietary transaction data from a financial institution",
+  "No code or model configurations released",
+  "External risk indicators from a specialist provider under privacy agreements",
+  "Cardholder account-level metrics under strict privacy agreements"
+ ],
+ "suitable": false,
+ "id": "2506.10842",
+ "title": "Advanced fraud detection using machine learning models: enhancing financial transaction security",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "The integrated instability metric selects h=40 for the StarsCYG dataset, identifying 7 outliers.",
+  "table_ref": "Figure 4 (middle panel) / Section 5.1",
+  "dataset": "StarsCYG (47 observations, 2 variables)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/qhengncsu/StableMCD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "The paper reports the grid search takes 3 seconds on a small dataset (n=47, p=2) with 100 bootstrap pairs; installation and data loading add a few minutes."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2401.14359",
+ "title": "A Stability Framework for Parameter Selection in the Minimum Covariance Determinant Problem",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Average eΣ (log10 condition number of Σ̂Σ⁻¹) for FDBpro on clean data in setting A (n=200, p=5), reported as 0.232 (0.049) over 1000 runs",
+  "table_ref": "Table 1, row A/FDBpro, column eΣ",
+  "dataset": "Synthetic multivariate normal data (n=200, p=5, Toeplitz correlation 0.75), generated per Section 5.1"
+ },
+ "release": "partial",
+ "code_links": [
+  "R package FDB and R codes provided in Supplementary Materials (no URL given in PDF; arXiv:2305.07813)"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Pure-R simulation of 1000 replicates at n=200, p=5 with k=1000 projection directions; each replicate is milliseconds-to-seconds, so total runtime is modest, dominated by installing R and the FDB package and writing the simulation script."
+ },
+ "blockers": [
+  "FDB R package/code is only referenced as 'Supplementary Materials' with no link in the PDF, so code may need to be reimplemented from Algorithm 2",
+  "1000-replicate Monte Carlo means results will differ slightly from the published cell (within reported SE)"
+ ],
+ "suitable": true,
+ "id": "2305.07813",
+ "title": "Fast robust location and scatter estimation: a depth-based method",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

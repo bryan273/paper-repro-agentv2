@@ -1,0 +1,161 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "No random seeds are given, and it is not said how the 5 repetitions differ from one another.",
+  "options": [
+   "one fixed seed for all repeats",
+   "5 different seeds (e.g. 0-4) and report the mean",
+   "unfixed seeds, whichever run finishes"
+  ],
+  "chosen": "5 repetitions with 5 different seeds (0-4), report the mean AUC-ROC",
+  "rationale": "Matches the reported protocol (repeated 5 times, average reported) and gives a mean comparable to the single number the paper prints.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Each experiment is repeated 5 times and reported average results.",
+  "page": 7
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The distance function is written only as the norm ||.||; no metric is named, although radii, coverage tests and cosine scoring all depend on it.",
+  "options": [
+   "Euclidean (L2)",
+   "Manhattan (L1)",
+   "cosine distance"
+  ],
+  "chosen": "Euclidean (L2)",
+  "rationale": "The theoretical analysis uses the volume of a d-dimensional ball Kd*r^d, which is the Euclidean ball, and iNNE/ADERH use L2 as well.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": "Each hypersphere represents a spherical region in the feature space that contains all points within a certain distance from its center.",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "No feature preprocessing (standardisation, normalisation, dimensionality reduction) is described, although hypersphere radii are scale dependent and the 20 datasets have very different feature scales.",
+  "options": [
+   "raw features as loaded from PyOD/ODDS",
+   "per-feature z-score standardisation",
+   "min-max scaling to [0,1]"
+  ],
+  "chosen": "raw features exactly as provided by the PyOD/ODDS loaders",
+  "rationale": "The paper reports the standard PyOD/ODDS benchmark protocol and never mentions scaling; the released repository should be checked first, since this choice materially changes Euclidean radii.",
+  "source": "convention",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "psi is searched in {2^m} for the proposed methods but the selection criterion is never stated, and the unsupervised setting provides no clean validation split.",
+  "options": [
+   "per-dataset oracle selection maximising AUC-ROC on the same data",
+   "one fixed psi for all datasets",
+   "internal unsupervised criterion (e.g. score variance / stability)"
+  ],
+  "chosen": "per-dataset oracle argmax of AUC-ROC over the psi grid (independently for ISER-A, ISER-S and ISER-IF)",
+  "rationale": "This is what the common PyOD/ADBench-style protocol does and is the only way the reported per-dataset numbers can be reproduced; it must be flagged because it is label-informed.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "For iForest, iNNE, IDK, ADERH and proposed methods, ψ ∈{2m, m = 1, 2, . . . , 8} and with default t = 200.",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "When several covering hyperspheres have exactly equal radii, the argmin over Ci(x) is ambiguous.",
+  "options": [
+   "first index in Di wins",
+   "last index wins",
+   "average phi over tied hyperspheres"
+  ],
+  "chosen": "first index in Di wins (stable argmin)",
+  "rationale": "Exact ties are rare with continuous features and any consistent tie-break changes nothing measurable.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "we select the covering hypersphere with the smallest radius",
+  "page": 3
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "If two sampled points in Di coincide (duplicate rows), r[z] = 0 and phi = 1 - 1/r is undefined/infinite.",
+  "options": [
+   "clip r to a small epsilon (>0)",
+   "resample the subset until all pairwise distances are positive",
+   "assign phi = 1 to the degenerate hypersphere"
+  ],
+  "chosen": "clip r to a small positive epsilon (e.g. machine-epsilon-scaled)",
+  "rationale": "Keeps the density ordering intact and avoids NaNs without changing the ranking for non-degenerate regions.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Small radii indicate that sampled points are closely packed, suggesting high local density",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "'sim' is never expanded: whether it is standard cosine similarity and what happens for a zero / constant-norm representation vector is unstated.",
+  "options": [
+   "standard cosine: sum_i phi_i / (||Phi||_2 * sqrt(t))",
+   "raw dot product with the all-ones vector (i.e. the sum, proportional to ISER-A)",
+   "1 - cosine distance"
+  ],
+  "chosen": "standard cosine similarity to the all-ones vector, with a zero-norm guard returning 0",
+  "rationale": "Cosine similarity is named explicitly; using the raw dot product would make ISER-S a monotone rescaling of ISER-A and cannot reproduce the reported differences.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The similarity-based anomaly score is computed using cosine similarity between the point’s ensemble representation and the anomaly reference vector",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The number of trees, subsample size and maximum depth of the Isolation Forest used inside ISER-IF are never specified.",
+  "options": [
+   "PyOD iForest defaults (100 trees, max_samples = 256)",
+   "match whatever configuration reproduces the iForest column of Table IV",
+   "same tree count as the number of partitionings t = 200"
+  ],
+  "chosen": "identical PyOD-style iForest settings (100 trees, subsample 256) for the baseline and for ISER-IF, so the gain is attributable to Phi(x)",
+  "rationale": "Only the representation should change between the two columns of Table IV; the baseline must reproduce the paper's 0.8530 on Ionosphere.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "we apply iForest to the transformed feature space Φ(x)",
+  "page": 8
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "It is not stated whether the phi-space features fed to ISER-IF are used raw in [0,1] or standardised before the trees are grown.",
+  "options": [
+   "raw phi values in [0,1]",
+   "per-dimension z-score standardised phi",
+   "binary threshold of phi at 1"
+  ],
+  "chosen": "raw phi values in [0,1]",
+  "rationale": "The argument that anomalies form tight all-ones clusters relies on the raw values; standardisation would distort the one-sided concentration argument.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "anomalous points are mapped to ensemble representations that exhibit high feature consistency and form tight clusters in the transformed space",
+  "page": 8
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The up(%) column of Table IV is printed without a definition (relative vs absolute improvement).",
+  "options": [
+   "relative improvement ((new - old)/old) x 100",
+   "absolute AUC points (new - old) x 100"
+  ],
+  "chosen": "relative percentage improvement: ((ISER-IF - iForest)/iForest) x 100",
+  "rationale": "Arithmetic on the printed rows confirms it, e.g. Ionosphere (0.9314 - 0.8530)/0.8530 = 9.19 % and speech (0.6443 - 0.4803)/0.4803 = 34.15 %.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Table IV demonstrates that ISER-IF achieves substantial performance improvements over iForest on datasets where iForest exhibits poor performance.",
+  "page": 9
+ }
+]

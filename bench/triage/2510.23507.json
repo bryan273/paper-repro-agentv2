@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "DFNMF achieves Q=0.591 and B=0.162 on DrugNet with k=5 (Table III, row DFNMF, columns DrugNet k=5)",
+  "table_ref": "Table III",
+  "dataset": "DrugNet"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/SiamakGhodsi/DFNMF.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": 1.5,
+  "basis": "DrugNet has only 293 nodes and 284 edges; the method uses sparse matrix operations and converges in ~150 iterations, so a CPU run should take seconds to a few minutes per seed, plus data download and setup."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated (only a GitHub link is provided; no explicit data/configs in the paper).",
+  "DrugNet dataset is not directly linked in the paper; it must be obtained from a public source (e.g., the original fair clustering benchmark)."
+ ],
+ "suitable": true,
+ "id": "2510.23507",
+ "title": "A Deep Latent Factor Graph Clustering with Fairness-Utility Trade-off Perspective",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

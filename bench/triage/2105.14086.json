@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AADI-RPN achieves AR100 of 55.3 on COCO val-2017, compared to 45.7 for standard RPN (Table 1).",
+  "table_ref": "Table 1",
+  "dataset": "COCO val-2017"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/WanXiaopei/aadi"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Training RPN on COCO train-2017 with 1x schedule takes ~4.2 hours on 8 V100 GPUs; on a single GPU it would take much longer, and CPU-only training is infeasible."
+ },
+ "blockers": [
+  "Requires GPU for training (paper uses 8 V100 GPUs)",
+  "Training on full COCO dataset is time-consuming",
+  "Code may be incomplete or not maintained"
+ ],
+ "suitable": false,
+ "id": "2105.14086",
+ "title": "Augmenting Anchors by the Detector Itself",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

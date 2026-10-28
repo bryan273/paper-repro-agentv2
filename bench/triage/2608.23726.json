@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "End-to-end accuracy of 97.25% across all classes (including normal) on the second (single-point) dataset, exceeding the TLFed benchmark of 94.84%",
+  "table_ref": "Table 7 / Section 4.5",
+  "dataset": "Electrical Fault Detection and Classification (Kaggle, Sathyaprakash 2021), 12,001 samples, L=1, 18 features"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Only the second dataset is public (Kaggle); the pipeline is sklearn Isolation Forest + Random Forest on 12k samples x 18 features, so all fitting/scoring is seconds-to-minutes on CPU, dominated by download/install and re-implementing the feature operator and two-stage logic from the text."
+ },
+ "blockers": [
+  "No code released; pipeline (feature operator, Branch B allocation rule, OR-fusion, threshold selection) must be re-implemented from prose",
+  "Exact 97.25% depends on unspecified split seed, validation split, and Branch B threshold, so exact reproduction is unlikely",
+  "Primary TLFaultDataset (578,923 samples) is not clearly public, so the headline cross-dataset claim cannot be fully checked"
+ ],
+ "suitable": true,
+ "id": "2608.23726",
+ "title": "A Hybrid Two-Stage Machine Learning Pipeline for Fault Detection and Classification in Power Transmission Systems",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

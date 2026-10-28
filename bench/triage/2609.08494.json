@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "ODK-means achieves average F1 = 1.000 for outlier detection at contamination rate p = 0.0025 (with α = 0.05), matching or beating Trimmed K-means and LOF.",
+  "table_ref": "Table 1, row p=0.0025, column ODK-means (α=0.05)",
+  "dataset": "Synthetic 4-cluster J-sphere data (Nk=300, r=3, s=8, σ2=0.1, p=0.0025), generated per Section S3"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IannaccioStat/Outliers1",
+  "https://github.com/IannaccioStat/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Synthetic data of ~1200 points in low dimension; ODK-means is O(N^2 J) preprocessing plus cheap K-means iterations, so a single table cell (10 replicates, 20 restarts) runs in minutes on CPU once the R code is adapted/verified."
+ },
+ "blockers": [
+  "Code repo exists but its completeness/state is unverified; simulation harness may need to be written from Section S3 description",
+  "Baseline comparisons (TKm, LOF) require R packages trimcluster/TClust/Rlof, but the target cell only needs ODK-means",
+  "Exact random seed / data-generation details not fully specified, so exact 1.000 may not reproduce bit-for-bit"
+ ],
+ "suitable": true,
+ "id": "2609.08494",
+ "title": "Nonparametric framework for the definition, adaptive detection and probabilistic interpretation of outliers",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

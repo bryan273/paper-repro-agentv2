@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "IC value of the connector vertex x in the hub-extended bridge family Hp,q,r equals 2/3 (and x is the unique global maximizer)",
+  "table_ref": "Table 1",
+  "dataset": "synthetic graph family Hp,q,r (exact calibration graph)"
+ },
+ "release": "partial",
+ "code_links": [
+  "interconnectedness_coefficient.py (referenced as included in source package; no URL given in PDF)"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "The target is an exact analytic value on a tiny synthetic graph (two cliques plus a hub with r leaves); building it in NetworkX and computing IC takes seconds, so time is dominated by pip install and writing the ~30-line implementation."
+ },
+ "blockers": [
+  "Reference implementation file is mentioned but no repository/URL is linked in the PDF, so code must be re-written from the equations (straightforward)",
+  "The empirical HIM application (Table 2, Fig 7) depends on a 2009 dissertation dataset and is not the cheapest target"
+ ],
+ "suitable": true,
+ "id": "2609.13928",
+ "title": "The Interconnectedness Coefficient: A Semi-Local Graph-Theoretic Measure for Connector Vertices between Cohesive Network Regions",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

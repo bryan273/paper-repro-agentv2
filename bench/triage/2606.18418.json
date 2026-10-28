@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average computation time (in seconds) for P2CE on the German Credit dataset with a Logistic Regression model, reported as 16.2 (±14.1) seconds.",
+  "table_ref": "Table 1, row 'P2CE', column 'Time (s)', German Credit block",
+  "dataset": "German Credit (UCI, 1000 samples, 21 considered features)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hiaac-finance/p2ce"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (1000 samples), logistic regression, and a branch-and-bound search that runs in seconds per instance; the main cost is installing dependencies and running the provided code for 50 individuals."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated (only a GitHub link is given, no configs or scripts in the paper).",
+  "Exact preprocessing (feature selection, discretization grid, isolation forest parameters) is not fully specified in the paper, requiring reverse-engineering from code or assumptions."
+ ],
+ "suitable": true,
+ "id": "2606.18418",
+ "title": "P$^2$CE: Model-Agnostic Plausible Pareto-Optimal Counterfactual Explanations",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

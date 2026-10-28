@@ -1,0 +1,164 @@
+{
+ "title": "ICSpyLab: A Python Package for Invariant Coordinate Selection",
+ "summary": "Invariant coordinate selection (ICS) — the joint diagonalization of two scatter matrices to find directions of extreme generalized kurtosis — is a powerful alternative to PCA for clustering and anomaly detection, but it previously existed only as a fragmented R ecosystem. The authors release ICSpyLab, a scikit-learn-compatible Python package that ships a broad library of scatter matrices, four ICS algorithms, three component-selection criteria and an extensible Scatter/ComponentSelect abstraction. The paper is a software description with no benchmark tables and no numeric performance results: its single empirical demonstration is the qualitative Figure 1, where ICS with S1='cov', S2='tcovAxis' and algorithm='standard' exposes the parallel-hyperplane structure of the RANDU dataset on the last invariant component while PCA does not.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Running ICS on the RANDU dataset with S1='cov', S2='tcovAxis' and algorithm='standard' places the parallel-hyperplane (banding) structure on the LAST invariant component, whereas PCA on the same data does not reveal it.",
+   "metric": "qualitative reproduction of Figure 1(a): binary structural check, 1 = hyperplane banding clearly visible on the last invariant component and absent from PCA components, 0 = not visible",
+   "dataset": "RANDU (3 pseudo-random coordinates from Marsaglia's LCG, generated inside the package by icspylab.distributions.generate_randu)",
+   "split": "no split (fully unsupervised, all generated points used)",
+   "value": 1,
+   "unit": "binary pass (1) / fail (0)",
+   "higher_is_better": true,
+   "table_ref": "Figure 1(a) (page 4), produced by the Section 3 code example (page 3)",
+   "config_for_value": "X = generate_randu(); ics = ICS(S1=\"cov\", S2=\"tcovAxis\", algorithm=\"standard\"); X_ics = ics.fit_transform(X); structure read off the last invariant component of X_ics",
+   "reported_spread": null,
+   "est_compute": "CPU, < 1 min (small 3-dimensional sample, a few Tyler iterations plus one eigendecomposition)",
+   "quote": "Figure 1 illustrates how ICS reveals the underlying hyperplane structure on the last invariant component",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "ICSpyLab exposes exactly four ICS algorithms: eigh, standard, whiten and QR.",
+   "metric": "number of ICS algorithms available through the ICS class (completeness of the feature set)",
+   "dataset": "not applicable (software feature inventory)",
+   "split": "not applicable",
+   "value": 4,
+   "unit": "algorithms implemented",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row group 'ICS algorithm' (eigh, standard, whiten, QR)",
+   "config_for_value": "ICS(algorithm=...) must accept 'eigh', 'standard', 'whiten' and 'QR'",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (feature-inventory check, no training)",
+   "quote": "It includes multiple scatter matrix options, four algorithms for computing ICS, and several component-selection criteria.",
+   "page": 2
+  },
+  {
+   "id": "C3",
+   "statement": "The package provides eight built-in scatter matrices: cov, covW, cov4, covAxis, mcd, tcov, tcovAxis and tM, plus user-defined ones through the Scatter class.",
+   "metric": "number of built-in scatter matrices enumerated in the feature table",
+   "dataset": "not applicable (software feature inventory)",
+   "split": "not applicable",
+   "value": 8,
+   "unit": "scatter matrices implemented",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row group 'Scatter matrix' (cov, covW, cov4, covAxis, mcd, tcov, tcovAxis, tM)",
+   "config_for_value": "each identifier usable as S1=/S2= in ICS(...); mcd wraps scikit-learn, tcov/tcovAxis are Numba-JIT compiled",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (feature-inventory check, no training)",
+   "quote": "Since ICS relies on the joint diagonalization of two scatter matrices chosen from a broad family",
+   "page": 2
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The paper reports no numeric benchmarks at all, so the cheapest faithful target is its only empirical demonstration: generate the RANDU data and run one ICS fit with the exact configuration given in the Section 3 code block (S1='cov', S2='tcovAxis', algorithm='standard'). This needs no training, no GPU and under a minute of CPU, and it is precisely the central result of the paper (Figure 1a, ICS shows the hyperplanes that PCA misses) rather than a side ablation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.0,
+  "why": "Rule 3 (bounded score), band collapsed to 0 because the target is a pass/fail structural indicator rather than a score: either the last invariant component shows the RANDU parallel-hyperplane banding or it does not. Any disagreement about WHICH component carries the structure is an ordering ambiguity handled by assumption A3 (component sort order), not by widening the tolerance band."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The ICS estimator must inherit from scikit-learn's BaseEstimator and expose fit, transform and fit_transform with the usual estimator interface.",
+   "cite": "Section 2, 'API design'",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R2",
+   "stmt": "The ICS constructor must accept two scatter-matrix specifiers (S1, S2), an algorithm name and an optional component-selection method.",
+   "cite": "Section 2, 'Features'",
+   "quote": "it is necessary to select the following parameters: two scatter matrices for which the joint diagonalisation is desired, an algorithm for calculating invariant components",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "The scatter-matrix library must cover all eight entries of Table 1: cov, covW, cov4, covAxis, mcd, tcov, tcovAxis, tM, addressable by name.",
+   "cite": "Table 1, 'Scatter matrix' rows",
+   "quote": "Table 1 summarizes the features currently implemented in ICSpyLab for each of these parameter categories.",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "All four ICS algorithms must be implemented and selectable by name: eigh, standard, whiten and QR.",
+   "cite": "Table 1, 'ICS algorithm' rows",
+   "quote": "four algorithms for computing ICS, and several component-selection criteria.",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Component selection must be a separate ComponentSelect abstraction offering the median, normal and unimodality criteria, and must be omissible to retain all components.",
+   "cite": "Section 2, 'Extensibility' and Table 1, 'Component selection' rows",
+   "quote": "The same logic applies to the component selection step, through the ComponentSelect class.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "A Scatter base class must let users plug in their own scatter estimator without touching the ICS pipeline.",
+   "cite": "Section 2, 'Extensibility'",
+   "quote": "Another key component of the package is the Scatter class.",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "The pairwise scatters tcov and tcovAxis must be implemented with Numba JIT compilation rather than a pure-NumPy loop.",
+   "cite": "Section 2, 'Computational considerations'",
+   "quote": "Pairwise scatter matrices (tcov and tcovAxis) are computationally optimized using JIT compilation via Numba, improving computational efficiency and facilitating their use on larger datasets.",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "The mcd scatter must be a thin wrapper around scikit-learn's minimum-covariance-determinant estimator, not a re-implementation.",
+   "cite": "Section 2, 'Computational considerations'",
+   "quote": "The mcd scatter is provided as a wrapper around the scikit-learn implementation.",
+   "page": 3
+  },
+  {
+   "id": "R9",
+   "stmt": "A RANDU data generator must be importable as icspylab.distributions.generate_randu and be usable exactly as in the Section 3 example.",
+   "cite": "Section 3, code example",
+   "quote": "The following example illustrates the basic usage of ICSpyLab on the RANDU dataset (Marsaglia, 1968)",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Data-generation utilities must include multivariate exponential power generators and elliptical-mixture generators.",
+   "cite": "Section 2, 'Features'",
+   "quote": "including generators for multivariate exponential power distributions and mixtures of elliptical distributions.",
+   "page": 2
+  },
+  {
+   "id": "R11",
+   "stmt": "The package must be released under the MIT license and installable from the public GitHub repository.",
+   "cite": "Abstract / Section 1",
+   "quote": "ICSpyLab is released under the MIT license and is openly available at: https://github.com/cbecquart/ICSpyLab.",
+   "page": 1
+  }
+ ],
+ "data": [
+  {
+   "name": "RANDU (synthetic, generated on the fly)",
+   "how_to_get": "pip install git+https://github.com/cbecquart/ICSpyLab, then `from icspylab.distributions import generate_randu; X = generate_randu()`. If reimplementing: Marsaglia's LCG x_{k+1} = 65539 * x_k mod 2^31, take consecutive triplets as 3-D points with a fixed seed."
+  },
+  {
+   "name": "Marsaglia (1968) RANDU description",
+   "how_to_get": "Reference only (PNAS 61(1):25-28, 'Random numbers fall mainly in the planes'); no data file is distributed."
+  }
+ ],
+ "code_links": [
+  "https://github.com/cbecquart/ICSpyLab"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2606.24521",
+  "kind": "arxiv",
+  "arxiv_id": "2606.24521",
+  "url": "https://arxiv.org/abs/2606.24521",
+  "title": "ICSpyLab: A Python Package for Invariant Coordinate Selection",
+  "pages": 6
+ }
+}

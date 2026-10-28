@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Random Forest (and Logistic Regression) achieve 0.99 classification accuracy on the UCI CKD dataset (Table I, 'Proposed' row)",
+  "table_ref": "Table 1",
+  "dataset": "UCI Chronic Kidney Disease dataset (400 instances, 25 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "UCI CKD is a tiny 400x25 table; training RF/LR and 8 classifiers takes seconds, so time is dominated by pip installs and dataset download."
+ },
+ "blockers": [
+  "No code released; preprocessing (random imputation vs mean/mode, encoding, split seed) must be reimplemented, so exact 0.99 may not reproduce",
+  "Paper has internal inconsistencies (e.g., 250 CKD/150 not-CKD vs standard 400-row UCI set) that could shift results"
+ ],
+ "suitable": true,
+ "id": "2510.09493",
+ "title": "Performance Analysis of Machine Learning Algorithms in Chronic Kidney Disease Prediction",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

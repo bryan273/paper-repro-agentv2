@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Few-shot binary classification F1-score (or accuracy) of the proposed triplet network + KNN on CICIDS2017 with 10 malicious samples per class, as reported in the main binary comparison table.",
+  "table_ref": "Section 4.3 binary classification results table (CICIDS2017)",
+  "dataset": "CICIDS2017 (28 flow features, 5 classes, ~275k flows)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/jackwilkie/few_shot_nids_triplet_mining"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "basis": "Small tabular MLP triplet network on ~275k rows trains in minutes on CPU, but the full protocol (5 repeated evaluations, random hyperparameter search over lr/batch/embedding dim/margin, plus baseline re-implementations) and data download/preprocessing push command time to a few hours; no GPU needed."
+ },
+ "blockers": [
+  "Full hyperparameter search and 5-repeat protocol must be re-run to match the exact reported number",
+  "Repo may not include exact configs/seeds for the specific table cell",
+  "CICIDS2017 requires downloading and re-extracting 28 flow features from PCAPs"
+ ],
+ "suitable": true,
+ "id": "2605.17530",
+ "title": "Few-Shot Network Intrusion Detection Using Online Triplet Mining",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

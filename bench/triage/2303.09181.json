@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "mIoU of 41.9 on Pascal Context (PC-59) for the Ours (CLIP R-50) model trained on COCO Panoptic",
+  "table_ref": "Table 1",
+  "dataset": "Pascal Context (PC-59)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/facebookresearch/detectron2"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Training a Mask2Former-style model on COCO Panoptic (117k images) for 50k iterations with batch size 112 requires many GPU-hours; on CPU it would take days, so the target is not feasible on a normal laptop within a few hours."
+ },
+ "blockers": [
+  "No official code release for the paper's method",
+  "Requires training a large segmentation model on COCO Panoptic (117k images) for 50k iterations",
+  "Needs a GPU with at least 16GB VRAM for training",
+  "Requires downloading and preprocessing multiple large datasets (COCO, Pascal Context, etc.)"
+ ],
+ "suitable": false,
+ "id": "2303.09181",
+ "title": "Global Knowledge Calibration for Fast Open-Vocabulary Segmentation",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

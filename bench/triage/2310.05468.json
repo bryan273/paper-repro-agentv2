@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Average Precision of EIF+ on the Bisect synthetic dataset (trained without anomalies), showing improvement over EIF",
+  "table_ref": "Table 2 (main AD results, 16 datasets)",
+  "dataset": "Bisect (synthetic, 2D, 1000 points)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/alessioarcudi/ExIFFI"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Synthetic 2D dataset with 1000 points; EIF+ training and scoring on CPU takes seconds; code and data generation are provided in the public repository."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2310.05468",
+ "title": "Enhancing Interpretability and Generalizability in Extended Isolation Forests",
+ "pages": 36,
+ "model": "DeepSeek-V4.1-Flash"
+}

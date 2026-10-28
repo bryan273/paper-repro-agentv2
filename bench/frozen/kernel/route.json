@@ -1,0 +1,40 @@
+{
+ "route": "paper_only",
+ "why": "The repository inspection found no usable author code; the only code link is an anonymous.4open.science artifact that was not retrieved and is typically ephemeral. The method (equal-frequency binning, proximity assignment, one-hot encoding, cascading kernel-mean-embedding fallback) is described in the paper and can be reimplemented with scikit-learn on the public UCI datasets, so we rebuild from the paper and the claim contract.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "author implementation (anonymous.4open.science link not retrieved/verified)",
+  "exact preprocessing and missing-value handling details",
+  "exact kernel-mean-embedding fallback implementation"
+ ],
+ "blockers_seen": [
+  "no repository found or given",
+  "anonymous.4open.science link is ephemeral and not verified",
+  "paper omits low-level implementation details needed for an exact match"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~5-10 minutes for C1 (Hepatitis): pip install, download UCI data, run 5 bin settings × 10 K-means runs, then a clean re-run.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Reimplementation of the proximity kernel on 155×19 Hepatitis with 5 bin settings × 10 K-means runs (seconds per run); command time is dominated by environment setup and package installation."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

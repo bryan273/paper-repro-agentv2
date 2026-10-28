@@ -1,0 +1,152 @@
+{
+ "approach": "Follow the full_release route: clone the authors' AIF repository, install only the implied CPU dependencies, and keep `aif_alg.py` and `experiments.ipynb` unchanged. A thin `reproduce.py` imports the authors' algorithm, mirrors the Diabetes Table-I cells, fits EIF and AIF(A3/A4/A5) with 500 trees on subsamples of 128, reorders the eight features into Table I order (Age and DPF first), selects the top 10% scores per model, and runs two-sided independent-samples Student t-tests per feature. The primary metric is C1: p-value for Age in EIF vs AIF(A3) anomalies, compared to 0.01 with absolute tolerance 0.02; all C1-C8 cells are written to `results/metrics.json`. An optional notebook execution confirms the authors' environment and printed Table I values without modifying author code.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pinned CPU-only dependencies: numpy, scipy, pandas, jupyter/nbconvert/nbformat. No GPU packages.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "run_authors_notebook.py",
+   "purpose": "Executes a copy of the authors' `experiments.ipynb` unchanged with nbconvert, saves the executed notebook and stdout under `results/`, and optionally extracts printed Table I p-values for comparison.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R8"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Main entrypoint. Ensures the authors' repo/data exist, imports `aif_alg`, builds EIF and AIF(A3/A4/A5), scores all 768 rows, selects top 10% anomalies, computes t-tests for Age/DPF/BloodPressure and all other Table I features, and writes `results/metrics.json`.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "route": "full_release",
+  "repo_url": "https://github.com/elliot1776/AIF",
+  "repo_dir": "repo",
+  "author_algorithm_file": "repo/aif_alg.py",
+  "author_notebook": "repo/experiments.ipynb",
+  "data_path": "repo/data/diabetes.csv",
+  "target_claim": "C1",
+  "features_table_order": [
+   "Age",
+   "DiabetesPedigreeFunction",
+   "Pregnancies",
+   "Glucose",
+   "BloodPressure",
+   "SkinThickness",
+   "Insulin",
+   "BMI"
+  ],
+  "feature_order_source": "R9 / A8: Table I order, with Age and DPF as first two coordinates",
+  "drop_columns": [
+   "Outcome"
+  ],
+  "drop_columns_source": "A1: exclude the label column",
+  "preprocessing": "none: raw feature values, keep zeros as observed values",
+  "preprocessing_source": "A2, A10",
+  "models": {
+   "EIF": {
+    "covariance": "I (identity), normal vectors ~ N(0, I)",
+    "source": "R2"
+   },
+   "AIF_A3": {
+    "covariance": "1/1000 * diag(1000, 1000, 1, ..., 1); expanded entries: Age=1.0, DPF=1.0, others=0.001",
+    "source": "R5"
+   },
+   "AIF_A4": {
+    "covariance": "diag(0.001, 0.001, 1, ..., 1); Age=0.001, DPF=0.001, others=1.0",
+    "source": "R10"
+   },
+   "AIF_A5": {
+    "covariance": "1/100 * diag(0.01, 100, 1, ..., 1); expanded entries: Age=0.0001, DPF=1.0, others=0.01",
+    "source": "R11"
+   }
+  },
+  "normal_sampling": "AIF: sample split normals from N(0, A) for the chosen A; never use N(0, I) for AIF. EIF: sample from N(0, I).",
+  "normal_sampling_source": "R1, R2",
+  "n_trees": "500 per forest",
+  "n_trees_source": "R3 / paper Sec III-B",
+  "subsample_size": "128 per tree",
+  "subsample_size_source": "R3 / paper Sec III-B",
+  "extension_level": "d-1 = 7",
+  "extension_level_source": "A6",
+  "anomaly_fraction": "0.10",
+  "anomaly_fraction_source": "R4",
+  "n_anomalies": "ceil(0.10 * 768) = 77 highest anomaly scores per model",
+  "n_anomalies_source": "A5",
+  "score_formula": "s(x)=2^{-E(h(x))/c(n)}, c(n)=2H(n-1)-2(n-1)/n, H(n)=ln(n)+0.5772156649",
+  "score_formula_source": "R6; use authors' implementation in aif_alg.py",
+  "traversal_rule": "(x-p)'omega <= 0 goes left; > 0 goes right",
+  "traversal_rule_source": "R7; use authors' implementation in aif_alg.py",
+  "intercept_sampling": "uniformly in the bounding box of the current X, coordinate-wise",
+  "intercept_sampling_source": "A7",
+  "ttest": "scipy.stats.ttest_ind(group_EIF_feature_values, group_AIF_feature_values, equal_var=True, alternative='two-sided')",
+  "ttest_source": "R8 / A3",
+  "seed": "use the seed found in experiments.ipynb if present; otherwise 42",
+  "seed_source": "A4",
+  "random_draw_policy": "common seed for data subsampling where author API permits; independent normal-vector draws per model",
+  "random_draw_policy_source": "A12",
+  "reported_targets": {
+   "C1_Age_EIF_vs_AIF_A3": "0.01 ± 0.02",
+   "C2_DPF_EIF_vs_AIF_A3": "0.05",
+   "C3_BloodPressure_EIF_vs_AIF_A3": "0.01",
+   "C4_Age_EIF_vs_AIF_A4": "0.01",
+   "C5_DPF_EIF_vs_AIF_A4": "0.01",
+   "C6_Age_EIF_vs_AIF_A5": "0.05",
+   "C7_DPF_EIF_vs_AIF_A5": "0.01",
+   "C8_BloodPressure_EIF_vs_AIF_A5": "0.95"
+  }
+ },
+ "steps": [
+  "Clone the authors' repository if absent: `git clone --depth 1 https://github.com/elliot1776/AIF repo`; verify `repo/aif_alg.py`, `repo/experiments.ipynb`, and `repo/data/diabetes.csv` exist.",
+  "Inspect `repo/aif_alg.py` and the Diabetes Table-I cells of `repo/experiments.ipynb` to identify the exact class/function names, constructor arguments for covariance A, extension level, scoring method, and any fixed seed. Do not edit author files.",
+  "Install dependencies: `pip install -r requirements.txt` (numpy, scipy, pandas, nbconvert, nbformat, jupyter).",
+  "Implement `run_authors_notebook.py`: copy `experiments.ipynb` to `results/experiments_executed.ipynb`, execute it unchanged with nbconvert, and save stdout/stderr to `results/notebook_stdout.txt` for reference. If full notebook execution is long, restrict only after confirming harmless cell-tag/name filtering; otherwise let it run.",
+  "Implement `reproduce.py` with a `--smoke` flag and default full mode. It should ensure the repo exists, insert `repo/` into `sys.path`, import `aif_alg`, and never reimplement the AIF/EIF algorithm.",
+  "In `reproduce.py`, load `repo/data/diabetes.csv` with pandas; assert shape `(768, 9)`; drop `Outcome`; reorder the remaining columns to `features_table_order`; keep raw values and zeros.",
+  "In `reproduce.py`, build covariance matrices for EIF, AIF(A3), AIF(A4), AIF(A5) using the config above. Fit each model through the authors' API with 500 trees, subsample 128, extension level 7, and the chosen seed. Score all 768 rows with the authors' scoring function.",
+  "For each model, select the 77 highest anomaly scores (top 10%, stable tie-break) and store the anomaly index sets. Compute two-sided independent Student t-tests (`equal_var=True`) for each Table I feature between EIF anomalies and each AIF model's anomalies; record p-value, means, mean difference, sample sizes, and anomaly-set overlap for diagnostics.",
+  "Write `results/metrics.json` with a `claims` section mapping C1-C8 to p-values and means, a `config` section echoing the hyperparameters, and an `environment` section. Ensure C1 is directly readable at `claims.C1.p_value` (or equivalent documented path).",
+  "Run `python reproduce.py --smoke` first; if it passes, run `python reproduce.py` for the full result.",
+  "Run `python run_authors_notebook.py` once and compare any printed Table I p-values against `results/metrics.json`. If mismatch is driven by API usage/feature order, fix the harness only; do not modify `aif_alg.py` or `experiments.ipynb`."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` loads `repo/data/diabetes.csv`, verifies the 8-feature Table I order, builds EIF and AIF(A3) with 5 trees, subsample 32, extension level 7 on the first 96 rows, scores them, selects ceil(0.10*96)=10 anomalies per model, prints shapes, mean Age for both anomaly sets, and the Age t-test p-value, and writes only `results/smoke_metrics.json`. It must finish in under 30 seconds and leave `results/metrics.json` untouched.",
+ "intermediate_checks": [
+  "Repo/data check: `repo/aif_alg.py` exists and is importable; `repo/data/diabetes.csv` has 768 rows and columns Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age, Outcome.",
+  "Feature-order check: after dropping Outcome and reordering, assert first two columns are Age and DiabetesPedigreeFunction; assert all four covariance diagonals match the expanded A3/A4/A5 values exactly.",
+  "API check: instantiate a tiny 2-tree, subsample-8 EIF and AIF(A3) using the authors' API; score 5 rows; assert finite scores and shape `(5,)`.",
+  "Anomaly-size check: full run must produce exactly 77 anomalies per model; print score threshold and anomaly-set overlap counts (overlap is diagnostic only, not used by the paper's independent t-test).",
+  "t-test sanity check: calling the same feature array twice gives p≈1.0; shifting one synthetic group by a large amount gives p<1e-3.",
+  "Author-notebook check: executed notebook completes without error; locate Table I output if printed and compare Age/DPF/BloodPressure p-values to the harness values.",
+  "Target check before finalizing: C1 Age EIF vs AIF(A3) p-value must be within 0.01 ± 0.02; record direction `mean(AIF_A3 Age) > mean(EIF Age)`."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "0-5 min: clone repo and install numpy/scipy/pandas/jupyter. 0-3 min: inspect `aif_alg.py` and the Diabetes Table-I notebook cells for exact API/seed. 2 min: smoke test. 10-15 min: full harness with four 500-tree forests on 768x8 data plus t-tests. 3-5 min: execute the authors' notebook copy for confirmation. Reserve 5 min for comparing C1-C8 and debugging only the harness. Total ~25-30 min; if notebook execution is slow, restrict to the Table-I Diabetes cells without changing the algorithm."
+}

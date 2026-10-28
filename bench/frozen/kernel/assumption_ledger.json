@@ -1,0 +1,199 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper reports categorical and mixed features in Table 2 but does not define how categorical values are binned or how |xi,j - cj,k| is computed for categories.",
+  "options": [
+   "Ordinal-encode categories to integer codes and treat as numeric for binning and proximity assignment",
+   "One-hot encode categorical features before binning, expanding d",
+   "Treat each category as one bin with frequency-based centers",
+   "Order categories by frequency then bin the ordered codes"
+  ],
+  "chosen": "Ordinal-encode categories to integer codes and treat as numeric for binning and proximity assignment.",
+  "rationale": "Keeps the feature count d equal to Table 2 and follows the paper's single per-feature binning loop; one-hot expansion would change dimensionality and the reported #Dim.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "The problem intensifies with data heterogeneity, as incompleteness can affect numerical, categorical, or mixed-type features simultaneously.",
+  "page": 1
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Eq. (4) specifies percentiles but not the interpolation method used to compute them.",
+  "options": [
+   "linear interpolation (numpy.percentile default)",
+   "lower",
+   "higher",
+   "midpoint",
+   "nearest"
+  ],
+  "chosen": "linear interpolation (numpy.percentile default).",
+  "rationale": "Most common default in numpy/scikit-learn and matches 'evenly-spaced percentiles' without additional specification.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "The bin centers cj,kare determined by computing evenly-spaced percentiles of the observed distribution:",
+  "page": 4
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Eq. (5) uses arg min, but ties (equidistant to multiple bin centers) have no tie-break rule.",
+  "options": [
+   "choose lowest bin index",
+   "choose highest bin index",
+   "choose randomly",
+   "choose nearest by order of appearance"
+  ],
+  "chosen": "choose lowest bin index.",
+  "rationale": "Deterministic and common for argmin implementations.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "we assign each observed value to its nearest center.",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper says 10 experiments but does not give K-means initialization, n_init, or random seeds.",
+  "options": [
+   "scikit-learn KMeans with k-means++ and n_init=10, 10 different random_state values",
+   "random initialization with 10 seeds",
+   "single deterministic run"
+  ],
+  "chosen": "scikit-learn KMeans with k-means++ and n_init=10, 10 different random_state values, average NMI.",
+  "rationale": "Standard scikit-learn default and matches the 10-run averaging; K-means++ is standard for NMI clustering comparisons.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Each experiment was conducted 10 times and report average results for stability.",
+  "page": 6
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The paper does not specify the NMI normalization variant.",
+  "options": [
+   "arithmetic mean (sklearn default)",
+   "geometric mean",
+   "min",
+   "max"
+  ],
+  "chosen": "sklearn normalized_mutual_info_score default (arithmetic mean).",
+  "rationale": "Baselines use scikit-learn, so the default is the most likely implementation.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "we evaluate all methods on clustering quality using Normalized Mutual Information (NMI) as the metric.",
+  "page": 6
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The paper says missing values are NaN, but UCI datasets often use '?' or blanks.",
+  "options": [
+   "Recognize NaN, None, '?', and empty strings as missing",
+   "Only treat NaN as missing"
+  ],
+  "chosen": "Recognize common UCI missing markers ('?', blank, NaN) as missing.",
+  "rationale": "UCI datasets in Table 2 use '?' for missing; converting to NaN is standard.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Given a dataset X∈Rn×dcontaining nsamples with dfeatures, where missing values are represented as NaN",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "If a feature is entirely missing, Eq. (4) percentile is undefined.",
+  "options": [
+   "Drop the feature from the kernel",
+   "Use uniform prior 1/nbins for that feature",
+   "Set all bin centers to 0"
+  ],
+  "chosen": "Use uniform prior 1/nbins for that feature.",
+  "rationale": "Preserves d and contributes a constant to all pair similarities, so it does not change relative clustering results.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "In Eq. (10)/Eq. (12), hm,j,k must be defined for matching samples m even when m is missing feature j; the paper does not say how to avoid recursion.",
+  "options": [
+   "Restrict the KME sum to matching samples with feature j observed",
+   "Use m's already-computed fractional encoding recursively",
+   "Use global prior for m's missing feature j",
+   "Iterate to a fixed point"
+  ],
+  "chosen": "Restrict the KME sum to matching samples with feature j observed.",
+  "rationale": "Keeps the estimator well-defined and avoids order-dependent recursion; closest to a single-pass reading of the paper.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "If S1(i) ≠∅, we estimate missing encoding through kernel mean embedding:",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The paper searches {2,3,4,6,8} but does not state whether Table 3 reports the best nbins per dataset or a fixed value.",
+  "options": [
+   "Select nbins per dataset by 10-run average NMI over {2,3,4,6,8}",
+   "Use fixed nbins=3",
+   "Use fixed nbins=4",
+   "Use fixed nbins=6"
+  ],
+  "chosen": "Select nbins per dataset by 10-run average NMI over {2,3,4,6,8}.",
+  "rationale": "Matches 'we search the number of bins per dimension' and the reported per-dataset best values; also aligns with sensitivity claim that 3-6 works well.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "For the proximity kernel, we search the number of bins per dimension in {2, 3, 4, 6, 8}.",
+  "page": 6
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "No train/test split is described for Table 3.",
+  "options": [
+   "Transductive clustering on full dataset with ground-truth K",
+   "Hold out a test split"
+  ],
+  "chosen": "Transductive clustering on full dataset with ground-truth K.",
+  "rationale": "Paper explicitly states K-means with ground-truth number of clusters and does not mention a split.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For fair comparison, we applied K-means with the number of clusters to the ground-truth number of classes.",
+  "page": 6
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The paper does not specify how UCI features are selected, coded, or scaled before binning.",
+  "options": [
+   "Use raw UCI features, encode categoricals as integer codes, no scaling",
+   "Standardize numerical features before binning",
+   "Drop columns with many missing values"
+  ],
+  "chosen": "Use raw UCI features, encode categoricals as integer codes, no additional scaling.",
+  "rationale": "Equal-frequency binning is invariant to monotone scaling, so scaling is unnecessary for numerical features; raw features are the simplest faithful reading.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "All of these datatsets are from UCI datasets",
+  "page": 6
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "For 3L and Messidor, the paper says MCAR at 10%-50% but does not specify exact MCAR sampling seeds or whether missingness is applied per value independently.",
+  "options": [
+   "Each value independently missing with probability p",
+   "Each feature independently sampled with rate p",
+   "Fixed masks"
+  ],
+  "chosen": "Each value independently missing with probability p.",
+  "rationale": "Matches the definition of MCAR given: each value has an equal probability of being missing independent of observed and unobserved data.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "using the Missing Completely At Random (MCAR) mechanism, where each value has an equal probability of being missing independent of both observed and unobserved data.",
+  "page": 7
+ }
+]

@@ -1,0 +1,311 @@
+{
+ "title": "Feature Expansion for Graph Neural Networks",
+ "summary": "The paper analyzes the feature space of spatial and spectral GNNs and argues that repeated aggregation creates linearly correlated subspaces bounded by weight sharing and low-dimensional node attributes. It proposes FE-GNN, which flattens feature subspaces by assigning independent weights to each subspace and augments the feature space with truncated-SVD structural principal components. On random 60/20/20 splits, FE-GNN (C) reaches 73.33% accuracy on Chameleon and reports large heterophilic gains over baselines.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "FE-GNN (C) achieves 73.33% node classification accuracy on Chameleon.",
+   "metric": "node classification accuracy (micro F1)",
+   "dataset": "Chameleon",
+   "split": "random 60/20/20",
+   "value": 73.33,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FE-GNN (C), column Chameleon",
+   "config_for_value": "FE-GNN (C): Chebyshev Pk(Lhat), K=3, |S|=700, hidden size 64, lr=0.01, weight decay=0.0005, Adam, purely linear, column-wise normalization, 100 runs on 10 random seeds",
+   "reported_spread": "±0.35 (95% CI)",
+   "est_compute": "1 GPU, ~1-5 minutes total for 100 runs",
+   "quote": "FE-GNN (C) 15.8±0.11 89.45±0.22 81.96±0.23 90.27±0.49 90.79±0.08 95.36±0.14 67.82±0.26 73.33±0.35 40.54±0.15",
+   "page": 6
+  },
+  {
+   "id": "C2",
+   "statement": "FE-GNN (M) achieves 73.26% node classification accuracy on Chameleon.",
+   "metric": "node classification accuracy (micro F1)",
+   "dataset": "Chameleon",
+   "split": "random 60/20/20",
+   "value": 73.26,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FE-GNN (M), column Chameleon",
+   "config_for_value": "FE-GNN (M): monomial Pk(Lhat), K=3, |S|=700, hidden size 64, lr=0.01, weight decay=0.0005, Adam, purely linear, column-wise normalization, 100 runs on 10 random seeds",
+   "reported_spread": "±0.38 (95% CI)",
+   "est_compute": "1 GPU, ~1-5 minutes total for 100 runs",
+   "quote": "FE-GNN (M) 14.6±0.32 89.09±0.22 81.76±0.23 89.93±0.23 90.60±0.11 95.45±0.15 67.90±0.23 73.26±0.38 40.91±0.22",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "FE-GNN (C) achieves 67.82% node classification accuracy on Squirrel.",
+   "metric": "node classification accuracy (micro F1)",
+   "dataset": "Squirrel",
+   "split": "random 60/20/20",
+   "value": 67.82,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FE-GNN (C), column Squirrel",
+   "config_for_value": "FE-GNN (C): Chebyshev Pk(Lhat), K=3, |S|=2000, hidden size 64, lr=0.01, weight decay=0.001, Adam, purely linear, column-wise normalization, 100 runs on 10 random seeds",
+   "reported_spread": "±0.26 (95% CI)",
+   "est_compute": "1 GPU, ~1-10 minutes total for 100 runs",
+   "quote": "FE-GNN (C) 15.8±0.11 89.45±0.22 81.96±0.23 90.27±0.49 90.79±0.08 95.36±0.14 67.82±0.26 73.33±0.35 40.54±0.15",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "FE-GNN (C) achieves 89.45% node classification accuracy on Cora.",
+   "metric": "node classification accuracy (micro F1)",
+   "dataset": "Cora",
+   "split": "random 60/20/20",
+   "value": 89.45,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FE-GNN (C), column Cora",
+   "config_for_value": "FE-GNN (C): Chebyshev Pk(Lhat), K=3, |S|=50, hidden size 64, lr=0.01, weight decay=0.01, Adam, purely linear, column-wise normalization, 100 runs on 10 random seeds",
+   "reported_spread": "±0.22 (95% CI)",
+   "est_compute": "1 GPU, ~1-5 minutes total for 100 runs",
+   "quote": "FE-GNN (C) 15.8±0.11 89.45±0.22 81.96±0.23 90.27±0.49 90.79±0.08 95.36±0.14 67.82±0.26 73.33±0.35 40.54±0.15",
+   "page": 6
+  },
+  {
+   "id": "C5",
+   "statement": "FE-GNN achieves on average 32.0% accuracy improvement over GCN on three heterophilic graph datasets.",
+   "metric": "average accuracy improvement over GCN",
+   "dataset": "Squirrel, Chameleon, Actor",
+   "split": "random 60/20/20",
+   "value": 32.0,
+   "unit": "% improvement",
+   "higher_is_better": true,
+   "table_ref": "Section 6.1, Node Classification paragraph",
+   "config_for_value": "FE-GNN vs GCN baseline on heterophilic datasets; paper reports 100-run average accuracy",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~minutes to tens of minutes across datasets",
+   "quote": "FE-GNN achieves on average 32.0% improvement on three heterophilic graph datasets than the GCN baseline.",
+   "page": 8
+  },
+  {
+   "id": "C6",
+   "statement": "FE-GNN achieves 1.1% average accuracy improvement over ADA-UGNN on five homophilic graph datasets.",
+   "metric": "average accuracy improvement over ADA-UGNN",
+   "dataset": "Cora, CiteSeer, PubMed, Computers, Photo",
+   "split": "random 60/20/20",
+   "value": 1.1,
+   "unit": "% improvement",
+   "higher_is_better": true,
+   "table_ref": "Section 6.1, Node Classification paragraph",
+   "config_for_value": "FE-GNN vs ADA-UGNN on homophilic datasets; paper reports 100-run average accuracy",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~minutes to tens of minutes across datasets",
+   "quote": "our FE-GNN achieves a 1.1% accuracy improvement on average on 5 homophilic graph datasets",
+   "page": 8
+  },
+  {
+   "id": "C7",
+   "statement": "FE-GNN (C) training time per epoch on Chameleon is 15.8 ms.",
+   "metric": "training time per epoch",
+   "dataset": "Chameleon",
+   "split": "random 60/20/20",
+   "value": 15.8,
+   "unit": "ms",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row FE-GNN (C), column Time (ms)",
+   "config_for_value": "FE-GNN (C) on Chameleon; time includes graph propagation during training",
+   "reported_spread": "±0.11 (95% CI)",
+   "est_compute": "1 GPU, one epoch",
+   "quote": "FE-GNN (C) 15.8±0.11 89.45±0.22 81.96±0.23 90.27±0.49 90.79±0.08 95.36±0.14 67.82±0.26 73.33±0.35 40.54±0.15",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "Truncated SVD time on Chameleon is 61.80 ms.",
+   "metric": "SVD time",
+   "dataset": "Chameleon",
+   "split": "random 60/20/20",
+   "value": 61.8,
+   "unit": "ms",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row SVD time (ms), column Chameleon",
+   "config_for_value": "SVD preprocessing time for Chameleon; paper reports 252 epochs",
+   "reported_spread": "±0.24 (95% CI)",
+   "est_compute": "1 CPU/GPU, ~62 ms",
+   "quote": "SVD time (ms) 3.88 ± 0.08 8.76 ± 0.05 61.80 ± 0.24 432.43 ± 0.70 3.99 ± 0.02",
+   "page": 9
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user explicitly targets Table 2, FE-GNN (C) node classification accuracy on Chameleon; it is a central heterophilic result and requires only one dataset/model, not the full multi-dataset average or side ablation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 2.0,
+  "why": "Rule 3: the target is bounded accuracy on Chameleon, whose 20% test set has about 455 nodes (<2,000); the paper prints ±0.35 as a 95% confidence interval, not repeated-run std, so use 2.0 absolute points."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The FE-GNN implementation must be purely linear, without activation functions or dropout, using only cross-entropy loss.",
+   "cite": "Section 4.2",
+   "quote": "our implementation is purely linear without any deep artifices such as activation functions or dropout except for the cross-entropy loss",
+   "page": 6
+  },
+  {
+   "id": "R2",
+   "stmt": "The model must compute H = sum_{k=0}^K Pk(Lhat) X W(k) + S Ws with independent weights for each feature subspace.",
+   "cite": "Equation 11",
+   "quote": "H = K X k=0 Pk(ˆL)XW (k) + SWs",
+   "page": 6
+  },
+  {
+   "id": "R3",
+   "stmt": "FE-GNN (C) must use Chebyshev polynomials for Pk(Lhat).",
+   "cite": "Section 6.1",
+   "quote": "FE-GNN uses the Chebyshev or monomial polynomials to construct the feature space",
+   "page": 8
+  },
+  {
+   "id": "R4",
+   "stmt": "Chebyshev polynomials must be generated by P0(x)=1, P1(x)=x, Pk(x)=2xPk-1 - Pk-2.",
+   "cite": "Table 1 footnote",
+   "quote": "Tk(x) denotes Chebyshev polynomial P0(x) = 1, P1(x) = x, Pk(x) = 2xPk−1 −Pk−2.",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "The graph structure matrix must use the re-normalized adjacency with self-loops and symmetric degree normalization.",
+   "cite": "Section 2",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R6",
+   "stmt": "The structural expansion subspace S must be constructed from a truncated SVD of the structural matrix.",
+   "cite": "Equation 10",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R7",
+   "stmt": "S should contain principal components and corresponding singular values from the truncated SVD.",
+   "cite": "Section 4.2",
+   "quote": "where  ̃Q,  ̃V are the principal components and the corresponding singular values",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Each column of the constructed feature space must be normalized so columns contribute equally.",
+   "cite": "Section 4.2",
+   "quote": "we add a column-wise normalization to ensure that each column of each feature subspace contributes equally to the whole feature space",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "Column-wise normalization should be applied to the concatenated feature space F, not only to individual subspaces.",
+   "cite": "Appendix A.8",
+   "quote": "Column-wise normalization is defined as forcing ∥F·i∥2 = 1, where we take F as the concatenation of the feature space",
+   "page": 16
+  },
+  {
+   "id": "R10",
+   "stmt": "Node classification must use random 60% train, 20% validation, 20% test splits.",
+   "cite": "Appendix B.1",
+   "quote": "60% as the training set, 20% as the validation set, and 20% as the test set",
+   "page": 16
+  },
+  {
+   "id": "R11",
+   "stmt": "Reported results should summarize 100 runs over random splits/seeds.",
+   "cite": "Section 6.1",
+   "quote": "We test on the node classification task with random 60%/20%/20% splits and summarize the results of 100 runs",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Optimization must use Adam with the paper's early-stopping/max-epoch description.",
+   "cite": "Appendix B.1",
+   "quote": "We employ Adam for optimization and set the early stopping criteria as a warmup of 50 pluses patience of 200",
+   "page": 16
+  },
+  {
+   "id": "R13",
+   "stmt": "Training should cap at 100 epochs as stated in the appendix.",
+   "cite": "Appendix B.1",
+   "quote": "patience of 200 for a maximum of 100 epochs",
+   "page": 16
+  },
+  {
+   "id": "R14",
+   "stmt": "The reported metric is average accuracy, also described as micro F1, with a 95% confidence interval.",
+   "cite": "Appendix B.1",
+   "quote": "We report the average accuracy (micro F1 score) in the classification task with a 95% confidence interval in all the tables and figures",
+   "page": 16
+  },
+  {
+   "id": "R15",
+   "stmt": "For Chameleon FE-GNN, use lr=0.01, weight decay=0.0005, |S|=700, hidden size=64, k=3.",
+   "cite": "Table 8",
+   "quote": "Chameleon 0.01 0.0005 700 64 3",
+   "page": 17
+  },
+  {
+   "id": "R16",
+   "stmt": "Datasets must be treated as undirected graphs.",
+   "cite": "Appendix B.1",
+   "quote": "We set these datasets to undirected graphs as we assumed in the Preliminaries",
+   "page": 16
+  }
+ ],
+ "data": [
+  {
+   "name": "Cora",
+   "how_to_get": "Load via PyTorch Geometric Planetoid dataset; paper states PyG is used for datasets."
+  },
+  {
+   "name": "CiteSeer",
+   "how_to_get": "Load via PyTorch Geometric Planetoid dataset; paper states PyG is used for datasets."
+  },
+  {
+   "name": "PubMed",
+   "how_to_get": "Load via PyTorch Geometric Planetoid dataset; paper states PyG is used for datasets."
+  },
+  {
+   "name": "Computers",
+   "how_to_get": "Load via PyTorch Geometric Amazon dataset; paper states PyG is used for datasets."
+  },
+  {
+   "name": "Photo",
+   "how_to_get": "Load via PyTorch Geometric Amazon dataset; paper states PyG is used for datasets."
+  },
+  {
+   "name": "Squirrel",
+   "how_to_get": "Load via PyTorch Geometric WikipediaNetwork/Geom-GCN-style heterophilic dataset; paper cites Pei et al. 2020 and uses PyG."
+  },
+  {
+   "name": "Chameleon",
+   "how_to_get": "Load via PyTorch Geometric WikipediaNetwork/Geom-GCN-style heterophilic dataset; paper cites Pei et al. 2020 and uses PyG."
+  },
+  {
+   "name": "Actor",
+   "how_to_get": "Load via PyTorch Geometric Actor/WikipediaNetwork-style dataset; paper cites Rozemberczki et al. 2021 and uses PyG."
+  }
+ ],
+ "code_links": [
+  "https://github.com/sajqavril/Feature-Extension-Graph-Neural-Networks.git",
+  "https://github.com/sajqavril/",
+  "https://github.com/pyg-team/pytorch",
+  "https://github.com/jianhao2016/GPRGNN",
+  "https://github.com/ivam-he/BernNet",
+  "https://github.com/alge24/ADA-UGNN",
+  "https://github.com/zhumeiqiBUPT/GNN-LF-HF",
+  "https://github.com/benedekrozemberczki/MUSAE/blob/master/LICENSE",
+  "https://github.com/shchur/gnn-benchmark/blob/master/LICENSE"
+ ],
+ "stated_compute": "NVIDIA 3090 GPU (24G) and Intel(R) Xeon(R) Platinum 8260L CPU @ 2.30GHz",
+ "paper_meta": {
+  "source": "2305.06142",
+  "kind": "arxiv",
+  "arxiv_id": "2305.06142",
+  "url": "https://arxiv.org/abs/2305.06142",
+  "title": "Feature Expansion for Graph Neural Networks",
+  "pages": 21
+ }
+}

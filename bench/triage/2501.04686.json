@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "URSA-8B-PS-GRPO achieves 75.6% accuracy on GeoQA (full set), the headline result showing the main contribution of PS-GRPO.",
+  "table_ref": "Table 1, row 'URSA-8B-PS-GRPO', column 'GeoQA (full set)'",
+  "dataset": "GeoQA (full set)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/URSA-MATH"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 10080,
+  "gpu_speedup": 10,
+  "basis": "Reproducing the headline number requires the full three-stage pipeline: training an 8B MLLM on 1M+ multimodal CoT data, training a PRM on 1.1M process supervision data, and running online RL (PS-GRPO) on 15K examples. Each stage involves large-scale training that is infeasible on a CPU-only laptop within hours."
+ },
+ "blockers": [
+  "Requires training an 8B parameter multimodal model from scratch (Stage I SFT on MMathCoT-1M)",
+  "Requires training a process reward model (Stage II) on DualMath-1.1M",
+  "Requires online RL (PS-GRPO) on 15K examples (Stage III)",
+  "No GPU available on target hardware (8 CPU cores, 16 GB RAM)",
+  "Data synthesis relies on Gemini-1.5-Flash-002 API for CoT expansion, rewriting, and misinterpretation insertion",
+  "Full training pipeline likely requires multiple high-memory GPUs (e.g., A100/H100) and days of compute"
+ ],
+ "suitable": false,
+ "id": "2501.04686",
+ "title": "Unlocking Multimodal Mathematical Reasoning via Process Reward Model",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

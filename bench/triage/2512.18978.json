@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "FROD's AUC (or AP) on a single small dataset (e.g., Pima or Ionosphere) as reported in the main results table",
+  "table_ref": "Table 3/4 (main AUC/AP results across 16 datasets; exact table number not visible in excerpt)",
+  "dataset": "Pima (768 objects, 8 attributes) or Ionosphere (351 objects, 32 attributes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ChenBaiyang/FROD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "FROD is a pure fuzzy-rough-set method with O(mn) time and O(mn^2) space; on a few-hundred-to-few-thousand-object dataset this is seconds-to-minutes per run, and 10 repeats plus install/download fit well under an hour on CPU."
+ },
+ "blockers": [
+  "Exact per-dataset AUC/AP numbers and the precise table cell are not visible in the provided excerpt",
+  "Requires re-implementing FROD from the paper if the repo code is incomplete/outdated",
+  "Reproducing the exact number depends on the 1% stratified labeled split and grid search over delta/beta, which may not match exactly"
+ ],
+ "suitable": true,
+ "id": "2512.18978",
+ "title": "Outlier detection in mixed-attribute data: a semi-supervised approach with fuzzy approximations and relative entropy",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

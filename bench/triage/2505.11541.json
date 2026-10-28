@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "MorphMarkexp attains TPR@1% under Word-S/30% attack of 0.9600 on OPT-1.3B.",
+  "table_ref": "Table 1, OPT-1.3B block, MorphMarkexp row, TPR@1% (Word-S/30%) column",
+  "dataset": "C4 (400 samples; first 30 tokens as prompt, 200-230 generated tokens) with OPT-1.3B"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "Estimate rests on generating ~400 C4 samples for ~200-230 tokens each with OPT-1.3B on CPU, then applying a WordNet synonym attack and z-score detection; no training is required and the model/data are public, but the watermark and evaluation pipeline must be reimplemented."
+ },
+ "blockers": [
+  "No official code or configuration files are linked in the paper; MorphMark and the MarkLLM-style evaluation pipeline must be reimplemented.",
+  "Exact TPR@1% may depend on C4 split, tokenizer/model revisions, and WordNet synonym-replacement details.",
+  "The main cost is CPU autoregressive generation of roughly 80k tokens with OPT-1.3B; batching/quantization will strongly affect wall-clock time."
+ ],
+ "suitable": true,
+ "id": "2505.11541",
+ "title": "MorphMark: Flexible Adaptive Watermarking for Large Language Models",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

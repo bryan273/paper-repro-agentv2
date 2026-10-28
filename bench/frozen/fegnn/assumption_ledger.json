@@ -1,0 +1,279 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Table 8 lists hidden size 64, but the FE-GNN equation is a direct linear map from features to classes, so the role of the hidden dimension is not pinned down.",
+  "options": [
+   "Ignore hidden size and use direct d-to-c weights as in Equation (11)",
+   "Project node attributes to 64 dimensions before the polynomial subspaces",
+   "Use hidden size 64 for an internal layer not shown in Equation (11)"
+  ],
+  "chosen": "Follow Equation (11) as direct d-to-c weights unless the official code shows an internal projection; hidden=64 is then unused for FE-GNN.",
+  "rationale": "Equation (11) has no hidden layer and the paper emphasizes a purely linear construction.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The truncated SVD is defined on the structural matrix, but the paper mentions both the normalized adjacency ˆA and the Laplacian ˆL.",
+  "options": [
+   "SVD of normalized adjacency matrix ˆA",
+   "SVD of Laplacian matrix ˆL"
+  ],
+  "chosen": "Use the normalized adjacency matrix ˆA, following Equation (10) and the Table 10 description of compacting the normalized adjacency matrix.",
+  "rationale": "Equation (10) explicitly writes the SVD of ˆA and Table 10 compares transformations of the normalized adjacency matrix.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "S =  ̃Q  ̃V ; ˆA = QV RT ,",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper suggests selecting the whole hundred from the 94% singular values, but Table 8 fixes |S|=700 for Chameleon and the text also says 94% is used.",
+  "options": [
+   "Use the fixed |S| from Table 8",
+   "Use the number of top singular values reaching 94% cumulative sum",
+   "Use the suggested hundred-rounded |S|"
+  ],
+  "chosen": "For the target Chameleon result, use |S|=700 from Table 8, corresponding to the reported hyperparameter setting.",
+  "rationale": "Table 8 is the reported per-dataset hyperparameter table and explicitly lists 700 for Chameleon.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Suggested |S|: the whole hundred from the 94% singular values",
+  "page": 17
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact Chebyshev polynomial computation for FE-GNN (C) is not fully specified, especially whether the Laplacian is rescaled to [-1,1].",
+  "options": [
+   "Use the direct recurrence P0=1, P1=ˆL, Pk=2ˆLPk-1-Pk-2",
+   "Use standard Chebyshev on a rescaled Laplacian",
+   "Use monomials instead"
+  ],
+  "chosen": "Use the direct recurrence exactly as printed in the Table 1 footnote, without an additional rescaling unless the official code shows one.",
+  "rationale": "The paper provides this recurrence as the Chebyshev implementation and does not mention scaling.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "P0(x) = 1, P1(x) = x, Pk(x) = 2xPk−1 −Pk−2.",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Weight initialization is not specified for FE-GNN.",
+  "options": [
+   "PyTorch default initialization",
+   "Xavier/Glorot uniform",
+   "Kaiming uniform"
+  ],
+  "chosen": "Use PyTorch default linear-layer initialization unless the official code shows another scheme.",
+  "rationale": "No initialization is stated, and PyTorch defaults are the conventional fallback for a linear model.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The paper reports 10 random seeds but does not list them.",
+  "options": [
+   "Seeds 0-9",
+   "Seeds 1-10",
+   "PyG default random splits"
+  ],
+  "chosen": "Use seeds 0-9 as a reproducible default.",
+  "rationale": "The paper only says 10 random seeds; exact seed values are not given.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "we run 100 times on 10 random seeds.",
+  "page": 16
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The random 60/20/20 splits may or may not be stratified by class.",
+  "options": [
+   "Random permutation without stratification",
+   "Stratified by class",
+   "Use PyG public splits"
+  ],
+  "chosen": "Use random permutation without stratification, matching the plain random-selection description.",
+  "rationale": "The paper says random selection and does not mention stratification; public splits are used only in a separate appendix experiment.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Each datasets are split into three parts using random selection: 60% as the training set, 20% as the validation set, and 20% as the test set.",
+  "page": 16
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The early-stopping metric is not specified.",
+  "options": [
+   "Validation accuracy",
+   "Validation loss",
+   "Validation micro F1"
+  ],
+  "chosen": "Use validation accuracy as the early-stopping metric.",
+  "rationale": "The paper reports accuracy and does not state a different validation metric.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "set the early stopping criteria as a warmup of 50 pluses patience of 200 for a maximum of 100 epochs.",
+  "page": 16
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The exact scope of column-wise normalization is not fully specified: whether it applies to each subspace before concatenation or to the total concatenated feature space.",
+  "options": [
+   "Normalize each Φ_k and S separately before summing",
+   "Normalize the concatenation of all feature subspaces",
+   "Normalize only the S subspace"
+  ],
+  "chosen": "Normalize each feature subspace separately before recombination, so each column of each subspace has equal influence.",
+  "rationale": "The stated goal is that each column of each feature subspace contributes equally to the whole feature space.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "each column of each feature subspace contributes equally to the whole feature space.",
+  "page": 6
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "SVD sign ambiguity is not addressed.",
+  "options": [
+   "Deterministic sign convention such as largest absolute loading positive",
+   "Leave signs as produced by the SVD implementation",
+   "Random sign flips"
+  ],
+  "chosen": "Use a deterministic sign convention or the default deterministic SVD output.",
+  "rationale": "Sign ambiguity should not affect the linear model, but determinism helps reproducibility.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether bias terms are used is not stated.",
+  "options": [
+   "No bias terms",
+   "Add bias to each weight matrix",
+   "Add a single output bias"
+  ],
+  "chosen": "Use no bias terms, following Equation (11).",
+  "rationale": "The FE-GNN formulation contains only multiplicative weight matrices.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Handling of isolated nodes or degree-zero rows in normalization is not explicitly discussed.",
+  "options": [
+   "Standard self-loop renormalization as in GCN",
+   "Ignore isolated nodes",
+   "Add explicit epsilon to degrees"
+  ],
+  "chosen": "Use the standard renormalized adjacency with self-loops as given in Section 2.",
+  "rationale": "The paper defines the renormalized adjacency matrix with self-loops and does not mention special cases.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "ˆA = (D + I)−1/2(A + I)(D + I)−1/2",
+  "page": 2
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Chameleon and Squirrel are often distributed with fixed public splits, but the paper's main table uses random 60/20/20 splits.",
+  "options": [
+   "Use random 60/20/20 splits",
+   "Use public Geom-GCN splits",
+   "Use PyG default splits"
+  ],
+  "chosen": "Use random 60/20/20 splits for the target Table 2 result.",
+  "rationale": "Section 6.1 states random 60/20/20 splits for the main node-classification table; public splits are a separate appendix experiment.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We test on the node classification task with random 60%/20%/20% splits",
+  "page": 8
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "The time of SVD preprocessing is reported separately, but whether S is precomputed once outside the training loop is not explicitly stated as an implementation requirement.",
+  "options": [
+   "Precompute S once before training",
+   "Recompute S each epoch",
+   "Recompute S each run"
+  ],
+  "chosen": "Precompute S once as preprocessing before training.",
+  "rationale": "The efficiency section treats SVD as preprocessing time and notes it is less than 10% of training time.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we show the training time and SVD time (as preprocessing)",
+  "page": 9
+ },
+ {
+  "id": "A15",
+  "by": "reader",
+  "gap": "The appendix says a maximum of 100 epochs, while Table 4 reports 252 epochs for several datasets; warmup 50 plus patience 200 would naturally give about 252 epochs.",
+  "options": [
+   "Cap at 100 epochs",
+   "Run until warmup 50 + patience 200, i.e. about 252 epochs",
+   "Use the epoch count reported in Table 4"
+  ],
+  "chosen": "Use the effective early-stopping rule of warmup 50 plus patience 200, which is consistent with the reported 252 epochs; treat the 100-epoch phrase as a likely typo.",
+  "rationale": "Table 4 lists 252 epochs, matching warmup 50 + patience 200 plus a small margin.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "for a maximum of 100 epochs",
+  "page": 16
+ },
+ {
+  "id": "A16",
+  "by": "implementer",
+  "gap": "The paper's Table-2 protocol is \"100 runs on 10 random seeds\", but the authors' released train_FEGNN.py reseeds with seeds[idx] for idx in range(runs) — runs>10 indexes past the end of its own 10-seed list, so the released code cannot execute 100 runs.",
+  "chosen": "Run the authors' own released protocol (runs=10, i.e. one run for each of seeds 0-9) and report the mean of those 10 runs, stating explicitly in metrics.json that fewer runs than the paper's 100 were averaged.",
+  "rationale": "The repo README documents exactly this configuration as reproducing the Chameleon row (0.7332), the point estimate is the claim's target quantity, and 100 runs (~40 min on this CPU) would blow the 30-minute clean-re-run limit while only narrowing the spread.",
+  "risk": "low",
+  "options": [
+   "10-run released protocol (chosen)",
+   "100 runs by patching the seed list (exceeds the 30-min clean-rerun budget)",
+   "10 runs x 10 repeats of the same seed list (same cost as 100, not more diverse)"
+  ]
+ },
+ {
+  "id": "A17",
+  "by": "implementer",
+  "gap": "The repo pins torch==1.9.1 / torch_geometric==2.0.1 / pandas==1.0.5, which have no wheels for this Python 3.12 CPU-only machine, and PyG >= 2.5 rewrites MessagePassing.propagate with a signature that rejects the keyword arguments the released FEGNN_model.py passes.",
+  "chosen": "Pin torch_geometric==2.4.0 (newest release that still accepts the authors' propagate call) and apply three mechanical, logged, idempotent edits in compat_patch.py: add_self_loops(edge_weight->edge_attr), pandas Series scalar access via .iloc, and .item()-or-float on the per-run return.",
+  "rationale": "Keeps model mathematics, split code, hyper-parameters and training loop byte-identical to the released code (logs/patch.diff, 117 lines, re-read by eye); all three edits are API plumbing required by the ported stack, none change numbers.",
+  "risk": "medium",
+  "options": [
+   "PyG 2.4.0 + 3 mechanical compat edits (chosen)",
+   "PyG 2.8.0 + monkeypatch of MessagePassing.propagate",
+   "Rebuild a Python 3.8 environment with the original pins (no wheels available here)"
+  ]
+ },
+ {
+  "id": "A18",
+  "by": "implementer",
+  "gap": "The contract's C1 config says |S|=700 with a 94% truncated-SVD rule, but the released code never computes a 94% cutoff: utils.get_data hard-codes torch.svd_lowrank(adj, q=args.nl) with nl taken from FEGNN_params.csv.",
+  "chosen": "Use the values the authors' code actually consumes (nl=700, K=3, lr=0.01, weight_decay=0.0005, nhid=64, poly='gpr', warmup=50, patience=200) from repo/FEGNN_params.csv, and record the paper's 94% rule and the 700-component choice side by side in metrics.json.",
+  "rationale": "The CSV row for chameleon equals the paper's Table-8 row verbatim, and the values injected at run time are captured from the script's own printed Namespace (stored in metrics.json as config.effective_namespace) rather than assumed.",
+  "risk": "low",
+  "options": [
+   "Use FEGNN_params.csv values as executed (chosen)",
+   "Re-derive |S| from a 94% cumulative singular-value rule and override the CSV"
+  ]
+ }
+]

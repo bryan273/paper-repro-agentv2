@@ -1,0 +1,36 @@
+# Server renderer for Paper Explainer: the explainer-render Supabase function queues a job and dispatches this workflow.
+# It writes the script from the paper, checks quotes and numbers, narrates EN and ZH, records the player and uploads the MP4s.
+name: explainer-render
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: explainer_jobs.id
+        required: true
+concurrency:
+  group: explainer-render-${{ inputs.job_id }}
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: explainer
+    env:
+      SUPABASE_URL: https://vzvyghmtsakixlhzzuol.supabase.co
+      SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: explainer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-cjk
+          pip install -q edge-tts playwright pillow pymupdf
+          python -m playwright install --with-deps chromium
+      - name: Render
+        run: python render_job.py "${{ inputs.job_id }}"

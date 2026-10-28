@@ -186,8 +186,17 @@
     // mode: "auto" (reuse earlier steps 1 to 3 of this paper, else run them), "fresh" (run them again), "skip" (the user's agent does them)
     mode = typeof mode === "string" ? mode : "auto";
     const out = $("#kitOut");
-    const paper = ($("#paperId").value || "").trim();
-    if (!paper) { out.innerHTML = `<p class="muted small">${esc(T("Pick a paper first."))}</p>`; return; }
+    let paper = ($("#paperId").value || "").trim();
+    if (!paper) {
+      // an uploaded PDF has no id: use the arXiv number in its file name (2312.15235v1.pdf), else ask for the id or link
+      const fm = (($("#pickedFile") && $("#pickedFile").textContent) || "").match(/(\d{4}\.\d{4,5})(v\d+)?/);
+      if (fm) { paper = fm[1]; $("#paperId").value = paper; }
+    }
+    if (!paper) {
+      const lab = $("#paperId").closest("label"); if (lab) lab.hidden = false;
+      out.innerHTML = `<p class="small" style="color:var(--bad,#b3261e)">${esc(T("Your own agent needs an arXiv ID or a PDF link, not an uploaded file. Paste it in the Paper box above, then press the button again."))}</p>`;
+      $("#paperId").focus(); return;
+    }
     const title = ($("#pickedTitle").textContent || "").trim();
     const lang = window.getLang ? window.getLang() : "en";
     Array.from(document.querySelectorAll("#kitBtns button")).forEach((x) => (x.disabled = true));

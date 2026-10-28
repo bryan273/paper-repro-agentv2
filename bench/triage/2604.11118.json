@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Outlier recall (average) of DRKM++ on MNIST with N=500, d=80, 2.5% outliers, k=10, γ=1.01 is 1.0.",
+  "table_ref": "Table II(a)",
+  "dataset": "MNIST (subsampled to N=500, PCA to d=80, 2.5% outliers)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code provided; must implement DR-K-Means (Algorithm 1) from scratch, including solving a quadratic program per point per iteration, and reproduce the exact experimental setup (subsampling, PCA, outlier injection, multiple runs) on a small dataset."
+ },
+ "blockers": [
+  "No code released",
+  "Algorithm details (e.g., QP solver, initialization, convergence criteria) not fully specified",
+  "Exact outlier injection procedure not detailed"
+ ],
+ "suitable": true,
+ "id": "2604.11118",
+ "title": "Distributionally Robust K-Means Clustering",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

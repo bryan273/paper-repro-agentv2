@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "QDMN achieves 84.6 J&F on DAVIS 2017 validation set (without synthetic training data)",
+  "table_ref": "Table 1, row 'QDMN (Ours)', column 'DAVIS2017 val J&F'",
+  "dataset": "DAVIS 2017 validation set"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/workforai/QDMN"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Training QDMN from scratch requires 2x32GB V100 GPUs for days; even inference on DAVIS 2017 val (30 videos, ~2000 frames) at ~8 FPS on a GPU would take ~4 minutes, but on CPU it would be much slower and likely infeasible; the main cost is training, which cannot be done on a laptop."
+ },
+ "blockers": [
+  "Training requires 2x32GB V100 GPUs (64GB total VRAM) and days of compute",
+  "No pretrained model provided in the repository",
+  "Inference on CPU is impractically slow for the full validation set"
+ ],
+ "suitable": false,
+ "id": "2207.07922",
+ "title": "Learning Quality-aware Dynamic Memory for Video Object Segmentation",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

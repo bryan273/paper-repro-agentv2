@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean accuracy gain of Path-based Adaptive Weighting over standard RF (Δacc = +0.0026) on the 36-dataset benchmark",
+  "table_ref": "Table 8",
+  "dataset": "36 UCI/OpenML binary classification benchmarks (e.g. hepatitis, wine, heart-disease, ...)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/DavidParkYJ/dwarfp"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 1.5,
+  "basis": "36 datasets x 30 repeats x 300-tree RF plus 5-fold CV weight tables and 4 comparators (incl. deslib KNORA) is thousands of sklearn RF fits on small-to-medium tables; CPU-bound, hours on 8 cores."
+ },
+ "blockers": [
+  "36 datasets x 30 repeats x 300 trees is a large number of RF fits; full protocol is hours not minutes",
+  "KNORA baselines need deslib and add runtime",
+  "exact +0.0026 mean requires reproducing all 36 datasets and 30 repeats"
+ ],
+ "suitable": true,
+ "id": "2605.20716",
+ "title": "Decision-Path Patterns as Tree Reliability Signals: Path-based Adaptive Weighting for Random Forest Classification",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

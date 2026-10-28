@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "CRG IMSC Accuracy (%) on 3Sources dataset (Table VI, Accuracy column) = 85.10",
+  "table_ref": "Table VI",
+  "dataset": "3Sources"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; agent must implement the full multiplicative-update algorithm (eigendecomposition + Eq. 9 updates, NMF init) from scratch, plus download 3Sources and build similarity graphs; small dataset (416 samples) so runtime is minutes, but reimplementation/debugging dominates."
+ },
+ "blockers": [
+  "No code released (no links in PDF)",
+  "Algorithm details (similarity graph construction, NMF init, convergence criteria) must be re-derived from text",
+  "Results are averaged over random missing-view selections; exact protocol not fully specified"
+ ],
+ "suitable": true,
+ "id": "2510.09959",
+ "title": "Clustering Result Re-guided Incomplete Multi-view Spectral Clustering",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Γ (label-recovery error) of Spectral+LloydL1 on simulated asymmetric SBM with N=50, h=0.0, b=0.4, a=0.9 (value 0.001)",
+  "table_ref": "Table 4, Pasym block, N=50, h=0.0, b=0.4, column Sp+LloydL1",
+  "dataset": "Synthetic SBM graphs generated per Section 3.1 protocol (Pasym(a=0.9,b=0.4), K=3, N=50, heterogeneity h=0)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/acotil/LloydSBM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Synthetic N=50 graphs with a few hundred Monte Carlo repetitions of spectral init + Lloyd iterations are tiny; main cost is installing Julia and re-implementing/adapting the repo's simulation and Γ metric to match the exact protocol."
+ },
+ "blockers": [
+  "Repo is Julia and may not exactly reproduce the table's Monte Carlo protocol (number of repetitions, seeds, spectral regularization λreg) without reverse-engineering",
+  "Exact Γ value 0.001 is a Monte Carlo average; matching it precisely requires guessing the repetition count"
+ ],
+ "suitable": true,
+ "id": "2509.15989",
+ "title": "Model-free algorithms for fast node clustering in SBM type graphs and application to social role inference in animals",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

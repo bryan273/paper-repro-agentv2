@@ -1,0 +1,36 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository is cloned and self-contained: it ships both a Python implementation (py/LO_K_means.py, py/run.py) and a C++ implementation, plus the exact datasets used in the claim contract (data/Iris.txt, wine_quality.txt, news20_2000_1089.txt, predict.txt, yeast.txt). K-means needs no trained weights, and the only Python dependency is numpy, which is trivially installable on Python 3.12. The match target (C1: Iris K=5, 20 random inits, Min-D-LO) is directly produced by the released entrypoint, so the authors' own code can be run first.",
+ "repo": "https://github.com/lmingyi/LO-K-means",
+ "entrypoints": [
+  "py/run.py",
+  "cpp/run.cpp",
+  "cpp/test_real_world.cpp"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Well under 2 minutes: install numpy (seconds), then 20 Iris fits of K-means + Min-D-LO at <1 ms each, plus the same at K-means baseline for the C1/C2 comparison. The optional C++ path adds one g++ compile (~10-30 s).",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 8,
+  "gpu_speedup": null,
+  "basis": "Match target is 20 runs of K-means/Min-D-LO on Iris (150x4), each reported at <0.001 s in Table 1; total command time is dominated by the numpy install and an optional C++ compile, so the whole protocol is a couple of minutes at most."
+ },
+ "repo_info": {
+  "url": "https://github.com/lmingyi/LO-K-means",
+  "cloned": true,
+  "n_files": 14,
+  "n_python": 2,
+  "python2_style_files": 0
+ }
+}

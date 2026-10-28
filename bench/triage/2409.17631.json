@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "For a mixture of k=3 Dirac distributions with p=q=2 and full-rank group centers, the threshold group proportion below which the first ICS eigenvalue (COV^{-1}COV4) exceeds 1 is approximately 18%.",
+  "table_ref": "Fig. 6 (Setup 1, k=3) / Table 1 in Appendix B.2",
+  "dataset": "Synthetic mixture of Dirac distributions (no real data)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/AuroreAA/ICS_FDS-Replication"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The target is a simple numerical threshold computed from closed-form scatter matrices for a 2D Dirac mixture; the grid search over proportions is trivial and runs in seconds on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2409.17631",
+ "title": "Invariant Coordinate Selection and Fisher discriminant subspace beyond the case of two groups",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

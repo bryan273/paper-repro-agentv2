@@ -1,0 +1,39 @@
+{
+ "route": "paper_only",
+ "why": "No author repository or code link is provided. The match target C1 is an exact, purely graph-theoretic theorem on a small synthetic hub-extended bridge family Hp,q,r, so it can be checked directly by reimplementing the IC definition from the paper and exhaustively examining all vertices of small instances. No external dataset, weights, GPU, or large compute are needed.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Author implementation of the Interconnectedness Coefficient",
+  "Exact pseudocode for focal clustering and leave-one-out cohesion beyond the definitions in the paper",
+  "Human Interactome Map graph with 9,222 vertices / 36,324 edges (only relevant for C6/C7, not C1)"
+ ],
+ "blockers_seen": [
+  "No released code, so IC must be reimplemented from the mathematical definition",
+  "Potential ambiguity in the paper's notation for leave-one-out cohesion must be resolved consistently from the equations"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Seconds to a few minutes for graph construction and exhaustive IC evaluation on Hp,q,r for small p,q,r; well under the 20-minute budget",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Checking C1 requires generating a few small Hp,q,r graphs and evaluating a local clustering/cohesion formula on dozens to hundreds of vertices, which is essentially instantaneous on a CPU once the measure is implemented."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Balanced accuracy (or TPR/TNR) of the RU-MCCD / UN-MCCD / SU-MCCD / SUN-MCCD algorithms on a small real-life or simulated outlier detection dataset, as reported in the Monte Carlo simulation or real-data tables.",
+  "table_ref": "Monte Carlo simulation tables (Section 5) and real-data tables (Section 7); exact table numbers not visible in provided text",
+  "dataset": "Simulated uniform-hypersphere data (n=50, 6% contamination) or a small ODDS real dataset"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code is released; the CCD/MCG algorithms (KS-CCD, RK-CCD, SR-MCT, greedy MDS, SVDD support estimation) must be reimplemented from the paper, and the Monte Carlo protocol with many replications and parameter tuning is O(n^2 log n) per run, so several hours of CPU work are needed to match a headline number."
+ },
+ "blockers": [
+  "No code released (empty code_links)",
+  "Algorithms (KS-CCD, RK-CCD, SR-MCT, MCG, greedy MDS, SVDD) must be reimplemented from text",
+  "Monte Carlo protocol with many replications and parameter tuning required to match reported numbers",
+  "Exact table values and settings not visible in provided excerpt"
+ ],
+ "suitable": false,
+ "id": "2409.11596",
+ "title": "Outlier Detection with Cluster Catch Digraphs",
+ "pages": 73,
+ "model": "DeepSeek-V4.1-Flash"
+}

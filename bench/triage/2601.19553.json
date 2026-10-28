@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Mean LSCV score of the Beta Reference Rule on 'nice' distributions (mean -2.2667, median -1.9134)",
+  "table_ref": "Table 1, row 'Beta (Ref)', column ''Nice' Distributions'",
+  "dataset": "Synthetic Monte Carlo (8 beta/truncated-Gaussian distributions, n=50..2000, 1000 trials)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/egonmedhatten/beta-kde",
+  "https://github.com/egonmedhatten/BetaKDE.jl",
+  "https://github.com/egonmedhatten/beta-kernel-reproduce-paper"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Target requires re-running the full Monte Carlo (8 distributions x 6 sample sizes x 1000 trials, plus LSCV/ISE baselines) which is CPU-bound but heavy; the reproduce-paper repo may supply configs, but the exact aggregation into Table 1 must be rebuilt."
+ },
+ "blockers": [
+  "Table 1 aggregates over many distributions/sample sizes and requires re-implementing the full simulation harness and LSCV/ISE baselines",
+  "Exact reproduction of the reported means depends on RNG seeds and baseline optimizer settings not guaranteed in the paper text"
+ ],
+ "suitable": true,
+ "id": "2601.19553",
+ "title": "A Fast, Closed-Form Bandwidth Selector for the Beta Kernel Density Estimator",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

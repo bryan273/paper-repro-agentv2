@@ -1,0 +1,183 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Whether the graph model permits self-loops or multi-edges",
+  "options": [
+   "reject or ignore self-loops and parallel edges",
+   "allow self-loops and multi-edges"
+  ],
+  "chosen": "reject or ignore self-loops and parallel edges",
+  "rationale": "The paper explicitly defines the setting as a finite simple undirected graph.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Let G = (V, E) be a finite simple undirected graph.",
+  "page": 4
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Numeric type used to verify exact rational claims and uniqueness",
+  "options": [
+   "exact rational arithmetic (fractions)",
+   "floating point with epsilon comparisons"
+  ],
+  "chosen": "exact rational arithmetic for synthetic graph families; float with epsilon only for large empirical graphs",
+  "rationale": "IC(x)=2/3 and gateway comparisons are exact rational facts, so exact arithmetic avoids false ties or misclassification.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether vertices with degree below two are returned with score 0 or omitted from output",
+  "options": [
+   "omit from ranked output",
+   "return score 0"
+  ],
+  "chosen": "omit from ranked output",
+  "rationale": "The paper says vertices outside V≥2 are not ranked.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Vertices outside V≥2 are not ranked. This is the minimal structural restriction required for a connector to possess at least two incident directions.",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether CLOO averages over all adjacent neighbors or only over neighbors that themselves have degree at least two",
+  "options": [
+   "average over all u in N(v)",
+   "average only over candidate neighbors u in V≥2"
+  ],
+  "chosen": "average over all u in N(v), using C_u\\v=0 when d(u)<3",
+  "rationale": "The definition sums over u∈N(v) without restricting u to the candidate set.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For each v ∈V≥2, define the mean branch-side leave-one-out cohesion",
+  "page": 5
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Which instance of Hp,q,r to build for the cheapest verification",
+  "options": [
+   "minimal p=q=3, r=1",
+   "larger p,q,r to test invariance"
+  ],
+  "chosen": "p=q=3, r=1 for the primary check, plus optional larger p,q,r invariance checks",
+  "rationale": "The theorem holds for all p,q≥3 and r≥1; the minimal instance is cheapest and sufficient to verify the target.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For all integers p, q ≥3 and r ≥1, x is the unique global maximizer of the IC over V≥2 in Hp,q,r.",
+  "page": 9
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Tie-breaking or epsilon tolerance for declaring a unique maximizer in floating-point code",
+  "options": [
+   "exact rational comparison",
+   "float comparison with fixed epsilon",
+   "rank and assert strict gap"
+  ],
+  "chosen": "exact rational comparison on synthetic families; assert strict positive gap rather than relying on sort order",
+  "rationale": "Uniqueness is a mathematical claim, so code should verify a strict gap, not merely the top rank.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Node labeling and adjacency ordering in the synthetic families",
+  "options": [
+   "arbitrary integer labels with no extra edges",
+   "specific labels mirroring paper figure"
+  ],
+  "chosen": "arbitrary labels; preserve exact edge set from definitions",
+  "rationale": "The IC depends on topology only, not labels or ordering.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "HIM preprocessing and exact source graph needed for the empirical claim",
+  "options": [
+   "use graph with 9,222 vertices and 36,324 edges if obtainable",
+   "use a public human interactome and apply unspecified filtering"
+  ],
+  "chosen": "only claim the empirical plateau if the exact 9,222-vertex/36,324-edge graph can be reconstructed; otherwise mark empirical claim unverified",
+  "rationale": "The paper states vertex and edge counts but does not document filtration, self-loop handling, or release version in the text.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The graph used for the IC analysis contains 9,222 vertices and 36,324 edges.",
+  "page": 12
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Which local clustering coefficient convention to use for C(v)",
+  "options": [
+   "Watts-Strogatz local clustering as defined in Eq. (1)",
+   "NetworkX default clustering"
+  ],
+  "chosen": "use Eq. (1) explicitly and cross-check against NetworkX clustering on simple graphs",
+  "rationale": "The paper cites the standard local clustering coefficient and writes the formula.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Using the standard local clustering coefficient [24], define",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether isolated vertices count in the graph vertex set for empirical graph statistics",
+  "options": [
+   "include all listed vertices, omit isolates only from ranking",
+   "drop isolates before counting"
+  ],
+  "chosen": "include all vertices in graph statistics; omit non-candidates from ranking",
+  "rationale": "The paper distinguishes graph vertices from the ranked candidate set V≥2.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether to compute leave-one-out terms by explicit set removal or by triangle/common-neighbor formula",
+  "options": [
+   "Eq. (3) explicit neighborhood removal",
+   "Eq. (6) T(u)-t(u,v)"
+  ],
+  "chosen": "Eq. (6) for implementation speed; validate against Eq. (3) on small graphs",
+  "rationale": "The paper states the two expressions are algebraically identical.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "This expression is algebraically identical to the leave-one-out definition in Eq. (3).",
+  "page": 6
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "How to report exact fractions versus rounded decimals",
+  "options": [
+   "exact fractions in code, decimal approximations in output",
+   "only rounded decimals"
+  ],
+  "chosen": "store exact rational values for synthetic checks and print decimal approximations to the paper’s shown precision",
+  "rationale": "The paper reports both exact fractions and decimal approximations.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For p = 4 this gives IC(x) = 5/6 ≈0.833",
+  "page": 8
+ }
+]

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Open-MAGVIT2-I-In1k achieves rFID 1.17 on ImageNet 256x256 reconstruction (16x16 tokens, codebook 262144)",
+  "table_ref": "Table 4",
+  "dataset": "ImageNet 50k validation set"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/TencentARC/SEED-Voken"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "The target is a reconstruction metric from a released pretrained tokenizer; reproducing it requires downloading the model and ImageNet validation set, then running inference on 50k images, which is feasible on CPU but faster on GPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2409.04410",
+ "title": "Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-regressive Visual Generation",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

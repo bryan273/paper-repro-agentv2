@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "ROC AUC of kNNW with probabilistic (exponential) normalization on the TwoLeadECG dataset (or any single DAMI/UTSD dataset) matches the unnormalized kNNW ROC AUC, demonstrating ranking stability of the probabilistic transformation.",
+  "table_ref": "Figure 4 (ROC AUC per dataset, probability distribution comparison); Table 1 lists datasets",
+  "dataset": "TwoLeadECG (UTSD) or a small DAMI dataset such as Hepatitis/Parkinson"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/davnn/probabilistic-distance"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "kNNW is brute-force kNN on small tabular/time-series datasets (N up to ~7000, d up to ~2700); a single dataset with k sweep 1-100 and 2-fold CV is minutes of CPU, plus install/download time."
+ },
+ "blockers": [
+  "Paper reports results only as figures (no numeric table cells), so exact value must be read off plots",
+  "UTSD/DAMI datasets need to be fetched from external collections (UTSD archive, ELKI/DAMI library) not bundled with the repo",
+  "Repo may not include exact experiment configs/scripts for the figure"
+ ],
+ "suitable": true,
+ "id": "2305.09446",
+ "title": "A Probabilistic Transformation of Distance-Based Outliers",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "HELM model achieves accuracy 0.995 on pump leakage anomaly detection",
+  "table_ref": "Table III, row HELM, column ACC",
+  "dataset": "Hydraulic condition monitoring dataset (Helwig et al. 2015)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Dataset is public and small (~2205 samples, 68 features after engineering); HELM is a lightweight ELM-based model trainable on CPU, but no code is provided so the agent must implement feature engineering, HELM, and threshold tuning from scratch, which may take a few hours of coding and debugging."
+ },
+ "blockers": [
+  "No code or configuration provided; must reimplement HELM and feature engineering from paper description",
+  "Exact train/valid/test split and threshold hyperparameters (p, gamma) not specified"
+ ],
+ "suitable": true,
+ "id": "2306.02709",
+ "title": "Comparative Study on Semi-supervised Learning Applied for Anomaly Detection in Hydraulic Condition Monitoring System",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

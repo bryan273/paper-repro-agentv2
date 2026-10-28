@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "IoU of Logistic Regression with fire-area segmentation on the Doubs department at scale s=0.3 (0-day forecast), reported as 0.19 vs grid baseline 0.14",
+  "table_ref": "Table 7",
+  "dataset": "Firefighter interventions dataset (Doubs, 25), 2017-2024"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/steidani/FireDanger"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "Even the cheapest cell requires the proprietary firefighter-intervention records plus ~15 external feature sources (Meteostat, GEE/Landsat, OSMNX, Kontur, Geodair, vigicrues, eaufrance, firedanger indices) to be re-collected and rasterized at 2 km, then the watershed+K-means segmentation and a 25-config grid search per scale must be re-implemented from a paper that only promises code 'will be released'."
+ },
+ "blockers": [
+  "Firefighter intervention data (Ain/Doubs/Yvelines/Rhône) is not publicly available",
+  "Feature pipeline depends on many external services (GEE, Meteostat, Kontur, Geodair, vigicrues, eaufrance) with no provided configs",
+  "Code repo link is generic and paper states code 'will be released'; no configs/scripts for the target",
+  "Segmentation parameters (max_dilations, intensity_levels) per configuration only in supplementary materials"
+ ],
+ "suitable": false,
+ "id": "2608.07472",
+ "title": "Data-Driven Fire-Zone Segmentation for Improved Short-Term Wildfire Prediction",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

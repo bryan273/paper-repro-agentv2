@@ -1,0 +1,48 @@
+{
+ "route": "partial_release",
+ "why": "The authors released the method code (TokenCore.py: memory bank + nearest-neighbor token scoring), the alignment/annotation utilities (align.py, tokens_labels/json_to_npy.py) and all three annotated datasets locally in data/ (grammar .npy/.json, restaurant_review, sms_spam), so the core logic can be kept verbatim. What is NOT released is a runnable entrypoint: the only end-to-end artifact is Demo.ipynb (with frozen outputs), there is no requirements.txt, and TokenCore.py consumes precomputed token-embedding matrices, so the BERT-base-uncased embedding extraction, the 50/50 split and the token-level AUROC computation have to be rebuilt as a script from the notebook before the target number for Grammar (C1) can be produced. Keep authors' logic, rebuild the missing driver.",
+ "repo": "https://github.com/charles-cao/TokenCore",
+ "entrypoints": [
+  "demo.ipynb",
+  "TokenCore.py",
+  "align.py",
+  "tokens_labels/json_to_npy.py"
+ ],
+ "missing_artifacts": [
+  "requirements.txt (referenced in README, not present in the repo)",
+  "a script that reproduces Table 1 (only a Demo.ipynb exists)",
+  "the exact train/test doc split used for the 50% normal-training protocol (no seed/split file released)",
+  "BERT-base-uncased weights (must be fetched from HuggingFace)"
+ ],
+ "blockers_seen": [
+  "no dependency file: torch/transformers/sklearn/numpy must be pinned by hand (works on Python 3.12)",
+  "TokenCore.py takes embedding matrices only; the BERT max-pooling-over-subwords front-end exists only inside the notebook, so the pipeline must be extracted into a script",
+  "Demo.ipynb is 3.8 MB of stored outputs; it must be rewritten/cleared before execution",
+  "no GPU on this machine (BERT-base CPU inference only, which is acceptable at this scale)",
+  "Grammar token-level AUROC is computed over very few anomalous tokens (~15 anomalous docs in the test half), and the split is random, so the absolute value 0.6371 will depend on the split seed and may drift"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~25-35 min wall clock on 22 CPU cores / 15.4 GB RAM: ~10 min installing torch (CPU wheel), transformers, scikit-learn; ~1 min BERT-base download; ~1-3 min BERT forward pass over 300 short Grammar documents; seconds for the max-pooling, memory-bank build and brute-force nearest-neighbor scoring; plus the driver-script rewrite from the notebook and one clean end-to-end re-run.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 6,
+  "ref_minutes": 30,
+  "gpu_speedup": 4,
+  "basis": "CPU install of torch+transformers+sklearn (~10 min, ~5 GB), one BERT-base-uncased forward pass over the 300 short Grammar documents with 8 cores (~1-3 min), then seconds for max-pooling, the ~5k-token normal memory bank and brute-force nearest-neighbor token scoring, plus rebuilding the driver script from Demo.ipynb and one clean re-run."
+ },
+ "repo_info": {
+  "url": "https://github.com/charles-cao/TokenCore",
+  "cloned": true,
+  "n_files": 23,
+  "n_python": 3,
+  "python2_style_files": 0
+ }
+}

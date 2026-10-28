@@ -1,0 +1,225 @@
+{
+ "title": "Enhancing Interpretability and Generalizability in Extended Isolation Forests",
+ "summary": "The paper addresses the lack of interpretability and generalization in Extended Isolation Forest anomaly detection. It proposes ExIFFI, a DIFFI-style feature-importance method for any hyperplane-splitting isolation forest, and EIF+, which samples EIF split intercepts from N(E[A], ησ(A)) instead of a uniform interval. Across 16 benchmarks, EIF+ improves Average Precision over EIF when trained only on inliers, e.g., Bisect reaches 1.00 vs 0.99 in Scenario II.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "In Scenario II (fit only on inliers), EIF+ reaches Average Precision 1.00 on the Bisect synthetic dataset.",
+   "metric": "Average Precision",
+   "dataset": "Bisect (synthetic, 6 features, 1,100 samples, 100 anomalies)",
+   "split": "Scenario II: train on inliers only, evaluate on all samples",
+   "value": 1.0,
+   "unit": "Average Precision",
+   "higher_is_better": true,
+   "table_ref": "Table 2, S2, row EIF+, column Avg Prec, column Bisec",
+   "config_for_value": "EIF+ forest with α ~ N(E[A], ησ(A)); fitted on the 1,000 Bisect inliers only; AP evaluated on all 1,100 points. η not stated for Table 2; Bisect is reported insensitive to η over 0.5–5.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to a few minutes per fit; 40-seed mean takes minutes",
+   "quote": "EIF+ Avg Prec 0.99 1.00 0.99 0.99 0.97",
+   "page": 20
+  },
+  {
+   "id": "C2",
+   "statement": "The EIF baseline reaches Average Precision 0.99 on Bisect in Scenario II.",
+   "metric": "Average Precision",
+   "dataset": "Bisect (synthetic, 6 features, 1,100 samples, 100 anomalies)",
+   "split": "Scenario II: train on inliers only, evaluate on all samples",
+   "value": 0.99,
+   "unit": "Average Precision",
+   "higher_is_better": true,
+   "table_ref": "Table 2, S2, row EIF, column Avg Prec, column Bisec",
+   "config_for_value": "EIF with Lesouple correction: α drawn uniformly between min and max projections {x·v}; fitted on the 1,000 Bisect inliers only; AP evaluated on all 1,100 points.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to a few minutes per fit",
+   "quote": "EIF Avg Prec 0.99 0.99 0.99 0.99 0.97",
+   "page": 20
+  },
+  {
+   "id": "C3",
+   "statement": "Averaged over all 16 datasets in Scenario II, EIF+ has mean Average Precision 0.80.",
+   "metric": "mean Average Precision",
+   "dataset": "16 datasets (5 synthetic + 11 real-world)",
+   "split": "Scenario II: fit on inliers only, evaluate on all data",
+   "value": 0.8,
+   "unit": "mean Average Precision",
+   "higher_is_better": true,
+   "table_ref": "Table 2, S2, row EIF+, column Avg Prec, column mean",
+   "config_for_value": "EIF+ fitted on each dataset's inliers; AP computed on the full labeled dataset; mean over 16 datasets.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes per dataset; total hours for all datasets",
+   "quote": "EIF+ Avg Prec 0.99 1.00 0.99 0.99 0.97 0.46 0.99 0.76 0.61 0.69 0.96 0.66 0.36 0.58 0.91 0.79 0.80",
+   "page": 20
+  },
+  {
+   "id": "C4",
+   "statement": "Averaged over all 16 datasets in Scenario II, EIF has mean Average Precision 0.76.",
+   "metric": "mean Average Precision",
+   "dataset": "16 datasets (5 synthetic + 11 real-world)",
+   "split": "Scenario II: fit on inliers only, evaluate on all data",
+   "value": 0.76,
+   "unit": "mean Average Precision",
+   "higher_is_better": true,
+   "table_ref": "Table 2, S2, row EIF, column Avg Prec, column mean",
+   "config_for_value": "EIF fitted on each dataset's inliers; AP computed on the full labeled dataset; mean over 16 datasets.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes per dataset; total hours for all datasets",
+   "quote": "EIF Avg Prec 0.99 0.99 0.99 0.99 0.97 0.45 0.98 0.74 0.55 0.57 0.90 0.65 0.27 0.54 0.97 0.57 0.76",
+   "page": 20
+  },
+  {
+   "id": "C5",
+   "statement": "In Scenario II, ExIFFI applied to EIF+ has mean AUCFS 2.62 across the 16 datasets.",
+   "metric": "AUCFS (AUCM - AUCL)",
+   "dataset": "16 datasets (5 synthetic + 11 real-world)",
+   "split": "Scenario II: fit on inliers only, evaluate on all data",
+   "value": 2.62,
+   "unit": "AUCFS score",
+   "higher_is_better": true,
+   "table_ref": "Table 3, S2, row EIF+ ExIFFI, column Mean",
+   "config_for_value": "ExIFFI GFI ranking for EIF+; AUCFS computed via Algorithm 2 by removing most/least important features one at a time and re-evaluating Average Precision with EIF+, mean over 16 datasets.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes per dataset; full 16-dataset AUCFS sweep hours",
+   "quote": "EIF+ ExIFFI 4.74 3.83 3.03 0.08 4.03 2.17 0.06 8.73 1.17 2.26 1.41 -0.04 1.32 -0.02 -0.13 9.25 2.62",
+   "page": 21
+  },
+  {
+   "id": "C6",
+   "statement": "In Scenario II, DIFFI applied to EIF+ has mean AUCFS 0.65 across the 16 datasets, below ExIFFI's 2.62.",
+   "metric": "AUCFS (AUCM - AUCL)",
+   "dataset": "16 datasets (5 synthetic + 11 real-world)",
+   "split": "Scenario II: fit on inliers only, evaluate on all data",
+   "value": 0.65,
+   "unit": "AUCFS score",
+   "higher_is_better": true,
+   "table_ref": "Table 3, S2, row EIF+ DIFFI, column Mean",
+   "config_for_value": "DIFFI GFI ranking for EIF+; same AUCFS feature-selection proxy; mean over 16 datasets.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes per dataset; full 16-dataset AUCFS sweep hours",
+   "quote": "DIFFI 2.728 2.92 2.83 -0.12 1.52 2.00 0.06 4.33 -1.48 2.44 1.92 -3.36 -0.76 0.30 -1.45 -3.49 0.65",
+   "page": 21
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the cheapest direct test of the paper's central generalization claim: Bisect Scenario II has only 1,100 points and 6 features, so one EIF+ fit is CPU-fast; C2 supplies the EIF baseline (0.99), making the target 1.00 vs 0.99 improvement visible."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: Average Precision is a bounded score on the 1,100-example Bisect dataset, and the paper prints it as a fraction in [0,1]; use ±0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "For EIF+, at each node draw α from N(E[A], ησ(A)), where A={x·v}, and set p=αv; do not use the uniform min/max interval.",
+   "cite": "Section 3.3, Figure 1b",
+   "quote": "EIF+draws it from a normal distribution N(E[A], ησ(A)) as shown in Figure 1b.",
+   "page": 6
+  },
+  {
+   "id": "R2",
+   "stmt": "For the EIF baseline, draw α uniformly between min and max of the projections {x·v} and set p=αv.",
+   "cite": "Section 3.2, Eq. 7",
+   "quote": "α ∈[min {x · v ∀x ∈X}, max {x · v ∀x ∈X}], p = αv.",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "At each node draw a unit normal vector v by normalizing a d-dimensional standard Gaussian vector.",
+   "cite": "Section 3.2, Eq. 6",
+   "quote": "As done in [39, 19], we first select a random hyperplane by drawing a unit vector v defined as in (6). which will serve as the normal vector of the hyperplane.",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Split a node by L={x | v·x > v·p} and R=X\\L; recurse until stopping.",
+   "cite": "Section 3.2, Eq. 8",
+   "quote": "Thus the hyperplane splits the dataset Xt into two subsets,",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Compute anomaly score as s(x,ñ)=2^{-E(h(x))/c(ñ)} with c(N)=2H(N−1)−2(N−1)/N and H(i)=ln(i)+0.5772156649.",
+   "cite": "Section 3.1, Eqs. 2-4; Section 3.2",
+   "quote": "Then, as IF does [38], the EIF algorithm uses the average depth of the point in each tree to evaluate the anomaly score",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Fit only on the inlier subset and evaluate Average Precision on the full labeled dataset (no holdout).",
+   "cite": "Section 5.1, Scenario II",
+   "quote": "We fit the models exclusively on the inliers within the dataset, that correspond to the scenario of 0 contamination of outliers.",
+   "page": 12
+  },
+  {
+   "id": "R7",
+   "stmt": "Use Average Precision over all samples, not accuracy or thresholded F1.",
+   "cite": "Section 5.1 and 6.3",
+   "quote": "Subsequently, we assess the Average Precision scores of these models when applied to the entirety of the dataset.",
+   "page": 12
+  },
+  {
+   "id": "R8",
+   "stmt": "Allow EIF+ to create empty branches; do not prune or resample to avoid them.",
+   "cite": "Section 3.3",
+   "quote": "Even if EIF+can generate empty branches, they contribute to the formation of a model that exhibits enhanced generalizability",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "For ExIFFI, assign node importance λ_k(x)=(|X_k|/|L_k|)abs(v_k) if v_k·x>v_k·p_k, else (|X_k|/|R_k|)abs(v_k); sum over path and trees.",
+   "cite": "Section 4.2, Eq. 13-15",
+   "quote": "Thus, we assign an importance value function to every node of the trees that is the projection on the normal vector of the splitting hyperplane of the quotient between the cardinality of the sample before a particular node and after it, following the path of a sample x.",
+   "page": 8
+  },
+  {
+   "id": "R10",
+   "stmt": "Normalize cumulative importance vectors by the sum of orthogonal vectors V(x); compute GFI=Î_O/Î_I.",
+   "cite": "Section 4.2.1, Eqs. 18-20",
+   "quote": "the vectors of importance have to be divided by the sum of the orthogonal vectors.",
+   "page": 9
+  },
+  {
+   "id": "R11",
+   "stmt": "Compute AUCFS as AUCM−AUCL by iteratively removing most/least important features and evaluating Average Precision.",
+   "cite": "Section 5.2, Algorithm 2",
+   "quote": "AUCFS is calculated as the difference between the area under the curve when shrinking the dimensions of the dataset on the most important features",
+   "page": 13
+  }
+ ],
+ "data": [
+  {
+   "name": "Bisect (synthetic)",
+   "how_to_get": "Generate with Appendix A.1.1 / Algorithm 3: 1,000 inliers uniform in 6-D sphere (r=5, keep ||x||2<=r) and 100 outliers along v=[1,1,0,0,0,0] with d=5, x~U([0,5]), Gaussian noise; code at https://github.com/alessioarcudi/ExIFFI"
+  },
+  {
+   "name": "Bisect3D, Bisect6D, Xaxis, Bisec3D Skewed (synthetic)",
+   "how_to_get": "Same Appendix A.1.1 generator with direction vectors specified in Section 6 and Appendix A.1.1; code in https://github.com/alessioarcudi/ExIFFI"
+  },
+  {
+   "name": "ODDS benchmark datasets (Annthyroid, Breastw, Cardio, Glass, Ionosphere, Pendigits, Pima, Shuttle, Wine)",
+   "how_to_get": "ODDS library, https://odds.cs.stonybrook.edu"
+  },
+  {
+   "name": "Diabetes",
+   "how_to_get": "Kaggle: https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset"
+  },
+  {
+   "name": "Moodify",
+   "how_to_get": "Kaggle: https://www.kaggle.com/datasets/abdullahorzan/moodify-dataset (code: https://github.com/orzanai/Moodify)"
+  }
+ ],
+ "code_links": [
+  "https://github.com/alessioarcudi/ExIFFI",
+  "https://github.com/orzanai/Moodify"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2310.05468",
+  "kind": "arxiv",
+  "arxiv_id": "2310.05468",
+  "url": "https://arxiv.org/abs/2310.05468",
+  "title": "Enhancing Interpretability and Generalizability in Extended Isolation Forests",
+  "pages": 36
+ }
+}

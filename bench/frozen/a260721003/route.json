@@ -1,0 +1,47 @@
+{
+ "route": "partial_release",
+ "why": "The authors ship the ADABORD algorithm itself (adabord/_adabord.py, _adabord_base.py, _metrics.py) plus experiments.ipynb, but three things are missing or unusable as released: (1) the core Ordinal Gini splitter lives in a private-modified scikit-learn fork installed via git+ssh (git@github.com:RafaAyGar/scikit-learn.git@feature_ogini_split), which needs SSH credentials and a from-source Cython/C build — not installable on this Windows/Python 3.12 box as instructed, so the OGini criterion has to be ported on top of stock sklearn; (2) the TOC-UCO datasets and the exact 30-split definitions/seeds are not in the repo and must be fetched from the separate ayrna/tocuco repository; (3) no fitted models or tuned hyperparameters are released. The authors' AdaBoost/aRPS logic is intact and should be kept; what is missing must be rebuilt and the protocol scaled down.",
+ "repo": "https://github.com/ayrna/adabord",
+ "entrypoints": [
+  "experiments.ipynb (the only executable artifact; drives data loading, the 20-iteration randomized 3-fold CV search and the 30-split evaluation)",
+  "adabord._adabord.ADABORD (sklearn-style estimator, the model behind every claim)"
+ ],
+ "missing_artifacts": [
+  "Modified scikit-learn providing DecisionTreeClassifier with the OGini (ordinal Gini) split criterion (branch feature_ogini_split of RafaAyGar/scikit-learn, published only as a git+ssh dependency)",
+  "TOC-UCO data (46 datasets + Table 1 metadata defining the Q>=5 subset of 31) — external repo ayrna/tocuco, not vendored here",
+  "The exact 30 stratified 70/30 split indices / random seeds per dataset used in Table 3 and Table 7",
+  "Pre-tuned per-dataset hyperparameters (#Estimators from {50,100,250,500,1000,2000}) and any saved results JSON",
+  "Per-dataset MAE table (the paper only prints dataset-averaged AMAE/QWK/MMAE/BACC, which is why no tae/newthyroid MAE exists to check)"
+ ],
+ "blockers_seen": [
+  "pyproject/README require `pip install git+ssh://git@github.com/RafaAyGar/scikit-learn.git@feature_ogini_split` — SSH-key gated and needs a full from-source scikit-learn compile (MSVC + Cython) on Windows; not runnable as released",
+  "OGini splitting criterion is the paper's core novelty and is absent from any installable package; must be reimplemented against stock sklearn's splitter/BaseDecisionTree",
+  "pyproject pins numpy>=2.4.4 and pandas>=3.0.2, which are ahead of ordinary resolver availability; the lock file is the only thing that pins a working set",
+  "Data dependency is an out-of-repo download (TOC-UCO) with a separate metadata table defining the 31-dataset Q>=5 subset",
+  "Full protocol (31 datasets x 30 splits x (20-config x 3-fold CV + final fit), up to 2000 trees) is a CPU-cluster, multi-day job — orders of magnitude over the 20-minute budget"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Full C1 protocol: many hours to days even after porting OGini. A disclosed scaled-down slice (4 Q>=5 datasets x 5 splits x 3-config search x 3-fold CV, trees capped at 50-100) fits in roughly 15-20 minutes on this 22-core CPU.",
+  "fits_budget": false,
+  "scale_down_plan": "Port the OGini criterion onto stock sklearn (subclass DecisionTreeClassifier / custom splitter scoring ordinal cumulative class distributions), reuse adabord/_adabord.py and _metrics.py unchanged. Download TOC-UCO, take 4 datasets with Q>=5 (small ones from Table 1), generate 5 stratified 70/30 splits per dataset with fixed seeds, run a 3-5 config randomized search with 3-fold CV instead of 20 configs, and cap n_estimators at 50-100 instead of up to 2000. Report the resulting AMAE for ADABORD plus the cheapest baselines (AdaBoost, OEAdaBoost, XGBoost) on the same 4 datasets. Expected effect: the subset AMAE should land in the 0.8-0.9 band and preserve ADABORD's ordering versus the baselines, but the exact 0.823 +/- 0.046 aggregate over 31 datasets and its tight ranking against XGBoost/QWK (0.790 vs 0.789) cannot be reproduced at this scale — those margins are smaller than the subset noise.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 3,
+  "ref_minutes": 7000,
+  "gpu_speedup": null,
+  "basis": "31 datasets x 30 splits x (20 configs x 3 folds + 1 final fit) is ~57k boosted-tree fits of up to 2000 trees each, matching the paper's own 'several days on a CPU cluster' note; scikit-learn trees are single-threaded CPU code so a GPU buys nothing."
+ },
+ "repo_info": {
+  "url": "https://github.com/ayrna/adabord",
+  "cloned": true,
+  "n_files": 10,
+  "n_python": 4,
+  "python2_style_files": 0
+ }
+}

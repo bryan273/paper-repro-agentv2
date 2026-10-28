@@ -1,0 +1,235 @@
+{
+ "title": "Isolation-based Spherical Ensemble Representations for Tabular Anomaly Detection",
+ "summary": "Unsupervised tabular anomaly detection suffers from conflicting distributional assumptions, quadratic complexity and weak handling of local anomalies; ISER addresses this by sampling psi-point subsets, building hyperspheres whose nearest-neighbour radii act as a monotonic proxy for local density, and encoding every point as a t-dimensional ensemble representation (phi = 1 - 1/r when covered, phi = 1 otherwise). Two scores are derived from that representation - the arithmetic mean (ISER-A) and the cosine similarity to the all-ones anomaly reference (ISER-S) - and the same representation is reused as a transformed feature space for an inverted-path-length Isolation Forest (ISER-IF). Averaged over 5 runs on 20 real-world datasets, ISER-S reaches the best average AUC-ROC of 0.8523 (ISER-A 0.8399) against 12 baselines, and ISER-IF improves iForest on all nine datasets in Table IV, e.g. 0.8530 -> 0.9314 on Ionosphere.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Average AUC-ROC of ISER-S across the 20 benchmark datasets, the best average of all 14 methods compared.",
+   "metric": "AUC-ROC (mean over 20 datasets)",
+   "dataset": "20 real-world benchmark datasets from PyOD and ODDS (Table II)",
+   "split": "full contaminated dataset, no train/test split (unsupervised/transductive)",
+   "value": 0.8523,
+   "unit": "AUC-ROC (0-1, higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table III, Avg. row, ISER-S column",
+   "config_for_value": "ISER-S scoring sim(Phi(x), 1) with t = 200 partitionings, psi searched in {2,4,...,256} per dataset, all points of each dataset scored, AUC-ROC averaged over 5 repetitions and then over the 20 datasets",
+   "reported_spread": null,
+   "est_compute": "CPU (8 cores), ~10 h for the whole 20-dataset sweep including the psi search and 5 repeats; dominated by celeba (202,599x39) and skin (245,057x3)",
+   "quote": "ISER-S achieves the highest average AUC-ROC of 0.8523, outperforming all baseline methods including the most competitive isolation-based method IDK.",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "Average AUC-ROC of the average-based variant ISER-A across the 20 benchmark datasets.",
+   "metric": "AUC-ROC (mean over 20 datasets)",
+   "dataset": "20 real-world benchmark datasets from PyOD and ODDS (Table II)",
+   "split": "full contaminated dataset, no train/test split",
+   "value": 0.8399,
+   "unit": "AUC-ROC (0-1, higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table III, Avg. row, ISER-A column",
+   "config_for_value": "ISER-A scoring Savg(x) = (1/t) sum_i Phi_i(x) with t = 200 partitionings and psi searched in {2,4,...,256} per dataset, 5 repetitions averaged",
+   "reported_spread": null,
+   "est_compute": "CPU (8 cores), ~10 h for the whole 20-dataset sweep including the psi search and 5 repeats",
+   "quote": "ISER-A also demonstrates strong performance with an average AUC-ROC of 0.8399, positioning both ISER variants among the top-performing methods.",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "AUC-ROC of ISER-IF (Isolation Forest run on the ISER ensemble-representation space with inverted scoring) on Ionosphere, versus 0.8530 for standard iForest.",
+   "metric": "AUC-ROC",
+   "dataset": "Ionosphere (351 samples, 32 features, 126 anomalies, 35.90%)",
+   "split": "full contaminated dataset, no train/test split",
+   "value": 0.9314,
+   "unit": "AUC-ROC (0-1, higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row Ionosphere, column ISER-IF (iForest column = 0.8530, up = 9.19%)",
+   "config_for_value": "Build Phi(x) with t = 200 partitionings and tuned psi, then run iForest on the 200-dim phi-space with the inverted score S_ISER-IF(x,n) = 1 - 2^(-E(h(Phi(x)))/c(n)); AUC-ROC averaged over 5 repetitions",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2-5 min (n=351, d=32, t=200, psi up to 256, plus a 100-tree iForest on 351x200 features, times 5 repeats and the psi search)",
+   "quote": "TABLE IV: Performance improvement of ISER-IF over iForest with AUC-ROC.",
+   "page": 9
+  },
+  {
+   "id": "C4",
+   "statement": "AUC-ROC of the similarity-scored ISER-S on Ionosphere using the default ensemble size t = 200.",
+   "metric": "AUC-ROC",
+   "dataset": "Ionosphere (351 samples, 32 features, 126 anomalies, 35.90%)",
+   "split": "full contaminated dataset, no train/test split",
+   "value": 0.9359,
+   "unit": "AUC-ROC (0-1, higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Ionosphere, column ISER-S (ISER-A = 0.9179, iForest = 0.8530, IDK = 0.8883)",
+   "config_for_value": "ISER-S, t = 200 partitionings, psi tuned in {2,4,...,256}, cosine similarity to the all-ones reference vector, average of 5 repetitions",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2-5 min (n=351 small; results for the whole Ionosphere row of Table III ~30 min)",
+   "quote": "TABLE III: Results of all methods in terms of AUC-ROC. The best average performance is shown in bold.",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "AUC-ROC of ISER-IF on the high-dimensional speech dataset, a relative improvement of 34.15% over standard iForest.",
+   "metric": "AUC-ROC (and relative % improvement over iForest)",
+   "dataset": "speech (3686 samples, 400 features, 61 anomalies, 1.65%)",
+   "split": "full contaminated dataset, no train/test split",
+   "value": 0.6443,
+   "unit": "AUC-ROC (0-1, higher is better); iForest baseline 0.4803, improvement +34.15% relative",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row speech, columns iForest (0.4803) and ISER-IF (0.6443)",
+   "config_for_value": "iForest (same configuration as the baseline) trained on Phi(x) with t = 200 partitionings and tuned psi, inverted score S_ISER-IF = 1 - 2^(-E(h(Phi(x)))/c(n)), 5 repetitions averaged",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5-10 min (n=3686, d=400, t=200, psi up to 256, plus iForest on 3686x200 features)",
+   "quote": "Table IV demonstrates that ISER-IF achieves substantial performance improvements over iForest on datasets where iForest exhibits poor performance.",
+   "page": 9
+  },
+  {
+   "id": "C6",
+   "statement": "AUC-ROC of ISER-S on the high-dimensional speech dataset, competitive with or better than the strongest isolation baseline IDK (0.6892).",
+   "metric": "AUC-ROC",
+   "dataset": "speech (3686 samples, 400 features, 61 anomalies, 1.65%)",
+   "split": "full contaminated dataset, no train/test split",
+   "value": 0.6952,
+   "unit": "AUC-ROC (0-1, higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row speech, column ISER-S (ISER-A = 0.6437, IDK = 0.6892, ADERH = 0.5095, iForest = 0.4803)",
+   "config_for_value": "ISER-S, t = 200 partitionings, psi tuned in {2,4,...,256} per dataset, cosine similarity to the all-ones reference vector, average of 5 repetitions",
+   "reported_spread": null,
+   "est_compute": "CPU, ~3-8 min",
+   "quote": "On high-dimensional datasets such as fault and speech, ISER methods maintain competitive detection capability.",
+   "page": 7
+  }
+ ],
+ "match_target": {
+  "claim_id": "C3",
+  "why": "This is exactly the row the user asked for (Table IV, ISER-IF, Ionosphere) and Ionosphere is by far the cheapest dataset in that table (351 samples, 32 features, 126 anomalies), so the full pipeline (psi-point sampling, nearest-neighbour radii, phi-space encoding, inverted iForest scoring) can be verified in minutes on CPU while still demonstrating ISER's central contribution that the ensemble representation lifts Isolation Forest."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: AUC-ROC is a bounded score on a small evaluation set (Ionosphere, 351 points, below the 2,000-example threshold of rule 2) and the paper reports only the mean of 5 runs, no std or CI, so the band is 2.0 points = 0.02 in the fraction scale the paper prints (rule 1 does not apply because no spread is given)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "For each of the t partitionings, independently sample psi points from the dataset without replacement; every sampled point becomes a hypersphere centre.",
+   "cite": "Section III-A; Algorithm 1, lines 1-4",
+   "quote": "For each partitioning Hi, we begin by randomly sampling a subset Di ⊂D of size ψ without replacement",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "The radius of a hypersphere centred at z is the distance from z to its nearest neighbour inside the same sampled subset Di (excluding z itself).",
+   "cite": "Section III-A, radius definition; Algorithm 1, line 5",
+   "quote": "The radius of this hypersphere is determined by the distance between z and its nearest neighbor in Di \\ {z}",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "For a query point x, find all hyperspheres of partition Hi that cover x and keep the one with the smallest radius; this is the covering hypersphere used for x.",
+   "cite": "Section III-A; Algorithm 1, lines 10-12",
+   "quote": "we select the covering hypersphere with the smallest radius",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Encode phi_i(x) = 1 - 1/r[zhat_i(x)] when x is covered by at least one hypersphere of Hi, and phi_i(x) = 1 when it is covered by none.",
+   "cite": "Section III-A, phi definition; Algorithm 1, lines 13-16",
+   "quote": "we assign φi(x) = 1, indicating that the point is not covered by any hyperspheres in this partitioning",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "The ensemble representation of a point is the t-dimensional concatenation of its per-partitioning phi values.",
+   "cite": "Section III-A; Algorithm 1, line 18",
+   "quote": "The ensemble representation of point x is constructed by concatenating the coverage indicators from all t partitionings",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "ISER-A scores a point by the arithmetic mean of its ensemble representation components (higher = more anomalous).",
+   "cite": "Section III-B, Average-based Scoring; Algorithm 1, line 20",
+   "quote": "The average-based anomaly score is computed as the arithmetic mean of all ensemble components, effectively measuring the average degree of isolation across all partitionings",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "ISER-S scores a point by the cosine similarity between its ensemble representation and the all-ones anomaly reference vector 1 in R^t.",
+   "cite": "Section III-B, Similarity-based Scoring; Algorithm 1, line 21",
+   "quote": "The similarity-based anomaly score is computed using cosine similarity between the point’s ensemble representation and the anomaly reference vector",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Use t = 200 partitionings by default and tune the sample size psi over {2^m : m = 1..8} (the same search space is used for the iForest/iNNE/IDK/ADERH baselines).",
+   "cite": "Section V-A, Hyperparameter settings",
+   "quote": "For iForest, iNNE, IDK, ADERH and proposed methods, ψ ∈{2m, m = 1, 2, . . . , 8} and with default t = 200.",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Follow the unsupervised contaminated-data protocol: fit on the whole dataset (normal + anomalous points), with no clean training set and no held-out split.",
+   "cite": "Section V-A, Problem Setting",
+   "quote": "our experiments assume access to the entire dataset containing both normal and anomalous instances during training",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Run each experiment 5 times with different random partitions and report the average AUC-ROC.",
+   "cite": "Section V-A, Evaluation Metrics",
+   "quote": "Each experiment is repeated 5 times and reported average results.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "ISER-IF trains Isolation Forest on the phi-space representation Phi(x) rather than the raw features and inverts the score to S = 1 - 2^(-E(h(Phi(x)))/c(n)).",
+   "cite": "Section VI, ISER-based Isolation Forest",
+   "quote": "we apply iForest to the transformed feature space Φ(x)",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Evaluate with Area Under the ROC Curve only; scores must be oriented so that larger values mean more anomalous.",
+   "cite": "Section V-A, Evaluation Metrics",
+   "quote": "We use Area Under the ROC Curve (AUC-ROC) as evaluation metrics.",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "Use the 20 published benchmark datasets from the PyOD and ODDS repositories listed in Table II, with the contamination rates given there.",
+   "cite": "Section V-A, Datasets; Table II",
+   "quote": "We conduct experiments on 20 real-world benchmark datasets from PyOD [32] and ODDS [33] repositories.",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "Ionosphere (ODDS benchmark copy)",
+   "how_to_get": "ODDS outlier-detection dataset repository, https://shebuti.com/outlier-detection-datasets-odds (file Ionosphere.mat; 351 points, 32 features, 126 anomalies). Also bundled in the standard PyOD-style benchmark loaders."
+  },
+  {
+   "name": "The other 19 tabular benchmarks of Table II (Annthyroid, backdoor, breastw, celeba, fault, glass, Landsat, Lymphography, mnist, musk, pendigits, Pima, satellite, satimage-2, shuttle, skin, speech, vowels, WPBC)",
+   "how_to_get": "Same ODDS repository (https://shebuti.com/outlier-detection-datasets-odds) and/or the PyOD repository data loaders; class labels are used only for computing AUC-ROC."
+  },
+  {
+   "name": "PyOD (toolbox for baselines LOF, iForest, ECOD, COPOD and data loading)",
+   "how_to_get": "pip install pyod; paper reference [32] is 'PyOD: A python toolbox for scalable outlier detection'."
+  },
+  {
+   "name": "Synthetic two-moons visualisation set (300 points, 0.15 anomaly rate)",
+   "how_to_get": "Not released: regenerate with sklearn.datasets.make_moons (two interleaving crescents, 300 points) plus ~15% scattered anomalies, as described in Section V-C."
+  }
+ ],
+ "code_links": [
+  "https://github.com/charles-cao/ISER",
+  "https://shebuti.com/outlier-detection-datasets-odds"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2510.13311",
+  "kind": "arxiv",
+  "arxiv_id": "2510.13311",
+  "url": "https://arxiv.org/abs/2510.13311",
+  "title": "Isolation-based Spherical Ensemble Representations for Tabular Anomaly Detection",
+  "pages": 10
+ }
+}

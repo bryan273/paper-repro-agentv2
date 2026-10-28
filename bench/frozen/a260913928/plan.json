@@ -1,0 +1,218 @@
+{
+ "approach": "Because no author code is released, reproduce the target by reimplementing the Interconnectedness Coefficient exactly from Eq. (1)-(6) using finite simple graphs and fractions.Fraction for all synthetic checks. Construct the hub-extended bridge family Hp,q,r from Section 4, evaluate every vertex in V>=2, and assert that the connector x has IC(x)=2/3 and is the unique strict maximizer. Validate the implementation with Bp,q, the single-cohesion-defect variants, Eq. (3) vs Eq. (6) cross-checks, gateway competitor bounds, and r-invariance of IC(x). Write exact fractions and pass/fail flags to results/metrics.json; the HIM empirical analysis is optional and is attempted only if the exact edgelist is present.",
+ "files": [
+  {
+   "path": "ic_measure.py",
+   "purpose": "Define a simple undirected graph class that rejects self-loops/duplicates, computes degree and candidate set V>=2, ordinary local clustering Eq. (1), leave-one-out clustering by explicit neighborhood removal Eq. (3) and by triangle/common-neighbor formula Eq. (6), mean CLOO Eq. (4), IC Eq. (5), exact max/uniqueness checks, and the IC=1 equality-condition test. Use fractions.Fraction for synthetic graphs and a float mode only for optional large empirical graphs.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R12"
+   ]
+  },
+  {
+   "path": "graph_families.py",
+   "purpose": "Build synthetic graph families Bp,q, Hp,q,r, and defective Bp,q with one removed non-gateway left-clique edge, using deterministic labels and exact edge sets from Section 4. Validate vertex/edge counts against formulas. Optionally include Jc,h,r only if needed; it is not required for target C1.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "verify_claims.py",
+   "purpose": "Run primary C1 checks on Hp,q,r instances: IC(x)=2/3 exactly, x is the unique strict maximizer over V>=2, hub s has IC=0, leaves are omitted, IC(x) is invariant to r, and gateway competitors obey the bound. Also run C2-C4 sanity checks, Eq. (3) vs Eq. (6) cross-checks, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R6",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single CLI entrypoint. Default execution runs the full synthetic verification and writes results/metrics.json. --smoke runs only H(3,3,1) and B(4,3) to prove the data flow. No external packages are required beyond the Python standard library.",
+   "requirement_ids": [
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "claim_scope": {
+   "primary": [
+    "C1"
+   ],
+   "sanity": [
+    "C2",
+    "C3",
+    "C4"
+   ],
+   "optional_not_required": [
+    "C5",
+    "C6",
+    "C7"
+   ],
+   "reason": "C1 is the exact synthetic theorem target; C2-C4 cheaply validate the implementation. C5 construction is not needed for C1 and HIM is optional only if the exact graph is available."
+  },
+  "arithmetic": {
+   "synthetic": "exact fractions.Fraction",
+   "empirical": "float with 1e-12 epsilon",
+   "output_decimals": 10,
+   "tolerance_abs": 0.02,
+   "uniqueness_rule": "strict exact Fraction comparison; no tie allowed among V>=2 for C1"
+  },
+  "primary_instance": {
+   "p": 3,
+   "q": 3,
+   "r": 1
+  },
+  "hpqr_instances": [
+   {
+    "p": 3,
+    "q": 3,
+    "r": 1
+   },
+   {
+    "p": 3,
+    "q": 4,
+    "r": 1
+   },
+   {
+    "p": 4,
+    "q": 3,
+    "r": 2
+   },
+   {
+    "p": 4,
+    "q": 4,
+    "r": 1
+   },
+   {
+    "p": 5,
+    "q": 5,
+    "r": 3
+   },
+   {
+    "p": 10,
+    "q": 10,
+    "r": 1
+   }
+  ],
+  "bpq_instances": [
+   {
+    "p": 3,
+    "q": 3
+   },
+   {
+    "p": 4,
+    "q": 4
+   },
+   {
+    "p": 5,
+    "q": 3
+   },
+   {
+    "p": 10,
+    "q": 3
+   }
+  ],
+  "defect_instances": [
+   {
+    "p": 4,
+    "q": 3,
+    "remove_edge_between": "first two deterministic non-gateway left-clique vertices",
+    "expected_exact": "5/6"
+   },
+   {
+    "p": 10,
+    "q": 3,
+    "remove_edge_between": "first two deterministic non-gateway left-clique vertices",
+    "expected_exact": "71/72"
+   }
+  ],
+  "labels": {
+   "left_gateway": "a",
+   "right_gateway": "b",
+   "connector": "x",
+   "hub": "s",
+   "left_non_gateway_prefix": "L",
+   "right_non_gateway_prefix": "R",
+   "leaf_prefix": "leaf"
+  },
+  "candidate_rule": "degree >= 2 (V>=2); omit degree-0 and degree-1 vertices from ranking/output",
+  "clustering_rule": "C(v)=0 if d(v)<2 else 2*e(N(v))/(d(v)*(d(v)-1))",
+  "leave_one_out_rule": "C_u_after_removing_v = 0 if d(u)<3 else 2*(T(u)-|N(u) intersection N(v)|)/((d(u)-1)*(d(u)-2)), where T(u)=e(N(u))",
+  "cloo_rule": "CLOO(v)=mean over all u in N(v) of C_u_after_removing_v, including d(u)<3 neighbors as 0",
+  "ic_rule": "IC(v)=(1-C(v))*CLOO(v)",
+  "r_invariance_check": {
+   "base_p": 3,
+   "base_q": 3,
+   "r_values": [
+    1,
+    2,
+    5,
+    10
+   ]
+  },
+  "gateway_competitor_check": {
+   "p3_value": "0",
+   "p_ge_4_formula": "IC(gateway)=2*(m-1)/m^2 for clique size m>=4",
+   "bound": "<= 3/8"
+  },
+  "him_optional": {
+   "path": "data/him.edgelist",
+   "expected_vertices": 9222,
+   "expected_edges": 36324,
+   "expected_mean_clustering": 0.114,
+   "enabled_if_present": true,
+   "required_for_C1": false
+  },
+  "output": {
+   "metrics_path": "results/metrics.json",
+   "smoke_metrics_path": "results/smoke_metrics.json",
+   "include_exact_fractions": true,
+   "include_instance_table": true
+  }
+ },
+ "steps": [
+  "Create the project skeleton with results/ and optional data/ directories. Do not download anything for C1; only standard-library Python is needed.",
+  "Implement ic_measure.py: a SimpleGraph class with adjacency dicts of sets, add_edge rejecting self-loops and duplicate edges, degree(), candidates() for V>=2, local_clustering() per Eq. (1), edges_inside() for T(u), leave_one_out_explicit() per Eq. (3), leave_one_out_formula() per Eq. (6), cloo() per Eq. (4), and ic() per Eq. (5). Return fractions.Fraction in exact mode.",
+  "Implement ic_measure.py helpers: all_ic() returning candidate scores, unique_maximizer() checking a strict exact gap, and max_equality_condition() testing the Proposition 1 condition IC=1 iff C(v)=0 and every adjacent leave-one-out term is 1.",
+  "Implement graph_families.py: make_B(p,q) with clique Kp containing a, disjoint clique Kq containing b, connector x adjacent to a and b, and no a-b edge; make_H(p,q,r) by adding hub s adjacent to x and r leaves; make_defect_B(p,q) by removing the first deterministic non-gateway left-clique edge. Validate simple graph invariants and expected counts.",
+  "For Hp,q,r, validate formula counts: |V|=p+q+r+2, |E|=p(p-1)/2+q(q-1)/2+r+3, and candidate count excludes only the r degree-1 leaves. For Bp,q, validate |V|=p+q+1 and |E|=p(p-1)/2+q(q-1)/2+2.",
+  "Implement verify_claims.py. For each Hp,q,r instance, build the graph, compute all candidate IC values exactly, assert IC(x)=Fraction(2,3), assert x is the unique strict maximizer, assert hub s has IC=0, assert leaves are omitted, and assert IC(x) is unchanged for r in [1,2,5,10] with p=q=3.",
+  "In verify_claims.py, additionally check gateway competitors in Hp,q,r: gateway IC must be 0 when its clique size m=3 and 2(m-1)/m^2 when m>=4, and must be <=3/8, hence strictly below 2/3. Record the runner-up and exact gap.",
+  "In verify_claims.py, run C2-C4 sanity checks: Bp,q must have IC(x)=1 and satisfy the Proposition 1 equality condition; the defective Bp,q with p=4 must have IC(x)=5/6 exactly; the defective Bp,q with p=10 must have IC(x)=71/72 exactly.",
+  "Cross-check leave_one_out_explicit() against leave_one_out_formula() exactly on small graphs H(3,3,1), B(4,3), and the p=4 defect graph. Fail if any exact Fraction differs.",
+  "Implement reproduce.py with argparse. Default runs verify_claims.run_all() and writes results/metrics.json. --smoke runs only H(3,3,1) and B(4,3), writes results/smoke_metrics.json, and prints a concise summary.",
+  "Run the smoke command and inspect: H(3,3,1) must have |V|=9, |E|=10, 8 candidates, IC(x)=2/3, unique maximizer x; B(4,3) must have IC(x)=1.",
+  "Run the full synthetic verification with python reproduce.py. Confirm results/metrics.json contains the C1 exact value '2/3', decimal 0.6666666667, maximizer 'x', unique=true, runner-up value, gap, and passed=true.",
+  "If data/him.edgelist exists, optionally compute HIM statistics in float mode and record whether vertex/edge counts and mean clustering match 9222/36324/0.114. If it does not exist, mark HIM as skipped and do not let it block C1.",
+  "Inspect results/metrics.json for C1-C4 status, exact fractions, instance table, and the Eq. (3)-vs-Eq. (6) cross-check flag. The final reported C1 number is the decimal approximation of the exact Fraction(2,3)."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`. It builds only H(3,3,1) and B(4,3), prints vertex/edge counts, candidate counts, IC(x), hub IC, runner-up, exact fractions, and writes results/smoke_metrics.json. Success requires H(3,3,1): |V|=9, |E|=10, 8 candidates, IC(x)=2/3 exactly and uniquely maximal; B(4,3): IC(x)=1 exactly.",
+ "intermediate_checks": [
+  "H(3,3,1) has |V|=9, |E|=10, exactly 1 degree-1 leaf, and 8 candidates in V>=2.",
+  "Hp,q,r candidate set contains the p+q clique vertices, x, and s, but not the r leaves; hub s has IC=0 exactly.",
+  "H(3,3,1) gives IC(x)=2/3 exactly, and the runner-up is a gateway with exact value 0 or <=3/8; no tie with x.",
+  "H(3,3,1), H(3,4,1), H(4,3,2), H(4,4,1), H(5,5,3), and H(10,10,1) all give IC(x)=2/3 and unique maximizer x.",
+  "r-invariance: with p=q=3, IC(x)=2/3 exactly for r=1,2,5,10.",
+  "B(4,3) has |V|=8, |E|=11, IC(x)=1 exactly, C(x)=0, and both adjacent leave-one-out terms equal 1.",
+  "Defect p=4 gives IC(x)=5/6 exactly; defect p=10 gives IC(x)=71/72 exactly.",
+  "Eq. (3) explicit neighborhood removal and Eq. (6) triangle/common-neighbor formula agree exactly on H(3,3,1), B(4,3), and the p=4 defect graph.",
+  "No self-loops or duplicate edges are present in any synthetic graph; all graph invariants match the closed-form vertex/edge counts.",
+  "Metrics contain exact fraction strings and decimal approximations; C1 value is reported on [0,1], not as a percentage."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total budget ~10 minutes CPU. Spend ~4-5 minutes writing the four Python files and validating graph invariants, <1 minute on the smoke run, <1 minute on the full synthetic C1-C4 run, and ~2 minutes inspecting results/metrics.json. Optional HIM parsing gets at most 1-2 minutes and only if data/him.edgelist already exists. Keep ~1 minute reserve. The full synthetic computation is seconds; no GPU or downloads are needed."
+}

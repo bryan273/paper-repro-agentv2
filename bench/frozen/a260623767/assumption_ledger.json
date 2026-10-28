@@ -1,0 +1,178 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper says pairs are 'weighted by the official pairmeta.txt weights' but never gives the weighted-accuracy formula (normalization, treatment of zero weights).",
+  "options": [
+   "sum(w_i * correct_i) / sum(w_i) over all 102 pairs",
+   "normalize weights to sum 1 and average correct_i * w_i",
+   "use the Mooij et al. reference scoring script unchanged"
+  ],
+  "chosen": "sum(w_i * correct_i) / sum(w_i) over all 102 pairs",
+  "rationale": "This is the standard Tübingen CEP weighted-accuracy convention from Mooij et al. [1] and reproduces the reported 68/102 unweighted vs 74.7% weighted relationship.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": "The 102 CEP pairs with scalar cause, scalar effect, and ≥50 samples, weighted by the official pairmeta.txt weights.",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper never lists which 100 of the pairs SLOPE is bundled with, nor how the 102-pair set maps onto that subset, yet C2/C3 depend on that exact subset.",
+  "options": [
+   "recompute the 102-pair filter from pairmeta.txt and take the intersection with SLOPE's bundled pair list",
+   "use SLOPE's bundled pair list verbatim as the 100-pair set",
+   "assume the 100 pairs are the 102 minus the two highest-indexed pairs"
+  ],
+  "chosen": "recompute the 102-pair filter from pairmeta.txt, then take the intersection with SLOPE's bundled pair ids and verify the two dropped pairs",
+  "rationale": "The paper states the baseline was re-run 'on the authors' bundled 100 pairs'; identifying them from the bundle is the only reproducible mapping.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "SLOPE is the authors’ own released code run on their bundled CEP pairs, forced to decide",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Min-max quantization divides by (max - min); behaviour for a constant variable (max == min, e.g. all-tie linear cases in §6) is unspecified.",
+  "options": [
+   "map the constant series to all zeros and continue scoring",
+   "drop the pair from the benchmark",
+   "add a small epsilon to the range"
+  ],
+  "chosen": "map the constant series to all zeros and continue scoring",
+  "rationale": "The paper reports 0 ties on the 102 pairs and expects linear reversible cases to be all-ties; a zero series yields a well-defined (tied) score instead of a silent crash.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "quantize each independently to 256 levels by linear min-max scaling",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact byte payload handed to bz2 (dtype, header, signedness) and whether the length is measured on the compressor output only is not spelled out beyond 'first difference cast to int8' and 'compressed byte length'.",
+  "options": [
+   "bz2.compress(np.diff(arr).astype(np.int8).tobytes(), compresslevel=9) and take len()",
+   "same but cast to uint8 / add 128 offset",
+   "streaming BZ2Compressor with flush"
+  ],
+  "chosen": "bz2.compress(np.diff(arr).astype(np.int8).tobytes(), compresslevel=9) and take len()",
+  "rationale": "Directly follows the stated definition: stable argsort, first difference cast to int8, byte length of the bz2 output.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "where argsort is a stable sort, ∆the first difference cast to int8, and | · | the compressed byte length.",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "First differencing a length-n sequence yields n-1 values; the paper does not say whether the first element is preserved or padded.",
+  "options": [
+   "np.diff -> n-1 elements, no padding",
+   "prepend the first value so the length stays n",
+   "wrap-around difference"
+  ],
+  "chosen": "np.diff -> n-1 elements, no padding",
+  "rationale": "The canonical meaning of 'first difference' and the cheapest faithful reading; affects both conditional and marginal codes symmetrically.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "How a 'linear subsample' of series longer than 8000 points selects indices (endpoints included, rounding).",
+  "options": [
+   "np.linspace(0, n-1, 8000).round().astype(int)",
+   "np.arange(0, n, n/8000).astype(int)",
+   "uniform stride floor(n/8000) with truncation"
+  ],
+  "chosen": "np.linspace(0, n-1, 8000).round().astype(int)",
+  "rationale": "Standard linear subsampling that keeps both endpoints and preserves ordering; only a small minority of CEP pairs exceed 8000 points, so the headline is insensitive.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "series > 8000 points linearly subsampled to 8000",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The paper defines an exact tie (s == 0) as wrong but does not say how frequently ties occur or how they interact with the weights.",
+  "options": [
+   "count s == 0 as incorrect (contributes 0 correct weight)",
+   "exclude ties from the denominator",
+   "break ties by variable cardinality"
+  ],
+  "chosen": "count s == 0 as incorrect (contributes 0 correct weight)",
+  "rationale": "The protocol explicitly says ties count as wrong; the paper reports 0 ties on the 102 pairs, so the choice should not change the headline.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Every pair receives a {X →Y, Y →X} call; ties count as wrong.",
+  "page": 2
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Row order/orientation conventions: whether the pair file's first column is treated as X and second as Y, and whether rows are shuffled or sorted before quantization.",
+  "options": [
+   "first column = X, second column = Y, keep original row order",
+   "sort rows by X",
+   "shuffle rows with a fixed seed"
+  ],
+  "chosen": "first column = X, second column = Y, keep original row order",
+  "rationale": "Needed for the sign convention to map to the benchmark's ground-truth direction labels; any shuffling would destroy the order-dependent compression signal.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Random seeds for the bootstrap CI (n=1000) and the 200x split-half check are not given; only the falsification/confounding experiments are said to use fixed seeds.",
+  "options": [
+   "use an arbitrary fixed seed for diagnostics and note it",
+   "run diagnostics with several seeds and report the range",
+   "skip diagnostics entirely"
+  ],
+  "chosen": "use an arbitrary fixed seed for diagnostics and note it; the headline is deterministic and seed-free",
+  "rationale": "The decision path is deterministic (paper claims bit-for-bit reproduction), so seeds only affect auxiliary intervals.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "A 200× split-half out-of-sample check gives 74.8%, confirming the fixed sign was not fitted.",
+  "page": 2
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Handling of degenerate/edge data in the pair files (NaN values, duplicate rows, integer-valued columns) is not discussed.",
+  "options": [
+   "assume the official CEP files are clean and use them verbatim",
+   "drop NaNs per pair",
+   "impute before quantization"
+  ],
+  "chosen": "assume the official CEP files are clean and use them verbatim",
+  "rationale": "The paper reports 102/102 pairs scored with 0 ties and no preprocessing step, implying no rows are removed.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether the marginal normalizer max(dc(q),1) uses the marginal code computed on the quantized series in its original (unsorted) order, and whether it is computed on the same subsampled rows as the conditional code.",
+  "options": [
+   "dc on the original-order quantized series, same subsampled rows as the conditional code",
+   "dc on the sorted series",
+   "dc without subsampling"
+  ],
+  "chosen": "dc on the original-order quantized series, same subsampled rows as the conditional code",
+  "rationale": "The notation dc(q) refers to the sequence q itself (marginal), not the sorted/differenced view used in sc, and consistency of row sets avoids length mismatches.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ }
+]

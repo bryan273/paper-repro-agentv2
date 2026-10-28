@@ -1,0 +1,257 @@
+{
+ "approach": "No author code exists, so the plan reimplements the paper pipeline from the claim contract and targets C1 first: load and validate the IBM Telco CSV, apply the specified label/one-hot/min-max preprocessing, hold out a stratified 20% test set, apply SMOTE only to the training partition, fit the L2 logistic regression, and compute AUC-ROC on the untouched test set. The same pipeline is then reused for the cheap companion checks (5-fold CV, optional RF/XGBoost/LightGBM rows, top-risk quintile projection) so the output is a faithful reproduction rather than a hand-tuned one-off. SHAP/LIME, CRM tiering, and PSI monitoring are implemented as optional analysis because the match target is C1 and these should never block the headline result. Dataset acquisition is made robust by trying public CSV mirrors first, validating the 7,043 x 21 schema, and falling back to an explicit Kaggle-download error only if no mirror is reachable.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Minimum Python dependencies: numpy, pandas, scikit-learn, imbalanced-learn, requests, shap, lime, xgboost, lightgbm.",
+   "requirement_ids": []
+  },
+  {
+   "path": "config.py",
+   "purpose": "Central configuration for paths, candidate dataset URLs, expected dataset shape, preprocessing choices, random seed, model hyperparameters, thresholds, CV settings, business-impact constants, and tolerance values.",
+   "requirement_ids": []
+  },
+  {
+   "path": "data_utils.py",
+   "purpose": "Download/validate the IBM Telco CSV, coerce TotalCharges, encode binary fields, one-hot encode categorical fields, build the 40-feature matrix, perform the stratified 80/20 split, fit MinMaxScaler on train only, and apply SMOTE to train only.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+   ]
+  },
+  {
+   "path": "modeling.py",
+   "purpose": "Train Logistic Regression and optional RF/XGBoost/LightGBM models, enforce the fixed 0.5 threshold, compute test metrics with AUC-ROC via roc_auc_score, run 5-fold stratified CV with scaler/SMOTE refit inside each fold, and compute top-quintile business-impact quantities and CRM risk tiers.",
+   "requirement_ids": [
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R14"
+   ]
+  },
+  {
+   "path": "analysis.py",
+   "purpose": "Optional SHAP LinearExplainer global explanations, LIME LimeTabularExplainer local explanations, PSI monitoring with 0.20 retraining threshold, and writing of explanation/monitoring artifacts.",
+   "requirement_ids": [
+    "R12",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that orchestrates data preparation, C1 LR fit/evaluation, companion metrics, optional analyses, and writing of results/metrics.json plus results/smoke_metrics.json in smoke mode.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "paths": {
+   "raw_csv": "data/WA_Fn-UseC_-Telco-Customer-Churn.csv",
+   "metrics": "results/metrics.json",
+   "smoke_metrics": "results/smoke_metrics.json",
+   "explanations_dir": "results/explanations"
+  },
+  "dataset": {
+   "expected_rows": "7043 (R1)",
+   "expected_columns": "21 (R1)",
+   "target": "Churn (R1)",
+   "drop_column": "customerID (R1)",
+   "feature_count": "40 (R3)",
+   "candidate_urls": [
+    "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv",
+    "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/WA_Fn-UseC_-Telco-Customer-Churn.csv"
+   ],
+   "kaggle_fallback": "kaggle datasets download -d blastchar/telco-customer-churn (only if credentials exist; otherwise fail with a clear CSV-missing message)"
+  },
+  "preprocess": {
+   "label_encode": {
+    "columns": [
+     "gender",
+     "Partner",
+     "Dependents",
+     "PhoneService",
+     "PaperlessBilling"
+    ],
+    "mapping": "Yes=1, No=0; Male=1, Female=0; SeniorCitizen already 0/1 (R2, A7)"
+   },
+   "one_hot": {
+    "columns": [
+     "MultipleLines",
+     "InternetService",
+     "OnlineSecurity",
+     "OnlineBackup",
+     "DeviceProtection",
+     "TechSupport",
+     "StreamingTV",
+     "StreamingMovies",
+     "Contract",
+     "PaymentMethod"
+    ],
+    "drop_first": "False (A6, R3)"
+   },
+   "continuous": {
+    "columns": [
+     "tenure",
+     "MonthlyCharges",
+     "TotalCharges"
+    ],
+    "scaling": "MinMaxScaler fit on train partition only, then transform train and test (A3, A4, R4)"
+   },
+   "total_charges_missing": "coerce to numeric and fill blank/NaN with 0 before scaling (A1)",
+   "split": {
+    "test_size": "0.2 (R5)",
+    "stratify": "Churn target (R5)",
+    "random_state": "42 (A2)",
+    "expected_test_rows": "1409 (R5)",
+    "expected_train_rows": "5634"
+   },
+   "smote": {
+    "k_neighbors": "5 (R6)",
+    "random_state": "42 (A2)",
+    "apply_to": "training partition only (R6, A4)",
+    "expected_balanced_train_shape": "8278 x 40",
+    "expected_balanced_class_counts": "4139 / 4139"
+   }
+  },
+  "models": {
+   "logistic_regression": {
+    "library": "scikit-learn (R7)",
+    "penalty": "l2 (R7)",
+    "C": "1.0 (A5)",
+    "solver": "lbfgs (A5)",
+    "max_iter": "1000 (A5)",
+    "class_weight": "None (A5)",
+    "threshold": "0.5 fixed (R8)"
+   },
+   "random_forest": {
+    "library": "scikit-learn (R9)",
+    "n_estimators": "400 (R9)",
+    "max_depth": "12 (R9)",
+    "min_samples_leaf": "8 (R9)",
+    "max_features": "sqrt (R9)",
+    "bootstrap": "True (R9)",
+    "random_state": "42 (A2)",
+    "threshold": "0.5 fixed (R8)"
+   },
+   "xgboost": {
+    "library": "official xgboost (R10)",
+    "params": "library defaults with random_state=42 (A9)",
+    "threshold": "0.5 fixed (R8)"
+   },
+   "lightgbm": {
+    "library": "official lightgbm (R10)",
+    "params": "library defaults with random_state=42 (A9)",
+    "threshold": "0.5 fixed (R8)"
+   }
+  },
+  "evaluation": {
+   "primary_metric": "AUC-ROC via sklearn roc_auc_score / trapezoidal integration (R11)",
+   "metrics_on": "held-out 20% test set only (R11)",
+   "positive_class": "churn=1 (A8)",
+   "cv": {
+    "n_splits": "5 (C4)",
+    "shuffle": "True",
+    "random_state": "42 (A10)",
+    "refit_scaler_and_smote": "inside each training fold (A10)"
+   }
+  },
+  "business_impact": {
+   "top_fraction": "0.20 (C5)",
+   "top_segment_size": "about 1408 of 7043 (C5)",
+   "clv_usd": "850 (C6)",
+   "campaign_uptake": "0.25 (C6)",
+   "precision_recall_basis": "illustrative full-cohort projection, not a held-out test metric (A12)",
+   "risk_tiers": {
+    "high": "p > 0.70 (R14)",
+    "medium": "0.40 <= p <= 0.70 (R14)",
+    "low": "p < 0.40 (R14)"
+   }
+  },
+  "psi": {
+   "threshold": "0.20 (R15)",
+   "reference": "training feature distribution",
+   "current": "held-out test or incoming batch"
+  },
+  "explainability": {
+   "shap": "shap.LinearExplainer on the LR test design matrix (R12)",
+   "lime": "lime.LimeTabularExplainer classification mode, quartile-discretised continuous features, binary/one-hot columns declared categorical (R13)"
+  },
+  "targets": {
+   "C1_auc": 0.8411,
+   "C1_tolerance_abs": 0.02,
+   "C2_accuracy_pct": 78.42,
+   "C3_f1": 0.6231,
+   "C4_cv_auc_mean": 0.845,
+   "C4_cv_auc_std": 0.013,
+   "C5_top20_precision_pct": 67,
+   "C5_top20_recall_pct": 50,
+   "C6_preserved_usd": 199000
+  },
+  "execution": {
+   "seed": "42 (A2)",
+   "smoke_nrows": "500",
+   "smoke_random_state": "42",
+   "write_optional_artifacts": "True"
+  }
+ },
+ "steps": [
+  "Create results/ and data/ directories and install dependencies with python -m pip install -U numpy pandas scikit-learn imbalanced-learn requests shap lime xgboost lightgbm.",
+  "In data_utils.ensure_dataset(), try each configured public CSV URL with requests; write the first valid CSV to data/ and validate that it has 7043 rows and 21 columns. If no mirror works, attempt the Kaggle CLI only when credentials exist, otherwise raise a clear dataset-missing error.",
+  "Load the CSV with pandas, coerce TotalCharges to numeric and fill blank/NaN values with 0 per A1, verify the expected 21-column schema, drop customerID, and map Churn Yes/No to target 1/0.",
+  "Apply the R2 label encoding to gender, Partner, Dependents, PhoneService, and PaperlessBilling with Yes=1/No=0 and Male=1/Female=0; leave SeniorCitizen unchanged.",
+  "Apply R3 one-hot encoding with drop_first=False to MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, and PaymentMethod; concatenate with the binary and continuous columns; assert exactly 40 predictor columns.",
+  "Perform the R5 stratified 80/20 train-test split with random_state=42; assert train n=5634 and test n=1409, print the churn counts in each partition, and keep the test frame untouched.",
+  "Fit MinMaxScaler on the training partition continuous columns tenure, MonthlyCharges, and TotalCharges only; transform train and test; never fit the scaler on test.",
+  "Apply SMOTE with k_neighbors=5 and random_state=42 only to the scaled training partition; assert the balanced training matrix is 8278 x 40 with 4139 churn and 4139 non-churn rows; leave the test set at 1409 rows.",
+  "Fit LogisticRegression(penalty='l2', C=1.0, solver='lbfgs', max_iter=1000, class_weight=None) with random_state=42; predict churn probabilities and hard labels at the fixed 0.5 threshold.",
+  "Compute C1 test AUC-ROC with sklearn.metrics.roc_auc_score and also compute accuracy, precision, recall, and F1 on the same untouched 1409-row test set; store all values in results/metrics.json under claims.C1.",
+  "Compare C1 AUC to 0.8411 with absolute tolerance 0.02; if outside [0.8211, 0.8611], first audit the 40-feature construction, TotalCharges handling, split counts, scaler/SMOTE order, and test-set isolation before considering alternate seeds.",
+  "Run 5-fold StratifiedKFold with shuffle=True and random_state=42; inside each fold refit MinMaxScaler and SMOTE only on the training fold, fit LR, and compute fold AUC; report mean and population/ sample standard deviation in claims.C4.",
+  "For completeness, fit Random Forest with 400 trees, max_depth=12, min_samples_leaf=8, max_features='sqrt', bootstrap=True, random_state=42 on the same SMOTE-balanced train set; evaluate on test and write C3 and its accuracy/precision/recall.",
+  "If xgboost and lightgbm import successfully, fit both with library defaults and random_state=42, evaluate on the untouched test set at threshold 0.5, and write C2 and companion metrics; if imports fail, record the optional-row failure without aborting C1.",
+  "Using the LR scores, compute the full-cohort top-20% segment size, precision, recall, and number of true churners, plus the held-out test top-20% diagnostic; compute preserved revenue as uptake * true_churners_in_top_segment * CLV and write illustrative C5/C6 values.",
+  "Run optional SHAP LinearExplainer on the test design matrix, optional LIME explanations for selected test instances, assign CRM risk tiers by the configured cutoffs, and compute PSI between train and test feature distributions with the 0.20 retraining flag; wrap all optional analysis in try/except so C1 remains the gating result.",
+  "Write results/metrics.json with metadata (seed, row counts, feature count, package versions), claims.C1 through claims.C6, and optional explanation/monitoring summaries; print a compact summary and exit nonzero only if C1 is outside the configured tolerance.",
+  "Run reproduce.py --smoke before the full run; then run python reproduce.py to create the final results/metrics.json."
+ ],
+ "smoke_test": "python reproduce.py --smoke loads the full CSV, validates the 7043 x 21 schema, takes a stratified 500-row subset, runs the exact same preprocessing, stratified split, train-only MinMaxScaler, train-only SMOTE, and LR fit, then writes results/smoke_metrics.json. It asserts that the feature matrix has 40 columns, the test fold is never oversampled, predictions contain no NaN, AUC is finite and above 0.5, and the smoke output never overwrites results/metrics.json.",
+ "intermediate_checks": [
+  "CSV shape is exactly 7043 rows x 21 columns and contains all expected columns including customerID and Churn.",
+  "TotalCharges blank/NaN count is detected (expected around 11), coerced to numeric, filled with 0 per A1, and no NaN remains in the final feature matrix.",
+  "Target distribution is 1869 churners and 5174 non-churners (about 26.54% churn).",
+  "After the stratified split, train has 5634 rows and test has 1409 rows; test churn count is about 374 and train churn count about 1495.",
+  "The final design matrix has exactly 40 columns after 5 label-encoded binaries, 1 SeniorCitizen binary, 31 one-hot columns, and 3 continuous columns.",
+  "All 40 features are numeric and finite; test set remains 1409 rows and is never passed to SMOTE.",
+  "After train-only SMOTE, the training matrix is 8278 x 40 with equal class counts 4139/4139.",
+  "LogisticRegression has 40 coefficients plus one intercept and finite fitted parameters.",
+  "Majority-class baseline accuracy is about 73.46% and baseline AUC is 0.5, providing a sanity floor.",
+  "C1 test AUC should fall within 0.8411 +/- 0.02; if not, inspect split counts, encoding order, missing-TotalCharges handling, scaler/SMOTE order, and threshold use before changing anything.",
+  "C4 5-fold mean AUC should be near 0.845 with fold std near 0.013; large deviation signals leakage, wrong scaling order, or SMOTE applied outside the fold.",
+  "Optional C2/C3/C5/C6 checks are informational; only C1 is gating for the match target."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup and dependency installation: 3-5 minutes. Dataset fetch and validation: 1-2 minutes. Smoke test: under 1 minute. Full C1 LR fit plus metrics: under 1 minute. C4 5-fold CV: 1-2 minutes. Optional RF/XGBoost/LightGBM rows and SHAP/LIME/PSI analysis: 3-5 minutes if all dependencies install cleanly. Total planned command time is about 10-15 minutes on CPU, within the route's stated 15-minute reference budget; C1 can complete even if the optional tree or explanation libraries fail."
+}

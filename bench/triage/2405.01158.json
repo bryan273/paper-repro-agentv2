@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Average Precision of EIF+ on the TEP dataset (0.93)",
+  "table_ref": "Table 3",
+  "dataset": "TEP"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/AMCO-UniPD/exiffi-ind.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "TEP is a small public dataset (35,600 samples, 52 features); EIF+ training and evaluation on CPU takes seconds per the paper's reported fit times (~1 s), so the full protocol (download, install, run) should finish well under an hour."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2405.01158",
+ "title": "Towards Transparent and Efficient Anomaly Detection in Industrial Processes through ExIFFI",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

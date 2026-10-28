@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "FTM (mean and standard deviation) linear SVM classifier achieves 100% accuracy on the GunPointOldVersusYoung dataset.",
+  "table_ref": "Figure 1 / Section 3.1",
+  "dataset": "GunPointOldVersusYoung (UCR Time Series Classification Repository)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hendersontrent/mean-var-ts-classify"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The dataset is tiny (a few hundred short series), features are just mean and std, and a linear SVM on 2 features with 30 resamples runs in seconds on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2303.17809",
+ "title": "Never a Dull Moment: Distributional Properties as a Baseline for Time-Series Classification",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

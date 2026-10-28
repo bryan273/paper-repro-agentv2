@@ -1,0 +1,179 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The 3x3 verification design is stated inconsistently: Section 2.2 says N=18 and 406 tables, while Table 2 labels the 406-table, 21-atom row '3x3, 2/cell'. The margins are never printed for C1.",
+  "options": [
+   "all margins 6 (N=18, 406 tables)",
+   "all margins 2 (N=6, paper's '2/cell' label)",
+   "enumerate every 3x3 design with N=18"
+  ],
+  "chosen": "all margins 6, N=18, 406 tables",
+  "rationale": "406 is the count of 3x3 nonnegative integer tables with all row and column sums 6, and the user's hint fixes N=18; the '2/cell' label appears to be a mislabel carried into Table 2.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Against brute-force enumeration (3x3, N = 18, 406 tables)",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Section 2.2 does not name which chi-square-family member S is when it reports the mean, variance and third cumulant.",
+  "options": [
+   "Anscombe-root (variance-stabilized) statistic",
+   "Pearson X2",
+   "likelihood-ratio G2",
+   "Cressie-Read lambda = 2/3"
+  ],
+  "chosen": "Anscombe-root as the primary statistic, with Pearson, G2 and Cressie-Read 2/3 run through the same summand hook and also checked",
+  "rationale": "The paper later says the engine carries the Anscombe-root statistic, and the recursion is member-agnostic; running all four costs nothing at this size.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "here S is the Anscombe-root statistic the engine carries",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The norm behind 'maximum relative error' over three moments is not defined.",
+  "options": [
+   "elementwise |computed - enumerated| / |enumerated|, maximized over mean, variance and K3",
+   "max over moments of |delta| / max(|enumerated|, eps)",
+   "relative error only on the variance"
+  ],
+  "chosen": "elementwise |computed - enumerated| / |enumerated| with a floor of 1e-300, maximized over the three moments",
+  "rationale": "Standard reading of 'maximum relative error' over a small set of scalars; the floor avoids division by an exactly zero third cumulant without changing the reported scale.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "to a maximum relative error of 8.9e-15 in 5.5 milliseconds",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The timing protocol for 5.5 ms (import, setup, enumeration excluded, warm-up) is not specified.",
+  "options": [
+   "single end-to-end call after one warm-up, wall clock",
+   "kernel only, excluding array allocation",
+   "best of 5 repeats"
+  ],
+  "chosen": "one warm-up call, then median of 5 end-to-end wall-clock calls, excluding the brute-force enumeration reference",
+  "rationale": "Makes the reported figure reproducible at the millisecond scale while excluding the reference computation from the engine's cost.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Expected counts E_ij for the per-cell summand are not written down explicitly for the null fibre.",
+  "options": [
+   "E_ij = a_i b_j / N (independence MLE given the margins)",
+   "E_ij estimated from the observed table",
+   "E_ij = N/(RC)"
+  ],
+  "chosen": "E_ij = a_i b_j / N",
+  "rationale": "The only choice consistent with conditioning on both margins and with the paper's Haberman adjusted-residual variance form; with all w=1 the noncentral hypergeometric weights are uniform.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Which moment the engine calls the third cumulant, and whether it is standardized, is not spelled out.",
+  "options": [
+   "kappa3 = E[(S - M)^3] (unstandardized)",
+   "skewness = kappa3 / V^{3/2}",
+   "third raw moment"
+  ],
+  "chosen": "kappa3 = E[(S - M)^3], unstandardized",
+  "rationale": "The recursion accumulates A0..A3 and expands (s_new + s_partial)^r, which yields raw/central power sums directly; the paper calls these central moments, not skewness.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the exact first three central moments (mean M, variance V, third cumulant K3) of S",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The number of decimals used to key irrational (Anscombe-root) atoms is not given; too fine splits atoms, too coarse merges them.",
+  "options": [
+   "fixed 9 decimals",
+   "adaptive: half a decade coarser than the minimum atom spacing, with a separation audit",
+   "exact algebraic keys"
+  ],
+  "chosen": "adaptive decimal count: choose the coarsest key that keeps the minimum distinct-atom spacing at least 10 key units, then audit that no atom splits across a key boundary",
+  "rationale": "The paper states the rule (coarser than floating-point noise, finer than atom spacing) but not the constant; the adaptive form implements that rule and the audit catches the 0.20-scale tail failure described in Section 3.2.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "Rounding coarser than the floating-point noise and finer than the atom spacing fixes it.",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "COS inversion parameters (truncation range, number of cosine terms, treatment of the boundary half-atom) are not tabulated.",
+  "options": [
+   "cumulant-based truncation range with N = 2^12 terms",
+   "fixed range [-50, 50] and N = 2^10",
+   "density-based adaptive range"
+  ],
+  "chosen": "cumulant-based truncation range with N = 2^12, and exclusion of cut points at the minimum atom of a heavy-atom balanced null",
+  "rationale": "The paper says the boundary half-atom is not resolved and is not used as a cut point, so the implementation must detect and exclude it rather than tighten the window.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "the truncated cosine window does not resolve the boundary half-atom",
+  "page": 7
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether rows enter the DP in increasing margin order or in the observed table's order affects the lattice indexing but not the law; the paper does not say.",
+  "options": [
+   "fixed increasing row-margin order, then column-margin order",
+   "order of first appearance in the data",
+   "random permutation with sorting"
+  ],
+  "chosen": "sort row margins and column margins ascending, keep the cell order row-major, and map back to the original labels",
+  "rationale": "Canonicalizes the lattice and makes runs comparable; the statistic and the fibre are invariant to label permutation.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "fix a row-major cell order",
+  "page": 3
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The exact conditional variance uses the finite-population factor N/(N-1) relative to the Haberman leverage variance; which one the code should return is not stated as a switch.",
+  "options": [
+   "mu_ij (1 - h_ij) (asymptotic Haberman)",
+   "mu_ij (1 - h_ij) N/(N-1) (exact conditional)",
+   "both, side by side"
+  ],
+  "chosen": "return the exact conditional variance from enumeration/DP as the reference, and report the Haberman leverage form alongside for the Section 4 comparison",
+  "rationale": "The paper is explicit that the leverage variance is the asymptotic limit, not the exact fixed-margin variance, and the exact one is larger by N/(N-1).",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "No seeds or Monte Carlo settings exist for the core claims; only the Section 5.4 coverage study uses simulation, which is out of scope for C1.",
+  "options": [
+   "fully deterministic, no seeds",
+   "fixed seed for any incidental simulation",
+   "multiple seeds and report spread"
+  ],
+  "chosen": "fully deterministic; seed any incidental simulation and record it, but the target claim uses no sampling",
+  "rationale": "The paper's exactness claims are deterministic computations, and the provenance statement says every numerical result regenerates from deposited deterministic code.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The engine developed here is deterministic and exact",
+  "page": 2
+ }
+]

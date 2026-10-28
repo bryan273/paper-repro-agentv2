@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "usfAD OCC model's average F1-score (or accuracy) on NSL-KDD under 10-run stratified 80/20 splits, trained on benign-only data with threshold μ−3σ",
+  "table_ref": "Table (results section, per-dataset OCC comparison; NSL-KDD row)",
+  "dataset": "NSL-KDD"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "basis": "NSL-KDD is small and public, but no code is released; the agent must reimplement usfAD (stochastic forest anomaly detector from Aryal 2018/2021), the μ−3σ thresholding, and the 10-run 80/20 protocol, plus install PyOD for baselines; all CPU-feasible in a few hours."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "usfAD must be reimplemented from cited papers",
+  "Exact preprocessing/one-hot details and threshold sign convention must be inferred"
+ ],
+ "suitable": true,
+ "id": "2403.11180",
+ "title": "usfAD Based Effective Unknown Attack Detection Focused IDS Framework",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

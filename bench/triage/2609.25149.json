@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Mean independent-set size of 19.20 (99.5% of optimal 19.30) on 500-vertex ER graphs (p=0.35), with mean runtime 3.41 s vs 643.57 s for exact solving",
+  "table_ref": "Table 1 (row n=500, column 'Ours') and Table 2 (row n=500, column 'Ours')",
+  "dataset": "50 Erdos-Renyi graphs, n=500, p=0.35 (generated synthetically)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "basis": "No code released; the dual-GNN (two residual GraphSAGE models trained alternately via rollout-based ranking losses), multilevel coarsening, local-state enumeration, coarse conflict-graph MIS via PySCIPOpt, and completion pipeline must all be reimplemented from the text, then trained on 800 graphs and evaluated on 50 n=500 graphs; inference itself is CPU-feasible (paper used a 6GB laptop GPU) but reimplementation and training dominate."
+ },
+ "blockers": [
+  "No code or configs released (empty code_links)",
+  "Training requires rollout-based supervision over the full coarsening+solve pipeline, which is expensive to reimplement and run",
+  "Exact baseline (643 s/graph) and ReduMIS comparison require external solvers (PySCIPOpt, ReduMIS binary)",
+  "Reproducing the exact 19.20 mean requires matching unspecified training details (rollout counts, loss weighting, seeds)"
+ ],
+ "suitable": false,
+ "id": "2609.25149",
+ "title": "Dual-GNN Multilevel Coarsening for Maximum Independent Set",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "PGKD test accuracy on Cora (transductive, SAGE teacher) = 82.15%",
+  "table_ref": "Table 3, row Cora/transductive, column PGKD",
+  "dataset": "Cora"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": 2,
+  "basis": "Cora is tiny (2708 nodes) and CPU-trainable, but no code is released, so the full PGKD pipeline (SAGE teacher + prototype losses + 5-seed protocol) must be reimplemented from the paper text."
+ },
+ "blockers": [
+  "No code or configs released; PGKD losses and prototype strategy must be reimplemented from scratch",
+  "Exact GLNN baseline reproduction also needed for the comparison cell",
+  "5 random seeds required to match the reported mean/std"
+ ],
+ "suitable": true,
+ "id": "2303.13763",
+ "title": "Edge-free but Structure-aware: Prototype-Guided Knowledge Distillation from GNNs to MLPs",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

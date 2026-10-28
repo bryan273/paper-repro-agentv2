@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "SoftHAD mean anomaly agreement score (AUC) of 81.3% on synthetic dataset D1, averaged over 100 runs",
+  "table_ref": "Table I, row SoftHAD, column Dataset D1",
+  "dataset": "Synthetic D1 (mixture of multivariate Gaussians, 500+500 train/test, 3% label noise)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Synthetic data is generated from described Gaussian mixtures; method is a closed-form linear solve on ~1000-node graphs, so 100 runs of 1000x1000 solves plus baselines fit easily on CPU, but all code (data generator, SoftHAD, baselines) must be written from scratch."
+ },
+ "blockers": [
+  "No code released; data generator and all methods must be reimplemented from the paper text",
+  "Exact Gaussian parameters for D1 not fully specified, so exact 81.3% may not be matched"
+ ],
+ "suitable": true,
+ "id": "2604.21462",
+ "title": "Conditional anomaly detection with soft harmonic functions",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

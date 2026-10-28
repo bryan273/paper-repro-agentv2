@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AirMoE's mIoU on the CamVid semantic segmentation dataset in the main comparison table (single table cell; exact value not shown in provided excerpt).",
+  "table_ref": "Main semantic segmentation comparison table (Table number not visible in provided excerpt; Section VI)",
+  "dataset": "CamVid"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "No public code/configs and no released checkpoints; reproducing the full AirMoE pipeline requires implementing a pretrained LM backbone, multiple distributed experts, FRL routing, and over-the-air aggregation, then training on semantic segmentation data, which is GPU-bound and days-long on a CPU-only laptop."
+ },
+ "blockers": [
+  "No public code, configs, or checkpoints",
+  "Full training pipeline (pretrained LM backbone, multiple experts, wireless channel simulation) not fully specified in the excerpt",
+  "Training semantic segmentation experts typically requires a GPU",
+  "Exact data splits and hyperparameters for CamVid not provided",
+  "Exact headline mIoU value not visible in the provided text"
+ ],
+ "suitable": false,
+ "id": "2607.16562",
+ "title": "AirMoE: Statistic-Augmented Over-the-Air MoE for Collaborative Intelligence",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

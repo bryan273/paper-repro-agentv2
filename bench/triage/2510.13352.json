@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Proximity kernel ('Ours') achieves NMI = 0.2289 on the Hepatitis dataset for K-means clustering with the ground-truth number of clusters.",
+  "table_ref": "Table 3, row 'Ours', column 'Hepatitis'",
+  "dataset": "Hepatitis (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/proximity-kernel-2289"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.5,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The target is one NMI cell on the smallest UCI dataset (155 samples, 19 features); the method is simple binning/encoding plus K-means, and 5 bin counts x 10 repeats run in seconds to minutes on a CPU."
+ },
+ "blockers": [
+  "The code link is an anonymous.4open.science repository and may expire or be unavailable.",
+  "Exact random seeds, preprocessing details, and UCI data version are not fully specified for reproducing the 10-run average exactly."
+ ],
+ "suitable": true,
+ "id": "2510.13352",
+ "title": "Kernel Representation and Similarity Measure for Incomplete Data",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Mean NMI of CGSD-CSpec on Wisconsin is 0.182 (vs. K-Means 0.140), the paper's headline win on a small heterophilic graph.",
+  "table_ref": "Table 2, row Wisconsin, column CSpec",
+  "dataset": "Wisconsin (WebKB, 251 nodes, 515 edges, 1703 features, 5 classes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/woodywff/cgsd"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Wisconsin is tiny (251 nodes); the paper claims ~30 s end-to-end, so the cost is dominated by installing PyTorch/PyG, downloading the dataset, and running 5 seeds of a 2-layer encoder plus spectral clustering on CPU."
+ },
+ "blockers": [
+  "Code repo may be incomplete or not match the paper (only a GitHub link is given; no explicit configs/scripts verified)",
+  "Paper text contains inconsistencies (e.g., Cornell NMI=1.000 claim in appendix vs. Table 2 value 0.093; Table 4 default NMI differs from Table 2), which may complicate exact reproduction",
+  "Requires implementing the sheaf-diffusion encoder and CSpec clusterer if the repo is missing or outdated"
+ ],
+ "suitable": true,
+ "id": "2606.30249",
+ "title": "Curvature-Guided Sheaf Diffusion for Unsupervised Community Detection on Heterophilic Graphs",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

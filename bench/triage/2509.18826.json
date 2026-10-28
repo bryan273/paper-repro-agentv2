@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Clustering accuracy (ACC) of LoRD on the Wine dataset (D10), as reported in the main results table.",
+  "table_ref": "Table 2 (main results)",
+  "dataset": "Wine (D10)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lwl-learning/LoRD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Wine is a tiny 178x13 dataset; the method is a projected gradient descent with O(n^2 k) per iteration and n=178, k=3, so a few thousand iterations take seconds on CPU; the main cost is installing dependencies and downloading the small dataset."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2509.18826",
+ "title": "Graph-based Clustering Revisited: A Relaxation of Kernel $k$-Means Perspective",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

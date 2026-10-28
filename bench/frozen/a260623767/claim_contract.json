@@ -1,0 +1,255 @@
+{
+ "title": "One Ruler: A Same-Hands Re-Evaluation of Bivariate Causal Direction on Tuebingen, with a Parameter-Free Compression Baseline",
+ "summary": "Headline accuracies on the 102 Tübingen cause-effect pairs are compared across papers even though each number is produced under its authors' own protocol (different pair subsets, weightings, model selection and abstention), so the paper re-runs every competitor itself under one strict rule: no tuning, decision forced on every pair, official weights. As a clean reference point it introduces a zero-parameter baseline that quantizes both variables to 256 levels, sorts one by the other, first-differences to int8 and uses bz2 compressed length with a marginal normalization as the causal-direction score. Under this common ruler the baseline reaches 74.7% weighted accuracy on 102 pairs and 76.0% on the 100 pairs SLOPE uses (vs. 77.2% forced-decision SLOPE, McNemar p = 0.39), while the published 82.4% and 77.5% headlines are shown to be a decided-subset score and a mis-attribution respectively.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The parameter-free sorted-conditional bz2 compression baseline scores 74.7% weighted accuracy on the 102-pair Tübingen CEP set under forced decision with pre-registered settings and no tuning.",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen cause-effect pairs (CEP), 102 eligible pairs",
+   "split": "all 102 eligible pairs, weighted by official pairmeta.txt weights",
+   "value": 74.7,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "§4.1 and Abstract headline; Table 2, row 'Compression (ours, our 102 pairs)'",
+   "config_for_value": "bz2 level 9; 256 quantization levels by linear min-max; series >8000 points linearly subsampled to 8000; stable argsort, int8 first difference; marginal-normalized score sign; forced decision, 0 ties; settings frozen before any benchmark run",
+   "reported_spread": "bootstrap 95% CI [63.2, 84.7]% (n=1000); 200x split-half out-of-sample 74.8%; p = 3.7e-7 vs chance",
+   "est_compute": "CPU, ~0.2 s total for 102 pairs (1.0 ms/pair median, pure-Python bz2)",
+   "quote": "Our baseline reaches 74.7% weighted accuracy (p = 3.7 × 10−7) on our 102-pair set",
+   "page": 1
+  },
+  {
+   "id": "C2",
+   "statement": "On the same 100 bundled pairs that SLOPE is evaluated on, the compression baseline scores 76.0% weighted accuracy, a 1.2-point gap below forced-decision SLOPE that is not significant (McNemar p = 0.39).",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen CEP, the 100-pair subset bundled with SLOPE",
+   "split": "the authors' bundled 100 CEP pairs, weighted, forced decision",
+   "value": 76.0,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'Compression (ours, same 100 pairs)'; §4.6",
+   "config_for_value": "identical frozen baseline settings as C1, re-run on SLOPE's bundled 100-pair subset",
+   "reported_spread": "unweighted counts 67/100 vs SLOPE 73/100; McNemar exact two-sided p = 0.39 (table: both right 53, ours-only 14, SLOPE-only 20, both wrong 13)",
+   "est_compute": "CPU, <1 s (100 pairs at ~1 ms/pair)",
+   "quote": "on the same 100 pairs that SLOPE is evaluated on it scores 76.0%",
+   "page": 1
+  },
+  {
+   "id": "C3",
+   "statement": "The authors' own released SLOPE code, run on its bundled CEP pairs with a forced decision, scores 77.2% weighted accuracy on its 100-pair subset.",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen CEP, SLOPE bundled 100-pair subset",
+   "split": "SLOPE bundled pairs, forced decision (alpha = 1.01 as in their benchmark script)",
+   "value": 77.2,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row SLOPE; §4.4",
+   "config_for_value": "SLOPE v20181208 released R code, significance gate disabled by alpha=1.01 (forced decision), applied to their own stored/bundled CEP pairs",
+   "reported_spread": null,
+   "est_compute": "CPU, ~4.1 s aggregate for 100 pairs (24.4 ms/pair, authors' R code)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C4",
+   "statement": "A faithful same-hands re-implementation of RECI lands at 70.7% weighted accuracy on the 102 CEP pairs, inside the RECI authors' own reported error bar rather than the widely quoted 77.5%.",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen CEP, 102 pairs",
+   "split": "102 pairs, weighted, forced decision",
+   "value": 70.7,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row RECI; §4.3",
+   "config_for_value": "min-max [0,1] rescaling of both variables; weak regression class ax^2 + c; held-out test-set MSE averaged over random splits; smaller-error-is-cause rule",
+   "reported_spread": "69.9–70.9% across the two implementations; RECI authors report 70.73% ± 1.55",
+   "est_compute": "CPU, minutes (repeated regression-error fits over random splits on 102 pairs)",
+   "quote": "A faithful re-run of RECI lands at 70.7%",
+   "page": 1
+  },
+  {
+   "id": "C5",
+   "statement": "IGCI with uniform reference measure, run same-hands with forced decision, reaches only 66.1% weighted accuracy on the 102 CEP pairs.",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen CEP, 102 pairs",
+   "split": "102 pairs, weighted, forced decision, no tuning",
+   "value": 66.1,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'IGCI [4] (uniform)'",
+   "config_for_value": "IGCI with uniform reference measure, forced decision, no tuning (Gaussian variant pre-registered score: 54.5%)",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds–minutes (entropy estimator on 102 pairs)",
+   "quote": "both are ahead of faithful RECI (70.7%) and IGCI (66.1%)",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "The journal SLOPER variant (mixedFunctions=T, nof=8), scored from the authors' bundled sloper.tab output on the same CEP pairs, is 71.1% weighted under forced decision — 6.1 points below plain SLOPE.",
+   "metric": "weighted accuracy",
+   "dataset": "Tübingen CEP, SLOPE bundled pairs",
+   "split": "bundled CEP pairs, weighted, forced decision",
+   "value": 71.1,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 3, column SLOPER, row 'Tübingen CEP (real)'; §4.4",
+   "config_for_value": "SLOPER (mixedFunctions=T, nof=8), authors' bundled sloper.tab output, forced decision",
+   "reported_spread": null,
+   "est_compute": "CPU, ~4 s (authors' bundled stored output, no fresh run needed for CEP)",
+   "quote": "The authors’ journal SLOPER variant on the same pairs scores 71.1% weighted (from the bundled sloper.tab)",
+   "page": 1
+  },
+  {
+   "id": "C7",
+   "statement": "In a pre-registered simulation of 500 direct vs. 500 confounded matched-marginal pairs, the compression score magnitude |s| separates the two classes with median |s| = 0.082 (direct) vs 0.013 (confounded), Mann–Whitney p = 2.8e-68.",
+   "metric": "median |s| on direct pairs (and Mann–Whitney p vs confounded)",
+   "dataset": "pre-registered simulation, 500 direct X->Y + 500 confounded X<-H->Y pairs, matched marginals",
+   "split": "all 1,000 simulated pairs; direction held out of the score-magnitude test",
+   "value": 0.082,
+   "unit": "median score magnitude |s| (unitless); p = 2.8e-68",
+   "higher_is_better": true,
+   "table_ref": "§5.1",
+   "config_for_value": "same frozen compression scorer; 500 direct vs 500 confounded pairs with matched marginals, pre-registered with fixed seeds",
+   "reported_spread": "confounded median |s| = 0.013; direction accuracy 88.6% on direct vs 50.6% on confounded; top quartile by |s| is 96% pure direct",
+   "est_compute": "CPU, ~1 min for 1,000 compression pairs (plus ~25 s for the SLOPE head-to-head)",
+   "quote": "median |s| = 0.082 (direct) vs. 0.013 (confounded), Mann–Whitney p = 2.8 × 10−68",
+   "page": 4
+  },
+  {
+   "id": "C8",
+   "statement": "The confidence score is usable as an abstention signal: restricting to the top-25% of pairs by |s| (25 pairs) gives 88.9% weighted accuracy, versus 74.7% on all 102 pairs.",
+   "metric": "weighted accuracy at fixed coverage",
+   "dataset": "Tübingen CEP, 102 pairs",
+   "split": "top 25% of pairs by |s| (25 pairs), weighted",
+   "value": 88.9,
+   "unit": "% weighted accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'Top 25%', column Weighted acc.",
+   "config_for_value": "frozen baseline scores; rank pairs by |s|; score the top 25 pairs (25% coverage) with official weights",
+   "reported_spread": "Top 50% (51 pairs) 88.4%; Top 75% (76 pairs) 78.2%; All (102) 74.7%",
+   "est_compute": "CPU, <1 s (reuses the C1 per-pair scores)",
+   "quote": null,
+   "page": null
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the paper's pre-registered headline and the cheapest possible reproduction: it needs only the public 102 Tübingen pairs, pairmeta.txt weights and one pure-Python bz2 scorer with no fitted parameters and no randomness — about 0.2 s of CPU, no SLOPE R code, no regression training — yet it is exactly the central claim (a zero-parameter compressor reaches the low-to-mid 70s under the strict common ruler). The competitor numbers in Table 2 are only interpretable relative to this number."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 2.0,
+  "why": "Rule 3: weighted accuracy is a bounded accuracy-like score on a 102-pair set (far below 2,000 examples) and the paper prints it as a percentage. Rule 1 does not apply (only a bootstrap CI and a split-half estimate are given, not a std over repeated runs), and rule 2 fails the 2,000-example threshold. Band is therefore 2.0 absolute percentage points — 72.7–76.7% — which also comfortably contains the reported bootstrap CI endpoints' neighbourhood and the 76.0% same-subset figure."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Restrict to the 102 CEP pairs that have a scalar cause, a scalar effect and at least 50 samples; drop multi-dimensional and short pairs.",
+   "cite": "§2, bullet 'Data'",
+   "quote": "The 102 CEP pairs with scalar cause, scalar effect, and ≥50 samples, weighted by the official pairmeta.txt weights.",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Force a decision on every pair (no abstention, no decision-rate curve, no top-k reporting); exact ties count as wrong.",
+   "cite": "§2, bullet 'Forced decision'",
+   "quote": "Every pair receives a {X →Y, Y →X} call; ties count as wrong. No abstention, no decision-rate curve, no top-k reporting.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Quantize each variable independently to 256 integer levels by linear min-max scaling (not standardization, not rank transform).",
+   "cite": "§3, first paragraph",
+   "quote": "quantize each independently to 256 levels by linear min-max scaling, giving integer sequences qx, qy ∈{0, . . . , 255}n",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "Define the sorted-conditional code as the bz2 byte length of the int8 first difference of the value sequence sorted by a stable argsort of the key sequence.",
+   "cite": "§3, sorted-conditional code definition",
+   "quote": "where argsort is a stable sort, ∆the first difference cast to int8, and | · | the compressed byte length.",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Normalize the conditional code by the marginal code dc(q)=|bz2(∆(q))| before differencing, using max(dc,1) as denominator.",
+   "cite": "§3, score definition",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R6",
+   "stmt": "Decide by the a-priori sign rule s>0 => X->Y and s<0 => Y->X, with |s| used only as confidence, never for tuning.",
+   "cite": "§3, decision rule",
+   "quote": "the rule is a-priori: s > 0 ⇒X →Y , s < 0 ⇒Y →X, confidence |s|",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Use the frozen settings: bz2 compression level 9, 256 levels, and linear subsampling of any series longer than 8000 points down to 8000 points.",
+   "cite": "§3, 'Settings were frozen before any benchmark run'",
+   "quote": "Settings were frozen before any benchmark run: bz2 level 9; 256 levels; series > 8000 points linearly subsampled to 8000.",
+   "page": 2
+  },
+  {
+   "id": "R8",
+   "stmt": "Use bz2 as the compressor; lzma must not be substituted, because its container overhead makes both directions tie by construction at typical CEP lengths.",
+   "cite": "§3 and §6 (v)",
+   "quote": "bz2 (not lzma) is required: lzma’s container overhead makes output length-determined below ∼500 bytes, so both directions tie by construction on typical CEP series lengths",
+   "page": 2
+  },
+  {
+   "id": "R9",
+   "stmt": "Keep the scorer parameter-free and untuned: no hyperparameter or model class may be chosen using benchmark accuracy.",
+   "cite": "§2, bullet 'No tuning'",
+   "quote": "No hyperparameter or model class is selected using benchmark accuracy.",
+   "page": 2
+  },
+  {
+   "id": "R10",
+   "stmt": "Do not standardize or rank-normalize the inputs; the input scaling must remain plain min-max on the raw values.",
+   "cite": "§6, rank-transform boundary",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R11",
+   "stmt": "Report the headline as weighted accuracy over all 102 pairs, and also report the raw unweighted count (68/102) so weighted and unweighted numbers are not confused.",
+   "cite": "§4.1 and §5.2",
+   "quote": "By raw pair count the baseline is right on 68/102 (66.7% unweighted; the 74.7% headline is weighted).",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Keep the whole decision path deterministic (no RNG, no seeds needed for the point estimate); randomness appears only in the diagnostic bootstrap/split-half checks.",
+   "cite": "§4.1 and §7",
+   "quote": "The headline result reproduces bit-for-bit (102/102 pairs agree on re-run).",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "Tübingen cause-effect pairs (CEP) with pairmeta.txt weights",
+   "how_to_get": "Download the Mooij et al. [1] benchmark (pairmeta.txt, desc.txt, pair####.txt) from the Tübingen cause-effect page https://webdav.tuebingen.mpg.de/cause-effect/ ; keep pairs with scalar cause, scalar effect and >=50 samples (102 pairs) and use the official weights."
+  },
+  {
+   "name": "SLOPE released code and bundled CEP outputs (slope-v20181208, slope.tab, sloper.tab)",
+   "how_to_get": "Marx & Vreeken SLOPE distribution (ICDM 2017, ref [6]); the paper obtained the authors' own R code and bundled outputs and re-releases its scoring harness at stateoftheart.nl/causal. Needed only for the competitor rows and for identifying the bundled 100-pair subset."
+  },
+  {
+   "name": "Mooij synthetic suites SIM, SIM-G, SIM-ln (100 pairs each)",
+   "how_to_get": "Distributed with the Mooij et al. benchmark [1] and bundled in the SLOPE distribution; used only for the Table 3 generalization rows, not for the headline."
+  }
+ ],
+ "code_links": [
+  "https://stateoftheart.nl/causal (stated in the paper: scorer, RECI re-implementation, SLOPE harness, per-pair outputs, bootstrap/split-half scripts, pre-registrations)"
+ ],
+ "stated_compute": "No hardware named — only 'the same machine' for timing: 'the median per-pair wall clock is 1.0 ms for ours (pure-Python bz2) vs. 24.4 ms for the authors’ SLOPE (≈24×); aggregate 0.20 s vs. 4.1 s.'",
+ "paper_meta": {
+  "source": "2606.23767",
+  "kind": "arxiv",
+  "arxiv_id": "2606.23767",
+  "url": "https://arxiv.org/abs/2606.23767",
+  "title": "One Ruler: A Same-Hands Re-Evaluation of Bivariate Causal Direction on Tuebingen, with a Parameter-Free Compression Baseline",
+  "pages": 6
+ }
+}

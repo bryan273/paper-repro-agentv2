@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "F0.5 score of 89.6% on the public leaderboard for the 50-segment configuration with XGBoost cross-channel aggregation",
+  "table_ref": "Table 1, row '#segments 50', column 'Public XGB'",
+  "dataset": "ESA-ADB Mission 1"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The paper reports ~10 hours per experiment on an 8-core CPU, but the hidden test set is not publicly available and no code is released, making exact reproduction impossible."
+ },
+ "blockers": [
+  "No code or configuration files released",
+  "Hidden test set (public/private split) not publicly available",
+  "Requires Kaggle challenge submission to obtain leaderboard scores",
+  "Full pipeline involves many components (shapelet mining, two-level masking, hierarchical ensemble) with unspecified hyperparameters"
+ ],
+ "suitable": false,
+ "id": "2605.06681",
+ "title": "A Hierarchical Ensemble Pipeline for Anomaly Detection in ESA Satellite Telemetry",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

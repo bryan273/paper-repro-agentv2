@@ -1,0 +1,160 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper defines positive weights W but does not state whether the real-data experiments use unit weights or frequency weights.",
+  "options": [
+   "unit weight for every point",
+   "frequency weights for duplicate points",
+   "inverse-frequency weights"
+  ],
+  "chosen": "unit weight for every point",
+  "rationale": "The real-data tables treat rows as ordinary instances, and the standard Iris dataset used has no duplicate rows; synthetic data are the only place weights are explicitly described.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "with corresponding positive weights W = {wi}N i=1 ⊂R++",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper reports 20 runs but does not list random seeds or the RNG state.",
+  "options": [
+   "fixed seeds 0..19, one per run",
+   "single global seed with sequential draws",
+   "no fixed seed / fresh randomness"
+  ],
+  "chosen": "fixed seeds 0..19, one per run, with common initial centers across algorithms",
+  "rationale": "This is reproducible and matches the paper's paired controlled-experiment design while preserving 20 runs.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Given the randomness in the initial cluster center selection, each algorithm was executed 20 times.",
+  "page": 7
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "When multiple points satisfy the empty-cluster transfer condition, the paper does not specify which point g to move.",
+  "options": [
+   "first n in index order",
+   "random valid g",
+   "point closest or farthest from destination center"
+  ],
+  "chosen": "first n in index order",
+  "rationale": "This is deterministic and consistent with the paper's minimum-index tie-breaking convention; Lemma D.4 allows any valid g.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "Move a point g ∈[N] from a cluster b ∈[K] to a",
+  "page": 6
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "If several (n,k2) pairs attain the same minimal loss change in Min-D-LO, Function 3 does not say which pair to choose.",
+  "options": [
+   "first in n=1..N, k2=1..K excluding k1 order",
+   "random among tied pairs",
+   "smallest k2 then smallest n"
+  ],
+  "chosen": "first in n=1..N, k2=1..K excluding k1 order",
+  "rationale": "This follows the nested loop order in Function 3 and the paper's deterministic argmin convention.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "for k2 = 1, 2, . . . , k1 −1, k1 + 1, . . . , K do",
+  "page": 5
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "After moving one point, the paper says to recalculate the affected centers and also gives an incremental formula in the proof; the implementation must choose an equivalent update method.",
+  "options": [
+   "recompute weighted mean from assignments",
+   "use the incremental Lemma D.2 formula"
+  ],
+  "chosen": "recompute weighted mean from assignments",
+  "rationale": "This is simple and numerically robust, and is mathematically equivalent to the incremental formula for the weighted Bregman mean.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The paper does not state whether Iris features are standardized or otherwise transformed for the squared Euclidean experiments.",
+  "options": [
+   "raw features",
+   "standardize to zero mean and unit variance",
+   "min-max scale"
+  ],
+  "chosen": "raw features",
+  "rationale": "Table values are consistent with sum-of-squared distances on raw Iris features, and no preprocessing is mentioned for squared Euclidean experiments.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "with D chosen as the squared Euclidean distance",
+  "page": 9
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The paper runs to convergence for the reported tables but discusses a 200-300 iteration limit for speed; a reproduction must decide whether to cap iterations.",
+  "options": [
+   "no cap, run to convergence",
+   "cap at 300 iterations",
+   "cap at 200 iterations"
+  ],
+  "chosen": "no cap, run to convergence",
+  "rationale": "All Table 1 values were produced by running until convergence; the iteration cap is only a speed/accuracy analysis.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "in all of our experiments, we ran the algorithms until convergence",
+  "page": 8
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The paper reports raw clustering loss, not per-point loss or variance-normalized loss; the implementation must avoid dividing by N or K.",
+  "options": [
+   "raw sum of weighted Bregman divergences",
+   "mean per point",
+   "normalized by total data variance"
+  ],
+  "chosen": "raw sum of weighted Bregman divergences",
+  "rationale": "The table values are raw sums, and Figure 3 explicitly normalizes only for display.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we refer to f(P, C) as the clustering loss",
+  "page": 2
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "For K-means++ variants, the paper cites scikit-learn but does not pin down the exact version or random-state handling.",
+  "options": [
+   "use scikit-learn KMeans init='k-means++'",
+   "custom k-means++ with the same RNG",
+   "other k-means++ implementation"
+  ],
+  "chosen": "use scikit-learn KMeans init='k-means++'",
+  "rationale": "The paper explicitly says the K-means++ method is used as implemented in scikit-learn.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the K-means++ method (Arthur & Vassilvitskii, 2006), as implemented in scikit-learn",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The table header says Mean ± Variance; a reproduction must decide whether the error term 9.83 is a variance or a standard deviation.",
+  "options": [
+   "treat 9.83 as variance",
+   "treat 9.83 as standard deviation"
+  ],
+  "chosen": "treat 9.83 as variance",
+  "rationale": "The table caption explicitly labels the second quantity as variance.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Mean, variance, and minimum of the clustering loss",
+  "page": 9
+ }
+]

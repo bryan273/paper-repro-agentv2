@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Output space ensemble of two models trained on MultiColorMNIST achieves higher OOD accuracy than individual models (e.g., at p=0.90, ensemble 29.28% vs model1 26.01% and model2 26.63%)",
+  "table_ref": "Table 1",
+  "dataset": "MultiColorMNIST"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": 2.0,
+  "basis": "Training two small CNNs on a 10-class MNIST variant with 32 color patches for 5 p-values, each with multiple seeds, is feasible on CPU but requires implementing the dataset and training pipeline from scratch since no code is released."
+ },
+ "blockers": [
+  "No code or data release",
+  "MultiColorMNIST dataset not publicly available",
+  "Requires reimplementation of data generation and training protocol"
+ ],
+ "suitable": false,
+ "id": "2309.17230",
+ "title": "Spurious Feature Diversification Improves Out-of-distribution Generalization",
+ "pages": 57,
+ "model": "DeepSeek-V4.1-Flash"
+}

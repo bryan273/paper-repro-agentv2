@@ -1,0 +1,277 @@
+{
+ "title": "Modified K-means Algorithm with Local Optimality Guarantees",
+ "summary": "The paper shows that Lloyd's K-means need not converge to a locally optimal solution, giving a counterexample and distinguishing discrete (D-local) and continuous (C-local) optimality. It proposes LO-K-means, which adds post-convergence verification/repair steps (C-LO, D-LO, or Min-D-LO) to K-means while preserving the same per-iteration time complexity. Experiments on synthetic and real data show that D-LO and Min-D-LO reduce clustering loss relative to K-means, with Min-D-LO giving mean clustering loss 57.32 on Iris K=5 with random initialization.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Min-D-LO with random initialization on Iris at K=5 achieves mean clustering loss 57.32 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "Iris (N=150, d=4)",
+   "split": "N/A (full dataset; 20 random initializations)",
+   "value": 57.32,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, Iris, K=5, row Min-D-LO, random initialization, column Mean ± Variance; also Table 2",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; Iris N=150, d=4",
+   "reported_spread": "Variance 9.83 over 20 runs (table header says Mean ± Variance)",
+   "est_compute": "CPU, <1 s for 20 runs (reported <0.001 s per run)",
+   "quote": "Min-D-LO 57.32 ± 9.83 46.54 < 0.001 13",
+   "page": 9
+  },
+  {
+   "id": "C2",
+   "statement": "K-means with random initialization on Iris at K=5 achieves mean clustering loss 57.54 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "Iris (N=150, d=4)",
+   "split": "N/A (full dataset; 20 random initializations)",
+   "value": 57.54,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, Iris, K=5, row K-means, random initialization, column Mean ± Variance; also Table 2",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; Iris N=150, d=4",
+   "reported_spread": "Variance 9.78 over 20 runs",
+   "est_compute": "CPU, <1 s for 20 runs (reported <0.001 s per run)",
+   "quote": "K-means 57.54 ± 9.78 46.54 < 0.001 9",
+   "page": 9
+  },
+  {
+   "id": "C3",
+   "statement": "Min-D-LO with random initialization on News20-1 at K=5 achieves mean clustering loss 808,032 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "News20-1 (N=2,000, d=1,089)",
+   "split": "N/A (full first-2,000-instance dataset; 20 random initializations)",
+   "value": 808032,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, News20 - 1, K=5, row Min-D-LO, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; News20 first 2,000 instances, 1,089 features",
+   "reported_spread": "Variance 1,566 over 20 runs",
+   "est_compute": "CPU, ~20 s for 20 runs (0.97 s per run)",
+   "quote": "Min-D-LO 808,032 ± 1,566 801,207 0.97 81",
+   "page": 29
+  },
+  {
+   "id": "C4",
+   "statement": "K-means with random initialization on News20-1 at K=5 achieves mean clustering loss 984,655 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "News20-1 (N=2,000, d=1,089)",
+   "split": "N/A (full first-2,000-instance dataset; 20 random initializations)",
+   "value": 984655,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, News20 - 1, K=5, row K-means, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; News20 first 2,000 instances, 1,089 features",
+   "reported_spread": "Variance 55,781 over 20 runs",
+   "est_compute": "CPU, ~6 s for 20 runs (0.31 s per run)",
+   "quote": "K-means 984,655 ± 55,781 864,073 0.31 31",
+   "page": 29
+  },
+  {
+   "id": "C5",
+   "statement": "Min-D-LO with random initialization on News20-1 at K=50 achieves mean clustering loss 402,716 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "News20-1 (N=2,000, d=1,089)",
+   "split": "N/A (full first-2,000-instance dataset; 20 random initializations)",
+   "value": 402716,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, News20 - 1, K=50, row Min-D-LO, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=50; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; News20 first 2,000 instances, 1,089 features",
+   "reported_spread": "Variance 2,469 over 20 runs",
+   "est_compute": "CPU, ~34 min for 20 runs (103.30 s per run)",
+   "quote": "Min-D-LO 402,716 ± 2,469 398,453 103.30 1,040",
+   "page": 29
+  },
+  {
+   "id": "C6",
+   "statement": "K-means with random initialization on News20-1 at K=50 achieves mean clustering loss 731,980 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "News20-1 (N=2,000, d=1,089)",
+   "split": "N/A (full first-2,000-instance dataset; 20 random initializations)",
+   "value": 731980,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, News20 - 1, K=50, row K-means, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=50; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; News20 first 2,000 instances, 1,089 features",
+   "reported_spread": "Variance 91,535 over 20 runs",
+   "est_compute": "CPU, ~1 min for 20 runs (2.72 s per run)",
+   "quote": "K-means 731,980 ± 91,535 552,717 2.72 28",
+   "page": 29
+  },
+  {
+   "id": "C7",
+   "statement": "Min-D-LO with random initialization on Wine Quality at K=5 achieves mean clustering loss 2,393,759 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "Wine Quality (N=6,497, d=11)",
+   "split": "N/A (full dataset; 20 random initializations)",
+   "value": 2393759,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, Wine Quality, K=5, row Min-D-LO, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; Wine Quality N=6,497, d=11",
+   "reported_spread": "Variance 12 over 20 runs",
+   "est_compute": "CPU, <1 s for 20 runs (0.006 s per run)",
+   "quote": "Min-D-LO 2,393,759 ± 12 2,393,742 0.006 49",
+   "page": 25
+  },
+  {
+   "id": "C8",
+   "statement": "K-means with random initialization on Wine Quality at K=5 achieves mean clustering loss 2,393,869 over 20 runs.",
+   "metric": "mean clustering loss",
+   "dataset": "Wine Quality (N=6,497, d=11)",
+   "split": "N/A (full dataset; 20 random initializations)",
+   "value": 2393869,
+   "unit": "clustering loss units (sum of squared Euclidean distances)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, Wine Quality, K=5, row K-means, random initialization, column Mean ± Variance",
+   "config_for_value": "D = squared Euclidean distance; K=5; random initialization by uniform sampling of K points without replacement; 20 runs; run until convergence; Wine Quality N=6,497, d=11",
+   "reported_spread": "Variance 67 over 20 runs",
+   "est_compute": "CPU, <1 s for 20 runs (0.005 s per run)",
+   "quote": "K-means 2,393,869 ± 67 2,393,751 0.005 40",
+   "page": 25
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the user's hinted target and the cheapest direct demonstration of the paper's central loss-reduction result: Iris has only 150 points and 4 dimensions, 20 runs are reported at under 0.001 s each, and Min-D-LO is the variant the paper highlights as the best accuracy/time tradeoff."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: clustering loss is an unbounded loss; the paper reports a variance (9.83) rather than a standard deviation, so Rule 1's 3-std band is not directly applicable. A 10% relative band is 5.732 loss units around 57.32."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement the weighted Bregman K-means objective in (P1) and update each non-empty cluster center to the weighted arithmetic mean of its assigned points.",
+   "cite": "Section 2.1 (P1); Proposition 2.2, Eq. (4)",
+   "quote": "The unique optimal center for cluster k, (c∗ P )k, for all C∗ P ∈C∗(P) equals",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "When multiple centers attain the minimum distance for a point, assign the point to the smallest cluster index, matching NumPy argmin tie-breaking.",
+   "cite": "Section 3, paragraph after Step 4; Algorithm 1 Line 5",
+   "quote": "in this work the minimum index is always selected (see Algorithm 1, Line 5)",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "For non-plus-plus runs, initialize by sampling K distinct data points uniformly without replacement and using them as initial centers.",
+   "cite": "Algorithm 1 Line 1; Section 5.1",
+   "quote": "uniform random sampling of K points without replacement",
+   "page": 7
+  },
+  {
+   "id": "R4",
+   "stmt": "Alternate nearest-center assignment and weighted-mean center updates until the assignment vector no longer changes.",
+   "cite": "Section 3 Steps 2-4; Algorithm 2",
+   "quote": "Repeat Step 2 and Step 3 until the cluster assignments P no longer change.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "After assignment, if a cluster is empty, move one point g from another cluster b into the empty cluster a such that sb(P) > wg and xg != cb; repeat if needed.",
+   "cite": "Algorithm 1 Lines 6-7; Lemma D.4",
+   "quote": "Move a point g ∈[N] from a cluster b ∈[K] to a",
+   "page": 6
+  },
+  {
+   "id": "R6",
+   "stmt": "Invoke the chosen repair function (C-LO, D-LO, or Min-D-LO) only after ordinary K-means assignments have stopped changing.",
+   "cite": "Algorithm 1 Lines 9-11; Section 4.2",
+   "quote": "either Function 1 or 2 is invoked when the K-means algorithm converges.",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "For Min-D-LO, evaluate the exact loss change for every point n and every destination cluster k2 != k1, choose the pair with the most negative change, and move only if that minimum is strictly negative.",
+   "cite": "Function 3; Section 4.3",
+   "quote": "moving the cluster assignment to an adjacent vertex that minimizes the clustering loss",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute the exact clustering-loss change for a single-point reassignment using Lemma 4.1, including both the point-distance term and the center-shift terms for the source and destination clusters.",
+   "cite": "Lemma 4.1, Eq. (8)",
+   "quote": "Therefore, the change in the clustering loss equals",
+   "page": 17
+  },
+  {
+   "id": "R9",
+   "stmt": "For D-LO, test all N(K-1) single-point reassignments and accept only a reassignment with strictly negative loss change, guaranteeing a D-local final assignment.",
+   "cite": "Definition 2.3; Function 2; Theorem 4.4",
+   "quote": "Function 2 therefore searches for a point in T(P) which strictly decreases the clustering loss",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "For the Iris experiments, report clustering loss as the sum over points of squared Euclidean distance to the assigned center, with raw features and no normalization by N or K.",
+   "cite": "(P1), Section 2.1; Section 5.3; Table 1",
+   "quote": "D(x, c) = ∥x −c∥2 2 for the squared Euclidean distance",
+   "page": 2
+  },
+  {
+   "id": "R11",
+   "stmt": "Run each real-data algorithm 20 times with the same dataset and the same initial centers across algorithms in each trial, and report mean, variance, and minimum clustering loss.",
+   "cite": "Section 5.1; Section 5.3.1; Table 1",
+   "quote": "Given the randomness in the initial cluster center selection, each algorithm was executed 20 times.",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "For the reported Table 1 values, run each algorithm until convergence rather than imposing the optional 200-300 iteration truncation used in the speed analysis.",
+   "cite": "Section 5.3.2; Figure 3 discussion",
+   "quote": "in all of our experiments, we ran the algorithms until convergence",
+   "page": 8
+  },
+  {
+   "id": "R13",
+   "stmt": "For C-LO, if a point has multiple nearest centers, move it from the minimum-index nearest cluster to the maximum-index nearest cluster, recalculate both centers, and return.",
+   "cite": "Function 1; Theorem 4.4",
+   "quote": "if | arg mink′∈[K] D(xn, ck′)| > 1 then",
+   "page": 5
+  },
+  {
+   "id": "R14",
+   "stmt": "Maintain non-empty clusters and distinct cluster centers at convergence; the empty-cluster repair and deterministic tie-breaking rules are part of ensuring this.",
+   "cite": "Proposition 2.6; Lemma D.4",
+   "quote": "For D-local and C-local solutions, no empty clusters exist.",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "Iris",
+   "how_to_get": "Use sklearn.datasets.load_iris or the UCI Iris dataset; N=150, d=4."
+  },
+  {
+   "name": "Wine Quality",
+   "how_to_get": "Use the UCI Wine Quality dataset (Cortez et al., 2009); N=6,497, d=11."
+  },
+  {
+   "name": "News20-1 and News20-2",
+   "how_to_get": "Use scikit-learn's 20 newsgroups loader; News20-1 is the first 2,000 instances with 1,089 features whose word frequencies are between 2% and 80%; News20-2 is the first 200 instances with 131,017 features."
+  },
+  {
+   "name": "Yeast",
+   "how_to_get": "Use the UCI Yeast dataset (Nakai & Kanehisa); N=1,484, d=8."
+  },
+  {
+   "name": "Predict Students' Dropout and Academic Success",
+   "how_to_get": "Use the UCI Predict Students' Dropout and Academic Success dataset (Martins et al., 2021); N=4,424, d=36."
+  }
+ ],
+ "code_links": [
+  "https://github.com/lmingyi/LO-K-means"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2506.06990",
+  "kind": "arxiv",
+  "arxiv_id": "2506.06990",
+  "url": "https://arxiv.org/abs/2506.06990",
+  "title": "Modified K-means Algorithm with Local Optimality Guarantees",
+  "pages": 29
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Chinese T5 achieves BLEU-4 of 8.41 on the test set of NEWSDIALOGUES",
+  "table_ref": "Table 4",
+  "dataset": "NEWSDIALOGUES"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/SihengLi99/NewsDialogues"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 5,
+  "basis": "Fine-tuning a 784M-parameter T5 model on 800 dialogues with 2048-token sequences requires GPU memory and time; CPU-only would be prohibitively slow."
+ },
+ "blockers": [
+  "Dataset may not be publicly available; paper says 'Upon acceptance, we will provide...'",
+  "Requires GPU for reasonable training time"
+ ],
+ "suitable": false,
+ "id": "2308.06501",
+ "title": "NewsDialogues: Towards Proactive News Grounded Conversation",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

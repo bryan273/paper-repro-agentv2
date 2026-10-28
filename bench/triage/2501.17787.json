@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "RIF achieves AUC 0.99 on the two-spherical-Gaussian synthetic dataset (2000 normal points, 6 anomalies), vs iForest 0.66 and EIF 0.83",
+  "table_ref": "Figure 4 / Section 4.4 text",
+  "dataset": "synthetic 2D two spherical Gaussians (centers (0.8,0.2) and (0.2,0.8), sigma 0.06, 2000 points + 6 anomalies)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Synthetic data is generated from the paper's description; RIF is a simple modification of iForest (random QR rotation per tree, 100 trees, sample 256) that must be reimplemented from the pseudocode, and the run itself is seconds on CPU."
+ },
+ "blockers": [
+  "No code released; RIF, iForest and EIF must all be reimplemented from the paper text",
+  "Exact anomaly point placement and random seeds are not fully specified, so the exact AUC values (0.99/0.66/0.83) may not be bit-reproducible"
+ ],
+ "suitable": true,
+ "id": "2501.17787",
+ "title": "Detecting Anomalies Using Rotated Isolation Forest",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

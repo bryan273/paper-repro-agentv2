@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "PixelCraft with GPT-4.1-mini achieves 68.1% accuracy on the CharXiv reasoning benchmark, compared to 63.8% for CoT.",
+  "table_ref": "Table 1",
+  "dataset": "CharXiv"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/microsoft/PixelCraft"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The target requires a multi-agent system with a fine-tuned grounding model (Qwen2.5-VL-3B) trained on 53k samples using 4 A100 GPUs, plus extensive API calls to GPT-4.1-mini for multiple agents, making it infeasible on a CPU-only laptop within hours."
+ },
+ "blockers": [
+  "No code or data released (paper states 'Our code will be available' but no actual release).",
+  "Requires fine-tuning a 3B MLLM on 53k samples using 4 A100 GPUs.",
+  "Requires extensive API calls to GPT-4.1-mini for multiple agents (dispatcher, planner, reasoner, critics).",
+  "Evaluation involves running the full multi-agent pipeline on the CharXiv benchmark, which is computationally heavy and time-consuming."
+ ],
+ "suitable": false,
+ "id": "2509.25185",
+ "title": "PixelCraft: A Multi-Agent System for High-Fidelity Visual Reasoning on Structured Images",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

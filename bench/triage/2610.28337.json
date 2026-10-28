@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "Spearman correlation between stability delta and Kralj Novak sentiment variance is ρ = +0.361 (Holm p = 0.015, n = 59 emojis)",
+  "table_ref": "Table 2, row 'Δ vs. Kralj Novak variance (primary)'",
+  "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition + Kralj Novak 2015 emoji sentiment lexicon"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/StableContextsMixedFeelings/",
+  "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji",
+  "https://pypi.org/project/emosent-py/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Paper states all experiments run on CPU and regenerating every number takes ~3 minutes; the target only needs MiniLM embeddings of ~16.5k short tweets plus a Spearman correlation over 59 emojis, so install/download dominates."
+ },
+ "blockers": [
+  "Code is only in an anonymous.4open.science repository (not a stable GitHub link); may be unavailable or incomplete",
+  "ESD is released for non-commercial research use only and may require manual download/acceptance",
+  "Kralj Novak lexicon accessed via emosent-py package; exact version/matching not pinned"
+ ],
+ "suitable": true,
+ "id": "2610.28337",
+ "title": "Beyond a Single Sentiment Score: Topical and Affective Dimensions of Emoji Meaning on Twitter",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

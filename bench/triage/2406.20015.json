@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Gemini-1.5-Pro achieves an overall score of 45.3 on the ToolBH benchmark (Table 2, Overall column).",
+  "table_ref": "Table 2",
+  "dataset": "ToolBH benchmark (700 samples, 7 subtasks)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ToolBeHonest/ToolBeHonest",
+  "https://github.com/open-compass/opencompass"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target requires querying the Gemini-1.5-Pro API on 700 samples (3 levels each), which is API-bound and can be done on a CPU laptop, but the exact score depends on the proprietary model's outputs and the evaluation code must be reconstructed from the paper."
+ },
+ "blockers": [
+  "Requires access to the proprietary Gemini-1.5-Pro API (closed-source model)",
+  "Evaluation code for the benchmark is not fully released; must be reimplemented from the paper",
+  "Exact reproduction of the score may vary due to API version changes"
+ ],
+ "suitable": false,
+ "id": "2406.20015",
+ "title": "ToolBeHonest: A Multi-level Hallucination Diagnostic Benchmark for Tool-Augmented Large Language Models",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

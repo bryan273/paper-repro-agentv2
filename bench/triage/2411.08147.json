@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Llama-3.1-8B-Instruct + SEALONG achieves 55.0 average SubEM on long-context tasks (Qasper, MultiFieldQA-En, HotpotQA, MuSiQue, 2WikiMQA)",
+  "table_ref": "Table 2",
+  "dataset": "LongBench (Qasper, MultiFieldQA-En, HotpotQA, MuSiQue, 2WikiMultihopQA)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/SihengLi99/SEALONG"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Requires sampling 32 outputs for 2048 long-context examples (up to 32K tokens) with an 8B model, then fine-tuning with sequence parallelism on 8 H100 GPUs; even with QLoRA, CPU-only inference and training would be prohibitively slow."
+ },
+ "blockers": [
+  "Requires 8×H100 GPUs for fine-tuning as per paper",
+  "Long-context (32K) sampling and training are extremely slow on CPU",
+  "No GPU available on target laptop"
+ ],
+ "suitable": false,
+ "id": "2411.08147",
+ "title": "Large Language Models Can Self-Improve in Long-context Reasoning",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

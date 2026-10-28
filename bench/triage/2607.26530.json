@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Average comparisons per successful lookup for list chaining under forced-bucket stress (5×10^5 keys, 8 hot bins, seed 1) is ~31,250",
+  "table_ref": "Table 6",
+  "dataset": "synthetic forced-bucket keys (BBBB:seq:suffix), 5×10^5 keys, 8 hot bins"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/rbtreechainingforhashtable/project",
+  "https://github.com/rbtreechainingforhashtable/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Small C benchmark (5e5 keys, 4096 buckets) built with make; the comparison counter is deterministic and the list-stress run is the slowest phase (~5 min on the M4 Pro, likely a few minutes on a laptop CPU)."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2607.26530",
+ "title": "When to Treeify Hash Table Buckets: A Reproducible C Study of List, Hybrid, and Red-Black Tree Chaining",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

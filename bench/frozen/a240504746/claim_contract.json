@@ -1,0 +1,266 @@
+{
+ "title": "SVD-AE: Simple Autoencoders for Collaborative Filtering",
+ "summary": "The paper addresses the trade-off among accuracy, computation time, and noise robustness in lightweight collaborative filtering. It proposes SVD-AE, a linear autoencoder on a symmetrically normalized interaction matrix whose closed-form solution uses truncated SVD with rank m and no iterative training. Across Gowalla, Yelp2018, ML-1M, and ML-10M, SVD-AE reports the best HR@10, NDCG@10, and PSP@10 while being much faster and more noise-robust than baselines.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "SVD-AE achieves HR@10 of 31.79 on ML-1M test evaluation, the best HR@10 in Table 2.",
+   "metric": "HR@10",
+   "dataset": "ML-1M",
+   "split": "test",
+   "value": 31.79,
+   "unit": "% HR@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, ML-1M block, row HR@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; ML-1M with 5-core published data and the paper's train/validation/test split; closed-form truncated-SVD reconstruction.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min after loading ML-1M (paper reports 0.54 s preprocessing + 2.06 s training)",
+   "quote": "But once again, SVD-AE has the greatest performance aside from HR@100 on ML-1M.",
+   "page": 6
+  },
+  {
+   "id": "C2",
+   "statement": "SVD-AE achieves NDCG@10 of 33.55 on ML-1M test evaluation.",
+   "metric": "NDCG@10",
+   "dataset": "ML-1M",
+   "split": "test",
+   "value": 33.55,
+   "unit": "% NDCG@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, ML-1M block, row NDCG@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; ML-1M; same train/validation/test split as prior work.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min after loading ML-1M",
+   "quote": "But once again, SVD-AE has the greatest performance aside from HR@100 on ML-1M.",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "SVD-AE achieves PSP@10 of 3.22 on ML-1M test evaluation.",
+   "metric": "PSP@10",
+   "dataset": "ML-1M",
+   "split": "test",
+   "value": 3.22,
+   "unit": "% PSP@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, ML-1M block, row PSP@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; ML-1M; same train/validation/test split as prior work.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min after loading ML-1M",
+   "quote": "But once again, SVD-AE has the greatest performance aside from HR@100 on ML-1M.",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "SVD-AE achieves HR@10 of 14.40 on Gowalla test evaluation.",
+   "metric": "HR@10",
+   "dataset": "Gowalla",
+   "split": "test",
+   "value": 14.4,
+   "unit": "% HR@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Gowalla block, row HR@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; Gowalla 10-core split; closed-form truncated-SVD reconstruction.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes for Gowalla SVD plus ranking",
+   "quote": "SVD-AE performs well on sparse datasets compared to other AE-based models",
+   "page": 5
+  },
+  {
+   "id": "C5",
+   "statement": "SVD-AE achieves HR@10 of 4.90 on Yelp2018 test evaluation.",
+   "metric": "HR@10",
+   "dataset": "Yelp2018",
+   "split": "test",
+   "value": 4.9,
+   "unit": "% HR@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Yelp2018 block, row HR@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; Yelp2018 10-core split; closed-form truncated-SVD reconstruction.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes for Yelp2018 SVD plus ranking",
+   "quote": "Among all baselines, GF-CF performs well on the relatively sparse datasets, Gowalla and Yelp2018.",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "SVD-AE achieves HR@10 of 36.76 on ML-10M test evaluation.",
+   "metric": "HR@10",
+   "dataset": "ML-10M",
+   "split": "test",
+   "value": 36.76,
+   "unit": "% HR@10",
+   "higher_is_better": true,
+   "table_ref": "Table 2, ML-10M block, row HR@10, column SVD-AE",
+   "config_for_value": "SVD-AE with γ=0.04, m=⌊γ×min(|U|,|I|)⌉; ML-10M 5-core published data; closed-form truncated-SVD reconstruction.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min preprocessing plus ranking as reported",
+   "quote": "SVD-AE maintains consistent performance across dataset types, possibly owing to our low-rank inductive bias.",
+   "page": 6
+  },
+  {
+   "id": "C7",
+   "statement": "SVD-AE preprocessing time on ML-1M is 0.54 seconds.",
+   "metric": "pre-processing time",
+   "dataset": "ML-1M",
+   "split": "N/A",
+   "value": 0.54,
+   "unit": "seconds",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row SVD-AE, column Pre-processing under ML-1M",
+   "config_for_value": "SVD-AE truncated-SVD preprocessing on ML-1M with γ=0.04.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s preprocessing as reported",
+   "quote": "Most importantly, our SVD-AE can achieve good performance in less time, which further illustrates the high efficiency of SVD-AE.",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "SVD-AE is 394 times faster than LightGCN on Gowalla in Figure 1.",
+   "metric": "computation-time speedup vs LightGCN",
+   "dataset": "Gowalla",
+   "split": "N/A",
+   "value": 394,
+   "unit": "x speedup vs LightGCN",
+   "higher_is_better": true,
+   "table_ref": "Figure 1, SVD-AE annotation 394x; caption defines LightGCN as 1x",
+   "config_for_value": "Gowalla; relative computation time against LightGCN (1x).",
+   "reported_spread": null,
+   "est_compute": "CPU; LightGCN baseline involves training, SVD-AE is closed-form",
+   "quote": "SVD-AE has the fastest computation time (spec., 394 times quicker than LightGCN), provides the best recommendation accuracy (HR@10)",
+   "page": 2
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "HR@10 on ML-1M is the single row given by the user's hint and directly demonstrates SVD-AE's central accuracy claim; it requires only the closed-form truncated-SVD pipeline, not an ablation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "Rule 2: HR@10 is an accuracy-like percentage metric; ML-1M has 6,040 users in Table 4 (>2,000 evaluation cases); no repeated-run std is reported, so the band is 1.0 absolute percentage point."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Build a normalized interaction matrix with symmetric degree normalization using user and item degrees.",
+   "cite": "Section 3, Eq. (8) and definition below Eq. (8)",
+   "quote": "DU = diagMat(R · 1) and DI = diagMat(1T R) are degree matrices.",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Compute truncated SVD and keep only the top-m singular vectors and singular values.",
+   "cite": "Section 3, Low-rank Inductive Bias",
+   "quote": "The truncated SVD uses only the first m columns of Q and V and the first m largest singular values.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Set rank m from γ and the smaller matrix dimension using m=⌊γ×min(|U|,|I|)⌉.",
+   "cite": "Section 4.1, Implementation Details",
+   "quote": "we use m = ⌊γ × min(|U|, |I|)⌉",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Select γ by validation HR@10 over the stated grid; γ=0.04 is reported optimal for all datasets.",
+   "cite": "Section 4.1 and Appendix C.4",
+   "quote": "We search for γ in the range of [0.01, 0.02, 0.03, 0.04, 0.05] with the validation set with HR@10.",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Use the minimum-norm closed-form solution B=R̃⁺R=VΣ⁺QᵀR rather than iterative training.",
+   "cite": "Section 3, Theorem 1 and Theorem 2, Eq. (9)",
+   "quote": "Based on Theorem 1 and 2, we can derive the closed-form solution of B as follows:",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "Form the inferred interaction matrix R̂=R̃B=R̃·VΣ̃⁺QᵀR for recommendation scoring.",
+   "cite": "Section 3, Eq. (15)",
+   "quote": "Thus, the following is the reconstructed (or inferred) interaction matrix ˆR for recommendation:",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Do not add an iterative training loop; the model is solved once in closed form.",
+   "cite": "Abstract and Section 3",
+   "quote": "SVD-AE does not require iterative training processes as its closed-form solution can be calculated at once.",
+   "page": 1
+  },
+  {
+   "id": "R8",
+   "stmt": "Use the same train/validation/test splits as the cited prior work for all datasets.",
+   "cite": "Section 4.1, Evaluation Protocol",
+   "quote": "we use the same train/validation/test splits as done in [He et al., 2020; Shen et al., 2021; Sachdeva et al., 2022].",
+   "page": 5
+  },
+  {
+   "id": "R9",
+   "stmt": "Treat all observed user-item interactions as positive implicit feedback.",
+   "cite": "Appendix C.2",
+   "quote": "all user-item interactions are treated as positive, so that all the datasets are implicit feedback.",
+   "page": 13
+  },
+  {
+   "id": "R10",
+   "stmt": "Use 10-core preprocessing for Gowalla/Yelp2018 and the published 5-core ML-1M/ML-10M data.",
+   "cite": "Appendix C.2",
+   "quote": "Gowalla and Yelp2018 were preprocessed with a 10-core setting [Wang et al., 2019], while ML-1M and ML-10M were published with a 5-core setting.",
+   "page": 13
+  },
+  {
+   "id": "R11",
+   "stmt": "Evaluate with HR@k, NDCG@k, and PSP@k at k=10 for the main table.",
+   "cite": "Section 4.1 and Table 2",
+   "quote": "We evaluate the accuracy of all of the methods using HR@k, NDCG@k, and PSP@k",
+   "page": 5
+  },
+  {
+   "id": "R12",
+   "stmt": "Use a randomized truncated-SVD implementation rather than a dense full SVD.",
+   "cite": "Section 3.1, Computational Cost",
+   "quote": "We use a fast randomized truncated SVD [Halko et al., 2011]",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "Do not add an EASE-style L2 regularizer; the truncated rank m is the low-rank inductive bias.",
+   "cite": "Section 3.2, Relation to Other Methods",
+   "quote": "Unlike previous methods, SVD-AE does not require an additional regularizer by directly using the truncated SVD as a low-rank inductive bias",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "ML-1M",
+   "how_to_get": "GroupLens MovieLens 1M; use the published 5-core version as in the paper: https://grouplens.org/datasets/movielens/1m/"
+  },
+  {
+   "name": "ML-10M",
+   "how_to_get": "GroupLens MovieLens 10M; use the published 5-core version as in the paper: https://grouplens.org/datasets/movielens/10m/"
+  },
+  {
+   "name": "Gowalla",
+   "how_to_get": "Use the preprocessed 10-core Gowalla split from the LightGCN/NGCF/GF-CF/∞-AE codebases referenced by the paper; no separate dataset URL is provided in the paper."
+  },
+  {
+   "name": "Yelp2018",
+   "how_to_get": "Use the preprocessed 10-core Yelp2018 split from the LightGCN/NGCF/GF-CF/∞-AE codebases; original Yelp dataset at https://www.yelp.com/dataset"
+  }
+ ],
+ "code_links": [
+  "https://github.com/seoyoungh/svd-ae"
+ ],
+ "stated_compute": "PYTHON 3.9.15, PYTORCH 1.11.0, CUDA 11.4, and NVIDIA Driver 470.129.06, and i9 CPU, and NVIDIA QUADRO RTX 8000.",
+ "paper_meta": {
+  "source": "2405.04746",
+  "kind": "arxiv",
+  "arxiv_id": "2405.04746",
+  "url": "https://arxiv.org/abs/2405.04746",
+  "title": "SVD-AE: Simple Autoencoders for Collaborative Filtering",
+  "pages": 13
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MCG + CG-Attack achieves 100.0% ASR with mean query 41.8 on ResNet-PreAct-110 (CIFAR-10 untargeted attack)",
+  "table_ref": "Table 9",
+  "dataset": "CIFAR-10"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/SCLBD/MCG-Blackbox"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Requires training c-Glow generator (10 epochs pre-training + meta-training) on CIFAR-10, which is a real training run; CPU-only would be prohibitively slow, so GPU is needed."
+ },
+ "blockers": [
+  "Requires training a c-Glow generator and meta-learning on CIFAR-10, which is a real training run needing GPU",
+  "Code release may be partial (no explicit configs for exact table cell)"
+ ],
+ "suitable": false,
+ "id": "2301.00364",
+ "title": "Generalizable Black-Box Adversarial Attack with Meta Learning",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

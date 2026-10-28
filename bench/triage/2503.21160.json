@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Proposed SMOTE-KMEANS + bagging ensemble (Bi-LSTM/Bi-GRU/CNN + XGBoost) achieves AUC 0.96 on the balanced credit card fraud dataset",
+  "table_ref": "Table 2, row 'Ours', column 'Smote-Kmeans'",
+  "dataset": "Kaggle Credit Card Fraud Detection (mlg-ulb/creditcardfraud, 284,807 transactions, 492 frauds)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code is released, so the full SMOTE-KMEANS pipeline plus Bi-LSTM/Bi-GRU/CNN base learners and XGBoost meta-classifier must be reimplemented from prose; 10-fold CV over ~285k rows with deep sequence models on CPU is the dominant cost, and exact AUC 0.96 is unlikely to be matched without the authors' hyperparameters."
+ },
+ "blockers": [
+  "No code or configs released; architecture details (layers, sequence construction, hyperparameters, k for KMeans, SMOTE ratios) are underspecified",
+  "10-fold CV with three deep base learners plus meta-classifier is heavy for CPU-only laptop",
+  "Exact 0.96 AUC depends on undocumented tuning; reproducibility of the headline number is doubtful"
+ ],
+ "suitable": false,
+ "id": "2503.21160",
+ "title": "A Data Balancing and Ensemble Learning Approach for Credit Card Fraud Detection",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

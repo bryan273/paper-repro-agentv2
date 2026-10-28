@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "IDA-VLM achieves 0.716 accuracy on the Matching sub-task of the MM-ID benchmark, outperforming GPT-4V (0.627) and Gemini-pro (0.687).",
+  "table_ref": "Table 1",
+  "dataset": "MM-ID (Matching sub-task, 67 questions, 335 images)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/jiyt17/IDA-VLM"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 128,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": null,
+  "basis": "Training IDA-VLM requires 8×A100-SXM-80GB GPUs for approximately 1 day per stage (2 stages total), plus data construction and evaluation; the model is 9.6B parameters and cannot be trained on a CPU within a few hours."
+ },
+ "blockers": [
+  "Requires 8×A100-SXM-80GB GPUs for training (1 day per stage, 2 stages)",
+  "MM-ID benchmark data may not be fully public (only URLs for animation images are provided; MovieNet and Re-ID datasets have their own access restrictions)",
+  "Second-stage tuning data was generated using GPT-4V, which is a closed-source API and may not be reproducible",
+  "Evaluation of Q&A and Caption sub-tasks relies on GPT-4 scoring, which is a closed-source API"
+ ],
+ "suitable": false,
+ "id": "2407.07577",
+ "title": "IDA-VLM: Towards Movie Understanding via ID-Aware Large Vision-Language Model",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Test accuracy of solving 2x2x2 Rubik's cube (cube ordering) on the brain hemorrhage dataset: 99.7% (rearrange only) and 92.0% (rearrange + rotate)",
+  "table_ref": "Table 1",
+  "dataset": "Brain hemorrhage dataset (1486 brain CT volumes, collected from a collaborative hospital)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The target requires the proprietary brain hemorrhage CT dataset (1486 volumes from a hospital) and the paper provides no code, so the number cannot be reproduced without re-collecting the data and re-implementing the full Siamese-Octad 3D VGG training pipeline."
+ },
+ "blockers": [
+  "Proprietary brain hemorrhage CT dataset collected from a collaborative hospital, not publicly available",
+  "No code or model weights released",
+  "Requires training a Siamese-Octad 3D VGG network on 3D volumes, which is GPU-intensive"
+ ],
+ "suitable": false,
+ "id": "1910.02241",
+ "title": "Self-supervised Feature Learning for 3D Medical Images by Playing a Rubik's Cube",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

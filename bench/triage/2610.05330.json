@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "CT feature-construction time of 3.656 s on Car at L=256 (and the ~7x speedup vs CT-Hash at 25.691 s)",
+  "table_ref": "Table 3 (also Table 14), Car row, L=256",
+  "dataset": "UCR Car (n=577)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hyundong98/CT-Miner"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Tiny UCR sequences (n<=2000), pure CPU string algorithm; the main cost is installing the repo, downloading UCR data, and re-running the L-sweep for Car/Beef/PigCVP, which the paper reports as seconds per run."
+ },
+ "blockers": [
+  "Repo may not ship the exact CT-Hash baseline or the L-sweep driver script",
+  "UCR archive download and train/test concatenation must be replicated",
+  "Exact timing numbers are machine-dependent; only the qualitative speedup trend is robust"
+ ],
+ "suitable": true,
+ "id": "2610.05330",
+ "title": "CT-Miner: Fast and Coarse-Grained Time-Series Pattern Mining via Cartesian Trees",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

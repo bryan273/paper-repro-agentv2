@@ -1,0 +1,226 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Table 2 gives ADABORD only #Estimators and does not specify a maximum tree depth, while the nominal AdaBoost baseline tunes depth over {4, 8, 16, None}.",
+  "options": [
+   "max_depth=None (unlimited) as the scikit-learn default",
+   "tune max_depth over {4, 8, 16, None} as for AdaBoost",
+   "fix a shallow depth"
+  ],
+  "chosen": "max_depth=None (unlimited)",
+  "rationale": "The ADABORD row in Table 2 lists no depth hyperparameter, so the default unlimited tree is the least extra assumption; this must be revisited if the public code uses tuned depths.",
+  "source": "paper",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "aRPS needs predicted cumulative probabilities per tree, but the paper does not state whether leaf class probabilities are weighted by sample weights or smoothed.",
+  "options": [
+   "sample-weight-normalised leaf class frequencies, no smoothing",
+   "unweighted leaf class frequencies",
+   "Laplace-smoothed leaf probabilities"
+  ],
+  "chosen": "sample-weight-normalised leaf class frequencies, no smoothing",
+  "rationale": "The tree is explicitly trained employing sample weights, and the aRPS formula has no smoothing term.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Similarly, the cumulative probabilities predicted by a model fm are denoted as c_hat_m,i in R^Q",
+  "page": 11
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Equation (6) defines impurity at a node but not how child impurities are combined into a split gain or how candidate thresholds are searched.",
+  "options": [
+   "standard weighted impurity decrease using sample weights and sklearn-like candidate splits",
+   "unweighted impurity decrease",
+   "custom exhaustive threshold search"
+  ],
+  "chosen": "standard weighted impurity decrease using sample weights and sklearn-like candidate splits",
+  "rationale": "This is the conventional decision-tree split rule and matches training the DTC with sample weights.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "The OGini index of a tree node Dm can be expressed as:",
+  "page": 10
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper does not detail categorical-feature encoding or any additional preprocessing beyond using TOC-UCO partitions.",
+  "options": [
+   "use repository-provided preprocessed matrices and partitions",
+   "one-hot encode categorical columns",
+   "ordinal-encode categorical columns"
+  ],
+  "chosen": "use repository-provided preprocessed matrices and partitions",
+  "rationale": "The paper explicitly relies on TOC-UCO for reproducibility; using its supplied preprocessing avoids inventing a new encoding.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The paper says 30 different random seeds but does not enumerate them, nor does it specify CV fold seeds.",
+  "options": [
+   "use the TOC-UCO/ADABORD repository seeds",
+   "use seeds 0-29",
+   "use seeds 1-30"
+  ],
+  "chosen": "use repository-provided seeds if available; otherwise seeds 0-29",
+  "rationale": "The repository is the authoritative source; fallback seeds 0-29 are conventional for 30 repetitions.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "These partitions are resampled 30 times using different random seeds",
+  "page": 21
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "ADABORD's hyperparameter search space is only #Estimators in Table 2, and the paper does not say whether the 20-iteration search is exhaustive or random over those six values.",
+  "options": [
+   "randomised search of 20 iterations over #Estimators only, with default DTC",
+   "exhaustive search over the six #Estimators values",
+   "also tune tree depth"
+  ],
+  "chosen": "randomised search of 20 iterations over #Estimators only, with default DTC",
+  "rationale": "This follows the stated randomised-search protocol and the ADABORD row's listed hyperparameter; adding depth would be an unlisted search dimension.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Hyperparameters shown as sets indicate the candidate values considered during cross-validation.",
+  "page": 22
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The best CV configuration is selected by AMAE, but tie-breaking is unspecified.",
+  "options": [
+   "lowest mean AMAE, ties by lower STD, then fewer estimators",
+   "lowest mean AMAE, ties by first sampled configuration",
+   "lowest mean AMAE, ties by higher estimators"
+  ],
+  "chosen": "lowest mean AMAE, ties by lower STD, then fewer estimators",
+  "rationale": "AMAE is the stated criterion; the tie-breakers are conventional and reduce unnecessary complexity.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "For each model, the best configuration is selected according to the AMAE performance metric (Equation (15)).",
+  "page": 21
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The alpha formula divides by err_m^(aRPS), which can be zero or one with finite trees, but no numerical safeguard is stated.",
+  "options": [
+   "clip err to [1e-10, 1-1e-10]",
+   "stop boosting if err=0",
+   "skip the estimator"
+  ],
+  "chosen": "clip err to [1e-10, 1-1e-10]",
+  "rationale": "Clipping preserves the formula while avoiding undefined logarithms; the paper does not mention early stopping.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Leaf nodes may have zero estimated probability for some classes; aRPS requires a full cumulative distribution.",
+  "options": [
+   "allow zero probabilities",
+   "Laplace smoothing",
+   "inherit parent distribution"
+  ],
+  "chosen": "allow zero probabilities, no smoothing",
+  "rationale": "The paper defines aRPS directly from predicted cumulative probabilities and gives no smoothing procedure.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The abstract says the aRPS error updates sample weights, but Algorithm 2 Equation (11) uses only the hard misclassification indicator and the scalar alpha_m.",
+  "options": [
+   "use Equation (11) exactly with the misclassification indicator",
+   "weight each instance by its per-instance aRPS magnitude",
+   "use an ordinal cost in the indicator"
+  ],
+  "chosen": "use Equation (11) exactly with the misclassification indicator",
+  "rationale": "Algorithm 2 is the formal definition; aRPS enters only through the scalar error and alpha_m.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The final ensemble could aggregate probabilities or hard votes; the paper gives only a hard-label weighted vote.",
+  "options": [
+   "weighted hard-label vote as in Equation (13)",
+   "average cumulative probabilities and take argmax",
+   "expected ordinal label"
+  ],
+  "chosen": "weighted hard-label vote as in Equation (13)",
+  "rationale": "Equation (13) explicitly uses indicators 1(f_m(x_i)=q), so no probability aggregation is defined for test prediction.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "QWK uses integer class indices in its quadratic penalty; the paper's notation maps classes to natural numbers but does not say whether to use 1..Q or 0..Q-1.",
+  "options": [
+   "map classes to 1..Q as v(C_q)=q",
+   "map classes to 0..Q-1",
+   "use repository-provided numeric labels"
+  ],
+  "chosen": "map classes to 1..Q as v(C_q)=q",
+  "rationale": "The paper defines v(C_q)=q; QWK's penalty is invariant to a constant shift but the AMAE labels should follow this mapping.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "it is common to map the categories to a natural number using the function v(Cq) = q.",
+  "page": 8
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "No class-weighting or resampling beyond AdaBoost sample weights is described, despite known class imbalance.",
+  "options": [
+   "no extra class weights; only AdaBoost sample weights",
+   "add balanced class weights to the DTC",
+   "resample classes"
+  ],
+  "chosen": "no extra class weights; only AdaBoost sample weights",
+  "rationale": "The algorithm initialises all sample weights equally and the paper describes no additional imbalance correction.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "At iteration m = 0, sample weights all are equally set to 1 N .",
+  "page": 10
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "The paper does not state whether metrics are computed per split and then averaged, or pooled across the 30 test splits.",
+  "options": [
+   "compute each metric per test split, then average over 30 executions",
+   "pool all test predictions across 30 splits",
+   "report only the best split"
+  ],
+  "chosen": "compute each metric per test split, then average over 30 executions",
+  "rationale": "The paper describes 30 executions and reports mean and STD, which is consistent with per-split metric values averaged over executions.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "for each dataset 30 different train-test splits are obtained.",
+  "page": 21
+ }
+]

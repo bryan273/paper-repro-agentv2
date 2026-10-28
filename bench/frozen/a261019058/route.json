@@ -1,0 +1,47 @@
+{
+ "route": "paper_only",
+ "why": "The only linked repository (Shaier/DINN) is the *baseline* the paper benchmarks against, not the paper's own method: it contains 626 files of Jupyter notebooks and CSVs for DINN training, zero Python modules, and no PIWR / PIR-FD / conformal-prediction code at all. The paper's contribution (physics-informed weak regression: integrate the linear-in-parameters SIDR equations in time with cubic-spline quadrature, solve a closed-form least-squares problem with the initial state as a free unknown) exists only as a mathematical description in the text, so it must be reimplemented. The repo is still useful in one narrow way: Diseases/COVID/generate_covid_data.ipynb and sidr.csv pin down the exact SIDR benchmark (N = 59e6, S0 = N-1, I0 = 1, alpha = 0.191, beta = 0.05, gamma = 0.0294, 100 points on [0,500], 1% multiplicative noise), which is the match target for C1, and the data can equally be regenerated from Appendix A.1 alone. The reimplementation is cheap: a 4-state linear ODE system, a cumulative-spline quadrature matrix, and one numpy.linalg.lstsq call.",
+ "repo": "https://github.com/Shaier/DINN",
+ "entrypoints": [
+  "Diseases/COVID/generate_covid_data.ipynb",
+  "Diseases/COVID/covid.ipynb"
+ ],
+ "missing_artifacts": [
+  "PIWR / PIR-FD* reference implementation (no Python code for the paper's method is released)",
+  "Cubic-spline quadrature matrix construction and the weak-form least-squares estimator itself",
+  "Split-conformal and residual-adaptive (PIWR-RACC) calibration code",
+  "PIWR-VP (variable projection) code for the boarding-school SIR example",
+  "B-spline / P-spline penalized estimator for the time-varying beta(t) benchmarks",
+  "Python modules (repo ships only .ipynb notebooks, no importable .py)"
+ ],
+ "blockers_seen": [
+  "The linked repository is the DINN baseline (PyTorch 1.8.1, pandas 1.1.5, numpy 1.19.2, Python 3.6) — the paper's own estimator is not in it, so nothing in the repo produces any of the claimed numbers",
+  "requirements.txt pins torch/numpy versions that will not install cleanly on this machine's Python 3.12, but that is moot since the DINN baseline is the comparison method and not needed for the match target",
+  "No scripts, only notebooks; no CLI entrypoint that emits a target number",
+  "The two runs reported for C1 are single noise realizations implicitly (no seed stated), so an exact 0.124% match requires reproducing the same random draw; honest reproduction should report median/mean over realizations and accept a small deviation"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "5-10 minutes of command time: ~1 min to install numpy/scipy/matplotlib, ~10 s to simulate the SIDR benchmark, milliseconds per PIWR fit, so a few hundred repeated fits plus a noise-level sweep finish in seconds; the remainder is development of the ~200-line weak-form estimator and the clean re-run.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The match target is one closed-form least-squares fit on 100 samples of a 4-state linear-in-parameters ODE (~0.2 ms per fit per the paper), so a reference laptop spends its time writing/porting the weak form and running a few hundred millisecond-scale fits with numpy/scipy — no training and no GPU-relevant work."
+ },
+ "repo_info": {
+  "url": "https://github.com/Shaier/DINN",
+  "cloned": true,
+  "n_files": 626,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

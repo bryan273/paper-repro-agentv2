@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "The only inspected code link (https://github.com/porscheofficial/distribution) returns a hard 404 'Repository not found', and the second listed link is under the same organisation and was not retrievable, so no author code was obtained for the only thing that matters here — the PACα hypervolume score φ_PAC and the IFα family hα. The paper text, however, is fully self-describing for the target claim (PACα, α=0.5, n=100 trees, ADBench annthyroid, AUCROC 91.47 vs IF 82.12), and the data side is unblocked because annthyroid is available from the public ADBench benchmark and ODDS. There is therefore nothing to run as released and no partial release to port: the two scoring functions must be rebuilt from the paper's definitions and evaluated on the authors' stated benchmark/split, i.e. a paper-only reimplementation.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "authors' source code (both listed GitHub URLs, incl. IFα / PACα implementations)",
+  "φ_PAC hypervolume-based per-tree score implementation",
+  "hα tree-aggregation implementation (mean / min / max family)",
+  "authors' exact ADBench preprocessing and split wiring for annthyroid",
+  "any per-dataset result logs or scripts reproducing Table I"
+ ],
+ "blockers_seen": [
+  "git clone https://github.com/porscheofficial/distribution -> 'Repository not found' (404/nonexistent)",
+  "second code link is in the same organisation and equally unretrievable at routing time",
+  "PACα is only described mathematically in the paper; no reference implementation, so numeric match depends on faithfully implementing the hypervolume score and its tie/leaf handling",
+  "annthyroid must be fetched from a third-party benchmark (ADBench / ODDS) rather than the authors' release, so the exact ADBench split (50% train with anomalies / rest test) must be re-derived from ADBench's own loader"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "install + fetch annthyroid (~7,200 x 21): 2-4 min; fit 100-tree forest with the reimplemented φ_PAC score plus the IFα baseline over a small α grid: 2-6 min; AUCROC evaluation and clean re-run: 3-5 min; roughly 10-15 min total on 22 CPU cores, comfortably inside the ~20 min budget",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Two scoring functions (hα aggregation and the hypervolume φ_PAC) reimplemented as pure NumPy on one 7,200-point, 21-feature dataset with 100 trees; the workload is a single 100-estimator forest plus a short α sweep, on the order of a few minutes of CPU per fit."
+ },
+ "repo_info": {
+  "url": "https://github.com/porscheofficial/distribution",
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

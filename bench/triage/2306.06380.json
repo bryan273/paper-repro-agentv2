@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "D2Match achieves 100.0% accuracy on the Mutag dataset (subgraph matching classification).",
+  "table_ref": "Table 1, row D2Match, column Mutag",
+  "dataset": "Mutag"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/XuanzhouLiu/D2Match-ICML23"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": 2.0,
+  "basis": "Training a small GNN (5 layers, hidden dim 10) on ~1000 graph pairs of small graphs (avg 18 nodes) for up to 500 epochs; CPU is sufficient, GPU gives modest speedup."
+ },
+ "blockers": [
+  "Code is promised but not yet released (as of paper submission).",
+  "Data generation scripts may not be included; need to implement synthetic query generation from raw Mutag graphs.",
+  "Exact hyperparameters (learning rate, batch size, sampling K) may need tuning to reproduce 100% accuracy."
+ ],
+ "suitable": true,
+ "id": "2306.06380",
+ "title": "D2Match: Leveraging Deep Learning and Degeneracy for Subgraph Matching",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

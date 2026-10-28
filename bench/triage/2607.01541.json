@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "KNM with Cauchy kernel achieves up to 99.1% accuracy on the F2 (feedback sensor) fault scenario under IPPT mode using four variables (Ipv, Vpv, Vdc, Vf)",
+  "table_ref": "Abstract / Section 3 results (accuracy for F2, Cauchy kernel)",
+  "dataset": "GPVS-Faults (Mendeley Data, Bakdi et al. 2020), IPPT mode, F2 fault"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released, so the full KNM pipeline (sliding windows, DFT feature extraction, kernel grid search, Frobenius-norm statistic, thresholding, plus OCSVM/iForest/LOF baselines) must be reimplemented from the text; data are ~100 kHz time series but only 4 variables and short 10-15 s experiments, so CPU-only compute is modest; most time is reimplementation and debugging, not runtime."
+ },
+ "blockers": [
+  "No code or configs released; method must be reimplemented from prose",
+  "Some protocol details (window length w, step s, number of Fourier components I, grid Gamma, baseline length) are only partially specified",
+  "High-frequency (~100 kHz) raw data require careful windowing/FFT handling to match reported accuracy"
+ ],
+ "suitable": true,
+ "id": "2607.01541",
+ "title": "An unsupervised kernel norm monitoring for fault detection in a time series photovoltaic system",
+ "pages": 45,
+ "model": "DeepSeek-V4.1-Flash"
+}

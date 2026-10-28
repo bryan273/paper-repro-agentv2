@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Total rule length of L-STAIR on the Pima dataset under a similar F1 score (value 10)",
+  "table_ref": "Table 2",
+  "dataset": "Pima"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code is released, so the STAIR and L-STAIR algorithms must be reimplemented from the paper; the Pima dataset is small (768 instances, 8 dims) and CPU-only, but reimplementation and debugging of the iterative rule-splitting and clustering logic will take a few hours."
+ },
+ "blockers": [
+  "No code or configuration files are linked in the paper",
+  "Algorithms (STAIR, L-STAIR) must be reimplemented from the text",
+  "Outlier labels are not provided; must run an unspecified outlier detector or use a standard benchmark version"
+ ],
+ "suitable": true,
+ "id": "2303.06261",
+ "title": "Interpretable Outlier Summarization",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

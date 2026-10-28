@@ -1,0 +1,40 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository is present and complete for the target claim: GGDPC.py / dpc_helpers.py / utils.py implement the full pipeline (KDE density, one-step gradient ascent, higher-density 1NN parent search with the constraint anchored at the original observation, mean+4sd center selection, label propagation), GMM_Repeat_Sim.py is the simulation driver that produces Table 1, the synthetic data are generated in-code (no external download), and Syn_Results/ already contains the aggregated mean/std tables. Dependencies are ordinary NumPy/SciPy/scikit-learn/pandas, all installable on Python 3.12, so the authors' entrypoint should run with at most minor environment fixes. The only reason this is not a trivially clean reproduction is budget: the released driver sweeps all sample sizes (n=500..8000) and all DPC variants over 1000 replications, which massively exceeds the ~20 minute budget, so the match target must be run on a subset.",
+ "repo": "https://github.com/zhangyk8/GGDPC",
+ "entrypoints": [
+  "GMM_Repeat_Sim.py",
+  "Syn_Res.py"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "GMM_Repeat_Sim.py as released loops over every sample size (500/1000/2000/5000/8000) and every competitor in DPC_variants.py for 1000 replications — the full sweep is many hours of CPU, far above the 20 minute budget",
+  "GMM_Data.ipynb is a 2 MB notebook with stored outputs; the numeric table comes from the .py/.sbatch path, not the notebook",
+  "GMM_Repeat_Sim.sbatch targets a Slurm cluster; there is no GPU/parallel dependency, so it is a launcher detail rather than a real blocker",
+  "no GPU on this machine (fine: the algorithm is pure CPU NumPy/SciPy)"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Installing deps ~2-4 min; running the released driver restricted to n=500 with GGDPC (plus DPC as the comparator for C5/C6) at 200-300 replications takes ~3-8 min, leaving room for a clean confirmation re-run inside the 20 minute budget. The unmodified full sweep (all five sample sizes x six methods x 1000 reps, with DPC at n=8000 alone costing ~77 min) would not finish.",
+  "fits_budget": true,
+  "scale_down_plan": "Keep the authors' code unmodified but pass n=500 only, restrict the method list to GGDPC (and original DPC for the C5/C6 contrast), and cut Monte Carlo replications from 1000 to ~200-300 with a fixed seed. Report mean ARI with a standard error across replications instead of a single 1000-replication number; expect the mean ARI to land near 0.916 but with a wider interval (roughly +/-0.01-0.02), and per-replication runtime comparable to the reported 0.028 s up to a small constant factor from the slower CPU and pandas/statsmodels overhead. Skip the optional dendrogram/graph-distance construction exactly as the paper's timing does. Cite the authors' shipped Syn_Results/GMM_results_mean.csv as the check that the pipeline reproduces the published table when run at full scale.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Pure-CPU KDE plus a kd-tree/kNN parent search per replication: ~0.03-0.15 s per fit at n=500, so 1000 replications for the full C1 protocol is a few minutes plus ~3 min of pip installs and an aggregation/clean re-run, with no GPU path in the code and none needed."
+ },
+ "repo_info": {
+  "url": "https://github.com/zhangyk8/GGDPC",
+  "cloned": true,
+  "n_files": 23,
+  "n_python": 6,
+  "python2_style_files": 0
+ }
+}

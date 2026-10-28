@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SVM (RBF) test accuracy on Breast Cancer = 0.972 ± 0.008 (mean ± std across 5 seeds)",
+  "table_ref": "Table III, row 'Breast Cancer', column 'Test Acc'",
+  "dataset": "Breast Cancer Wisconsin (Diagnostic), UCI"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/zubair0831/ensemble-generalization-gap"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "basis": "Small 569x30 dataset; 5-seed stratified CV with SVM and light GridSearchCV on 8 CPU cores should finish in well under 20 minutes including installs and data download."
+ },
+ "blockers": [
+  "Exact hyperparameter grid and CV fold details are not fully specified in the paper; reproducing the exact 0.972 may require guessing the grid or reading the repo.",
+  "Repo may be incomplete or outdated (only a link is given; no configs or exact seeds beyond the listed seeds)."
+ ],
+ "suitable": true,
+ "id": "2512.05469",
+ "title": "How Ensemble Learning Balances Accuracy and Overfitting: A Bias-Variance Perspective on Tabular Data",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "BERT+SIK achieves AUROC 0.9414 on the BBC_News dataset, competitive with the best baselines (Table 3), demonstrating that the Simplified Isolation Kernel preserves detection performance with a low-dimensional sparse map.",
+  "table_ref": "Table 3 (Evaluation results across 7 datasets in terms of AUROC), column BBC_News, row BERT+SIK",
+  "dataset": "BBC_News (from NLP-ADBench; 1785 samples, 62 anomalies, 3.47% anomaly ratio)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/charles-cao/SIK"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": 3,
+  "basis": "SIK itself is a cheap CPU hypersphere-partitioning detector (seconds of runtime on ~1.8k points); the dominant cost is obtaining BERT embeddings for the BBC_News texts (either downloaded from NLP-ADBench or recomputed on CPU), plus a 5-run AUROC loop and hyperparameter search over psi."
+ },
+ "blockers": [
+  "Precomputed BERT embeddings for BBC_News may not be directly bundled; they may need to be regenerated (bert-base runs fine on CPU for ~1.8k short docs).",
+  "Reproducing the OpenAI/text-embedding-3-large rows (e.g. the bold 0.9844) would require a paid closed-source embedding API; the BERT-based cell avoids this."
+ ],
+ "suitable": true,
+ "id": "2510.13197",
+ "title": "Text Anomaly Detection with Simplified Isolation Kernel",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

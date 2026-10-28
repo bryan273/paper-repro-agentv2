@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average per-snapshot AUC of the trained AddGraph baseline (and X-AddGraph, identical by construction) on UCI Message = 0.8705",
+  "table_ref": "Table 1, row 'Avg. per-snapshot AUC'",
+  "dataset": "UCI Message (Opsahl & Panzarasa online student community, 1,899 nodes, 59,835 edges)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/iyadnekka/x-addgraph"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": 3,
+  "basis": "Small graph (~60k edges, 1,899 nodes, hidden dim 100, window 2) trained 35 epochs; the paper reports 10.1 s/edge explanation on a T4, so training plus a handful of snapshot evaluations fits comfortably on CPU in a couple of hours, but the exact 0.8705 depends on the stochastic anomaly-injection seeding and the released code's fidelity."
+ },
+ "blockers": [
+  "Exact AUC 0.8705 depends on re-seeded anomaly injection and hyperparameter details; the paper itself reports a slightly different explainer-side AUC (0.8491), so bit-exact reproduction of 0.8705 is uncertain",
+  "Released repo may not include the exact training config/seeds used for the reported number"
+ ],
+ "suitable": true,
+ "id": "2608.12441",
+ "title": "Dual Spatial-Temporal Attribution: Architecture-Aligned Post-Hoc Explainability for Recurrent Graph Anomaly Detection",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

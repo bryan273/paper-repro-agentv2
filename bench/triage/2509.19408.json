@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Boruta+DBSCAN+SMOTE-Tomek+GBM test ROC-AUC = 0.9090",
+  "table_ref": "Table 3 (Testing Phase, Gradient Boosting Machines row, ROC-AUC column)",
+  "dataset": "UCI Default of Credit Card Clients (30,000 instances, 23 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": 1.5,
+  "basis": "No code released; must reimplement Boruta (random forest with shadow features), DBSCAN (eps=0.5, min_samples=5), SMOTE-Tomek, and GBM with grid search (540 fits) on 30k rows; paper reports GBM training alone took ~2500s, so full pipeline likely 1-2 hours on 8-core CPU."
+ },
+ "blockers": [
+  "No code or configuration files released",
+  "Data availability statement says 'available upon reasonable request' despite public UCI link",
+  "DBSCAN parameters (eps=0.5, min_samples=5) are given but exact random seeds and train/test split not specified",
+  "Boruta implementation details (n_estimators='auto', max_depth=5) given but exact random forest seed not stated",
+  "Hyperparameter grid search details (540 fits) not fully specified beyond best parameters"
+ ],
+ "suitable": true,
+ "id": "2509.19408",
+ "title": "Enhancing Credit Default Prediction Using Boruta Feature Selection and DBSCAN Algorithm with Different Resampling Techniques",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "FID of 28.531 for the Real→Cartoon cross-domain reenactment task (our full model)",
+  "table_ref": "Table 1",
+  "dataset": "VoxCeleb (real driving videos) + self-collected Disney-style cartoon dataset (source images)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 43200,
+  "gpu_speedup": 20,
+  "basis": "Training requires 450K iterations at batch size 64 on VoxCeleb plus 10K fine-tuning iterations on the cartoon dataset, which is far beyond a few hours on an 8-core CPU laptop; the cartoon dataset is not yet released and no code is provided."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Cartoon dataset not publicly available (only promised for future release)",
+  "Requires training a GAN-based transformer model for 450K+ iterations",
+  "Needs GPU for feasible training time"
+ ],
+ "suitable": false,
+ "id": "2308.12866",
+ "title": "ToonTalker: Cross-Domain Face Reenactment",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

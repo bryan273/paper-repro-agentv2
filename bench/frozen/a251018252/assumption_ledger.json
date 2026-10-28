@@ -1,0 +1,194 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "How missing values are removed is not specified; the paper only says missing values are removed before caps.",
+  "options": [
+   "drop rows with any missing predictor or target",
+   "median/mode impute then cap",
+   "use Kaggle-standard imputation"
+  ],
+  "chosen": "drop rows with any missing predictor or target before applying caps, because the paper reports a cleaned count",
+  "rationale": "The paper states a cleaned dataset size, so row deletion is the simplest way to reach a fixed N.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "After preprocessing to remove missing values and outliers using caps based on official demographic and financial statistics, the cleaned dataset comprises 97,243 observations",
+  "page": 6
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Exact outlier caps for DebtRatio, NumberOfDependents, NumberOfOpenCreditLinesAndLoans, and NumberRealEstateLoansOrLines are not given.",
+  "options": [
+   "use stated age/income caps plus domain-plausible caps",
+   "use 1st/99th percentile winsorization",
+   "use no caps for unspecified variables"
+  ],
+  "chosen": "use stated age/income caps and domain-plausible caps for the remaining variables, then verify cleaned N=97,243",
+  "rationale": "The paper says caps are based on official statistics but only gives two concrete bounds.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "age is bounded to [21, 85] years based on demographic data, while monthly income is capped at $25,000 to exclude extreme outliers.",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Which six of the ten Give Me Some Credit columns are used as predictors is not fully disambiguated.",
+  "options": [
+   "use exactly the six listed predictors and drop ID/delinquency counts",
+   "use all available features except ID",
+   "use the six listed plus delinquency counts"
+  ],
+  "chosen": "use exactly the six listed predictors and drop ID and the unlisted delinquency-count columns",
+  "rationale": "The paper explicitly lists six variables and says the feature set includes six variables.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The feature set includes six variables spanning demographic, financial, and credit history dimensions:",
+  "page": 6
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "ADASYN k and neighbor tie-breaking are not specified.",
+  "options": [
+   "k=5 (imbalanced-learn default)",
+   "k=3",
+   "k=10"
+  ],
+  "chosen": "k=5",
+  "rationale": "k=5 is the common default for SMOTE-family implementations and is consistent with the cited ADASYN literature.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "ADASYN (He et al., 2008) introduces adaptive density weighting to prioritize difficult-to-learn regions.",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The exact meaning of ADASYN 1x is ambiguous because the text says 4,810 to 9,620 but Table 1 lists N Train=72,817.",
+  "options": [
+   "exact doubling: add 4,810 synthetic, N=72,880",
+   "match Table 1: add 4,747 synthetic, N=72,817",
+   "use imbalanced-learn ADASYN with a floating sampling_strategy"
+  ],
+  "chosen": "match Table 1/2 N=72,817 for the run tied to AUC 0.6778, and record that this is 63 fewer synthetics than exact doubling",
+  "rationale": "All reported metrics are tied to the table's N Train, so matching that run is the closer reproduction target.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "Doubling the minority class (from 4,810 to 9,620 samples) yields maximum improvement of +0.0052 AUC (+0.77%).",
+  "page": 11
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether ADASYN is run on standardized features and when inverse transform/rounding occurs is not fully specified.",
+  "options": [
+   "run ADASYN on scaled features, inverse-transform synthetics, then round counts",
+   "run ADASYN on raw features then scale all data",
+   "run ADASYN on scaled features and round in scaled space"
+  ],
+  "chosen": "run ADASYN on StandardScaler-transformed training features, inverse-transform synthetics, then round discrete count variables",
+  "rationale": "The paper says scaling is needed for distance-based generation and that discrete variables require post-generation rounding.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Three variables (NumberOfDependents, NumberOfOpenCreditLinesAndLoans, NumberRealEstateLoansOrLines) are discrete integers, requiring post-generation rounding to maintain realistic values.",
+  "page": 6
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "XGBoost objective and unspecified defaults are not stated.",
+  "options": [
+   "binary:logistic with defaults, random_state=42",
+   "binary:logitraw",
+   "reg:logistic"
+  ],
+  "chosen": "binary:logistic with default tree_method/n_jobs and random_state=42",
+  "rationale": "Credit default is binary classification and the paper uses AUC as eval_metric.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "All experiments use identical XGBoost configurations to isolate the effect of augmentation strategies.",
+  "page": 8
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "When scale_pos_weight is computed relative to augmentation is not explicit beyond 'for each augmented training set'.",
+  "options": [
+   "compute after ADASYN on final augmented counts",
+   "compute on original training counts",
+   "use fixed scale_pos_weight=13.15"
+  ],
+  "chosen": "compute after ADASYN augmentation using final majority/minority counts",
+  "rationale": "The paper says dynamically calculated for each augmented training set.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "scale pos weight: Dynamically calculated as nmajority/nminority for each augmented training set to balance internal gradient updates",
+  "page": 8
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Bootstrap p-value convention is not fully specified: raw proportion vs +1 correction, and whether both models use the same resample.",
+  "options": [
+   "same resample for both models; raw proportion with delta<=0",
+   "same resample; +1 corrected proportion",
+   "independent resamples"
+  ],
+  "chosen": "use the same bootstrap resample for both predictions and raw proportion with delta-AUC <= 0, no +1 correction",
+  "rationale": "The paper defines the p-value as the proportion of bootstrap iterations where delta-AUC <= 0.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether AUC is computed from predicted probabilities or hard labels is not stated.",
+  "options": [
+   "predicted probability for positive class",
+   "hard class labels",
+   "decision scores"
+  ],
+  "chosen": "predicted probability for the positive class with roc_auc_score",
+  "rationale": "AUC is threshold-free and standard practice uses probabilities/scores.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "AUC-ROC (Area Under the Receiver Operating Characteristic Curve): Measures discriminatory power across all classification thresholds, robust to class imbalance.",
+  "page": 9
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The exact split API and stratification details are not given beyond stratified 70-30 and random_state=42.",
+  "options": [
+   "sklearn train_test_split with stratify=y",
+   "manual stratified split",
+   "KFold stratified split"
+  ],
+  "chosen": "sklearn train_test_split(test_size=0.30, stratify=y, random_state=42)",
+  "rationale": "This is the standard way to reproduce the stated stratified 70/30 split and seed.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "All random processes (train-test split, synthetic generation, model training) use random state=42 to guarantee exact reproducibility.",
+  "page": 8
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Gini normalization/clipping behavior is not fully specified beyond the formula.",
+  "options": [
+   "Gini=2*AUC-1 with no clipping",
+   "clip Gini to [0,1]",
+   "report 2*AUC-1 only"
+  ],
+  "chosen": "Gini=2*AUC-1 with no clipping needed because all reported AUCs exceed 0.5",
+  "rationale": "The formula is explicit and the reported AUCs are above 0.5.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ }
+]

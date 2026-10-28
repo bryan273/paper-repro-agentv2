@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "The only code link (github.com/koekvall/reconf-suppl) returns 404, so no author code, weights, configs or simulation scripts exist to run. The target claim C1 is however extremely cheap and fully specified: a single 2x2 random-effects LMM (random intercept + age slope, 158 children, 610 observations) on the WWGbook autism data with known weights w_it = X_it^-2, and four 95% profile-score intervals whose endpoints are given in Table 1. The restricted likelihood, profile score statistic and root-finding must be rebuilt from the paper (and, if it exists, cross-checked against the authors' 'reconf' R package on CRAN); the autism data itself is public via the WWGbook R package. Everything runs on CPU in well under a second per fit, so the whole target fits the budget with no scaling down.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "authors' repository koekvall/reconf-suppl (404 / not found)",
+  "author implementation of the modified profile-score statistic (restricted likelihood, nuisance parameters partially maximized on the extended parameter set)",
+  "script reproducing Table 1 (autism example)",
+  "Section 4 simulation code for the coverage study (Figure 1)",
+  "no data file shipped; autism socialization data must be pulled from the CRAN package WWGbook"
+ ],
+ "blockers_seen": [
+  "git clone of https://github.com/koekvall/reconf-suppl fails: 'Repository not found' (repo deleted or private)",
+  "no R environment assumed on this Windows box (Python 3.12 only); WWGbook data must be extracted from the CRAN tarball or refetched, and the LMM/profile-score machinery reimplemented in Python (numpy/scipy) ",
+  "exact construction of the 'extended parameter set' and the partial maximization of nuisance parameters is only described in prose in the paper, so the reported endpoints may be reproduced to within the method's own tolerance rather than bit-exactly"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Data fetch (<1 min) plus a single 2x2 LMM fit and four sequential root searches over the profile score; each evaluation is a few milliseconds on 610 observations, so the full Table 1 computation is a few seconds of command time. Total wall time including environment setup and the clean re-run is a few minutes; the real cost is writing the profile-score code, which is not counted as runtime.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "One 2x2 random-effects fit on 610 observations plus four one-dimensional root searches, each score evaluation costing a few milliseconds (authors report 0.5 s for all four intervals with reconf, 7.0 s with lme4), so a reference laptop needs only a couple of minutes of command time; the estimate is dominated by fetching WWGbook and installing numpy/scipy."
+ },
+ "repo_info": {
+  "url": "https://github.com/koekvall/reconf-suppl",
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

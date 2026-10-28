@@ -1,0 +1,9 @@
+[
+ {
+  "at": "reader->router",
+  "type": "omission",
+  "path": "requirements.3",
+  "marker": "INJ-O3",
+  "what": "requirement R4 (token score is the minimum distance to the memory bank) removed"
+ }
+]

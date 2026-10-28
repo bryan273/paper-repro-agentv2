@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SPORE achieves ARI = 0.98 on the Compound dataset (399 points, 2D), the best among all evaluated methods.",
+  "table_ref": "Table 17, row 'Compound (399, 2, 2)', column 'SPORE'",
+  "dataset": "Compound (399 points, 2D synthetic)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/RandyWAidoo/SPORE",
+  "https://github.com/RandyWAidoo/SPORE_Paper",
+  "https://pypi.org/project/spore-clustering/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Compound is a tiny 399-point 2D dataset; the paper's own runtime table shows SPORE taking 0.03 s, and the full hyperparameter search (50 configs) plus 10 reruns on a single CPU core would take well under a minute, so the 10-minute estimate is dominated by pip install and data download."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2511.00064",
+ "title": "SPORE: Skeleton Propagation Over Recalibrating Expansions",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

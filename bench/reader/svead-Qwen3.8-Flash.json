@@ -1,0 +1,254 @@
+{
+ "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+ "summary": "The paper addresses unsupervised anomaly detection on data with varying local densities, where distance- and density-based methods either miss local anomalies or require costly parameter tuning. It proposes SVEAD, which builds an ensemble of random Voronoi partitions by sampling anchors and scores points by normalized within-cell distance weighted by cell mean distance. Experiments on 45 ADBench datasets report SVEAD mean AUC-ROC 0.8538 and AUC-PR 0.5000, including 0.9339 AUC-ROC on cardio.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "SVEAD achieves mean AUC-ROC 0.9339 on cardio over 5 runs.",
+   "metric": "AUC-ROC",
+   "dataset": "cardio",
+   "split": "full unsupervised dataset; labels used only after predictions; 5-run average",
+   "value": 0.9339,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row cardio, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean; labels used only after predictions",
+   "reported_spread": "0.0063",
+   "est_compute": "CPU, ~1-5 min for 5-run grid on cardio",
+   "quote": "cardio\n0.6179\n0.9260\n0.9447\n0.9531\n0.9350\n0.9219\n0.9001\n0.7507\n0.6089\n0.9281\n0.4975\n0.7651\n0.9339",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "SVEAD achieves average AUC-ROC 0.8538 across the 45 benchmark datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "45 ADBench real-world datasets",
+   "split": "full datasets; 5-run average",
+   "value": 0.8538,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row Average, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD across 45 datasets; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean",
+   "reported_spread": null,
+   "est_compute": "CPU, hours to days for 45 datasets with grid search",
+   "quote": "Average\n0.6879\n0.7772\n0.8213\n0.8327\n0.7435\n0.7504\n0.7172\n0.7558\n0.6933\n0.7348\n0.7493\n0.6651\n0.8538",
+   "page": 14
+  },
+  {
+   "id": "C3",
+   "statement": "SVEAD achieves mean AUC-PR 0.5356 on cardio over 5 runs.",
+   "metric": "AUC-PR",
+   "dataset": "cardio",
+   "split": "full unsupervised dataset; labels used only after predictions; 5-run average",
+   "value": 0.5356,
+   "unit": "AUC-PR",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row cardio, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean; labels used only after predictions",
+   "reported_spread": "0.0246",
+   "est_compute": "CPU, ~1-5 min for 5-run grid on cardio",
+   "quote": "cardio\n0.1729\n0.5861\n0.5684\n0.6381\n0.5674\n0.5776\n0.5231\n0.3038\n0.2066\n0.5909\n0.1653\n0.2948\n0.5356",
+   "page": 16
+  },
+  {
+   "id": "C4",
+   "statement": "SVEAD achieves average AUC-PR 0.5000 across the 45 benchmark datasets.",
+   "metric": "AUC-PR",
+   "dataset": "45 ADBench real-world datasets",
+   "split": "full datasets; 5-run average",
+   "value": 0.5,
+   "unit": "AUC-PR",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row Average, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD across 45 datasets; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean",
+   "reported_spread": null,
+   "est_compute": "CPU, hours to days for 45 datasets with grid search",
+   "quote": "Average\n0.2765\n0.3941\n0.4336\n0.4414\n0.3462\n0.3394\n0.3344\n0.2990\n0.2723\n0.3111\n0.3244\n0.2471\n0.5000",
+   "page": 16
+  },
+  {
+   "id": "C5",
+   "statement": "SVEAD achieves mean AUC-ROC 1.0000 on http over 5 runs.",
+   "metric": "AUC-ROC",
+   "dataset": "http",
+   "split": "full unsupervised dataset; labels used only after predictions; 5-run average",
+   "value": 1.0,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row http, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean",
+   "reported_spread": "0.0000",
+   "est_compute": "CPU, minutes to hours for http with grid search",
+   "quote": "http\n0.4392\n0.9998\n0.9968\n0.9987\n0.9786\n0.9915\n0.9972\n0.9747\n0.2614\n0.9933\n0.9992\n0.9963\n1.0000",
+   "page": 14
+  },
+  {
+   "id": "C6",
+   "statement": "SVEAD achieves mean AUC-ROC 1.0000 on musk over 5 runs.",
+   "metric": "AUC-ROC",
+   "dataset": "musk",
+   "split": "full unsupervised dataset; labels used only after predictions; 5-run average",
+   "value": 1.0,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row musk, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean",
+   "reported_spread": "0.0000",
+   "est_compute": "CPU, ~seconds to minutes for musk with grid search",
+   "quote": "musk\n0.4912\n0.9997\n1.0000\n1.0000\n0.9559\n0.9463\n0.9466\n0.8562\n0.3118\n0.9819\n0.8706\n0.5599\n1.0000",
+   "page": 14
+  },
+  {
+   "id": "C7",
+   "statement": "SVEAD achieves mean AUC-ROC 0.8241 on magic.gamma over 5 runs.",
+   "metric": "AUC-ROC",
+   "dataset": "magic.gamma",
+   "split": "full unsupervised dataset; labels used only after predictions; 5-run average",
+   "value": 0.8241,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row magic.gamma, column VEAD (SVEAD)",
+   "config_for_value": "SVEAD; ensemble size fixed at 100; m searched over {21, 22, . . . , 28}; 5-run mean",
+   "reported_spread": "0.0009",
+   "est_compute": "CPU, ~minutes for magic.gamma with grid search",
+   "quote": "magic.gamma\n0.7110\n0.7240\n0.7491\n0.7584\n0.6382\n0.6812\n0.6282\n0.7409\n0.8192\n0.7587\n0.6243\n0.7590\n0.8241",
+   "page": 14
+  },
+  {
+   "id": "C8",
+   "statement": "SVEAD processes 500,000 instances in less than 3 seconds on CPU.",
+   "metric": "runtime",
+   "dataset": "synthetic scalability test (500,000 instances, dimensionality 10)",
+   "split": "not applicable; runtime experiment",
+   "value": 3,
+   "unit": "seconds",
+   "higher_is_better": false,
+   "table_ref": "Figure 5 and Section 5.3 scalability analysis",
+   "config_for_value": "CPU @AMD Ryzen 9 9950X; 500,000 instances; dimensionality fixed at 10",
+   "reported_spread": null,
+   "est_compute": "CPU, ~3 s",
+   "quote": "requiring less than 3 seconds to process 500,000 instances on CPU.",
+   "page": 8
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "User hint specifies Table 4, SVEAD AUC-ROC on cardio; cardio is small (1831 samples) and cheap, while still exercising the ensemble Voronoi scoring mechanism on a real-world medical anomaly dataset."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.0189,
+  "why": "Rule 1: Table 5 reports SVEAD AUC-ROC standard deviation 0.0063 for cardio over 5 runs; 3 x 0.0063 = 0.0189, rounded to the paper's 4-decimal precision."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The detector must produce an anomaly score that is higher for anomalies than for normal instances.",
+   "cite": "Section 2",
+   "quote": "assigns higher scores to anomalous instances and lower scores to normal instances",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Evaluation must be unsupervised in prediction: labels are used only after scores are produced.",
+   "cite": "Sections 2 and 5.1",
+   "quote": "the labels are used to compute the AUC-ROC and AUC-PR for each dataset only after the models have made predictions",
+   "page": 7
+  },
+  {
+   "id": "R3",
+   "stmt": "SVEAD must construct an ensemble of random Voronoi-style space partitions.",
+   "cite": "Section 4.1",
+   "quote": "constructs an ensemble of random space partitions via Voronoi diagram",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "For each partition, anchors must be sampled from the dataset without replacement.",
+   "cite": "Section 4.1",
+   "quote": "m points from the dataset X without replacement",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Each data point must be assigned to its nearest anchor under Euclidean distance.",
+   "cite": "Equation 1",
+   "quote": "Each point x ∈ X is assigned to its nearest anchor",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Within-cell scoring must use the normalized distance δ/δmax.",
+   "cite": "Section 4.2, Equation 3",
+   "quote": "the first term δ/δmax normalizes the distance by the maximum cell radius",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Within-cell scoring must multiply by the cell mean distance δmean.",
+   "cite": "Section 4.2, Equation 3",
+   "quote": "the second term δmean represents the mean distance within the cell",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "If a cell contains only its anchor, that point's score must be skipped for that partition.",
+   "cite": "Section 4.2",
+   "quote": "we skip scoring for this point in this partition and rely on the other t − 1 partitions in the ensemble average",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "The final anomaly score must be the arithmetic mean across ensemble partitions.",
+   "cite": "Equation 5",
+   "quote": "The final anomaly score is computed as the arithmetic mean",
+   "page": 5
+  },
+  {
+   "id": "R10",
+   "stmt": "Performance must be measured with AUC-ROC and AUC-PR, averaged over 5 runs.",
+   "cite": "Section 5.1",
+   "quote": "We adopt Area Under the Receiver Operating Characteristic curve (AUC-ROC) and Area Under the Precision-Recall curve (AUC-PR)",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "SVEAD's anchor count m must be grid-searched over powers of two while ensemble size t is fixed at 100.",
+   "cite": "Section 5.1",
+   "quote": "the number of sample points is searched over {21, 22, . . . , 28}, with ensemble size fixed at 100",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "The benchmark datasets must come from ADBench.",
+   "cite": "Section 5.1",
+   "quote": "We evaluate SVEAD on 45 publicly available benchmark datasets widely used in anomaly detection from ADBench",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "The implementation should preserve the paper's claimed linear scaling with n when m, t, and d are fixed or small.",
+   "cite": "Section 4.4",
+   "quote": "Since m ≪ n in practice, this scales linearly with dataset size.",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "cardio (ADBench)",
+   "how_to_get": "Obtain the cardio dataset from the ADBench benchmark by Han et al., 2022; official repository: https://github.com/MLGroupJLU/ADBench. Use the provided cardio table with 1831 samples, 21 features, and 176 anomalies."
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/SVEAD-2B97/"
+ ],
+ "stated_compute": "The test device is on CPU @AMD Ryzen 9 9950X and GPU @Nvidia RTX 4090.",
+ "paper_meta": {
+  "source": "2601.03664",
+  "kind": "arxiv",
+  "arxiv_id": "2601.03664",
+  "url": "https://arxiv.org/abs/2601.03664",
+  "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+  "pages": 17
+ }
+}

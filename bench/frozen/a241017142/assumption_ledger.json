@@ -1,0 +1,195 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The number of trees K used for the coniferest bars in Figure 1 is never stated.",
+  "options": [
+   "100 (scikit-learn default)",
+   "200",
+   "whatever coniferest 0.0.13 defaults to",
+   "matched to each scikit-learn run"
+  ],
+  "chosen": "100 (scikit-learn default), identical for both coniferest and sklearn bars",
+  "rationale": "The comparison is meant to isolate the implementation, not hyper-parameters; 100 is the IF default in the ecosystem the package mimics.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "with K representing the number of trees in the forest",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The per-tree training subsample size (max_samples) for the 10^6-sample benchmark is not given.",
+  "options": [
+   "256 (scikit-learn 'auto' default)",
+   "all 10^6 samples",
+   "1024",
+   "coniferest 0.0.13 library default"
+  ],
+  "chosen": "256, i.e. scikit-learn 'auto' = min(256, n_samples)",
+  "rationale": "Keeps the run comparable to scikit-learn's default IsolationForest and makes fitting negligible relative to scoring, which is the point of the figure.",
+  "source": "convention",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Random seed / random_state of the tree building for the timing benchmark is not specified.",
+  "options": [
+   "random_state=0",
+   "random_state=42",
+   "unseeded"
+  ],
+  "chosen": "random_state=0",
+  "rationale": "Timing of scoring is essentially seed-independent; a fixed seed keeps reruns identical.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "What exactly is timed: only the anomaly-score evaluation call, or fit+score; whether warm-up runs are excluded and how many repetitions are averaged.",
+  "options": [
+   "single timed score call, warm-up discarded",
+   "mean of several repeats",
+   "fit+score end-to-end"
+  ],
+  "chosen": "fit once outside the timer, then time the full-dataset score call, discard one warm-up, report the median of >=3 repeats",
+  "rationale": "The caption says the anomaly score evaluation was measured, and it stresses scoring (not training) as the demanding step.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The dataset anomaly score evaluation has been measured for different versions of scikit-learn.",
+  "page": 12
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "How single-thread mode is enforced for coniferest (environment variable vs a thread-count argument vs a build without OpenMP).",
+  "options": [
+   "OMP_NUM_THREADS=1 / threadpoolctl",
+   "library-level n_threads=1 argument",
+   "single core cgroup"
+  ],
+  "chosen": "OMP_NUM_THREADS=1 plus the library's own thread setting if available",
+  "rationale": "The figure distinguishes the single-thread bar explicitly, so thread count must be pinned and verified (e.g. by CPU-time/wall-time ratio).",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The distribution of the synthetic 10^6 x 2 dataset is not described (uniform vs Gaussian, range, presence of outliers).",
+  "options": [
+   "uniform in [0,1]^2",
+   "standard normal 2-D",
+   "mixture with injected anomalies"
+  ],
+  "chosen": "uniform in [0,1]^2 with a fixed seed",
+  "rationale": "Scoring cost for a tree ensemble depends mainly on N, K and depth, so any bounded 2-D distribution gives the same timing within noise.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "A dataset containing ≈106 samples, each having 2 features is considered.",
+  "page": 12
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Whether Figure 1 bars are means, medians or single runs, and whether error bars exist (none are drawn).",
+  "options": [
+   "single run",
+   "mean of N runs",
+   "minimum of N runs"
+  ],
+  "chosen": "median of several repeats",
+  "rationale": "No spread is reported, so the grader must compare against a robust central estimate.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Initial value w0 of the AAD regularisation term at the first iteration.",
+  "options": [
+   "uniform vector",
+   "weights from previous iteration"
+  ],
+  "chosen": "uniform vector at iteration 1, previous-iteration weights afterwards",
+  "rationale": "The paper lists both options and only the previous-iteration choice is meaningful from iteration 2 onward.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The w0 in regularization term is either an uniform vector or the weights from the previous iteration",
+  "page": 7
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Over which set the tau = 0.97 quantile threshold is computed (training sample vs all scored objects, and whether labelled objects are excluded).",
+  "options": [
+   "all objects in the session dataset",
+   "only unlabeled objects",
+   "fixed a-priori score threshold"
+  ],
+  "chosen": "all objects in the session dataset passed to the scorer",
+  "rationale": "The text defines q_tau as the score limiting the top 1-tau fraction of 'the dataset'.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The threshold score qτ is the limiting score necessary to identify the 1−τ percentile of the dataset.",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Pineforest's exact per-iteration discard fraction and number of rebuilt trees (the paper gives 90% only as an example).",
+  "options": [
+   "discard 90% each iteration",
+   "discard a fixed number of worst trees",
+   "user-supplied fraction"
+  ],
+  "chosen": "expose the fraction as a parameter defaulting to 0.9, rebuild the forest from the surviving trees",
+  "rationale": "The text presents 90% as the illustrative default.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "filtering out a certain percentage of them based on their scores (e.g., discarding 90%)",
+  "page": 9
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Which scoring API is timed: the raw anomaly score s(x) (score_samples) or the thresholded decision_function/predict.",
+  "options": [
+   "score_samples (raw s(x))",
+   "decision_function",
+   "predict labels"
+  ],
+  "chosen": "score_samples (raw s(x) for every row)",
+  "rationale": "AAD needs the full score vector each iteration, and this is the quantity Equation (1) defines.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Whether parallel coniferest bars (Xeon, 80 threads) use all available cores and how the thread pool is sized.",
+  "options": [
+   "all cores (80)",
+   "a fixed pool of n_threads",
+   "OMP default"
+  ],
+  "chosen": "library default, i.e. all available cores",
+  "rationale": "Only the M3 Pro bar is explicitly marked single-thread in the figure.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ }
+]

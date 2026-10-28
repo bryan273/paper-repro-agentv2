@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "AUC score of 0.7222 for the RODD-RF (y_RF) estimator in the simulation study, the best AUC among the five RODD methods",
+  "table_ref": "Table 2",
+  "dataset": "Synthetic data cubes (3,600 simulated 3-dimensional data cubes generated per the paper's procedure)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 1.5,
+  "basis": "No code released; the full 3,600-cube simulation with 1,500-tree RFs (avg ~38 s, max ~26 min per cube) plus re-tuning on 120 cubes must be reimplemented from the text, likely taking hours on 8 CPU cores."
+ },
+ "blockers": [
+  "No code or configs released; entire simulation pipeline (data synthesis, 5 estimators, RF tuning, metrics) must be reimplemented from prose",
+  "Full protocol is 3,600 cubes with 1,500-tree RFs, expensive on CPU; exact AUC 0.7222 depends on unreleased random seeds and tuned hyperparameters",
+  "Real-world validation data (Table 4) is proprietary company data"
+ ],
+ "suitable": false,
+ "id": "2303.08193",
+ "title": "RODD: Robust Outlier Detection in Data Cubes",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

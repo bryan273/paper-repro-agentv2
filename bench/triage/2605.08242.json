@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Logistic Regression surrogate classifier held-out test macro-F1 = 0.963 for predicting K-means k=4 cluster membership",
+  "table_ref": "Table 5",
+  "dataset": "NDNS Rolling Programme Years 12-15 (2019-2023), adult analytical sample n=2,146"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Clustering + logistic regression on ~2k x 25 features is trivial compute, but the NDNS microdata require UK Data Service registration/approval and the entire feature-engineering pipeline (25 energy-adjusted variables from raw Intake24 nutrient/food-group files) must be rebuilt from scratch with no code."
+ },
+ "blockers": [
+  "NDNS microdata behind UK Data Service access conditions (registration/approval, not freely downloadable)",
+  "No code or repository linked; full preprocessing/feature-engineering pipeline must be reimplemented from prose",
+  "Exact cluster labels depend on unspecified seeds/preprocessing details, so macro-F1 may not match exactly"
+ ],
+ "suitable": false,
+ "id": "2605.08242",
+ "title": "An Explainable Unsupervised-to-Supervised Machine Learning Framework for Dietary Pattern Discovery Using UK National Dietary Survey Data",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

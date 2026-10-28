@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Optimized XGBoost classifier achieves ROC-AUC of 0.9282 (and accuracy 0.8897, F1 0.9313) on the BBBP test split",
+  "table_ref": "Table 3, row 'Optimized XGBoost', column ROC-AUC",
+  "dataset": "MoleculeNet BBBP (2,039 compounds after preprocessing)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Aydafzs/BBB-Permeability-Prediction-ML",
+  "https://github.com/Aydafzs/BBB-"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "basis": "RDKit descriptor calculation plus GridSearchCV over XGBoost on ~2k molecules with 15 features is minutes of CPU work; the main uncertainty is whether the repo's exact split/seed and grid reproduce the reported 0.9282."
+ },
+ "blockers": [
+  "Exact train/test split seed and GridSearchCV grid not fully specified in text; must be recovered from repo or results may differ slightly",
+  "Repo completeness unverified (may lack saved descriptors/configs)"
+ ],
+ "suitable": true,
+ "id": "2609.10012",
+ "title": "An Explainable Machine Learning Framework for Predicting Blood-Brain Barrier Permeability Using Molecular Descriptors",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,178 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The target hint calls the distance dCC, while Section 4.3.2 defines \\hat d1 and \\hat d_PMF and later prose mentions dCC and dB.",
+  "options": [
+   "dCC is the cumulative-probability distance built from c_marginal_probabilities and c_joint_probabilities (distance_matrix_1)",
+   "dCC is the PMF-based distance built from marginal_probabilities and joint_probabilities (distance_matrix_2)",
+   "dCC is some third distance"
+  ],
+  "chosen": "dCC is the cumulative-probability distance built from c_marginal_probabilities and c_joint_probabilities (distance_matrix_1)",
+  "rationale": "The output 0.6545303 is produced by clustering_pam_1, whose distance matrix is dataset_1 built from cumulative probabilities; the paper also calls this the dCC distance in the prose.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "both metrics dCC and dB attain moderate scores in this dataset when used with the PAM algorithm.",
+  "page": 22
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper never states the metric used by dist() for the pairwise distance matrix.",
+  "options": [
+   "Euclidean",
+   "Manhattan",
+   "maximum"
+  ],
+  "chosen": "Euclidean",
+  "rationale": "R dist() defaults to Euclidean, and the paper calls dist(dataset_1) without changing the method.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "distance_matrix_1 <- dist(dataset_1)",
+  "page": 20
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "No feature scaling or standardization is described before concatenation and dist().",
+  "options": [
+   "No scaling",
+   "Scale each feature to unit variance",
+   "Min-max normalize each feature"
+  ],
+  "chosen": "No scaling",
+  "rationale": "The code directly cbind()s the probability features and calls dist(); no scale() or normalization step appears.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "dataset_1 <- cbind(dataset_marginal_1, dataset_serial_1_1, dataset_serial_1_2)",
+  "page": 20
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact flattening/order of the cumulative joint-probability matrices is not specified in prose.",
+  "options": [
+   "Use R unlist() column-major order for each series, then matrix(..., byrow=T)",
+   "Use row-major flattening",
+   "Sort probabilities before flattening"
+  ],
+  "chosen": "Use R unlist() column-major order for each series, then matrix(..., byrow=T)",
+  "rationale": "This is exactly the R code shown in Section 4.3.2; any consistent order preserves pairwise Euclidean distances across series.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "dataset_serial_1_1 <- matrix(unlist(list_serial_1_1), nrow = 80, byrow = T)",
+  "page": 20
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The c_joint_probabilities calls do not set features=TRUE, so it is unclear whether the default return is a vector or matrix.",
+  "options": [
+   "Use the function default exactly as in the paper",
+   "Set features=TRUE and manually flatten",
+   "Use only the marginal features"
+  ],
+  "chosen": "Use the function default exactly as in the paper",
+  "rationale": "The paper states that functions in Table 4 return the corresponding estimate by default, and the clustering code does not override that.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "functions in Table 4 return by default the corresponding estimate.",
+  "page": 12
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "No seed is set before PAM.",
+  "options": [
+   "Use cluster::pam defaults with no seed",
+   "Set an arbitrary seed",
+   "Use set.seed(123) as in the K-means example"
+  ],
+  "chosen": "Use cluster::pam defaults with no seed",
+  "rationale": "The paper sets set.seed(123) only before kmeans, not before pam; PAM's build phase is deterministic for fixed data.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "clustering_pam_1 <- pam(distance_matrix_1, k = 4)$clustering",
+  "page": 21
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "It is not stated whether pam() is called with a dist object or a full matrix, which affects the diss argument.",
+  "options": [
+   "Pass the dist object directly",
+   "Convert to a full matrix and set diss=TRUE",
+   "Convert to a data frame"
+  ],
+  "chosen": "Pass the dist object directly",
+  "rationale": "The paper computes distance_matrix_1 with dist() and passes that object directly to pam().",
+  "source": "paper",
+  "risk": "low",
+  "quote": "This function needs the pairwise distance matrix and the number of clusters.",
+  "page": 21
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The number of clusters is not inferred from the data.",
+  "options": [
+   "k=4",
+   "k selected by silhouette",
+   "k=2"
+  ],
+  "chosen": "k=4",
+  "rationale": "The paper explicitly sets k=4 because four generating processes produced the dataset.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The latter argument is set to 4, since the series in dataset SyntheticData2 were generated from 4 different stochastic processes.",
+  "page": 21
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "ClusterR::external_validation() has multiple possible external validation metrics.",
+  "options": [
+   "Adjusted Rand Index (default)",
+   "Rand Index",
+   "Normalized Mutual Information"
+  ],
+  "chosen": "Adjusted Rand Index (default)",
+  "rationale": "The paper names ARI and calls external_validation() with only the clustering vector and true labels.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "which can be done by using the Adjusted Rand Index (ARI)",
+  "page": 21
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "No train/test split or cross-validation protocol is specified for the clustering experiment.",
+  "options": [
+   "Cluster and evaluate on all 80 series",
+   "Hold out 20% for ARI",
+   "Use bootstrap ARI"
+  ],
+  "chosen": "Cluster and evaluate on all 80 series",
+  "rationale": "The paper's code clusters all 80 series and compares the result directly with the 80 true labels.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the ground truth is given by the 4 groups involving the 20 series from the same generating process",
+  "page": 19
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Handling of categories that may be absent from an individual series is not discussed for SyntheticData2.",
+  "options": [
+   "Pass states=0:5 and include zero-count categories",
+   "Infer states from observed values",
+   "Drop absent categories"
+  ],
+  "chosen": "Pass states=0:5 and include zero-count categories",
+  "rationale": "The paper explicitly passes states=0:5 and warns that otherwise some states could be ignored.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "most commands in otsfeatures require the corresponding states to be specified in a vector of the form (0, 1, . . . , n).",
+  "page": 12
+ }
+]

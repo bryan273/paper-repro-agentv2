@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Res-CBM achieves 0.8803 accuracy on CIFAR-10, outperforming PCBM-1r (0.8044) and other CLIP-based CBMs.",
+  "table_ref": "Table 1, row Res-CBM, column CIFAR 10 Accuracy",
+  "dataset": "CIFAR-10"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/HelloSCM/Res-CBM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "Requires CLIP-RN50 feature extraction for 50k images, building concept banks from ConceptNet and a pre-defined library, and training linear classifiers with two forward/backward passes per batch; feasible on CPU but slow."
+ },
+ "blockers": [
+  "Code repository may be incomplete or missing exact configs for CIFAR-10",
+  "Concept bank construction depends on ConceptNet and a pre-defined concept library not fully specified in the paper",
+  "Incremental concept discovery involves iterative optimization that may be sensitive to hyperparameters"
+ ],
+ "suitable": true,
+ "id": "2404.08978",
+ "title": "Incremental Residual Concept Bottleneck Models",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

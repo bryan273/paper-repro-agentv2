@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Final clustering accuracy of DGC-KM on Iris (homogeneous, m=10 ring, K=3, rho=10, T=1000) with random initialization, averaged over 5 runs and across users (Figure 2/3 baseline point).",
+  "table_ref": "Figure 2 (and Figure 3, L=0/random baseline)",
+  "dataset": "Iris (150 samples, d=4, K=3), split across 10 users"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Tiny dataset (150x4) and 1000 iterations of a simple consensus+gradient K-means loop over 10 users; the only real work is re-implementing Algorithm 1 and the homogeneous/heterogeneous splits from the text, which is quick."
+ },
+ "blockers": [
+  "No code released; DGC-KM update rule and exact data-splitting scheme must be re-implemented from the paper",
+  "Exact accuracy values are only in figures, so the reproduced number can only be compared approximately"
+ ],
+ "suitable": true,
+ "id": "2603.20507",
+ "title": "Distributed Gradient Clustering: Convergence and the Effect of Initialization",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

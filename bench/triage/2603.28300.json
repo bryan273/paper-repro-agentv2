@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "ROC-AUC (%) of DOMINANT+NeiGAD on the Books dataset (vanilla DOMINANT 68.54 + 5.49 = 73.03)",
+  "table_ref": "Table I, DOMINANT row, Books column",
+  "dataset": "Books (Amazon co-purchase/co-view network with 'amazonfail' outlier labels)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/huafeihuang/NeiGAD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "basis": "Books is a small attributed graph; DOMINANT training is seconds per Table II, but the agent must fetch the repo, obtain the Books dataset (often via external links), and integrate the ARPACK eigenvector module, so most time is setup/debugging rather than compute."
+ },
+ "blockers": [
+  "Books dataset is not bundled in the repo and must be sourced from third-party links",
+  "NeiGAD is a plug-in module; the DOMINANT baseline code must be obtained/adapted",
+  "Exact eigenvector count (2-10) and hyperparameters for Books are not fully specified"
+ ],
+ "suitable": true,
+ "id": "2603.28300",
+ "title": "NeiGAD: Augmenting Graph Anomaly Detection via Spectral Neighbor Information",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

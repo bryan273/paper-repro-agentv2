@@ -1,0 +1,45 @@
+{
+ "route": "partial_release",
+ "why": "The authors' logic is all here (get-uea-ucr-datasets.py for download, calculate-features.R for FTM/catch22 extraction, fit-models.R for the 30-resample linear-SVM protocol, plus precomputed result CSVs and feature .Rda files that let us audit the exact number). But the two things needed to re-run it end-to-end are missing on this machine: the `data/` folder is explicitly not pushed to git (must be re-downloaded), and the entire analysis pipeline after download is R (no R toolchain, no renv lockfile, no dependency files in the repo). So we keep the authors' protocol verbatim (mean+std per series, z-score with train statistics, linear SVM, designated split + 29 seeded resamples preserving class proportions = 30 total) and port those ~30 lines of R to scikit-learn, which reproduces the same estimator. The repo's stored results/*.csv for GunPointOldVersusYoung give a direct check on the target value.",
+ "repo": "https://github.com/hendersontrent/mean-var-ts-classify",
+ "entrypoints": [
+  "get-uea-ucr-datasets.py",
+  "feature-calculations/calculate-features.R",
+  "classification-models/fit-models.R"
+ ],
+ "missing_artifacts": [
+  "data/ directory (raw train/test series for all 128 problems; README states it is not pushed to git for size reasons)",
+  "R runtime and package environment (scripts use R; repo ships no renv.lock/description of versions)",
+  "UCLA LA5c rs-fMRI derivatives behind fMRI_analysis_data/fMRI_time_series_features.csv (not needed for C1, but blocks C6-C8 re-derivation)"
+ ],
+ "blockers_seen": [
+  "Core analysis is written in R (calculate-features.R, fit-models.R, interpretation/*.R); no R installed and no lockfile to reconstruct the environment",
+  "`data/` folder absent from the repo, so the feature step has nothing to read until the UEA/UCR snapshot is re-downloaded from timeseriesclassification.com",
+  "get-uea-ucr-datasets.py depends on aeon; only 1 Python file in a 539-file repo, so version drift in the aeon loader/`.ts` parser is a real risk",
+  "The paper used a 9 Feb 2023 snapshot of the archive; current archive contents/versions may differ slightly for a given problem"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes end to end: ~2 min to install scikit-learn/pandas (already likely present) and pull the single GunPointOldVersusYoung dataset (~few MB; or the full UCR zip, a few hundred MB, if the per-dataset download is awkward), then 30 fits of a 2-feature linear SVM on a few hundred series, which is seconds. Remaining time is writing/validating the port against the repo's stored results/GunPointOldVersusYoung.csv.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "One small UCR problem (~10^2 series of length ~10^2-10^3), 2 features per series, and 30 linear-SVM fits that each take well under a second; the only real cost is the dataset download and porting the R feature/model code to scikit-learn."
+ },
+ "repo_info": {
+  "url": "https://github.com/hendersontrent/mean-var-ts-classify",
+  "cloned": true,
+  "n_files": 539,
+  "n_python": 1,
+  "python2_style_files": 0
+ }
+}

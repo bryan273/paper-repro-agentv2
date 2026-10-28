@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "PaAno + PAI achieves VUS-PR of 0.58 on TSB-AD-U-Eva (vs 0.52 base), the paper's headline best result",
+  "table_ref": "Table 2",
+  "dataset": "TSB-AD-U-Eva (350 univariate series)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/pantheon5100/PAI"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": 2,
+  "basis": "Requires downloading TSB-AD-U-Eva (350 series), running PaAno encoder training/inference per series plus PAI scoring, and reproducing the 5-run average; per-series runtimes are seconds but 350 series x 5 runs plus setup and possible code gaps push it to hours."
+ },
+ "blockers": [
+  "PaAno (ICLR'26) base method must be obtained and integrated; PAI repo may not bundle it",
+  "5-run averaging over 350 series multiplies runtime",
+  "fusion weights and preprocessing details partly in appendix; exact reproduction of 0.58 may need tuning"
+ ],
+ "suitable": true,
+ "id": "2606.08935",
+ "title": "PAI: Preserving Amplitude Information in Representation-Based Time-Series Anomaly Detection",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

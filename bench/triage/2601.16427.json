@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean ARI of KMP (neighborhood-smoothed profile K-means) at n=1500 on the weak-layered D directed SBM design, reported as 0.842 (vs KMA 0.746)",
+  "table_ref": "Table 3 (also Table 9, n=1500 row)",
+  "dataset": "Synthetic directed SBM, weak-layered D block matrix, n=1500, K=5, gamma_n=1, MC=100 replicates"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/openworm/ConnectomeToolbox"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Synthetic data is trivially generated, but no code is released: the agent must reimplement landmark neighborhood smoothing (O(n^2 m) dissimilarities, m=128, n=1500), quantile neighborhoods with tie retention, and 20-init K-means++ for 4 methods x 100 replicates; the exact block matrix 'weak-layered D' is only partially specified (mean prob 0.11, a(B)=0.641, delta_row=0.119, trailing singular values) so exact ARI 0.842 is unlikely to be matched bit-for-bit."
+ },
+ "blockers": [
+  "No code or supplementary repository released; only a link to the unrelated OpenWorm ConnectomeToolbox",
+  "Block matrices (e.g. weak-layered D) are not given explicitly, only summary diagnostics, so exact numerical reproduction of 0.842 is not guaranteed",
+  "Requires reimplementing the full simulation protocol (4 methods, 100 paired replicates, 8 network sizes) from prose"
+ ],
+ "suitable": false,
+ "id": "2601.16427",
+ "title": "Exact Recovery by Neighborhood Smoothing in Directed Stochastic Block Models",
+ "pages": 75,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "FE-GNN (C) test accuracy on Cora node classification (89.45 ± 0.22)",
+  "table_ref": "Table 2",
+  "dataset": "Cora"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/sajqavril/Feature-Extension-Graph-Neural-Networks.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 60,
+  "gpu_speedup": 3,
+  "basis": "Cora is a small citation graph (2708 nodes, 1433 features); the model is a shallow linear GNN with polynomial order 3, so training 100 runs on CPU is feasible within an hour, though a GPU would speed it up."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2305.06142",
+ "title": "Feature Expansion for Graph Neural Networks",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

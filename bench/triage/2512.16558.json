@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Median ARI of PLSCAN at k=4 across all datasets is 0.66 (vs 0.57 for HDBSCAN* EOM).",
+  "table_ref": "Figure 5a / Section 5.1 Results",
+  "dataset": "All 17 datasets in Table 1 (smallest: Iris, 150 points)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/jelmerbot/fast_plscan",
+  "https://github.com/TutteInstitute/fast%5FFhdbscan/releases"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Requires downloading 17 datasets (some large: MNIST, Fashion-MNIST, CIFAR-10, Audioset), applying UMAP/CLIP/MiniLM preprocessing, and running PLSCAN + HDBSCAN* at k=4; the code repo exists but preprocessing scripts and exact configs are not clearly linked, so some reimplementation is needed."
+ },
+ "blockers": [
+  "Preprocessing pipeline (UMAP, CLIP, MiniLM embeddings) not fully specified in code release",
+  "Audioset subset construction is manual and not provided",
+  "Exact random seeds for k-sampling not given"
+ ],
+ "suitable": true,
+ "id": "2512.16558",
+ "title": "Persistent Multiscale Density-based Clustering",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "RMSE of the observation error variances [σ²_v,1, σ²_v,2] for ROAMS relative to the oracle benchmark in the 'Cluster' outlier configuration at sample size n=1000, reported as 1.02 in Table 1.",
+  "table_ref": "Table 1, row '[σ²_v,1, σ²_v,2]', column 'ROAMS', configuration 'Cluster', n=1000",
+  "dataset": "Simulated data from the paper's Study 1 (Cluster configuration, n=1000, 10% outliers, 200 simulation runs)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://rajan-shankar.github.io/roams/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target requires running 200 simulation replicates of a small linear Gaussian SSM (n=1000, p=2, q=4) with iterative L-BFGS-B optimization and BIC tuning over 20 lambda values; each replicate is fast on CPU, but 200 replicates plus code adaptation from the R package (no explicit simulation scripts linked) may take about 2 hours."
+ },
+ "blockers": [
+  "No direct link to simulation code or data; only a package website is provided, so simulation scripts must be written from scratch.",
+  "The R package roams is available but the exact simulation setup (random seeds, outlier generation) is not provided, requiring reimplementation."
+ ],
+ "suitable": true,
+ "id": "2511.15155",
+ "title": "Outlier detection in state-space models using mean-shift penalisation",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

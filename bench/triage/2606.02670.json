@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "The CROSS-CHANNEL category is empty (0 segments) on all eight benchmarks under Pearson correlation with τz=3, τρ=0.1.",
+  "table_ref": "Table 2",
+  "dataset": "GECCO (smallest benchmark, 9 channels, ~69k timesteps)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/marcpinet/mtsad-benchmarks-are-mostly-univariate"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The diagnostic is a simple statistical test (z-scores, correlations) on a small dataset; the code is released and the data is public, so the main cost is downloading GECCO and running the script."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.02670",
+ "title": "Anomalies in Multivariate Time Series Benchmarks Are Mostly Univariate",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Specialist model trained on 10k task-specific instances achieves 98.11% accuracy on the Yelp sentiment classification task (LLaMA-7B).",
+  "table_ref": "Table 1, row 'Yelp', column 'specialist'",
+  "dataset": "Yelp (Zhang et al., 2015)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/DavidFanzz/Generalist_or_Specialist"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 480,
+  "gpu_speedup": 10,
+  "basis": "Fine-tuning LLaMA-7B for 3 epochs on 10k examples requires GPU memory and hours of compute; CPU-only training would be impractically slow."
+ },
+ "blockers": [
+  "Requires fine-tuning a 7B parameter LLM, which is not feasible on a CPU-only laptop within a few hours.",
+  "The exact training data (10k task-specific instances for Yelp) may not be directly provided in the repository; it likely needs to be constructed from SuperNI and Yelp datasets.",
+  "The repository may not include preprocessed data or training scripts for this specific experiment."
+ ],
+ "suitable": false,
+ "id": "2310.15326",
+ "title": "Specialist or Generalist? Instruction Tuning for Specific NLP Tasks",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

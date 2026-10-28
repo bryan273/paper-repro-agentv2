@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Best family-level mean subject-level accuracy on Cho2017: cov-tgsp in 8-30 Hz = 0.712 ± 0.140",
+  "table_ref": "Table 1 / Figure 2 (Results, page 13)",
+  "dataset": "Cho2017 (52 subjects, 64 ch, 512 Hz)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/xaviervasques/EEG_benchmark/tree/main"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The headline number is a family-level mean over 52 subjects of a full grid of pipelines (feature family x 2 bands x ~9 preprocessors x ~22 classifiers incl. 17 MLPs), i.e. tens of thousands of MOABB within-session fits on 64-channel 512 Hz data; even one family/band cell requires running the whole pipeline grid for all 52 subjects, which is hours of CPU work and depends on the repo's exact grid being runnable."
+ },
+ "blockers": [
+  "Target is an aggregate over a very large pipeline grid (216k raw evaluations), not a single cheap run",
+  "Repo may not contain the exact grid/configs or the aggregated results needed to reproduce the exact mean",
+  "Cho2017 download is large (~several GB) and MOABB preprocessing is slow on CPU"
+ ],
+ "suitable": false,
+ "id": "2607.22778",
+ "title": "Subject-Level Heterogeneity in EEG Motor Imagery Decoding: A Large-Scale Benchmark and Portfolio-Based Reduction of the Search Space",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

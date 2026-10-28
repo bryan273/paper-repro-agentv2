@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Accuracy of OURS on Zh⇒En NIST05 test set (average across four translation context types) is 65.61.",
+  "table_ref": "Table 2, row 7, column Zh⇒En NIST05",
+  "dataset": "Zh⇒En NIST05"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/yc1999/energy_wlac"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 10080,
+  "gpu_speedup": 10,
+  "basis": "Training requires 8 V100 GPUs for 50k steps on 1.25M sentence pairs; on a CPU-only laptop this is infeasible, and even with a GPU it would take days."
+ },
+ "blockers": [
+  "Requires LDC corpus (LDC2002E18, LDC2003E07, LDC2003E14, LDC2004T07-08, LDC2005T06) which is not freely available.",
+  "Training uses 8 NVIDIA V100 GPUs, far beyond a normal laptop.",
+  "Code repository may not include preprocessed data or exact configurations."
+ ],
+ "suitable": false,
+ "id": "2407.20083",
+ "title": "An Energy-based Model for Word-level AutoCompletion in Computer-aided Translation",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Cluster Purging (CP) F1-score on the Arrhymthia dataset (k-means based, parameter-free variant)",
+  "table_ref": "Table 3, row 'Arrhymthia', column 'CP' under k-means",
+  "dataset": "Arrhymthia (ODDS benchmark outlier dataset)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://tinyurl.com/f59ezjhk"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Small tabular ODDS datasets with k-means clustering and O(n) purging; the main cost is installing R and re-implementing/adapting the linked R code plus downloading ODDS data, all CPU-only and minutes per dataset."
+ },
+ "blockers": [
+  "Code link is a shortened URL (tinyurl) that may be dead or point to a repo without exact configs",
+  "Exact clustering/perturbation protocol and F1 evaluation details must be reconstructed from the paper",
+  "ODDS datasets need to be fetched and preprocessed to match the paper's outlier labels"
+ ],
+ "suitable": true,
+ "id": "2302.11234",
+ "title": "Cluster Purging: Efficient Outlier Detection based on Rate-Distortion Theory",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

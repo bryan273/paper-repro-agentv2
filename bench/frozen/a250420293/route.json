@@ -1,0 +1,40 @@
+{
+ "route": "full_release",
+ "why": "The repository contains the authors' reference implementation (the KMeansCD class and every paper experiment) inside the published Jupyter notebook, and it ships the FCPS data files needed for the match target (data/atom.data, data/atom.labels0). Only a stock scientific Python stack (numpy, scikit-learn, pandas, matplotlib, Jupyter/nbconvert) is required, which is a small environment fix on Python 3.12. No missing weights, no dead framework, no external downloads.",
+ "repo": "https://github.com/stefankober/radius-guided-kmeans",
+ "entrypoints": [
+  "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results.ipynb"
+ ],
+ "missing_artifacts": [
+  "requirements.txt / pinned environment file (only standard scientific stack is implied)",
+  "standalone .py script for the algorithm; KMeansCD must be taken from the notebook (or the relevant cells executed directly)"
+ ],
+ "blockers_seen": [
+  "No .py files at all; the only code artifact is an 8.9 MB notebook with embedded outputs, so cells must be located/extracted rather than run as a script",
+  "Notebook executes the full paper experiment suite (moons, circles, tiled, all FCPS) by default; unrelated sections would be slow to run end-to-end and should be skipped"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 8-15 minutes: 2-3 min to install numpy/scikit-learn/pandas/jupyter and extract the KMeansCD / FCPS-Atom cells, then under a minute for the 100 x 5 = 500 k-means fits on 240 2-D points plus radius post-processing and success-rate scoring. The 22-core CPU has ample headroom.",
+  "fits_budget": true,
+  "scale_down_plan": "None required for C1: k=20 on FCPS Atom with 100 repeats x best-of-five is already seconds of compute. If the notebook cannot be executed cleanly as a whole, run only the Atom section (or copy the KMeansCD class and the Atom experiment cells into a fresh notebook/script); this does not change the protocol or the number.",
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 0.2,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "FCPS Atom has 240 2-D points; the target protocol is 100 repeats x best-of-five k-means(k=20) fits with a trivial radius/connected-components merge, i.e. a few hundred millisecond-scale sklearn fits, dominated by environment setup and notebook handling rather than compute."
+ },
+ "repo_info": {
+  "url": "https://github.com/stefankober/radius-guided-kmeans",
+  "cloned": true,
+  "n_files": 48,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

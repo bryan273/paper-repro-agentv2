@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "IDK-S mean AUC of 0.876 across 13 benchmarks (or a single cell such as AUC 0.802 on Donors)",
+  "table_ref": "Table 3",
+  "dataset": "13 streaming anomaly detection benchmarks (Donors, Http, ForestCover, Fraud, Mulcross, Smtp, Shuttle, Mammography, NYC taxi single, Annthyroid, Satellite, INSECTS, TwoCluster)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code released; the agent must reimplement IDK-S (incremental isolation kernel with hypersphere partitions, feature-mean maps, sliding window w=2048, l=100, t=100, psi search) from scratch and run it 20 times over 13 datasets up to 1M points, which is CPU-only but heavy and error-prone."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Must reimplement IDK-S and the IDK base detector from paper description",
+  "13 datasets including 1M-point TwoCluster and 619k-point Donors; 20 repetitions each",
+  "Baseline comparisons (SiForest, oIFOR, DILOF, CPOD, Memstream) needed for the full table"
+ ],
+ "suitable": false,
+ "id": "2512.05531",
+ "title": "IDK-S: Incremental Distributional Kernel for Streaming Anomaly Detection",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

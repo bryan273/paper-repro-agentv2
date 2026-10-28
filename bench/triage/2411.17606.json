@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "HyperSeg achieves 84.8 cIoU on RefCOCO val (referring expression segmentation).",
+  "table_ref": "Table 1, row 'HyperSeg', column 'RefCOCO val'",
+  "dataset": "RefCOCO (val split)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/congvvc/HyperSeg"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Training HyperSeg requires 8 A100 GPUs for 160k iterations on multiple datasets; even inference on a single image needs a GPU with enough VRAM to load the 2.7B LLM and segmentation model, which is not feasible on a CPU-only laptop."
+ },
+ "blockers": [
+  "No code or model weights released (paper says 'will be publicly released')",
+  "Requires 8 NVIDIA A100 GPUs for training",
+  "Requires large-scale multi-dataset training (COCO Panoptic, RefCOCO series, ReasonSeg, DAVIS, etc.)",
+  "Inference requires GPU with substantial VRAM (likely >16GB) to load Phi-2 2.7B and segmentation modules"
+ ],
+ "suitable": false,
+ "id": "2411.17606",
+ "title": "HyperSeg: Towards Universal Visual Segmentation with Large Language Model",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "InsCL achieves an average Relative Gain of 93.71 on 16 tasks with three training orders, compared to 92.01 for Random Replay.",
+  "table_ref": "Table 3",
+  "dataset": "SuperNI (16 categories)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 10080,
+  "gpu_speedup": 10,
+  "basis": "Requires full fine-tuning of LLaMA-7B on 16 tasks (total ~2.8M examples) for 2 epochs each, repeated for 3 training orders and multiple methods, which is infeasible on a CPU-only laptop within hours."
+ },
+ "blockers": [
+  "Requires full fine-tuning of LLaMA-7B, which needs significant GPU memory (e.g., multiple A100s).",
+  "Training on 16 tasks with 2 epochs each and multiple methods is extremely time-consuming.",
+  "No code or configuration files are provided, so the entire pipeline must be reimplemented from scratch."
+ ],
+ "suitable": false,
+ "id": "2403.11435",
+ "title": "InsCL: A Data-efficient Continual Learning Paradigm for Fine-tuning Large Language Models with Instructions",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

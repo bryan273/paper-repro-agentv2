@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ONESHOT VUS-PR = 0.710 (gap closed ρ = 82.8%) on the univariate TSB-AD collection, averaged over 152 series",
+  "table_ref": "Table 2 (also Table 3)",
+  "dataset": "TSB-AD univariate (152 eligible series)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/seunghan96/one_shot"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 10,
+  "ref_minutes": 90,
+  "basis": "Method is a softmax weighting over precomputed released detector score vectors from TSB-AD; no detector is trained, so the work is downloading score archives, filtering near-constant vectors, and running a cheap per-series weighting + VUS-PR evaluation over 152 series."
+ },
+ "blockers": [
+  "Released score vectors for the full TSB-AD detector pool must be downloaded (large archives) and the exact 152-series eligibility filtering must be re-derived",
+  "Exact temperature τ and random-draw seeding protocol must be matched to hit 0.710 precisely; small deviations expected"
+ ],
+ "suitable": true,
+ "id": "2610.16219",
+ "title": "OneShot: Label-Efficient Detector Weighting for Time Series Anomaly Detection",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

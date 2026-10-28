@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "Mean AUC-PR of Online methods vs Streaming methods on TSB-AD-M (full training size): Online 0.2807 vs Streaming 0.1713, +63.91% relative gain",
+  "table_ref": "Table 8 (Ablation Study, Full 100% row)",
+  "dataset": "TSB-AD-M (200 multivariate real-world time series, 17 datasets)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/magaliparrino/StrAD.git",
+  "https://doi.org/10.5281/zenodo.20310651",
+  "https://github.com/CN-TU/dSalmon/tree/master?tab=readme-ov-file"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "Reproducing the mean over 200 series requires running 19 static/online methods (incl. deep models like TranAD, TimesNet, AnomalyTransformer, OmniAnomaly) plus 10 streaming methods in Java/C++/Python across 17 datasets, with hyperparameter grids already tuned; even a single-cell mean needs the full benchmark sweep, and the deep baselines are the dominant cost."
+ },
+ "blockers": [
+  "Target is an aggregate over 200 series and ~29 methods, not a single cheap cell",
+  "Requires building/running Java (MCOD, LEAP), C++ (dSalmon: xStream, SWKNN, SDOstream) and Python (pysad, TSB-AD) stacks",
+  "Deep-learning baselines (TranAD, TimesNet, AnomalyTransformer, OmniAnomaly, USAD) are heavy to train/infer on CPU",
+  "TSB-AD-M data must be downloaded and preprocessed; some datasets (SWaT, Exathlon) may have access restrictions"
+ ],
+ "suitable": false,
+ "id": "2609.39215",
+ "title": "In a Streaming World, Should You Stand Still? A Comprehensive Benchmark of Anomaly Detection in Streams",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

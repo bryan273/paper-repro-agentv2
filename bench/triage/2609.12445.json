@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Exact recovery proportion (fraction of 100 repetitions with zero misclassification on both row and column communities) for SCDD under ScBM at K=4, ny=800, nz=1200, rho=0.3 (Experiment 1, ScBM panel, SCDD curve)",
+  "table_ref": "Figure 1 (left panel, Model: ScBM, SCDD)",
+  "dataset": "Synthetic ScBM bipartite graphs generated per Section 4.1 (B with diag 0.9, upper 0.2, lower 0.1; balanced communities)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Synthetic data only; algorithm is a 800x1200 Gram matrix eigendecomposition plus k-means, repeated 100 times per K value, all trivially CPU-bound; main cost is writing the generator and spectral code from scratch since no code is released."
+ },
+ "blockers": [
+  "No code or repository linked in the paper; algorithms (SCDD/NSCDD) and data generator must be re-implemented from the text",
+  "Baseline curves (DI-SIM, D-SCORE, BiSC, nBiSC) would need separate re-implementations if the full figure is desired"
+ ],
+ "suitable": true,
+ "id": "2609.12445",
+ "title": "Exact Community Recovery in Bipartite Networks",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean ARI for Kernel PCA + k-means on the Iris dataset (or any single real-world UCI dataset cell in the ARI tables), showing that nonlinear dimensionality reduction improves clustering over no-reduction baseline",
+  "table_ref": "Appendix A tables (e.g., Table A.1-A.4 / real-world ARI tables) and Fig. A.2",
+  "dataset": "UCI real-world benchmarks (e.g., Iris, 150 objects, 4 features, 3 clusters)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ELounissi/Dimensionality_Reduction_Clustering"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 60,
+  "gpu_speedup": 1.5,
+  "basis": "Single small UCI dataset (Iris, 150x4) with PCA/KPCA/Isomap/MDS (scikit-learn) and a tiny VAE (100 epochs, batch 64) plus k-means/AHC/GMM/OPTICS sweeps; all CPU-feasible in minutes, but the repo must be inspected/adapted since exact configs and per-cell aggregation are not fully specified in the text."
+ },
+ "blockers": [
+  "Exact per-cell ARI values and aggregation (averaging over seeds/levels) not fully specified in text; must rely on repo code",
+  "VAE training adds PyTorch dependency but is tiny",
+  "Reproducing the exact headline cell may require matching random seeds and hyperparameter sweeps (AHC affinities/linkages, GMM covariances, OPTICS grid)"
+ ],
+ "suitable": true,
+ "id": "2604.22099",
+ "title": "Assessing the impact of dimensionality reduction on clustering performance - a systematic study",
+ "pages": 40,
+ "model": "DeepSeek-V4.1-Flash"
+}

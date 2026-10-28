@@ -1,0 +1,38 @@
+{
+ "target": {
+  "statement": "X-Coder-Qwen2.5-14B-RL attains 67.5 avg@8 on LiveCodeBench v5 (SFT-then-RL on fully synthetic tasks/solutions/tests).",
+  "table_ref": "Table 1 (SFT-then-RL Approaches, Stage 2), row 'X-Coder-Qwen2.5-14B-RL', column 'LCB v5'",
+  "dataset": "LiveCodeBench v5 (268 problems; evaluation pass-rate over 8 samples)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/JieWu02/X-Coder",
+  "https://github.com/0xWJ/code-judge",
+  "https://github.com/0xWJ/code-judge.git",
+  "https://github.com/luogu-dev/cyaron",
+  "https://github.com/huggingface/open-r1",
+  "https://huggingface.co/datasets/open-r1/codeforces"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 150,
+  "ref_minutes": 200000,
+  "gpu_speedup": 50,
+  "basis": "The cell requires a full two-stage post-training run: SFT of a 14B model for 8 epochs on ~200k long-CoT synthetic samples (~1e21 FLOPs) followed by 40k-example GRPO with executable-reward sandboxing, i.e. multi-GPU-node training; on an 8-core CPU laptop this is effectively infeasible (the 200000-min figure is a token-flop lower bound, not a realistic completion time)."
+ },
+ "blockers": [
+  "Requires training 7B/14B LLMs: 200k-prompt long-CoT SFT for 8 epochs plus 40k GRPO RL (multi-GPU cluster of A100/H100-class GPUs, ~80 GB VRAM per GPU with sharding)",
+  "The data-construction pipeline that produced the training artifacts depends on closed/proprietary models (GPT-4o-0513 for feature extraction, GPT-o3-mini for task formulation, GPT-5-High as solvability proxy) and very large open teachers (DeepSeek-R1-0528 671B, Qwen3-235B-A22B) that cannot run on a laptop; released data mitigates but does not remove this",
+  "RL reward requires an isolated Redis-based execution sandbox running untrusted model-generated programs at high concurrency",
+  "Evaluation protocol itself (avg@8, 32k-token generations, 14B model) needs ~64 GB+ RAM/VRAM and hours of generation, far beyond a laptop"
+ ],
+ "suitable": false,
+ "id": "2601.06953",
+ "title": "X-Coder: Advancing Competitive Programming with Synthetic Tasks, Solutions, and Tests",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean WCSS of BPS-2PLS on Yale dataset (3185.016), the lowest among compared methods",
+  "table_ref": "Table 3",
+  "dataset": "Yale (face dataset, 165 samples, 15 classes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lwl-learning/BPS-2PLS"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Yale is tiny (165 samples) and runs in <1s in MATLAB, but the code is MATLAB (needs Octave/porting), the exact 10 shared initializations and k-means++ protocol must be reconstructed from Appendix F, and the Yale data must be sourced separately."
+ },
+ "blockers": [
+  "Code is MATLAB, not Python; requires Octave or a port to reproduce",
+  "Exact initialization protocol (10 shared k-means++ seeds) and preprocessing for Yale not fully specified in visible text",
+  "Yale dataset must be obtained from its original source (not linked in paper)"
+ ],
+ "suitable": true,
+ "id": "2610.06182",
+ "title": "Two-Point Local Optimality in $k$-Means via Boundary-Point Screening",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

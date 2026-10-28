@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "MPVM achieves ARI = 0.975 on the Raman spectroscopy cell-line clustering (3 clusters), beating CNM (0.969), t-mixture (0.972), GMM (0.825).",
+  "table_ref": "Table 11",
+  "dataset": "Raman spectroscopy single-cell data (LNCaP/H460/MCF7 cell lines, ~1080 observations)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "basis": "No code released; the MPVM EM algorithm (with Cauchy scale-mixture E-step, trimmed k-means init via tclust, BIC model selection over G) must be re-implemented from scratch, and the Raman cell-line data provenance is unclear (likely from Matthews et al. 2015 / Harder et al. 2016, not obviously downloadable)."
+ },
+ "blockers": [
+  "No code or supplementary materials linked",
+  "Raman spectroscopy dataset not clearly public/downloadable",
+  "Full EM implementation for MPVM must be written from paper equations",
+  "Comparisons require CNM (ContaminatedMixt), t-mixture (teigen), and mclust baselines"
+ ],
+ "suitable": false,
+ "id": "2608.27606",
+ "title": "Robust model-based clustering via mixtures of multivariate pseudo-Voigt distributions",
+ "pages": 34,
+ "model": "DeepSeek-V4.1-Flash"
+}

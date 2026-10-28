@@ -1,0 +1,177 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Regularization strength C for the UEA/UCR linear SVM is not stated.",
+  "options": [
+   "C = 1",
+   "tune C by inner CV",
+   "library default"
+  ],
+  "chosen": "C = 1",
+  "rationale": "Matches the only stated SVM setting and a common linear-SVM default.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "setting the regularization parameter C = 1, disabling the shrinking heuristic, and using balanced class weights.",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Whether standard deviation uses n or n-1 denominator.",
+  "options": [
+   "population SD (ddof=0)",
+   "sample SD (ddof=1)"
+  ],
+  "chosen": "sample SD (ddof=1)",
+  "rationale": "The linked R code and R sd() use n-1; the effect on linear-SVM accuracy is negligible.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Exact random seed(s) for the 29 additional resamples.",
+  "options": [
+   "authors' repository seed",
+   "fixed seed 12345",
+   "seed per problem"
+  ],
+  "chosen": "fixed seed 12345 unless authors' repository seed is available",
+  "rationale": "The paper says seeded but does not state the seed; perfect separation should be robust to this choice.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "we generated 29 additional (seeded) resamples of the data that preserve the class proportions of the designated split",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Mechanism for resampling train-test splits while preserving class proportions.",
+  "options": [
+   "stratified shuffle with original train/test sizes",
+   "bootstrap with replacement",
+   "resample combined data to original sizes"
+  ],
+  "chosen": "stratified shuffle with original train/test sizes",
+  "rationale": "The paper preserves class proportions of the designated split; keeping original sizes mirrors that split.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "we generated 29 additional (seeded) resamples of the data that preserve the class proportions of the designated split",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Multiclass decision strategy for linear SVM on problems with more than two classes.",
+  "options": [
+   "one-vs-one",
+   "one-vs-rest",
+   "crammer_singer"
+  ],
+  "chosen": "one-vs-one",
+  "rationale": "A standard SVM multiclass convention; the target GunPointOldVersusYoung task is binary so this does not affect C1.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Handling zero-variance features during train-set z-scoring.",
+  "options": [
+   "set scaled feature to zero",
+   "drop the feature",
+   "add epsilon"
+  ],
+  "chosen": "set scaled feature to zero",
+  "rationale": "Avoids division by zero without changing the feature count.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "How accuracy across the 30 resamples is summarized.",
+  "options": [
+   "mean",
+   "median",
+   "best resample"
+  ],
+  "chosen": "mean",
+  "rationale": "The paper plots mean classification accuracy with SD error bars.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Points indicate mean classification accuracy and error bars show ±1 standard deviation",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Which UEA/UCR snapshot/version to use.",
+  "options": [
+   "9 Feb 2023 snapshot",
+   "current latest",
+   "archived UCR release"
+  ],
+  "chosen": "9 Feb 2023 snapshot",
+  "rationale": "The paper explicitly states the download date and the repository may change.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "each of the 128 problems (as downloaded on 9 Feb 2023)",
+  "page": 2
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether the 100% target is the designated test split or the mean over resamples.",
+  "options": [
+   "mean accuracy over 30 resamples",
+   "designated split only",
+   "best resample"
+  ],
+  "chosen": "mean accuracy over 30 resamples",
+  "rationale": "Figure 1 reports mean classification accuracy across train-test resamples.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "using 30 resamples of train–test splits.",
+  "page": 2
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Case-study z-score normalization scope within cross-validation.",
+  "options": [
+   "fit on training fold, apply to test fold",
+   "fit on full dataset",
+   "no scaling"
+  ],
+  "chosen": "fit on training fold, apply to test fold",
+  "rationale": "The paper says the same train-set z-scoring was applied for each k-fold.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For each k-fold, the same z-score feature-normalization was applied as described in Sec. 2.1.",
+  "page": 3
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether case-study features are concatenated across all regions into one SVM.",
+  "options": [
+   "concatenate all 82 regions",
+   "fit region-wise and aggregate",
+   "select one region"
+  ],
+  "chosen": "concatenate all 82 regions",
+  "rationale": "The stated feature counts are 2 x 82 and 24 x 82, implying concatenation across regions.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the FTM-only model had a total of 2 × 82 = 164 SVM input features",
+  "page": 3
+ }
+]

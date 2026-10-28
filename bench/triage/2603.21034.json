@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SVM Regression achieves R2 = 0.889 (RMSE = 0.326) for predicting mpg on the Motor Trend dataset",
+  "table_ref": "Table 3",
+  "dataset": "Motor Trend US magazine 1974 (mtcars, N=398 as claimed; actually 32 rows)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "mtcars is bundled with scikit-learn/statsmodels; SVR on a tiny table trains in seconds, so the only cost is installing scikit-learn and writing the pipeline."
+ },
+ "blockers": [
+  "No code or configs released; pipeline (feature selection, scaling, 70/30 split with random_state=1, SVR hyperparameters) must be guessed",
+  "Paper claims N=398 but mtcars has 32 rows, so exact numbers may not be reproducible",
+  "Reported metrics (e.g., CV scores of 0 for SVM/RF, inconsistent class metrics) look unreliable"
+ ],
+ "suitable": true,
+ "id": "2603.21034",
+ "title": "Fuel Consumption Prediction: A Comparative Analysis of Machine Learning Paradigms",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

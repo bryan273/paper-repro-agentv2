@@ -1,0 +1,221 @@
+{
+ "title": "Coniferest: a complete active anomaly detection framework",
+ "summary": "The paper addresses the lack of accessible active anomaly detection (AAD) tooling in mainstream scientific Python (e.g. scikit-learn) by releasing coniferest, a Python framework with Isolation forest (IF), Active Anomaly Discovery and Pineforest, plus scikit-learn-style models, datasets and expert-in-the-loop Session objects. Performance-critical tree search and scoring are written in Cython, and IF scoring is parallelised over data samples (unlike scikit-learn) so that the full-dataset re-scoring required at every AAD iteration is fast. The only quantitative performance benchmark is Figure 1, which plots IF anomaly-score evaluation wall time for a dataset of roughly 10^6 samples with 2 features across four scikit-learn versions and coniferest 0.0.13 (single-thread and multi-thread) on an Intel Xeon Gold 6148 and an Apple M3 Pro.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Single-threaded coniferest 0.0.13 evaluates Isolation-forest anomaly scores for the whole ~10^6 x 2-feature dataset on an Apple M3 Pro within the plotted 0-350 s range and faster than the scikit-learn bars; the figure prints no per-bar numeric label, so the only number the paper prints for this bar is the axis ceiling of 350 s.",
+   "metric": "Isolation forest prediction (anomaly score evaluation) CPU wall time",
+   "dataset": "synthetic dataset of ~10^6 samples with 2 features",
+   "split": "n/a - the entire dataset is scored",
+   "value": 350,
+   "unit": "seconds (Figure 1 y-axis maximum; the bar itself carries no printed value)",
+   "higher_is_better": false,
+   "table_ref": "Figure 1, bar 'coniferest 0.0.13 (single thread)' in the 'Apple M3 Pro' group",
+   "config_for_value": "coniferest 0.0.13, single-thread mode, Apple M3 Pro; dataset of ~10^6 samples each having 2 features; measured quantity is the anomaly-score evaluation for the whole dataset; y-axis ticks are 0, 50, 100, ..., 350 s only.",
+   "reported_spread": null,
+   "est_compute": "1 CPU core, roughly 1-5 minutes of wall time for scoring 10^6 x 2 samples",
+   "quote": "Additionally, coniferest in single-thread mode is considered. Note, that scikit-learn is always single-threaded.",
+   "page": 12
+  },
+  {
+   "id": "C2",
+   "statement": "Using coniferest inside the ZWAD pipeline as a semi-supervised (expert-in-the-loop) anomaly detection task on ZTF DR3 led to the discovery of 104 supernovae, 57 of which were previously unreported.",
+   "metric": "number of supernovae discovered",
+   "dataset": "ZTF DR3 light curves processed with the ZWAD pipeline",
+   "split": "n/a (active-learning loop over candidate stream)",
+   "value": 104,
+   "unit": "supernovae discovered",
+   "higher_is_better": true,
+   "table_ref": "Section 4.2 Success cases, paragraph describing reference [16]",
+   "config_for_value": "ZWAD pipeline + coniferest AAD, expert answers restricted to the supernova class, partial labels supplied interactively",
+   "reported_spread": null,
+   "est_compute": "Not reproducible without ZTF DR3 data and a human expert; weeks of interactive labelling",
+   "quote": "This allowed us to discover 104 supernovae (including 57 previously unreported) in ZTF DR3 dataset.",
+   "page": 13
+  },
+  {
+   "id": "C3",
+   "statement": "In the same ZTF DR3 supernova search about 2000 candidates were inspected and labelled, yielding 100 supernovae.",
+   "metric": "number of supernovae found from ~2000 inspected candidates",
+   "dataset": "ZTF DR3 light curves processed with the ZWAD pipeline",
+   "split": "n/a",
+   "value": 100,
+   "unit": "supernovae per ~2000 labelled candidates",
+   "higher_is_better": true,
+   "table_ref": "Section 4.2 Success cases, paragraph describing reference [16]",
+   "config_for_value": "coniferest AAD with human expert labelling only supernova-like objects as anomalies",
+   "reported_spread": null,
+   "est_compute": "Not reproducible without ZTF DR3 data and a human expert",
+   "quote": "About 2000 candidates were inspected, and labeled, leading to the discovery of 100 supernovae.",
+   "page": 13
+  },
+  {
+   "id": "C4",
+   "statement": "The same framework applied to ZTF DR8 for red-dwarf flares found about 130 flares within 1200 inspected candidates.",
+   "metric": "number of red dwarf flares found within 1200 candidates",
+   "dataset": "ZTF DR8 light curves",
+   "split": "n/a",
+   "value": 130,
+   "unit": "flare events within ~1200 candidates",
+   "higher_is_better": true,
+   "table_ref": "Section 4.2 Success cases, paragraph describing reference [17]",
+   "config_for_value": "coniferest AAD, expert interested only in red dwarf flares",
+   "reported_spread": null,
+   "est_compute": "Not reproducible without ZTF DR8 data and a human expert",
+   "quote": "ZTF DR8 dataset was used to find red dwarf flare events and about 130 flares were found within 1200 candidates.",
+   "page": 13
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It is the paper's only machine-checkable, cheap result: a pure wall-clock timing of coniferest 0.0.13 single-thread Isolation-forest scoring on 10^6 x 2 samples, runnable on commodity hardware with 'pip install coniferest==0.0.13' and no expert labels or proprietary survey data (the C2-C4 success cases need ZTF data plus a human in the loop). It is also exactly what the user's target hint asks for."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 350,
+  "why": "No rule can be applied as written: Figure 1 prints no numeric value for any bar (no std, no CI), so rule 1 and rule 4's 10% relative band have no anchor, and this is not a bounded score metric (rule 2/3). The only numbers the figure states are the y-axis ticks 0 to 350 s, so we use the printed axis maximum as the acceptance ceiling: a measured single-thread coniferest 0.0.13 wall time for 10^6 x 2 samples anywhere inside 0-350 s passes, provided it is below the scikit-learn bars measured on the same machine. If the bar height can be read off the PDF before the run, re-anchor to rule 4 (10% relative) around that value."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The IF anomaly score must be s(x) = -2^(-dbar(x)/c(N)), with outliers getting negative scores and nominals near -1, matching scikit-learn's convention.",
+   "cite": "Section 2.1, Equation (1)",
+   "quote": "Then, the leaf depths are averaged and used as a measure of abnormality.",
+   "page": 5
+  },
+  {
+   "id": "R2",
+   "stmt": "The normalisation constant must be c(N) = 2(H(N)-1), evaluated with the expansion using Euler's constant gamma ~= 0.5772 and the 1/(2N) and 1/(12N^2) correction terms.",
+   "cite": "Section 2.1, Equation (2)",
+   "quote": "In the above equation, c(N) is the normalized constant which depends on the dataset size N following:",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "The ensemble score must average, over all K trees, the leaf depth plus the c(N(l(x))) correction for the number of training samples falling in that leaf.",
+   "cite": "Section 2.1, Equation (3)",
+   "quote": "with K representing the number of trees in the forest; li(x) denoting the leaf in i-th tree covering point x",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Tree growth must be truncated at depth log2(N) and the truncated depth must be compensated by adding c(N(l(x))) in the per-tree term.",
+   "cite": "Section 2.1, text after Equation (3)",
+   "quote": "The tree depth is limited to log2(N), which allows to speedup the process of building trees.",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Splits must be chosen completely at random (random feature index and random split value from the data-covered domain) and degenerate/empty splits must be rejected so each rectangle contains at least one sample.",
+   "cite": "Section 2.1, iTree construction",
+   "quote": "Empty (or degenerated) splits are prohibited, i.e. every single feature space rectangle encloses at least one sample from the initial dataset.",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Each tree must be additionally randomised by subsampling the dataset (and/or a feature subset), otherwise the ensemble averaging does not help.",
+   "cite": "Section 2.1, paragraph on randomisation",
+   "quote": "Usually, every tree needs to be additionally randomized by subsampling the dataset or choosing a subset of considered features",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "AAD must replace the IF score with a weighted sum over trees of phi(d(l_i(x)) + c(N(l_i(x)))) using per-leaf weights w_{i,l_i(x)}, with ||w||_2 = 1.",
+   "cite": "Section 2.2, Equation (4) and following paragraph",
+   "quote": "For AAD, we have the following equation for the score, which replaces Equation (1):",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "AAD weights must be fitted by minimising the hinge/ReLU loss in Equation (5): anomaly term scaled by Ca over |A|, nominal term over |N|, plus 1/2||w - w0||^2 regularisation, with default Ca = 1 and threshold at the 1-tau = 0.97 quantile.",
+   "cite": "Section 2.2, Equation (5)",
+   "quote": "The constant Ca allows us to assign a relative importance of to both kind of errors, our current default choice being Ca = 1.",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "The AAD optimisation must be solved with scipy's trust-krylov method (Newton GLTR trust-region), re-solving and re-scoring the whole dataset at each active-learning iteration.",
+   "cite": "Section 2.2, paragraph after Equation (6)",
+   "quote": "Currently, we use trust-krylov method from scipy optimization framework, which uses the Newton GLTR trust-region algorithm",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "The default depth transformation for AAD must be phi(d) = -1/d, with phi(d) = -2^d, phi(d) = 1 and phi(d) = d as documented alternatives.",
+   "cite": "Section 2.2, footnote 6",
+   "quote": "Our default choice is φ(d) = −d−1, however other variants such as φ(d) = −2d, φ(d) = 1, or φ(d) = d are also considered",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "Pineforest must score each tree as s(t_i) = sum_j y_j * d(l_i(x_j)) with y = -1 anomalies, 0 unlabeled, +1 regular points, then discard low-scoring trees and rebuild the forest iteratively.",
+   "cite": "Section 2.3",
+   "quote": "Using these scores, we adapt the forest to the labeled data by discarding trees with lower scores and retaining those with higher ones.",
+   "page": 9
+  },
+  {
+   "id": "R12",
+   "stmt": "Multi-threaded IF prediction must parallelise over data samples (not over trees), which is the mechanism behind the Figure 1 speed-up.",
+   "cite": "Section 4.1",
+   "quote": "process each tree in a separate thread or process each data sample in a separate thread. We use the latter approach.",
+   "page": 13
+  },
+  {
+   "id": "R13",
+   "stmt": "The performance-critical tree search/scoring code must be compiled native code (the reference implementation uses Cython) and shipped as wheels, so that the timing reflects compiled rather than pure-Python scoring.",
+   "cite": "Section 3, package description",
+   "quote": "We choose to use Cython to write the performance-critical code, which is latter compiled to native binary code.",
+   "page": 9
+  },
+  {
+   "id": "R14",
+   "stmt": "Trained models must be serialisable to portable ONNX format for reuse in automated (non-updatable) anomaly detection pipelines.",
+   "cite": "Section 3, documentation paragraph",
+   "quote": "we also provide support for serializing the trained models to portable ONNX format",
+   "page": 10
+  }
+ ],
+ "data": [
+  {
+   "name": "coniferest 0.0.13 (source and PyPI wheels)",
+   "how_to_get": "pip install coniferest==0.0.13; source at https://github.com/snad-space/coniferest (MIT licence)"
+  },
+  {
+   "name": "synthetic benchmark dataset (~10^6 samples x 2 features)",
+   "how_to_get": "not distributed with the paper; generate with numpy using a fixed seed (distribution is unstated - see A6)"
+  },
+  {
+   "name": "ztf_m31 toy dataset",
+   "how_to_get": "bundled as a supplied dataset inside the coniferest package (ZTF sky field around M31, features from Malanchev et al. 2021)"
+  },
+  {
+   "name": "dev_net datasets: donors, census, fraud, celeba, backdoor, campaign, thyroid",
+   "how_to_get": "bundled with coniferest; originals from Pang, Shen & van den Hengel, 'Deep anomaly detection with deviation networks', KDD 2019"
+  },
+  {
+   "name": "scikit-learn 1.1.3, 1.2.2, 1.3.2, 1.4.2",
+   "how_to_get": "pip install scikit-learn==<version> from PyPI to reproduce the baseline bars of Figure 1"
+  },
+  {
+   "name": "ZTF DR3 / DR8 light curves (needed only for claims C2-C4)",
+   "how_to_get": "public via ZTF https://www.ztf.caltech.edu/ and the ZWAD pipeline (ascl:2106.033); requires human expert labelling"
+  }
+ ],
+ "code_links": [
+  "https://github.com/snad-space/coniferest",
+  "https://coniferest.snad.space",
+  "https://github.com/clarenceluo78/ActiveAD",
+  "https://snad.space",
+  "https://www.ztf.caltech.edu/"
+ ],
+ "stated_compute": "Figure 1 hardware labels: \"Intel Xeon Gold 6148 (80 threads)\" and \"Apple M3 Pro\"; the caption adds \"Note, that scikit-learn is always single-threaded.\" No other hardware is mentioned in the paper.",
+ "paper_meta": {
+  "source": "2410.17142",
+  "kind": "arxiv",
+  "arxiv_id": "2410.17142",
+  "url": "https://arxiv.org/abs/2410.17142",
+  "title": "Coniferest: a complete active anomaly detection framework",
+  "pages": 17
+ }
+}

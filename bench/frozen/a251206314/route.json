@@ -1,0 +1,38 @@
+{
+ "route": "full_release",
+ "why": "The authors provide a complete R package plus dedicated toy-example scripts. The target C1 uses the n=8 toy dataset hardcoded in Section 4/scripts, so no external data or weights are missing. The code is directly runnable after installing R and small CRAN dependencies.",
+ "repo": "https://github.com/seanq31/BagWhiskerPlot",
+ "entrypoints": [
+  "scripts/toy_example/toy_example.R",
+  "scripts/toy_example/toy_example_calculation.R"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "R runtime is not listed in the machine metadata and may need installation.",
+  "Small CRAN/package dependencies may need installation before running the scripts."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Under 1 minute for the toy computation once R and dependencies are installed; roughly 10-15 minutes including a fresh R/dependency setup.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 8,
+  "gpu_speedup": null,
+  "basis": "A single n=8 toy computation: MCD covariance, chi-square p-values, Holm/BH/PFER adjustments, and lambda=max(lambda_stat,lambda_data); no training or large data."
+ },
+ "repo_info": {
+  "url": "https://github.com/seanq31/BagWhiskerPlot",
+  "cloned": true,
+  "n_files": 25,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

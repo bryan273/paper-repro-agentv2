@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "FMC-EM achieves Balance = 0.481 and Cost = 12715 on the Adult dataset (fair clustering, K clusters, isotropic GMM, L2-normalized continuous features)",
+  "table_ref": "Table 3",
+  "dataset": "UCI Adult (32,561 samples, continuous features only)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": 1.5,
+  "basis": "No code released, so the FMC-EM algorithm (Algorithms 1-2, gradient formulas in appendix) must be reimplemented from scratch; Adult is small (~32k x 5 continuous features) and CPU-friendly, but reproducing the exact Balance/Cost cell requires matching hyperparameters (T=200, R=10, gamma=1e-2, lambda tuning, K-means init, 5 random inits) and the Pareto-front protocol."
+ },
+ "blockers": [
+  "No code or configs released; algorithm must be reimplemented from the paper text",
+  "Exact Balance/Cost values depend on unspecified lambda grid and K-means initialization details",
+  "Baseline comparison (SFC/VFC/FCA) not needed for this single cell but the reported number is a specific operating point on a Pareto front"
+ ],
+ "suitable": true,
+ "id": "2602.21509",
+ "title": "Fair Model-based Clustering",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

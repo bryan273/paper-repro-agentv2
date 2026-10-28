@@ -1,0 +1,226 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Proportions of the stratified train/calibration/test split are not given.",
+  "options": [
+   "60/20/20",
+   "70/15/15",
+   "80/10/10"
+  ],
+  "chosen": "60/20/20",
+  "rationale": "Leaves nonzero calibration and test sets for Iris n=150 and is a common tabular post-hoc calibration convention; exact sizes affect small-dataset variance.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "For each dataset and seed, data are split into train, calibration, and test partitions with stratification.",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The exact six random seeds and how they wire into split, RF, noise, and bootstrap RNGs are not listed.",
+  "options": [
+   "seeds 0-5 shared across all randomness",
+   "seeds 1-6",
+   "seeds 42-47"
+  ],
+  "chosen": "seeds 0-5 shared across all randomness",
+  "rationale": "The paper says six seeds and a fixed seed list but does not enumerate them; 0-5 is a minimal reproducible convention.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "The script is deterministic up to the fixed seed list in the source.",
+  "page": 7
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Asymmetric noise only says positives flip more often than negatives; exact per-class flip probabilities are missing.",
+  "options": [
+   "positive flip eta, negative flip 0",
+   "positive flip eta, negative flip eta/2",
+   "positive flip 2eta capped, negative flip eta/2"
+  ],
+  "chosen": "positive flip eta, negative flip eta/2",
+  "rationale": "Preserves the stated direction and uses eta as the dominant positive corruption rate while retaining some negative corruption; exact choice can change asymmetric results.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Asymmetric noise flips positives more often than negatives",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether training and calibration label noise use the same per-cell rate eta and independent draws is not fully explicit.",
+  "options": [
+   "same eta, independent draws",
+   "different eta_train and eta_cal",
+   "train clean, calibration noisy"
+  ],
+  "chosen": "same eta, independent draws",
+  "rationale": "The paper states independent corruption and studies one noise rate per cell; using the same eta is the simplest interpretation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Training and calibration labels are corrupted independently; test labels remain clean.",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Weighted isotonic implementation, tie handling, and extrapolation beyond observed calibration scores are unspecified.",
+  "options": [
+   "sklearn IsotonicRegression with sample_weight and out_of_bounds='clip'",
+   "custom weighted PAV with linear interpolation",
+   "custom PAV with constant extrapolation"
+  ],
+  "chosen": "sklearn IsotonicRegression with sample_weight and out_of_bounds='clip'",
+  "rationale": "The paper names weighted isotonic and PAV but leaves software details open; sklearn matches the stated monotone weighted least-squares objective and is deterministic.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Weighted isotonic regression is implemented by the pooled-adjacent-violators algorithm",
+  "page": 7
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Platt, beta, isotonic, and hard-trimmed baseline fitting details and regularization are not specified.",
+  "options": [
+   "sklearn-style Platt logistic on raw p",
+   "beta calibration on log(p), log(1-p), and logit(p) features",
+   "both with default L2"
+  ],
+  "chosen": "sklearn-style Platt logistic on raw p; beta on log(p), log(1-p), and logit(p) with default L2",
+  "rationale": "The paper names standard baselines without hyperparameters; reproducing Table III requires explicit choices.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "All calibrators are post-hoc and train only on the noisy calibration split.",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "How to handle empty ECE bins and ties at bin edges is not stated.",
+  "options": [
+   "ignore empty bins",
+   "merge empty bins with neighbors",
+   "include empty bins as zero contribution"
+  ],
+  "chosen": "ignore empty bins",
+  "rationale": "With 15 equal-width bins on smaller datasets, empty bins can occur; ignoring them is standard and matches ECE as a weighted average over nonempty bins.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "We report expected calibration error with 15 equal-width bins",
+  "page": 2
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Probability clipping for NLL and Brier is not specified.",
+  "options": [
+   "clip probabilities to [1e-12, 1-1e-12]",
+   "use sklearn log_loss eps",
+   "no clipping"
+  ],
+  "chosen": "clip probabilities to [1e-12, 1-1e-12]",
+  "rationale": "Avoids infinities without materially changing finite probabilities; no clipping can make NLL undefined.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Brier score [15], negative log likelihood, AUC, and macro-F1.",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The 432-cell aggregate mean is not explicitly defined as equal-weight over cells versus over datasets or seeds.",
+  "options": [
+   "equal weight per noisy cell",
+   "equal weight per dataset then average over seeds",
+   "equal weight per seed then average over datasets"
+  ],
+  "chosen": "equal weight per noisy cell",
+  "rationale": "The paper says the main result aggregates all noisy cells and excludes clean rows; equal cell weighting is the direct reading.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The main result aggregates all noisy cells, excluding the clean η = 0 rows from the headline.",
+  "page": 3
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Random-forest random_state, bootstrap, n_jobs, and class_weight are not fully specified beyond tree count, leaf size, and feature subsampling.",
+  "options": [
+   "random_state=seed, sklearn defaults otherwise, no class_weight",
+   "random_state=seed, class_weight='balanced'",
+   "random_state fixed 0 for every cell"
+  ],
+  "chosen": "random_state=seed, sklearn defaults otherwise, no class_weight",
+  "rationale": "The paper specifies 160 trees, minimum leaf 2, and sqrt features but not the remaining RF controls; using the cell seed and defaults is the least-assumption reading.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "The main experiment uses random forests with 160 trees, minimum leaf size 2, and square-root feature subsampling.",
+  "page": 2
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "How multiclass sklearn datasets are converted to the named binary tasks (Wine Class 0/2, Digits High/Even, Iris Versicolor) is not described.",
+  "options": [
+   "one-vs-rest: named class positive, all others negative",
+   "keep only named class and sampled negatives",
+   "Digits High = digit>=5, Digits Even = parity even"
+  ],
+  "chosen": "one-vs-rest: named class positive and all others negative; Digits High = digit>=5; Digits Even = parity even",
+  "rationale": "Table II names classes without defining negatives; one-vs-rest preserves full n and positive rates near the listed values.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Table II lists the nine binary tasks. Six are derived from local scikit-learn datasets",
+  "page": 2
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Synthetic generator parameters for overlap, sparsity, and imbalance are not given beyond n, d, and positive rate.",
+  "options": [
+   "make_classification with low class_sep for overlap",
+   "make_classification with many irrelevant features for sparsity",
+   "make_classification with class weights for imbalance"
+  ],
+  "chosen": "make_classification parameters matched to Table II n/d/positive rate, with low class_sep, many irrelevant features, or class weights by task",
+  "rationale": "The paper only names the three stress axes; exact generator settings can materially change difficulty and per-dataset failures.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "three are synthetic generators with overlap, sparsity, or imbalance.",
+  "page": 2
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Paired bootstrap resample count, RNG seed, and interval type are not reported.",
+  "options": [
+   "2000 percentile paired resamples",
+   "1000 percentile paired resamples",
+   "BCa bootstrap"
+  ],
+  "chosen": "2000 percentile paired resamples",
+  "rationale": "Table VI reports 95% CIs but not resampling details; 2000 percentile resamples with a fixed seed is a common deterministic choice.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Confidence intervals are paired bootstrap intervals over matched dataset/seed/noise-mode/ noise-rate cells.",
+  "page": 3
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Class imbalance handling, decision threshold, and macro-F1 averaging are not specified.",
+  "options": [
+   "no class_weight; threshold 0.5; unweighted macro-F1",
+   "class_weight='balanced'; threshold 0.5",
+   "threshold tuned on calibration"
+  ],
+  "chosen": "no class_weight; threshold 0.5; unweighted macro-F1",
+  "rationale": "The paper emphasizes calibrating raw probabilities and does not mention class weighting or threshold tuning; defaults avoid leaking test information.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The main experiment uses random forests with 160 trees, minimum leaf size 2, and square-root feature subsampling.",
+  "page": 2
+ }
+]

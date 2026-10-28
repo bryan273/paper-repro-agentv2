@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SCL achieves 79.74 IR@1 on zero-shot image-text retrieval on Flickr30K (evaluating the pre-trained model directly)",
+  "table_ref": "Table 2, row 'Ours', column 'Flicker30K-ZS IR@1'",
+  "dataset": "Flickr30K (zero-shot retrieval using the pre-trained model)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/SCL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 16,
+  "disk_gb": 500,
+  "ref_minutes": 43200,
+  "basis": "The target requires the paper's pre-trained checkpoint (or reproducing pre-training), which was trained for 100k steps with batch size 4096 on 64 NVIDIA A100 GPUs on 4M images; even inference of the full model on Flickr30K is heavy, and reproducing pre-training on a CPU-only laptop is infeasible."
+ },
+ "blockers": [
+  "Pre-training requires 64 A100 GPUs for 100k steps (image-text) plus 10k steps (video-text)",
+  "No pre-trained checkpoint is confirmed to be released; reproducing the model from scratch is required",
+  "Large pre-training corpora (COCO, VG, CC3M, SBU, WebVid) need to be downloaded and processed",
+  "CPU-only laptop cannot run the required training or even efficient inference of the full model"
+ ],
+ "suitable": false,
+ "id": "2211.13437",
+ "title": "Seeing What You Miss: Vision-Language Pre-training with Semantic Completion Learning",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

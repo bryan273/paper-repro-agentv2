@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Skill score MSS(GS_outlier, GS_inlier) for the Brier score of non-robust Gaussian scaling on the Ionosphere dataset with kNN detector (Figure 2, Brier score panel).",
+  "table_ref": "Figure 2 (Brier score panel)",
+  "dataset": "Ionosphere (from Campos et al. 2016 outlier detection benchmark)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Ionosphere is small (~351 instances, 34 features); kNN outlier scores and Gaussian scaling are trivial to implement with PyOD and scipy; no code released, so agent must write ~100 lines."
+ },
+ "blockers": [
+  "No code or data links provided in the paper; must reimplement outlier detection and scaling from scratch.",
+  "Ionosphere dataset must be obtained from UCI or the Campos et al. benchmark repository.",
+  "Exact binning and stratified measure implementation details (5-20 equiareal bins) must be inferred from cited paper [32]."
+ ],
+ "suitable": true,
+ "id": "2408.15874",
+ "title": "Robust Statistical Scaling of Outlier Scores: Improving the Quality of Outlier Probabilities for Outliers (Extended Version)",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

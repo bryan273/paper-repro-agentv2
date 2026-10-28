@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Mean test AUC of logistic regression on the parity5 dataset (sample size 32, 5 features) is 0.17.",
+  "table_ref": "Table 3, row parity5, column 'Logistic regression'",
+  "dataset": "parity5 (from PMLBmini)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/RicardoKnauer/TabMini"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Logistic regression on a 32-sample dataset with 3-fold CV and a 4-value lambda grid is trivial; the main cost is installing the tabmini package and its dependencies (scikit-learn, MOSEK, etc.) and downloading the tiny dataset."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2409.01635",
+ "title": "PMLBmini: A Tabular Classification Benchmark Suite for Data-Scarce Applications",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

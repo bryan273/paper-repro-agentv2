@@ -1,0 +1,316 @@
+{
+ "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+ "summary": "The paper addresses that standard deep learning regression and classification do not capture model uncertainty, while Bayesian alternatives are computationally prohibitive. It casts dropout training in deep neural networks as approximate Bayesian inference in deep Gaussian processes, yielding MC dropout: T stochastic forward passes at test time to estimate predictive mean, variance, and log-likelihood. On UCI regression benchmarks it reports improved test RMSE and predictive log-likelihood over VI and PBP, e.g. Boston Housing RMSE 2.97 ±0.19 versus PBP 3.01 ±0.18 and VI 4.32 ±0.29.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "MC dropout average test RMSE on Boston Housing is 2.97, compared with 3.01 for PBP and 4.32 for VI.",
+   "metric": "RMSE",
+   "dataset": "Boston Housing",
+   "split": "20 random splits",
+   "value": 2.97,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Boston Housing, column Avg. Test RMSE / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations (PBP's 40-epoch setup x10); 20 random splits; Keras/Theano.",
+   "reported_spread": "±0.19 standard error over 20 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; ~minutes per split; 20 splits plus BO, likely <1 GPU-hour total",
+   "quote": "Boston Housing 506 13 4.32 ±0.29 3.01 ±0.18 2.97 ±0.19 -2.90 ±0.07 -2.57 ±0.09 -2.46 ±0.06",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "MC dropout average test predictive log-likelihood on Boston Housing is -2.46.",
+   "metric": "predictive log-likelihood",
+   "dataset": "Boston Housing",
+   "split": "20 random splits",
+   "value": -2.46,
+   "unit": "log-likelihood (higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Boston Housing, column Avg. Test LL / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations; 20 random splits; Keras/Theano.",
+   "reported_spread": "±0.06 standard error over 20 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; ~minutes per split; 20 splits plus BO",
+   "quote": "Boston Housing 506 13 4.32 ±0.29 3.01 ±0.18 2.97 ±0.19 -2.90 ±0.07 -2.57 ±0.09 -2.46 ±0.06",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "MC dropout average test RMSE on Concrete Strength is 5.23, compared with 5.67 for PBP and 7.19 for VI.",
+   "metric": "RMSE",
+   "dataset": "Concrete Strength",
+   "split": "20 random splits",
+   "value": 5.23,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Concrete Strength, column Avg. Test RMSE / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations; 20 random splits; Keras/Theano.",
+   "reported_spread": "±0.12 standard error over 20 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; ~minutes per split; 20 splits plus BO",
+   "quote": "Concrete Strength 1,030 8 7.19 ±0.12 5.67 ±0.09 5.23 ±0.12 -3.39 ±0.02 -3.16 ±0.02 -3.04 ±0.02",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "MC dropout average test RMSE on Energy Efficiency is 1.66, compared with 1.80 for PBP and 2.65 for VI.",
+   "metric": "RMSE",
+   "dataset": "Energy Efficiency",
+   "split": "20 random splits",
+   "value": 1.66,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Energy Efficiency, column Avg. Test RMSE / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations; 20 random splits; Keras/Theano.",
+   "reported_spread": "±0.04 standard error over 20 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; ~minutes per split; 20 splits plus BO",
+   "quote": "Energy Efficiency 768 8 2.65 ±0.08 1.80 ±0.05 1.66 ±0.04 -2.39 ±0.03 -2.04 ±0.02 -1.99 ±0.02",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "MC dropout average test RMSE on Protein Structure is 4.36, compared with 4.73 for PBP and 4.84 for VI.",
+   "metric": "RMSE",
+   "dataset": "Protein Structure",
+   "split": "5 random splits",
+   "value": 4.36,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Protein Structure, column Avg. Test RMSE / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations; 5 random splits; Keras/Theano.",
+   "reported_spread": "±0.01 standard error over 5 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; ~minutes per split; 5 splits plus BO",
+   "quote": "Protein Structure 45,730 9 4.84 ±0.03 4.73 ±0.01 4.36 ±0.01 -2.99 ±0.01 -2.97 ±0.00 -2.89 ±0.00",
+   "page": 7
+  },
+  {
+   "id": "C6",
+   "statement": "MC dropout average test RMSE on Year Prediction MSD is 8.849, compared with 8.879 for PBP and 9.034 for VI.",
+   "metric": "RMSE",
+   "dataset": "Year Prediction MSD",
+   "split": "1 split",
+   "value": 8.849,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Year Prediction MSD, column Avg. Test RMSE / Dropout",
+   "config_for_value": "One hidden layer with 50 units; dropout probabilities 0.05 and 0.005; Adam; mini-batches of size 32; prior length-scale 10^-2; BO 40 iterations followed by 10x more training iterations; one split; Keras/Theano.",
+   "reported_spread": null,
+   "est_compute": "CPU/GPU, large dataset (515,345 points); several GPU-hours",
+   "quote": "Year Prediction MSD 515,345 90 9.034 ±NA 8.879 ±NA 8.849 ±NA -3.622 ±NA -3.603 ±NA -3.588 ±NA",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "Training the Boston Housing MC dropout model with 10x more epochs than Table 1 improves average test RMSE to 2.80.",
+   "metric": "RMSE",
+   "dataset": "Boston Housing",
+   "split": "20 random splits",
+   "value": 2.8,
+   "unit": "RMSE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row Boston Housing, column 10x Epochs / Avg. Test RMSE",
+   "config_for_value": "Same as Table 1 dropout model but with 10x more epochs than Table 1 (100x PBP's 40 epochs), identical model precision.",
+   "reported_spread": "±0.19 standard error over 20 random splits",
+   "est_compute": "CPU/GPU, small 1-hidden-layer 50-unit MLP; 10x longer than Table 1, hours per split",
+   "quote": "Boston Housing 2.97 ±0.19 2.80 ±0.19 2.80 ±0.13 -2.46 ±0.06 -2.39 ±0.05 -2.34 ±0.02",
+   "page": 12
+  },
+  {
+   "id": "C8",
+   "statement": "Thompson sampling with a dropout Q-network reaches average reward larger than 1 within 25 batches from burn-in, whereas epsilon greedy takes 175 batches.",
+   "metric": "batches from burn-in to reach average reward > 1",
+   "dataset": "2D reinforcement learning task",
+   "split": "not applicable",
+   "value": 25,
+   "unit": "batches (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Figure 6 and Section 5.4 text",
+   "config_for_value": "Dropout probability 0.1 before every weight layer; Thompson sampling with a single stochastic forward pass per action; burn-in of 25 random batches; same network structure as the original implementation.",
+   "reported_spread": null,
+   "est_compute": "CPU, small 2D RL task; minutes to hours",
+   "quote": "Thompson sampling gets reward larger than 1 within 25 batches from burn-in. Epsilon greedy takes 175 batches to achieve the same performance.",
+   "page": 9
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Boston Housing is the smallest UCI regression dataset (506 points, 13 dimensions) and the 1-hidden-layer 50-unit dropout model is cheap to train; its Table 1 RMSE directly supports the paper's central claim that MC dropout improves predictive RMSE over VI and PBP."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 10,
+  "why": "Rule 4: RMSE is unbounded. The paper reports a standard error over 20 splits (±0.19), not a std over repeated runs, so Rule 1 does not apply; 10% relative on 2.97 gives [2.673, 3.267]."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "At test time, collect T stochastic forward passes with dropout active and average them to form the predictive mean.",
+   "cite": "Section 4, eq. (6)",
+   "quote": "In practice this is equivalent to performing T stochastic forward passes through the network and averaging the results.",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Estimate predictive variance as the sample variance of the T stochastic forward passes plus inverse model precision τ^{-1} I_D.",
+   "cite": "Section 4, after eq. (6)",
+   "quote": "which equals the sample variance of T stochastic forward passes through the NN plus the inverse model precision.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Convert the prior length-scale l, weight decay λ, and keep probability to model precision via τ = p l^2 / (2 N λ).",
+   "cite": "Section 4, eq. (7)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R4",
+   "stmt": "For regression, compute predictive log-likelihood with eq. (8) using logsumexp over T stochastic forward passes and model precision τ.",
+   "cite": "Section 4, eq. (8)",
+   "quote": "with a log-sum-exp of T terms and byt stochastic forward passes through the network.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Apply dropout before every weight layer in the network, following the paper's variational interpretation.",
+   "cite": "Section 3",
+   "quote": "with dropout applied before every weight layer",
+   "page": 2
+  },
+  {
+   "id": "R6",
+   "stmt": "Use a single hidden layer with 50 hidden units for the UCI regression experiments.",
+   "cite": "Section 5.3",
+   "quote": "with 50 units following (Hern ́andez-Lobato & Adams, 2015)",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Use dropout probabilities 0.05 and 0.005 for the small UCI regression network.",
+   "cite": "Section 5.3",
+   "quote": "We used dropout with probabilities 0.05 and 0.005 since the network size is very small",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Train with Adam and mini-batches of size 32.",
+   "cite": "Section 5.3",
+   "quote": "Finally, we used mini-batches of size 32 and the Adam optimiser (Kingma & Ba, 2014).",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Run Bayesian optimisation over validation log-likelihood for 40 iterations to find τ, then retrain with optimal parameters for 10x more iterations.",
+   "cite": "Section 5.3",
+   "quote": "The BO runs used 40 iterations following the original setup, but after finding the optimal parameter values we used 10x more iterations",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Set prior length-scale l to 10^-2 for most datasets based on data range.",
+   "cite": "Section 5.3",
+   "quote": "set the prior length-scale to 10−2 for most datasets based on the range of the data.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "Average results over 20 random train/test splits for Boston Housing and most UCI datasets.",
+   "cite": "Section 5.3",
+   "quote": "All experiments were averaged on 20 random splits of the data",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "Compute test RMSE by averaging stochastic forward passes through the network at test time (MC dropout), not by standard weight averaging.",
+   "cite": "Section 5.3",
+   "quote": "Dropout’s RMSE in table 1 is given by averaging stochastic forward passes through the network following eq. (6) (MC dropout).",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "Replicate the experimental setup of Hernández-Lobato & Adams (2015), including dataset details.",
+   "cite": "Section 5.3",
+   "quote": "We replicate the experiment set-up in Hern ́andez-Lobato & Adams (2015)",
+   "page": 6
+  },
+  {
+   "id": "R14",
+   "stmt": "Use Keras/Theano for the UCI regression implementation.",
+   "cite": "Section 5.3",
+   "quote": "To implement the model we used Keras (Chollet, 2015), an open source deep learning package based on Theano",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "Boston Housing",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Housing"
+  },
+  {
+   "name": "Concrete Strength",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Concrete+Compressive+Strength"
+  },
+  {
+   "name": "Energy Efficiency",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Energy+efficiency"
+  },
+  {
+   "name": "Kin8nm",
+   "how_to_get": "Distributed via the PBP setup of Hernández-Lobato & Adams (2015); also known from the Delve repository."
+  },
+  {
+   "name": "Naval Propulsion",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Condition+Based+Maintenance+of+Naval+Propulsion+Plants"
+  },
+  {
+   "name": "Power Plant",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Combined+Cycle+Power+Plant"
+  },
+  {
+   "name": "Protein Structure",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Physicochemical+Properties+of+Protein+Tertiary+Structure"
+  },
+  {
+   "name": "Wine Quality Red",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Wine+Quality"
+  },
+  {
+   "name": "Yacht Hydrodynamics",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Yacht+Hydrodynamics"
+  },
+  {
+   "name": "Year Prediction MSD",
+   "how_to_get": "UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/YearPredictionMSD"
+  },
+  {
+   "name": "MNIST",
+   "how_to_get": "LeCun & Cortes (1998), http://yann.lecun.com/exdb/mnist/"
+  },
+  {
+   "name": "Mauna Loa CO2",
+   "how_to_get": "Keeling et al. (2004) atmospheric CO2 concentrations from Mauna Loa Observatory, Hawaii."
+  },
+  {
+   "name": "Solar irradiance",
+   "how_to_get": "Lean (2004), NOAA/NGDC Paleoclimatology Program."
+  },
+  {
+   "name": "2D reinforcement learning task",
+   "how_to_get": "Karpathy's convnetjs implementation: https://github.com/karpathy/convnetjs"
+  }
+ ],
+ "code_links": [
+  "http://yarin.co",
+  "https://github.com/JasperSnoek/spearmint",
+  "https://github.com/fchollet/keras",
+  "https://github.com/karpathy/convnetjs"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "1506.02142",
+  "kind": "arxiv",
+  "arxiv_id": "1506.02142",
+  "url": "https://arxiv.org/abs/1506.02142",
+  "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+  "pages": 12
+ }
+}

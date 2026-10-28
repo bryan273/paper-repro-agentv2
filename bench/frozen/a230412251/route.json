@@ -1,0 +1,37 @@
+{
+ "route": "full_release",
+ "why": "The target claim C1 is produced entirely by the CRAN R package otsfeatures released by the authors. The package bundles SyntheticData2 and implements c_marginal_probabilities, c_joint_probabilities, and the paper's clustering/validation workflow. No author repository is needed; the only work is installing R plus CRAN dependencies and running the documented snippet. The computation is tiny and CPU-only.",
+ "repo": null,
+ "entrypoints": [
+  "CRAN package otsfeatures: library(otsfeatures); SyntheticData2$data; c_marginal_probabilities(states=0:5); c_joint_probabilities(states=0:5, lag=1); c_joint_probabilities(states=0:5, lag=2); dist(dataset_1); ClusterR::pam(k=4); ClusterR::external_validation(...)"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "R runtime is not confirmed installed on this Windows machine; R and CRAN dependencies such as ClusterR must be installed.",
+  "No GitHub repository is provided, but the CRAN package source is the authors' released implementation."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 5-10 minutes total: install R/CRAN dependencies, download otsfeatures, build the 80x55 cumulative-feature matrix, run dist + PAM(k=4), and compute ARI. The actual clustering is well under 1 minute.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "An 80-series synthetic dataset is reduced to a 55-column feature matrix; distance computation and PAM with k=4 are negligible, so nearly all command time is R/package installation."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

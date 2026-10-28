@@ -1,0 +1,284 @@
+{
+ "title": "Beyond a Single Sentiment Score: Topical and Affective Dimensions of Emoji Meaning on Twitter",
+ "summary": "The paper argues that representing an emoji by a single sentiment scalar collapses two dissociable dimensions of meaning: how topically coherent its contexts are and how affectively dispersed its crowd-sourced ratings are. It introduces 'stability delta', the within-class minus between-class mean cosine similarity of all-MiniLM-L6-v2 embeddings of emoji-free tweet text, computes it for the 62 emojis with at least 15 occurrences in the Emoji Sarcasm Dataset, and correlates it with external per-emoji affect-dispersion measures. The headline result is a positive Spearman correlation with Kralj Novak sentiment variance (rho = +0.361, Holm p = 0.015, n = 59) corroborated by Ferre 2025 strongly-evoked-emotion counts (rho = +0.509, p = 0.0003, n = 47), with a saturated (>0.97 macro F1) sarcasm classifier reported only as supporting evidence.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Stability delta of an emoji correlates positively with the variance of its Kralj Novak (2015) crowd-sourced sentiment distribution across the 59 matched emojis; this is the paper's designated primary test and survives Holm correction across the four-test family.",
+   "metric": "Spearman rank correlation rho",
+   "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition + Kralj Novak et al. (2015) emoji sentiment lexicon (via emosent-py)",
+   "split": "All 59 emojis matched between the 62-emoji ESD panel and the lexicon",
+   "value": 0.361,
+   "unit": "Spearman rho",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'Delta vs. Kralj Novak variance (primary)', column rho",
+   "config_for_value": "min 15 occurrences per emoji; up to 100 tweets per emoji vs 500 random background tweets; all-MiniLM-L6-v2 embeddings of emoji-free lowercased text; delta = W_e - B_e; Kralj Novak variance = variance of (p_neg, p_neu, p_pos); Spearman rho with 10,000 permutations and BCa bootstrap; Holm correction over four tests; n = 59",
+   "reported_spread": "95% percentile bootstrap CI [+0.10, +0.59]; BCa CI [+0.09, +0.58]; jackknife rho range [+0.3327, +0.4119]; permutation p = 0.005",
+   "est_compute": "CPU only (Ryzen 9 5900HS baseline); paper says ~3 min to regenerate every number from the provided code",
+   "quote": "the central correlation is Spearman ρ = +0.361 (Holm p = 0.015, 95% bootstrap CI [+0.10, +0.59])",
+   "page": 1
+  },
+  {
+   "id": "C2",
+   "statement": "Stability delta correlates positively with the number of strongly evoked emotions (Ferre 2025 mean rating >= 2.5) across the 47 matched emojis.",
+   "metric": "Spearman rank correlation rho",
+   "dataset": "ESD Twitter partition + Ferre et al. (2025) Emoji-Dis 13-emotion database",
+   "split": "All 47 emojis matched between the 62-emoji panel and Emoji-Dis",
+   "value": 0.509,
+   "unit": "Spearman rho",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row '>=2.5 (primary)'",
+   "config_for_value": "Count of the 13 Ferre emotion categories with mean Likert rating >= 2.5 per emoji; correlated against the same stability delta; n = 47 matched emojis",
+   "reported_spread": "Threshold sensitivity: rho = +0.606 (>=2.0, p = 6.0e-6), +0.458 (>=3.0), +0.415 (>=3.5)",
+   "est_compute": "CPU only, <1 min once deltas exist (no training)",
+   "quote": "Number of strongly evoked emotions from the Ferré et al. (2025) Spanish 13-emotion database (n=47 matched, ρ = +0.509, p = 0.0003).",
+   "page": 2
+  },
+  {
+   "id": "C3",
+   "statement": "Descriptive distribution of stability delta over the 62-emoji panel: mean delta is 0.0766, ranging from +0.237 (collision) to -0.003 (angry face), with 61 of 62 emojis positive.",
+   "metric": "mean stability delta",
+   "dataset": "ESD Twitter partition, 62 emojis with >= 15 occurrences (15,569 embedded tweets)",
+   "split": "All 62 emojis",
+   "value": 0.0766,
+   "unit": "mean cosine-similarity difference (delta)",
+   "higher_is_better": false,
+   "table_ref": "Table 1 (top/bottom emojis) and Section 5.2 text",
+   "config_for_value": "Delta computed per Section 4.3 (Eqs. 1-3) with all-MiniLM-L6-v2 on emoji-free clean_text; 62 emojis retained at >= 15 occurrences",
+   "reported_spread": "range [+0.237, -0.003] across emojis",
+   "est_compute": "CPU only, ~1-3 min for the embedding + similarity pass",
+   "quote": "with mean ∆= 0.0766 and 61 of 62 emojis positive",
+   "page": 5
+  },
+  {
+   "id": "C4",
+   "statement": "GEMA (gated multimodal fusion of text, emoji and structural features) reaches macro F1 0.985 under leakage-free stratified five-fold cross-validation on the English-filtered ESD Twitter partition.",
+   "metric": "macro F1",
+   "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition, English-filtered (n = 16,587)",
+   "split": "Stratified 5-fold cross-validation, random state 42; mean +/- SD across folds",
+   "value": 0.985,
+   "unit": "macro F1 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row GEMA, column Macro F1 (full metrics in Table 5)",
+   "config_for_value": "BiGRU over MiniLM embeddings + BERT [CLS] text branch; emoji branch (mean Kralj Novak sentiment, normalized emoji counts); 11-D structural branch; sigmoid gating; AdamW LR 1e-3, weight decay 1e-4; focal loss alpha 0.4 gamma 2.0; batch 16; max 8 epochs, patience 2 on validation macro F1",
+   "reported_spread": "0.985 +/- 0.007 (SD across folds)",
+   "est_compute": "CPU only; paper reports ~2 hours for the whole five-fold classifier evaluation",
+   "quote": "our gated architecture (GEMA) reaches macro F1 0.985",
+   "page": 2
+  },
+  {
+   "id": "C5",
+   "statement": "Frozen BERTweet [CLS] embeddings with a logistic-regression head reach macro F1 0.974 on the same leakage-free five-fold CV.",
+   "metric": "macro F1",
+   "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition, English-filtered (n = 16,587)",
+   "split": "Stratified 5-fold cross-validation, random state 42; mean +/- SD across folds",
+   "value": 0.974,
+   "unit": "macro F1 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row BERTweet, column Macro F1",
+   "config_for_value": "vinai/bertweet-base frozen [CLS] embeddings fed into logistic regression; identical folds to GEMA",
+   "reported_spread": "0.974 +/- 0.002 (SD across folds)",
+   "est_compute": "CPU only (frozen features + linear head), order of minutes per fold",
+   "quote": "BERTweet feature extraction with logistic regression reaches 0.974",
+   "page": 2
+  },
+  {
+   "id": "C6",
+   "statement": "Frozen RoBERTa [CLS] embeddings with a logistic-regression head reach macro F1 0.991, slightly beating the gated multimodal model.",
+   "metric": "macro F1",
+   "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition, English-filtered (n = 16,587)",
+   "split": "Stratified 5-fold cross-validation, random state 42; mean +/- SD across folds",
+   "value": 0.991,
+   "unit": "macro F1 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row RoBERTa, column Macro F1",
+   "config_for_value": "roberta-base frozen [CLS] embeddings fed into logistic regression; identical folds to GEMA",
+   "reported_spread": "0.991 +/- 0.001 (SD across folds)",
+   "est_compute": "CPU only (frozen features + linear head), order of minutes per fold",
+   "quote": "RoBERTa with logistic regression reaches 0.991",
+   "page": 2
+  },
+  {
+   "id": "C7",
+   "statement": "Binary polarity alignment between the VADER compound of the emoji-free text and the Kralj Novak sentiment of the primary emoji is 58.94% overall, 60.81% for non-sarcastic and 55.34% for sarcastic tweets (a 5.47-point gap).",
+   "metric": "polarity alignment accuracy",
+   "dataset": "ESD tweets where Kralj Novak sentiment is available for the primary emoji (n = 15,398)",
+   "split": "All such tweets; reported separately for non-sarcastic (n = 10,131) and sarcastic (n = 5,267)",
+   "value": 58.94,
+   "unit": "% polarity agreement",
+   "higher_is_better": true,
+   "table_ref": "Section 5.6 (text only, no table)",
+   "config_for_value": "VADER compound computed on emoji-free clean_text; sign agreement with the Kralj Novak sentiment score of the primary emoji",
+   "reported_spread": "60.81% non-sarcastic vs 55.34% sarcastic (5.47 pp gap); no CI given",
+   "est_compute": "CPU only, <1 min",
+   "quote": "The alignment is 58.94% overall, resting at 60.81% for non-sarcastic tweets",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "In the ESD Twitter partition, emoji placement is dominated by sentence-final position: 58.3% end, 28.5% middle, 13.2% start.",
+   "metric": "% of tweets by first-emoji position",
+   "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition",
+   "split": "All tweets in the Twitter partition",
+   "value": 58.3,
+   "unit": "% of tweets with emoji in end position",
+   "higher_is_better": false,
+   "table_ref": "Section 5.1 text and Table 7 (counts: 2,188 start / 4,728 middle / 9,659 end)",
+   "config_for_value": "Position of the first emoji relative to the tweet, identified with the emoji Python library and NLTK sentence segmentation",
+   "reported_spread": null,
+   "est_compute": "CPU only, <1 min",
+   "quote": "Emojis in the ESD Twitter partition are distributed as 58.3% end, 28.5% middle, and 13.2% start",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It is the paper's explicit primary test and headline result, and it is the cheapest: no model training at all, just the ESD corpus, MiniLM sentence embeddings, the emosent-py lexicon, and a Spearman correlation over 59 emoji-level points. Appendix E states the whole pipeline regenerates in ~3 minutes on a CPU. Any reproduction that gets rho near +0.36 with Holm-corrected significance has reproduced the paper's central claim."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: the target is a bounded rank correlation (Spearman rho) computed on a small emoji panel (n = 59), and the paper prints it as a fraction (0.361), not a percentage, so the band is 0.02 absolute. Rule 1 does not apply because the paper gives bootstrap CIs and a jackknife range, not a standard deviation over repeated runs, and Rule 2 does not apply because this is not an accuracy-like % on a 2,000+ example test set."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "English filtering keeps only tweets with at least 85% ASCII alphabetic characters, which must remove 272 tweets from the 16,859 raw inputs (leaving 16,587).",
+   "cite": "Section 4.1 Pre-processing",
+   "quote": "The English filter retains tweets with at least 85% ASCII alphabetic characters",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "All downstream NLP (VADER scoring, sentence embeddings) must run on the emoji-stripped clean_text field, never on raw text.",
+   "cite": "Section 4.1 Pre-processing",
+   "quote": "which has all emoji removed and serves as the input to all downstream NLP components",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Only emojis with at least 15 occurrences are retained as the analytical panel; this must yield 62 emojis covering 15,569 tweets from the 16,575-tweet corpus.",
+   "cite": "Section 3 Data",
+   "quote": "Retaining emojis with at least 15 occurrences leaves 62 emojis covering 15,569 embedded tweets.",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Sentence embeddings must come from all-MiniLM-L6-v2, producing 384-dimensional L2-normalised vectors.",
+   "cite": "Section 4.3 Stability Delta",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R5",
+   "stmt": "For each emoji, the within-class similarity set is the tweets in which that emoji is the primary emoji (sample up to 100); the between-class set is 500 random tweets from the rest of the corpus.",
+   "cite": "Section 4.3 Stability Delta, Eqs. (1)-(2)",
+   "quote": "For each emoji e with at least 15 occurrences, let Te be the set of tweets in which e is the primary emoji.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "Within-class similarity averages cosine over ordered pairs i != j (self-similarity excluded); between-class similarity averages over the 100 x 500 cross pairs; delta = W_e - B_e.",
+   "cite": "Section 4.3, Eqs. (1)-(3)",
+   "quote": "where i, j index tweets containing e and k indexes the random comparison set.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "The Kralj Novak dispersion target must be the variance of the three probabilities (p_neg, p_neu, p_pos), not the scalar sentiment score.",
+   "cite": "Section 4.4 External Validation Targets",
+   "quote": "Kralj Novak sentiment variance: variance of (pneg, pneu, ppos).",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Significance must come from a permutation test with 10,000 permutations (plus percentile and BCa bootstrap CIs over 10,000 resamples), not from asymptotic p-values alone.",
+   "cite": "Appendix A, item 1",
+   "quote": "Evaluates monotonic relationships using both asymptotic and empirical permutation p-values (10,000 permutations).",
+   "page": 10
+  },
+  {
+   "id": "R9",
+   "stmt": "Delta vs Kralj Novak variance is the primary test and p-values are Holm-corrected across the family of four Kralj Novak tests.",
+   "cite": "Section 4.5 Statistical Battery",
+   "quote": "For the four primary correlations involving Kralj Novak data, we select ∆vs. Kralj Novak variance as the primary test",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "A partial Spearman controlling for emoji frequency must be reported; for the primary test it should be about +0.370 (frequency is not the driver).",
+   "cite": "Section 5.3 and Appendix A item 6",
+   "quote": "partial ρ controlling for emoji frequency = +0.3700",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "All three classifiers use the same stratified five-fold split with random state 42 on the 16,587-tweet English-filtered partition; results are reported as mean +/- SD over folds.",
+   "cite": "Section 4.6 Sarcasm Classifier",
+   "quote": "We run three classifiers under identical stratified five-fold cross-validation (random state = 42) on the English-filtered Twitter partition (n = 16,587)",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "The centroid-distance (structural) features must be recomputed inside each training fold, never fitted once on the full dataset.",
+   "cite": "Section 4.6, leakage fixes",
+   "quote": "centroid distance features are recomputed within each training fold rather than once on the full dataset",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "VADER must be scored on emoji-free text so that VADER's built-in emoji lexicon cannot leak emoji identity into the features.",
+   "cite": "Section 4.6, leakage fixes",
+   "quote": "VADER is now scored on emoji-free clean text (avoiding contamination from VADER’s built-in emoji lexicon)",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "Emoji Sarcasm Dataset (ESD), Twitter partition (Subramanian et al., 2019)",
+   "how_to_get": "Public GitHub release for non-commercial research use: https://github.com/jsubram/Sarcasm-Detection-Using-Emoji"
+  },
+  {
+   "name": "Kralj Novak et al. (2015) emoji sentiment lexicon",
+   "how_to_get": "Install the MIT-licensed emosent-py package (per-emoji sentiment score and negative/neutral/positive probabilities): https://pypi.org/project/emosent-py/"
+  },
+  {
+   "name": "Ferre et al. (2025) Emoji-Dis, 13-emotion Likert ratings for 112 emojis",
+   "how_to_get": "OSF, CC-BY 4.0: https://osf.io/wv7ub/overview"
+  },
+  {
+   "name": "Czestochowska et al. (2022) Context-Free Ambiguity dataset (1,289 emojis)",
+   "how_to_get": "EPFL D-Lab GitHub, MIT: https://github.com/epfl-dlab/emoji-ambiguity (also mirrored at https://github.com/epfl-dlab/)"
+  },
+  {
+   "name": "EmojiNet sense inventory (Wijeratne et al., 2017)",
+   "how_to_get": "Kaggle, CC BY-NC-SA 4.0: https://www.kaggle.com/datasets/rtatman/emojinet"
+  },
+  {
+   "name": "all-MiniLM-L6-v2 sentence encoder",
+   "how_to_get": "sentence-transformers model card (Reimers and Gurevych, 2019); load with SentenceTransformer('all-MiniLM-L6-v2')"
+  },
+  {
+   "name": "vinai/bertweet-base and roberta-base checkpoints",
+   "how_to_get": "Hugging Face model hub (used frozen, [CLS] embeddings only)"
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/StableContextsMixedFeelings/",
+  "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji",
+  "https://github.com/epfl-dlab/emoji-ambiguity",
+  "https://github.com/carpedm20/emoji/",
+  "https://pypi.org/project/emosent-py/",
+  "https://osf.io/wv7ub/overview",
+  "https://www.kaggle.com/datasets/rtatman/emojinet"
+ ],
+ "stated_compute": "All experiments were run on a CPU. Taking a Ryzen 9 5900HS CPU as the baseline, regenerating every paper number through the code takes about three minutes and the leakage-free five-fold classifier evaluation takes about two hours.",
+ "paper_meta": {
+  "source": "2610.28337",
+  "kind": "arxiv",
+  "arxiv_id": "2610.28337",
+  "url": "https://arxiv.org/abs/2610.28337",
+  "title": "Beyond a Single Sentiment Score: Topical and Affective Dimensions of Emoji Meaning on Twitter",
+  "pages": 12
+ }
+}

@@ -1,0 +1,210 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The Gaussian-kernel bandwidth σ1 for real benchmarks is not specified numerically; Lymphoma says only that it was tuned.",
+  "options": [
+   "grid-search σ1 over a log grid maximizing NMI",
+   "median pairwise-distance heuristic",
+   "fix σ1=1 as in the synthetic experiment"
+  ],
+  "chosen": "grid-search σ1 over a log grid and select the value giving the reported NMI for reproduction",
+  "rationale": "The paper says the bandwidth was tuned but does not list the grid or selection rule.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The Kernel bandwidth σ1, ADMM convergence controlling variable ρ, fusion penalty γ, and σ2, all were chosen appropriately after proper tuning.",
+  "page": 11
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The number of nearest neighbours used to build w_ij for real datasets is not stated explicitly; Lymphoma says weights were chosen similarly to the synthetic dataset.",
+  "options": [
+   "6-nearest neighbours",
+   "10-nearest neighbours",
+   "all-pairs Gaussian weights"
+  ],
+  "chosen": "6-nearest neighbours, then symmetrized",
+  "rationale": "The synthetic experiment explicitly uses 6 nearest neighbours and Lymphoma says the weights were chosen similarly.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The weights were chosen similarly to what was done for the synthetic dataset.",
+  "page": 11
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The weight bandwidth σ2 for real datasets is not specified numerically.",
+  "options": [
+   "grid-search σ2 over a log grid",
+   "fix σ2=100 as in the synthetic experiment",
+   "set σ2 from median pairwise distance"
+  ],
+  "chosen": "grid-search σ2 over a log grid together with the other hyperparameters",
+  "rationale": "The paper includes σ2 among the tuned hyperparameters but does not give a grid.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "The Kernel bandwidth σ1, ADMM convergence controlling variable ρ, fusion penalty γ, and σ2, all were chosen appropriately after proper tuning.",
+  "page": 11
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Exact γ and ρ values for real benchmarks are not reported; only the synthetic values are listed.",
+  "options": [
+   "grid-search γ and ρ",
+   "fix γ=1 and ρ=0.001 as in the synthetic experiment",
+   "tune γ only and fix ρ"
+  ],
+  "chosen": "grid-search γ and ρ over log grids and select by NMI for reproduction",
+  "rationale": "The paper says ρ and γ were tuned but does not give their real-data values.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "ρ and γ were also chosen after proper tuning.",
+  "page": 10
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Cholesky inversion of K is assumed valid, but real kernels can be numerically singular.",
+  "options": [
+   "add small diagonal jitter to K",
+   "use a pseudo-inverse",
+   "use no jitter"
+  ],
+  "chosen": "add jitter of about 1e-6 on the diagonal before Cholesky",
+  "rationale": "The paper assumes K is non-singular almost surely, but numerical stability still needs a convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "We could invert Z, because almost surely the data to be clustered will come from a continuous distribution, making K non-singular.",
+  "page": 6
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "ADMM stopping criterion, tolerance, and maximum iterations are not specified.",
+  "options": [
+   "max 1000 iterations with primal/dual residual tolerance 1e-4",
+   "fixed 100 iterations",
+   "stop when relative objective change is below 1e-6"
+  ],
+  "chosen": "max 1000 iterations with primal/dual residual tolerance 1e-4",
+  "rationale": "Algorithm 1 only says 'while does not converge'; a concrete numerical rule is required.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "The required updates can be found in Algorithm 1.",
+  "page": 6
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Initial values of the Lagrange multipliers λ_ij are not given.",
+  "options": [
+   "initialize λ_ij=0",
+   "initialize λ_ij from small random values",
+   "initialize λ_ij=1"
+  ],
+  "chosen": "initialize λ_ij=0",
+  "rationale": "Zero initialization is standard for ADMM multipliers when no initialization is stated.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "Initialise βij = ei −ej and λij for all i < j such that wij > 0",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The elbow-selection algorithm is described qualitatively, not as a deterministic rule.",
+  "options": [
+   "Kneedle algorithm",
+   "maximum distance to the line joining endpoints",
+   "manual visual inspection"
+  ],
+  "chosen": "maximum-curvature/Kneedle-style elbow detection on SSE_k",
+  "rationale": "The paper defines the elbow verbally as the point where SSE_k changes become small.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "We identify the elbow point as the point after which the change in SSEk becomes small with respect to previous changes, thereafter.",
+  "page": 7
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Agglomerative linkage and distance metric on centroids are not specified.",
+  "options": [
+   "average linkage with Euclidean distance",
+   "complete linkage with Euclidean distance",
+   "Ward linkage"
+  ],
+  "chosen": "average linkage with Euclidean distance",
+  "rationale": "The paper only says agglomerative clustering on the centroids.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "first by applying agglomerative clustering on the centroids",
+  "page": 6
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The NMI normalization variant is not specified beyond citing Vinh et al. (2010).",
+  "options": [
+   "arithmetic normalization as sklearn default",
+   "geometric normalization",
+   "adjusted mutual information"
+  ],
+  "chosen": "arithmetic normalization (sklearn normalized_mutual_info_score default)",
+  "rationale": "The paper cites the Vinh et al. NMI paper but does not state which normalized variant was used.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "We use Normalized Mutual Information (NMI) (Vinh et al., 2010) to evaluate the quality of clustering.",
+  "page": 8
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The random seed for MNIST subset selection and any random initialization is not given.",
+  "options": [
+   "seed 42",
+   "seed 0",
+   "average over multiple random seeds"
+  ],
+  "chosen": "seed 42 for reproducibility",
+  "rationale": "The paper says images were randomly selected but does not report a seed.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "For MNIST, we randomly select 50 images from 10 classes and apply KCC on the overall 500 data points.",
+  "page": 12
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "After ADMM, centroids that have fused are not defined with an explicit numerical tolerance.",
+  "options": [
+   "deduplicate centroids with a 1e-6 tolerance",
+   "use all n centroids",
+   "cluster all a_i directly"
+  ],
+  "chosen": "deduplicate centroids with a 1e-6 tolerance before agglomerative clustering",
+  "rationale": "The method relies on fused centroids; a threshold is needed to decide when two centroids are equal.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "We construct the elbow plots and get the optimal number of clusters, K.",
+  "page": 12
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "No train/test split is used for the reported NMI values; labels are used only after clustering.",
+  "options": [
+   "evaluate on the full dataset",
+   "use a held-out split",
+   "use cross-validation"
+  ],
+  "chosen": "evaluate on the full dataset, matching the paper",
+  "rationale": "The paper reports NMI after clustering the supplied dataset and comparing with original labels.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "It comprises 96 instances and 4026 features, all of which are discrete.",
+  "page": 11
+ }
+]

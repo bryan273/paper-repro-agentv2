@@ -1,0 +1,157 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Exact R call used to generate the n-2 normal observations under set.seed(1863).",
+  "options": [
+   "stats::rnorm(n-2) then append 5 and 6",
+   "stats::rnorm(n) then overwrite last two values",
+   "separate rnorm call with explicit mean=0, sd=1"
+  ],
+  "chosen": "stats::rnorm(n-2) then append 5 and 6",
+  "rationale": "The paper says to generate the first n-2 observations as a standard-normal sample and designate the last two as contaminated.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "we generate the first n −2 observations as a random sample from the standard normal distribution",
+  "page": 13
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Quantile algorithm for Q1 and Q3 is not specified.",
+  "options": [
+   "R default type=7",
+   "type=1",
+   "type=2",
+   "type=8"
+  ],
+  "chosen": "R default type=7 (stats::quantile default)",
+  "rationale": "The paper uses R and set.seed; base R boxplot and quantile defaults are the natural implementation.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Let also Q1 and Q3 be the first and third quartiles of the data, respectively.",
+  "page": 4
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Exact Tukey baseline implementation.",
+  "options": [
+   "base R boxplot default",
+   "manual fences with k=1.5 and same quartiles",
+   "ggplot2 geom_boxplot"
+  ],
+  "chosen": "base R boxplot default with k=1.5",
+  "rationale": "Paper contrasts Tukey’s boxplot with k=1.5 and uses R set.seed; base R boxplot is the simplest faithful baseline.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Tukey (1977) further referred to the fences with k = 1.5 as the “inner fences”, and with k = 3 as the “outer fences”.",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether the reported count includes the two known contaminated points or only false positives.",
+  "options": [
+   "total suspected outliers including 5 and 6",
+   "false positives excluding 5 and 6"
+  ],
+  "chosen": "total suspected outliers including 5 and 6",
+  "rationale": "The target sentence says labels a total of 2, 2, 2 and 3 suspected outliers; it later separates false positives.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "it labels a total of 2, 2, 2 and 3 suspected outliers for the simulated data with 4 different sample sizes, respectively.",
+  "page": 14
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether observations exactly equal to a fence count as outliers.",
+  "options": [
+   "strictly outside: x < LF or x > UF",
+   "inclusive: x <= LF or x >= UF"
+  ],
+  "chosen": "strictly outside",
+  "rationale": "The paper describes observations smaller than LF or larger than UF, and beyond whiskers.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "if an observation X is either smaller than LFn or larger than UFn, then it will be labeled as an α-outlier in the boxplot.",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether n in the fence coefficient includes the two contaminated points.",
+  "options": [
+   "n=500 total sample size",
+   "n=498 uncontaminated count"
+  ],
+  "chosen": "n=500 total sample size",
+  "rationale": "The simulation is described by total sample size n, with the last two observations contaminated.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Then with n = 50, 500, 5000 and 50000, we plot the simulated data in Figure 2",
+  "page": 13
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "R normal RNG kind used after set.seed.",
+  "options": [
+   "default Inversion",
+   "Box-Muller",
+   "Ahrens-Dieter"
+  ],
+  "chosen": "R default normal kind (Inversion)",
+  "rationale": "Paper only states set.seed in R; default R behavior is the reproducible convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+  "page": 13
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "R version and sample.kind affecting reproducibility.",
+  "options": [
+   "R >= 3.6 defaults",
+   "R < 3.6 old sample.kind"
+  ],
+  "chosen": "R >= 3.6 default Mersenne-Twister/Inversion",
+  "rationale": "Modern R defaults are standard for reproducing set.seed examples unless stated otherwise.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+  "page": 13
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How to evaluate Φ^{-1}.",
+  "options": [
+   "stats::qnorm",
+   "hand-coded approximation"
+  ],
+  "chosen": "stats::qnorm",
+  "rationale": "The paper writes Φ^{-1}; R’s qnorm is the direct exact implementation.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "This leads to 1.35kn + 0.675 = Φ−1(1 −0.25/n), or equivalently, kn = Φ−1(1 −0.25/n)/1.35 −0.5.",
+  "page": 10
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether quartiles are computed on the full sample including appended contaminants.",
+  "options": [
+   "full sample including 5 and 6",
+   "remove 5 and 6 first"
+  ],
+  "chosen": "full sample including 5 and 6",
+  "rationale": "The boxplot method is applied to the simulated data as a whole; the toy example also computes Q1/Q3 from the full sorted sample.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we have Q1 = −0.854 and Q3 = 1.741, which are indeed the 3rd and 7th observations respectively.",
+  "page": 10
+ }
+]

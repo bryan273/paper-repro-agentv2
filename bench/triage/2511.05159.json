@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "NMI score of KCC on the Lymphoma dataset is 0.778 (Table 1, row Lymphoma, column KCC).",
+  "table_ref": "Table 1",
+  "dataset": "Lymphoma (96 instances, 4026 features, 9 classes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Shubhayan29/Kernel-Convex-Clustering/tree/main"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "KCC on 96 points requires only an n×n kernel matrix (n=96) and ADMM iterations; the paper reports no GPU need for this size, and the dataset is small and publicly available."
+ },
+ "blockers": [
+  "Hyperparameters (σ1, σ2, ρ, γ) are not fully specified in the paper; code may need tuning to match the reported NMI.",
+  "The exact preprocessing (standardization) and weight construction details are only partially described."
+ ],
+ "suitable": true,
+ "id": "2511.05159",
+ "title": "A New Framework for Convex Clustering in Kernel Spaces: Finite Sample Bounds, Consistency and Performance Insights",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

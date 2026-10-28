@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Theoretical running time bound O(ε^{-1-o(1)}) for computing an ACL ε-approximate Personalized PageRank vector (Theorem 1.2 / Table 1 'This work' entry), independent of α.",
+  "table_ref": "Table 1 (row 'This work'); Theorem 1.2",
+  "dataset": "none (purely theoretical complexity result; no empirical dataset)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The headline result is an asymptotic arithmetic-operation bound proven analytically; there is no experiment, dataset, or runnable artifact to reproduce, and the paper provides no code."
+ },
+ "blockers": [
+  "Target is a mathematical complexity theorem, not an empirical number; cannot be 'run'",
+  "No code, data, or configs released",
+  "Reproducing would require re-deriving the full recursive algorithm and its analysis (SDDM solver, recurrence, ACL guarantee proof)"
+ ],
+ "suitable": false,
+ "id": "2610.06959",
+ "title": "Nearly optimal Personalized PageRank computation",
+ "pages": 36,
+ "model": "DeepSeek-V4.1-Flash"
+}

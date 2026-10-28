@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "This is a pure theory paper: no repository, no code link, no public dataset, no weights, no configs. The only artifacts are Algorithm 1 (BCE), a 4-test hand trace on the 7-chip instance GGBBBGG, and an exhaustive-check proposal for n<=8. Everything must be written from scratch from the algorithm description and the two quoted claims; there is nothing released to run, patch, or port.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Algorithm 1 pseudo-code as executable code (BCE with candidate stack, retain/discard/backtrack, two-sided Test)",
+  "Table 1 verdict semantics (which (candidate, incoming) type pairs give consistent vs inconsistent verdicts)",
+  "Table 2 full trace rows (per-iteration candidate, stack contents, test outcome) needed to pin down exact tie-breaking and the backtrack-target rule",
+  "The paper's authors' implementation / any reference trace generator (none released)",
+  "Exhaustive checker for n=1..8 over strict-majority type strings and adaptive bad-chip verdict branches"
+ ],
+ "blockers_seen": [
+  "No code, no data, no supplement: the algorithm must be reconstructed from prose plus two quotes, so exact reproduce-or-not hinges on getting the retain/backtrack rule and Table 1 consistency semantics right",
+  "C1 depends on a deterministic trace whose 4-test count is sensitive to the backtrack target choice (most recently retained chip) and to when a retained chip is popped or kept",
+  "C2 is a theorem about arbitrary n; only n<=8 can be exhaustively checked, so an exhaustive win is evidence, not proof of the general bound"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "seconds: the GGBBBGG trace is 7 chips / 4 tests, and exhaustive verification for n=1..8 over all strict-majority strings with branching bad-chip verdicts is a few million small branch evaluations, well under a minute in pure Python on one core",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 8,
+  "gpu_speedup": null,
+  "basis": "Pure-Python simulation of a single O(n) pass: 7 chips and 4 tests for C1, plus exhaustive enumeration over all strict-majority G/B strings for n=1..8 (~10^2 strings per n, branch over allowed verdict pairs) for C2 — a laptop-class job of well under a minute of compute, dominated by writing and re-running the checker."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

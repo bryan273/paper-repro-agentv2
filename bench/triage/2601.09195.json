@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "ProFit (Qwen3-0.6B-Base) achieves 31.49% average accuracy across GPQA-Diamond, GSM8K, MATH-500, AIME'24, and IFEval, vs 28.51% for standard SFT",
+  "table_ref": "Table 1, row Qwen3-0.6B-Base, column Avg. (ProFit)",
+  "dataset": "BAAI-InfinityInstruct subset (2000 samples) for training; GPQA-Diamond, GSM8K, MATH-500, AIME'24, IFEval for evaluation"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Utaotao/ProFit"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 480,
+  "gpu_speedup": 10,
+  "basis": "Training a 0.6B LLM on 2000 samples with 8192-token sequences plus evaluating on 5 benchmarks with 8-32 samples each requires GPU acceleration; on CPU it would take many hours to days, and the paper uses 8 H20 GPUs."
+ },
+ "blockers": [
+  "Requires GPU for reasonable runtime (paper uses 8 H20 GPUs)",
+  "Evaluation pipeline uses lmdeploy/vllm which need GPU",
+  "Full training data curation (reward-based selection from InfinityInstruct) is not fully specified"
+ ],
+ "suitable": false,
+ "id": "2601.09195",
+ "title": "ProFit: Leveraging High-Value Signals in SFT via Probability-Guided Token Selection",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

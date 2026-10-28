@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "DK-GBMKKM achieves ACC = 0.6717 (average over 12 datasets) — or, cheapest single cell, its ACC on the smallest dataset (lung discrete, n=73) as shown in Fig. 2 / Appendix G",
+  "table_ref": "Table I (average ACC row for DK-GBMKKM); per-dataset ACC in Fig. 2",
+  "dataset": "lung discrete (73 samples, 325 features, 7 classes) — smallest of the 12 public datasets"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lianxiaoyu724/DK-GBMKKM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": 1.5,
+  "basis": "Paper is MATLAB-only (R2025b) with no stated Python port; an agent must reimplement GBCT ball generation in kernel space, the ball-level MKKM alternating optimization, and the 12-kernel construction, then run on a 73-sample dataset — cheap numerically but expensive in reimplementation/debugging and MATLAB-licence avoidance."
+ },
+ "blockers": [
+  "Reference implementation is MATLAB (R2025b), not Python; agent must reimplement the full GBCT + dynamic ball-update pipeline from the appendix",
+  "GBCT (ref [22]) splitting procedure is only cited, not fully specified in this paper",
+  "Headline Table I number requires all 12 datasets and 8 methods (7 baselines), far beyond one cell",
+  "Baseline implementations (SMKC, AASC, MKKM-SR, GB-MKKM) are separate MATLAB codebases"
+ ],
+ "suitable": true,
+ "id": "2609.00647",
+ "title": "DK-GBMKKM: Dynamic Kernel-Space Granular-Ball Multiple Kernel $k$-Means Clustering",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

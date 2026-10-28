@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ISER-S achieves an average AUC-ROC of 0.8805 on the glass dataset, the best score in that row among all 14 compared methods (iForest 0.8016, ISER-A 0.8730, ADERH 0.8643).",
+  "table_ref": "Table III, row 'glass', column 'ISER-S' (headline AUC-ROC comparison table)",
+  "dataset": "glass (214 samples, 7 features, 9 anomalies, 4.21% contamination; PyOD/ODDS benchmark)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/charles-cao/ISER"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "ISER is a purely CPU, distance-based isolation ensemble (O(t*psi^2) fit, O(n*psi*t) inference) with no neural training; the glass benchmark is 214x7, and even a full sweep over psi in {2,...,128} with t=200 and 5 repeats finishes in seconds after a pip install and a free ODDS/PyOD data download."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2510.13311",
+ "title": "Isolation-based Spherical Ensemble Representations for Tabular Anomaly Detection",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

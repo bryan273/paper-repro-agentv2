@@ -1,0 +1,191 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Whether the Diabetes dataset's Outcome column is part of the feature matrix.",
+  "options": [
+   "Use only the 8 feature columns",
+   "Include Outcome as a 9th feature"
+  ],
+  "chosen": "Use only the 8 listed features; Outcome excluded.",
+  "rationale": "Table I reports the 8 features; anomaly detection is unsupervised and Outcome is a label.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "First, for the Diabetes dataset [1] consider a scenario in which selected features are assigned greater sensitivity.",
+  "page": 7
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Feature scaling before training.",
+  "options": [
+   "Raw feature values",
+   "Standardize to zero mean/unit variance",
+   "Min-max scale"
+  ],
+  "chosen": "Raw feature values; no standardization.",
+  "rationale": "No preprocessing is stated, and A3/A5 diagonal values are described as feature sensitivities in original feature units.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "T-test variant (Student vs Welch), sidedness, and equal-variance assumption.",
+  "options": [
+   "two-sided Student t-test (equal_var=True)",
+   "two-sided Welch t-test (equal_var=False)",
+   "one-sided tests"
+  ],
+  "chosen": "two-sided Student t-test with equal variances (Python scipy.stats.ttest_ind default).",
+  "rationale": "The paper says only 't-test for independent samples'; the implementation is Python and does not mention Welch.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "We compare the mean values of the features of the anomalies identified by the EIF and AIF(A3) using a t-test for independent samples.",
+  "page": 7
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Random seeds and number of repeated runs for forests and p-values.",
+  "options": [
+   "fixed seed, single run",
+   "multiple seeds, average p-values",
+   "report median p-value"
+  ],
+  "chosen": "One fixed seed per model and a single run; no averaging.",
+  "rationale": "Table I gives one value per cell with no spread; authors do not report repetitions.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Exact size and tie handling for 'top 10%' anomaly sets.",
+  "options": [
+   "ceil(0.1*768)=77 highest scores",
+   "floor(0.1*768)=76 highest scores",
+   "score >= 90th percentile with ties included"
+  ],
+  "chosen": "Take the 77 highest anomaly scores (ceil), breaking ties by stable rank.",
+  "rationale": "768*0.1=76.8; no tie rule is given.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "For each model, we mark as anomalies the data points whose anomaly scores fall within the top 10% of all scores produced by that model.",
+  "page": 7
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Extension level used for the Diabetes EIF/AIF forests.",
+  "options": [
+   "fully extended d-1=7",
+   "default/original EIF extension level",
+   "0 (axis-aligned)"
+  ],
+  "chosen": "Fully extended (d-1=7).",
+  "rationale": "Section II-D discusses extension levels but the Diabetes experiment does not state one; full extension matches the arbitrary-orientation description.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "In the fully extended case (d −1 extensions), the hyperplanes may take arbitrary orientations in the d-dimensional feature space",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "How the random intercept point p is drawn.",
+  "options": [
+   "uniformly in the bounding box of current X",
+   "sample one existing point from X",
+   "uniform along each dimension independently"
+  ],
+  "chosen": "Uniformly in the bounding box of the current X, coordinate-wise.",
+  "rationale": "Algorithm 2 says 'within the range of X' but not whether from data or box; EIF convention uses uniform intercept.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Randomly select an intercept point p ∈Rdim{X} within the range of X.",
+  "page": 5
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Mapping of diagonal entries of A to dataset columns.",
+  "options": [
+   "Kaggle order Pregnancies, Glucose, ...",
+   "Table I order Age, DPF, Pregnancies, ..."
+  ],
+  "chosen": "Table I order: Age and DPF are coordinates 1 and 2.",
+  "rationale": "A3/A4/A5 put the manipulated entries first, and the text says those entries are Age and DPF.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "so that the features age and DPF are assigned greater sensitivity",
+  "page": 7
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Independence of EIF and AIF anomaly sets in the t-test when observations overlap.",
+  "options": [
+   "Treat groups as independent (paper's t-test)",
+   "Use paired test on overlapping observations",
+   "Exclude overlapping points"
+  ],
+  "chosen": "Treat groups as independent and ignore overlap.",
+  "rationale": "The paper explicitly says independent samples; no paired analysis is described.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "using a t-test for independent samples",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Handling zero values in Glucose, BloodPressure, SkinThickness, Insulin, BMI.",
+  "options": [
+   "Keep zeros as observed values",
+   "Treat as missing and impute/drop",
+   "Add missing indicators"
+  ],
+  "chosen": "Keep zeros as observed values.",
+  "rationale": "No missing-value handling is stated; Kaggle version contains zeros but paper reports no filtering.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "P-value rounding/inequality in Table I.",
+  "options": [
+   "Use printed value 0.01 as target",
+   "Try to reproduce exact unrounded p",
+   "Treat 0.01 as p<0.01"
+  ],
+  "chosen": "Match printed value to two decimals; treat 0.01 as the displayed rounded p-value.",
+  "rationale": "Table I prints two decimals; no exact unrounded p-values are given.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The resulting p-values are reported in the first column of Table I.",
+  "page": 7
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Whether EIF and AIF use identical random subsamples/intercepts for fair comparison.",
+  "options": [
+   "Common random numbers across models",
+   "Independent random draws per model"
+  ],
+  "chosen": "Common random seed for data subsampling where possible, independent normal-vector draws per model.",
+  "rationale": "Not stated; common subsamples reduce variance but AIF normal draws must differ.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ }
+]

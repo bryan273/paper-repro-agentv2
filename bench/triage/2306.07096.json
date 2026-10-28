@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Zero-shot image-to-text retrieval R@1 on Flickr30K for the GLSCL model (Ours (GLSCL)): 79.96",
+  "table_ref": "Table 2, row 'Ours (GLSCL)' under 'Evaluate pre-trained models directly', column 'IR@1'",
+  "dataset": "Flickr30K (zero-shot evaluation)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/SCL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 100000,
+  "gpu_speedup": 20,
+  "basis": "The target requires the full GLSCL pre-trained checkpoint, which was produced by 100k steps of image-text pre-training with batch size 4096 on 64 A100 GPUs (plus 10k steps of video pre-training); reproducing this on a single 8-core CPU laptop is infeasible, and even fine-tuning/evaluating the released checkpoint would need a GPU and large downloads."
+ },
+ "blockers": [
+  "Pre-training the model requires 64 NVIDIA A100 GPUs for 100k steps (batch size 4096), far beyond a laptop.",
+  "The target is a zero-shot result from the pre-trained checkpoint; without the released checkpoint, the full pre-training must be reproduced.",
+  "Even if a checkpoint is released, evaluation requires downloading large pre-trained encoders (CLIP-ViT, RoBERTa) and the Flickr30K dataset, and running a large fusion model on GPU.",
+  "No GPU available on the target laptop; the model cannot reasonably run on CPU within hours."
+ ],
+ "suitable": false,
+ "id": "2306.07096",
+ "title": "Global and Local Semantic Completion Learning for Vision-Language Pre-training",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

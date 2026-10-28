@@ -1,0 +1,120 @@
+{
+ "approach": "The target is the tiny C1 workflow: load otsfeatures::SyntheticData2, build the 55 cumulative-probability features, compute Euclidean distances, run PAM(k=4), and score ARI. R is not executable in this sandbox, so reproduce.py downloads the authors' CRAN source tarball, extracts the bundled SyntheticData2.rda and the R implementations of c_marginal_probabilities/c_joint_probabilities, and runs a narrow line-by-line Python port of only those functions. The port is checked against the R source formulas and the documented cbind/order/flattening conventions. It then computes ARI with sklearn and writes results/metrics.json; no training, tuning, or GPU is involved.",
+ "files": [
+  {
+   "path": "src/download_otsfeatures.py",
+   "purpose": "Download the latest otsfeatures source tarball from CRAN using requests, extract it with tarfile, and verify that data/SyntheticData2.rda and the R reference source files are present.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "src/otsfeatures_port.py",
+   "purpose": "Load SyntheticData2.rda with rdata, implement c_marginal_probabilities and c_joint_probabilities exactly as in the extracted R source, and build dataset_1 by concatenating the cumulative marginal and cumulative joint lag-1/lag-2 features.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/pam.py",
+   "purpose": "Implement deterministic PAM build-and-swap clustering on a precomputed dissimilarity matrix and return labels plus medoid indices.",
+   "requirement_ids": [
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Orchestrate download/extraction, data loading, feature construction, pairwise Euclidean distances, PAM(k=4), ARI computation, smoke mode, and writing results/metrics.json.",
+   "requirement_ids": [
+    "C1",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "data_source": "CRAN otsfeatures source tarball (paper Sec 3.1 / R1)",
+  "data_object": "SyntheticData2 (paper Sec 3.1 / R1)",
+  "states": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "states_note": "states=0:5 passed explicitly (paper Sec 4.1 / R11)",
+  "marginal_states": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "marginal_states_note": "i=0,...,n-1 cumulative marginal probabilities (paper Sec 2 / R3)",
+  "joint_states": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "joint_states_note": "i,j=0,...,n-1 cumulative joint probabilities (paper Sec 4.3.2 / R4)",
+  "lags": [
+   1,
+   2
+  ],
+  "lags_note": "L=2, first two lags only (paper Sec 4.3.2 / R4)",
+  "feature_concat": "marginal vector + column-major flattened lag-1 5x5 matrix + column-major flattened lag-2 5x5 matrix (paper Sec 4.3.2 / R5, assumption A4)",
+  "feature_count": 55,
+  "scaling": "none (assumption A3)",
+  "distance": "euclidean",
+  "distance_note": "R dist() default (assumption A2 / R6)",
+  "k": 4,
+  "k_note": "paper explicitly uses PAM(k=4) (paper Sec 4.3.2 / R7, assumption A8)",
+  "pam_algorithm": "build + swap, deterministic, no seed",
+  "pam_note": "paper does not set a seed before pam() (assumption A6, A7)",
+  "ari_metric": "Adjusted Rand Index via sklearn.metrics.adjusted_rand_score",
+  "ari_note": "paper uses ARI against SyntheticData2$classes (paper Sec 4.3.2 / R8, assumption A9)",
+  "evaluation_split": "all 80 series",
+  "evaluation_note": "no train/test split; cluster and evaluate on all 80 (paper Sec 4.3.2 / R9, assumption A10)",
+  "target_ari": 0.6545303,
+  "tolerance_abs": 0.02
+ },
+ "steps": [
+  "Install the only extra Python dependency with `python -m pip install rdata`; numpy, scipy, scikit-learn and requests are already available. Create `data/` and `results/`.",
+  "Run `src/download_otsfeatures.py`: fetch `https://cran.r-project.org/src/contrib/PACKAGES`, resolve the latest `otsfeatures_*.tar.gz`, download it with requests, extract with tarfile into `data/otsfeatures_src`, and assert that `data/SyntheticData2.rda`, `R/c_marginal_probabilities.R`, and `R/c_joint_probabilities.R` exist.",
+  "Inspect the extracted R source for `c_marginal_probabilities` and `c_joint_probabilities`; transcribe the exact estimation, state handling, lag handling, return shape, and flattening logic into `src/otsfeatures_port.py`, citing the source file lines in comments.",
+  "Load `SyntheticData2.rda` with `rdata.read_rda`; normalize the object to an 80-element list of 1-D integer series and an 80-element class vector. Fail fast if the expected `data`/`classes` structure is absent.",
+  "Validate R1 before feature construction: 80 series, each length T=600, values integer in 0..5, all six states represented overall, and class counts exactly 20 per true class.",
+  "Build `dataset_1`: for each series compute 5 cumulative marginal features over states 0..4, a 5x5 cumulative joint matrix for lag=1, and a 5x5 cumulative joint matrix for lag=2; flatten each joint matrix column-major and concatenate into one row of length 55.",
+  "Check `dataset_1` is shape (80,55), all finite, all values in [0,1], marginal features nondecreasing in state order, and joint cumulative matrices nondecreasing in both i and j.",
+  "Compute the pairwise Euclidean dissimilarity matrix with `scipy.spatial.distance.pdist(dataset_1, metric='euclidean')` followed by `squareform`; verify symmetry and a zero diagonal.",
+  "Run deterministic PAM with k=4 on the precomputed 80x80 distance matrix using `src/pam.py`; return the predicted labels and four medoid indices, and verify no empty cluster and cluster sizes sum to 80.",
+  "Compute ARI with `sklearn.metrics.adjusted_rand_score(true_classes, pam_labels)`, compare with target 0.6545303 using absolute tolerance 0.02, and write `results/metrics.json` with value, target, absolute error, pass flag, cluster sizes, feature shape, data checks, and config.",
+  "Before the final run, execute `python reproduce.py --smoke`; after it passes, execute `python reproduce.py` to produce the final `results/metrics.json`."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` loads only 8 series chosen two per true class (indices 0,1,20,21,40,41,60,61), builds the 8x55 feature matrix, computes 8x8 Euclidean distances, runs PAM with k=2, and asserts finite features, distance symmetry, valid labels, and a computable ARI. This exercises download/extraction, RData parsing, feature port, distance code, PAM, and metric code in seconds.",
+ "intermediate_checks": [
+  "CRAN tarball extraction contains data/SyntheticData2.rda and the reference R files for c_marginal_probabilities and c_joint_probabilities.",
+  "RData schema check: SyntheticData2 has data/classes; data length is 80; classes length is 80; no missing labels.",
+  "Dataset size check: every series has T=600; all values are integers in 0..5; all six states appear somewhere in the collection.",
+  "Class balance check: exactly four classes with counts [20,20,20,20].",
+  "Feature parameter count check: dataset_1 is 80x55, with blocks of sizes 5, 25 and 25 for marginal, joint lag-1, and joint lag-2 features.",
+  "Feature-value check: all features are finite and in [0,1]; cumulative marginal columns are nondecreasing in i; cumulative joint matrices are nondecreasing in i and j.",
+  "Manual port sanity check: recompute a few c_marginal and c_joint entries for one series with explicit loops and compare to the vectorized implementation.",
+  "Distance check: 80x80 matrix is symmetric, diagonal is zero, off-diagonal entries are positive.",
+  "Clustering sanity check: PAM returns four distinct medoids, no empty cluster, and cluster sizes summing to 80.",
+  "Metric sanity check: ARI lies in [-1,1], a random-label ARI is near 0, and the reported ARI must be within 0.02 of 0.6545303."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total about 15 CPU minutes: 5 minutes for pip setup plus CRAN tarball download/extraction, 3 minutes for RData loading and validating the feature port, 2 minutes for the smoke test, under 1 minute for the full 80-series PAM plus ARI, and the remaining time for intermediate checks and writing results/metrics.json. Compute is negligible; installation and download dominate."
+}

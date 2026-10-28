@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SilIF (α=1.0) achieves AUC-PR 0.1339 ± 0.014 on IEEE-CIS, vs plain Isolation Forest 0.1259 ± 0.010 (mean over 5 seeds)",
+  "table_ref": "Table II (also Table IV paired comparison)",
+  "dataset": "IEEE-CIS Fraud Detection (Kaggle)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/venkat15vk/silif-anomaly-detection"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "Paper claims ~60s/seed for SilIF on 1.85M rows on a laptop CPU; IEEE-CIS is 590K rows with 100 trees, so 5 seeds plus preprocessing and Kaggle download should fit in ~1-1.5h of command time, assuming the released code runs."
+ },
+ "blockers": [
+  "IEEE-CIS data requires a Kaggle account and accepting competition rules (not a plain free download)",
+  "Code repo may be incomplete or not match the paper's exact preprocessing/feature set (C1, C2, C13, C14, card1 filtering to >=5 transactions)",
+  "Exact AUC-PR numbers depend on undocumented details (random seeds, sklearn version, MiniBatchKMeans settings)"
+ ],
+ "suitable": true,
+ "id": "2605.26135",
+ "title": "SilIF: Silhouette-Augmented Isolation Forest for Unsupervised Transaction Fraud Detection",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

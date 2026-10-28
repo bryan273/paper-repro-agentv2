@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ICS with S1='cov', S2='tcovAxis', algorithm='standard' on the RANDU dataset reveals the hyperplane structure on the last invariant component (Figure 1a), unlike PCA.",
+  "table_ref": "Figure 1(a)",
+  "dataset": "RANDU (synthetic, generated via generate_randu)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/cbecquart/ICSpyLab"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Synthetic RANDU data generated in-package; ICS on a small 3D dataset with NumPy/Numba runs in seconds on CPU; only pip install and a short script needed."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.24521",
+ "title": "ICSpyLab: A Python package for invariant coordinate selection",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "VoICE (unweighted) achieves 100.0% validity on the Iris dataset, compared to 72.6% for CFCLUST, with repair cost 0.000.",
+  "table_ref": "Table 3, row Iris, column 'VoICE Val (%)'",
+  "dataset": "Iris"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/rickfawley/VoICE"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Iris is tiny (150x4); the target requires only k-means clustering and projection onto Voronoi cells, which is fast on CPU; the main cost is installing dependencies and running 50 k-means iterations with 50 factual-target pairs each (15,000 comparisons), but each projection is a small QP solvable in milliseconds."
+ },
+ "blockers": [
+  "The linked repository may not contain the exact experimental scripts or configuration to reproduce Table 3; code is likely a partial implementation of the method."
+ ],
+ "suitable": true,
+ "id": "2607.14719",
+ "title": "Counterfactuals for Feature-Weighted Clustering",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

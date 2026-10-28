@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "CGDT-CESN average NRMSE (xi) on the solar wind dataset, compared against ESN and CG-CESN baselines",
+  "table_ref": "Table (solar wind results, page ~19-20, partially omitted)",
+  "dataset": "Solar wind measurements (NOAA SWPC real-time solar wind, ref [26])"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "Reservoir size 200 (4x50), ridge regressions and 5-10 coordinate-descent epochs over a small solar-wind series are trivial on CPU, but no code is released so the full CGDT-CESN pipeline (correlation wiring, state reconstruction, inter-cluster regression) must be re-implemented from the paper's equations, and the exact solar-wind preprocessing/split is unspecified."
+ },
+ "blockers": [
+  "No code or configs released; entire algorithm must be re-implemented from equations",
+  "Solar wind data source is a real-time feed (SWPC) with no fixed snapshot, so exact preprocessing/split is ambiguous",
+  "Table values are partially omitted in the provided text, making exact target cell uncertain"
+ ],
+ "suitable": true,
+ "id": "2610.22430",
+ "title": "CGDT-CESN: Correlation-Guided and Dynamics-Trained Clustered Echo State Network for Multivariate Time-Series Prediction",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

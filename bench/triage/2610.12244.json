@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "RIFT (proposed) ROC AUC = 0.999 on the Blob synthetic dataset (Table 1)",
+  "table_ref": "Table 1",
+  "dataset": "Synthetic 'Blobs' dataset (two perpendicular Gaussian blobs with anomalies around two points, Figure 3)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Synthetic 2D data must be regenerated from the figure description; RIFT-exact needs a full Euclidean MST (O(n^2) edges) plus BFS from every point, trivial for a few thousand 2D points on CPU; no code released so the algorithm must be reimplemented from Algorithm 1."
+ },
+ "blockers": [
+  "No code or data links in the paper; synthetic dataset generation parameters (sample counts, blob centers, anomaly placement) are not specified, so exact AUC 0.999 is not guaranteed to be recovered",
+  "Exact MST construction is O(n^2) memory/time, limiting dataset size"
+ ],
+ "suitable": true,
+ "id": "2610.12244",
+ "title": "RIFT: Relative Isolation From Trees For Anomaly Detection",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

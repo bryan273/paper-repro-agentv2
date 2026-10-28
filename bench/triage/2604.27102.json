@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Consensus anomaly detection yields 6 consensus anomalies (7.7% of 78 samples), all at Site S3, with Isolation Forest and PCA reconstruction error each flagging 12 samples (15.4%) and DBSCAN flagging none",
+  "table_ref": "Fig. IV.4 anomaly count matrix / Section IV-B text",
+  "dataset": "Soil heavy metal concentrations (As, Cd, Cr, Cu, Hg, Ni, Pb, Zn) for 78 samples from 12 waste sites + residential controls, Central Region, Ghana"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The pipeline is scikit-learn IsolationForest/DBSCAN/PCA on a 78x8 table; the only real cost is re-entering the raw data, which is not published."
+ },
+ "blockers": [
+  "Raw per-sample heavy metal concentrations (78 samples x 8 metals) are not provided in the paper or any linked repository; only summary statistics (Table I) and figures are given",
+  "No code or data links in the PDF",
+  "HI/ILCR validation requires per-sample exposure parameters not tabulated"
+ ],
+ "suitable": false,
+ "id": "2604.27102",
+ "title": "Anomaly Detection in Soil Heavy Metal Contamination Using Unsupervised Learning for Environmental Risk Assessment",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

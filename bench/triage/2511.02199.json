@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "DOD1 achieves TPR = 1.000 on the ID structure with (s_mu, s_sigma) = (0.5, 1.0) in the n_out=3 simulation",
+  "table_ref": "Table 1, row DOD1, column TPR under ID for (0.5,1.0)",
+  "dataset": "Synthetic simulation (n=30, p=500, n_out=3, identity covariance), 1000 replicates"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement DOD statistic, k-means clustering procedure, and run 1000 replicates of n=30, p=500 data (trivial per-replicate cost, but reimplementation and debugging dominate)."
+ },
+ "blockers": [
+  "No code released; all algorithms (DOD/DOG statistics, Algorithms 1-3) must be reimplemented from text",
+  "Exact reproduction of 1000-replicate averages requires matching RNG/seeds and k-means details not specified"
+ ],
+ "suitable": true,
+ "id": "2511.02199",
+ "title": "DOD: Detection of outliers in high dimensional data with distance of distances",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

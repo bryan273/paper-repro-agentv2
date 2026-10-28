@@ -1,0 +1,216 @@
+{
+ "approach": "Reimplement PIWR for the SIDR benchmark directly from the equations: generate the true trajectory with LSODA at 1e-10 tolerances, and for C1 use the 100-point DINN `sidr.csv` 1% benchmark when available (falling back to a fixed-seed regeneration from Appendix A.1) so the single noise realisation is not invented. For each compartment and each library column, evaluate A(x,t) on the sample grid, interpolate with a not-a-knot cubic spline, integrate the spline exactly to every sample time, and assemble the augmented linear system with x0 as four extra unknowns. Solve the column-normalised system with `numpy.linalg.lstsq` (never forming normal equations), unscale, extract theta=(alpha,beta,gamma), and compute |alpha_hat-0.191|/0.191*100. Add noiseless, stability-over-realizations, and timing checks, then write all numbers to `results/metrics.json`.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Single source of truth for SIDR parameters, time grid, noise level, solver tolerances, quadrature/scaling/least-squares settings, seeds, target value and tolerance.",
+   "requirement_ids": [
+    "R7",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker so `src` modules can be imported by `reproduce.py`.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/sidr.py",
+   "purpose": "SIDR vector field, LSODA simulation, compartment-wise 1% noise injection, and loader for the DINN `sidr.csv` 100-point benchmark.",
+   "requirement_ids": [
+    "R1",
+    "R7",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "src/piwr.py",
+   "purpose": "Cubic-spline quadrature matrix J, augmented M=[I_x0 | J] construction, unit-column-norm scaling, SVD/QR least-squares solve, and physical parameter extraction.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R12",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/evaluate.py",
+   "purpose": "Compute alpha percent error, noiseless sanity check, 1000-realisation stability summary, and 30-repeat timing summary.",
+   "requirement_ids": [
+    "R12",
+    "R14"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "CLI entrypoint that loads the C1 benchmark data, performs the PIWR fit, runs smoke/noiseless/stability/timing checks as configured, and writes `results/metrics.json`.",
+   "requirement_ids": [
+    "R13",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "population_N": {
+   "value": 59000000,
+   "source": "R13/A7"
+  },
+  "state_order": {
+   "value": [
+    "S",
+    "I",
+    "D",
+    "R"
+   ],
+   "source": "R13"
+  },
+  "initial_state_true": {
+   "value": {
+    "S0": "N-1",
+    "I0": 1,
+    "D0": 0,
+    "R0": 0
+   },
+   "source": "R13"
+  },
+  "true_parameters": {
+   "value": {
+    "alpha": 0.191,
+    "beta": 0.05,
+    "gamma": 0.0294
+   },
+   "source": "R13"
+  },
+  "time_grid": {
+   "value": "np.linspace(0, 500, 100), endpoints included",
+   "source": "R13/A6"
+  },
+  "noise_epsilon": {
+   "value": 0.01,
+   "source": "C1/R7"
+  },
+  "noise_model": {
+   "value": "x~_c(t_i)=x_c(t_i)+epsilon*max_t|x_c(t)|*xi_i, xi_i~N(0,1) independent per compartment and time",
+   "source": "R7/A18"
+  },
+  "solver": {
+   "value": "scipy.integrate.solve_ivp(method='LSODA', rtol=1e-10, atol=1e-10, t_eval=t)",
+   "source": "R15/A5"
+  },
+  "sidr_equations": {
+   "value": [
+    "dS/dt=-alpha*S*I/N",
+    "dI/dt=alpha*S*I/N-beta*I-gamma*I",
+    "dD/dt=beta*I",
+    "dR/dt=gamma*I"
+   ],
+   "source": "SIDR convention consistent with R13; alpha is invariant to a consistent beta/gamma swap with D/R columns"
+  },
+  "quadrature": {
+   "value": "CubicSpline(t, A_col_values, bc_type='not-a-knot'); exact antiderivative evaluated at t_j minus t_0",
+   "source": "R3/A16"
+  },
+  "include_endpoints": {
+   "value": true,
+   "source": "A16"
+  },
+  "joint_initial_state": {
+   "value": "unconstrained x0 augmented as n extra unknowns with identity block",
+   "source": "R4/A4"
+  },
+  "parameter_map": {
+   "value": "h(theta)=theta for theta=(alpha,beta,gamma)",
+   "source": "R1/R12"
+  },
+  "column_scaling": {
+   "value": "unit column norm before solve; unscale coefficients after",
+   "source": "R6"
+  },
+  "row_scaling": {
+   "value": "D_n=I (no compartment-max row scaling)",
+   "source": "A2"
+  },
+  "least_squares": {
+   "value": "numpy.linalg.lstsq(default rcond), float64, no normal equations",
+   "source": "R5/A9/A14"
+  },
+  "smoothing": {
+   "value": "none; library evaluated at noisy samples",
+   "source": "A8"
+  },
+  "bounds": {
+   "value": "none; unconstrained least squares",
+   "source": "A17"
+  },
+  "c1_data_primary": {
+   "value": "Diseases/COVID/sidr.csv 100-point DINN SIDR benchmark if present and verified to be the 1% noise file",
+   "source": "route/R13"
+  },
+  "c1_data_fallback": {
+   "value": "regenerate from Appendix A.1 with fixed seed 0",
+   "source": "A1/R13"
+  },
+  "c1_point_estimate_seed": {
+   "value": 0,
+   "source": "A1 (only used for fallback/stability, not if benchmark CSV is used)"
+  },
+  "stability_realizations": {
+   "value": 1000,
+   "source": "A1"
+  },
+  "timing_repeats": {
+   "value": 30,
+   "source": "C5"
+  },
+  "error_metric": {
+   "value": "100*abs(alpha_hat-alpha_true)/alpha_true",
+   "source": "R14/A3"
+  },
+  "target_value_pct": {
+   "value": 0.124,
+   "source": "C1"
+  },
+  "tolerance": {
+   "value": "relative 0.1 => [0.1116, 0.1364] pct",
+   "source": "tolerance"
+  },
+  "output_path": {
+   "value": "results/metrics.json",
+   "source": "schema"
+  }
+ },
+ "steps": [
+  "Create `config.py` with the exact SIDR parameters, time grid, noise level, LSODA tolerances, spline/quadrature settings, column scaling, lstsq settings, target and tolerance; do not install DINN requirements or run DINN notebooks.",
+  "Implement `src/sidr.py`: SIDR RHS with state order [S,I,D,R], LSODA simulation at rtol=atol=1e-10, compartment-wise Gaussian noise per R7, and a flexible CSV loader for the DINN `sidr.csv` benchmark.",
+  "Load `Diseases/COVID/sidr.csv` if present; inspect header/columns and confirm there are 100 rows with time plus S,I,D,R. Compare it with a noiseless LSODA trajectory to verify it is the 1% noise file. If it is missing or not the 1% file, use `Experiments/noise/sidr_100_pts.csv`; if no candidate CSV exists, regenerate with seed 0.",
+  "Implement `src/piwr.py`: for each state c and each library column k, evaluate A_{c,k}(x_noisy(t_i),t_i) on the sample grid, build a not-a-knot CubicSpline, integrate exactly from t_0 to every t_j via the spline antiderivative, and store J[c][j,k].",
+  "Build the augmented system M and RHS y: for each state c and time j, set M[row,c]=1 for x0_c and M[row,n_states+k]=J[c][j,k] for theta_k; set y[row]=x_noisy[j,c]. Include all m samples and ensure J[:,0]=0 at j=0.",
+  "Column-scale M to unit column norms, solve with `numpy.linalg.lstsq(M_scaled,y,rcond=None)` in float64, unscale coefficients by dividing by the column norms, and extract x0_hat and theta_hat=(alpha_hat,beta_hat,gamma_hat).",
+  "Run the noiseless sanity fit on the true trajectory: verify alpha_hat is within about 1e-4% of 0.191 and x0_hat matches the true initial state; if not, debug the SIDR library, spline integration, or state/column mapping before touching the 1% data.",
+  "Run the C1 fit on the verified 1% benchmark CSV: compute alpha_hat and `100*abs(alpha_hat-0.191)/0.191`; record whether it lies in [0.1116,0.1364].",
+  "Run the stability sweep: regenerate 1000 independent 1% noise realisations with fixed seeds, fit each with PIWR, and store median, mean, IQR and 5–95% range of the alpha percent error.",
+  "Run the timing check: repeat the PIWR fit 30 times on the C1 data set and record median CPU milliseconds per fit.",
+  "Write `results/metrics.json` with the C1 headline fields (alpha_true, alpha_hat, alpha_rel_error_pct, target_pct, within_tolerance), data source, matrix shape/rank/condition number, x0_hat, beta_hat, gamma_hat, noiseless check, stability summary, timing summary, and the exact config used.",
+  "Validate the JSON by re-reading it and printing a summary; verify the headline error is compared against the relative tolerance band and that the noiseless, stability and timing diagnostics are present."
+ ],
+ "smoke_test": "Implement a `--smoke` mode in `reproduce.py` that loads/simulates the SIDR benchmark once, builds M, asserts M.shape==(400,7), asserts J_0==0, checks rank(M_scaled)==7, and runs two fits: (i) noiseless true states, expected alpha error below 1e-4%, and (ii) one noisy 1% realisation, expected alpha error in the 0.05–1% range. This proves the spline quadrature, augmented least squares, scaling, and alpha extraction without the 1000-realisation sweep.",
+ "intermediate_checks": [
+  "Dataset size: t has shape (100,), X_noisy has shape (100,4), all finite; time runs from 0 to 500 inclusive with `np.linspace(0,500,100)`.",
+  "True trajectory sanity: S decreases from N-1, I starts at 1 and peaks, D and R are nonnegative and nondecreasing; max absolute value per compartment is nonzero so the R7 noise scale is well defined.",
+  "Noise sanity on the benchmark CSV: if using `sidr.csv`, compare it with the noiseless trajectory and verify residuals are approximately N(0, (0.01*max|x_c|)^2); if not, select the correct 100-point 1% noise CSV before fitting.",
+  "Matrix sanity: M has shape (4*100,4+3)=(400,7); J at t_0 is exactly zero for every column; after unit-column scaling no column has zero norm; rank is 7 and the scaled condition number is reported.",
+  "Noiseless baseline: a PIWR fit to the true states recovers alpha to near machine/quadrature accuracy (target <1e-4% relative error) and gives x0 close to [N-1,1,0,0]; failure here means an equation/library/quadrature bug, not a noise issue.",
+  "Single noisy fit sanity: alpha_hat is positive and within a few percent of 0.191; the reported C1 error should be near the paper's 0.124%, not orders of magnitude larger.",
+  "Timing sanity: 30 repeated fits on the 100-point SIDR problem should be milliseconds or less on CPU; if a fit takes seconds, the implementation is rebuilding splines or solving the wrong problem."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 10 minutes of command time: 2 min creating `config.py`, `src/sidr.py`, `src/piwr.py`, `src/evaluate.py`, and `reproduce.py`; 2 min on smoke/noiseless validation and fixing any shape or quadrature bug; 3 min on the C1 fit plus the 1000-realisation stability sweep (each fit is sub-millisecond to millisecond, so the sweep is dominated by data generation and Python overhead); 1 min for the 30-repeat timing check; 2 min for writing, re-reading, and validating `results/metrics.json`."
+}

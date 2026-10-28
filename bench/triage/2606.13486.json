@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Mean F1 = 0.666 on the room-occupancy dataset (single table cell, smallest/cheapest dataset in Table II)",
+  "table_ref": "Table II",
+  "dataset": "room-occupancy (mTSBench)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/smitswil/craftiif",
+  "https://github.com/smitswil/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "Paper reports room-occupancy runs in ~157 s on a 32-core CPU node; on 8 cores plus install, mTSBench data download, and reproducing the full pipeline (K=500 draws, 5 IFs) for one dataset, ~1-1.5 h of command time is realistic, but the repo must be checked for completeness and the mTSBench data loader must be wired up."
+ },
+ "blockers": [
+  "Repo may be incomplete/outdated (only a GitHub link, no configs verified)",
+  "mTSBench data must be fetched and matched to the paper's preprocessing (auto windowing, augmentation)",
+  "Exact F1 depends on majority-vote aggregation and adaptive threshold details that may not be fully specified"
+ ],
+ "suitable": true,
+ "id": "2606.13486",
+ "title": "CRAFTIIF: Cross-Resolution Analytic Four-Type Interpretable Isolation Forest for Multivariate Time Series Anomaly Detection",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

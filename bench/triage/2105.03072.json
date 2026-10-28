@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SRCC of the LPIPS-VGG baseline on the PIPAL test set (0.5947)",
+  "table_ref": "Table 1, Baselines row 'LPIPS-VGG', column 'PIPAL SRCC'",
+  "dataset": "PIPAL (test split)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 5,
+  "basis": "No code or data links are given; the PIPAL test split (25 reference images x 66 GAN-distorted images) is not publicly downloadable, and the LPIPS-VGG baseline would have to be re-implemented and evaluated on that hidden split."
+ },
+ "blockers": [
+  "No code or data links in the paper",
+  "PIPAL test split is not publicly available (only the 200-reference training split is public)",
+  "Baseline LPIPS-VGG implementation would need to be re-created from scratch"
+ ],
+ "suitable": false,
+ "id": "2105.03072",
+ "title": "NTIRE 2021 Challenge on Perceptual Image Quality Assessment",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

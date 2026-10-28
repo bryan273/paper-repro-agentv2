@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "SPINEX achieves a top rank (e.g., 1st) on synthetic datasets in terms of AUC-ROC, as reported in the ranking table.",
+  "table_ref": "Table 2 (or similar ranking table for synthetic datasets)",
+  "dataset": "Synthetic datasets (e.g., the first synthetic dataset with 3 features and 100 points)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The algorithm is simple and CPU-friendly, but the code is not released and the synthetic data generation process is not fully specified, requiring reimplementation and guessing of data parameters."
+ },
+ "blockers": [
+  "No code or data links provided; code is 'to be added' and data available only upon request.",
+  "Synthetic dataset generation details are not fully specified, making exact reproduction of the ranking impossible."
+ ],
+ "suitable": false,
+ "id": "2407.04760",
+ "title": "SPINEX: Similarity-based Predictions with Explainable Neighbors Exploration for Anomaly and Outlier Detection",
+ "pages": 60,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Reconstruction PSNR of a GAN inversion method on a small dataset (e.g., 64x64 images) as reported in a comparison table.",
+  "table_ref": "Table 1 (properties) or a quantitative comparison table in the omitted middle section",
+  "dataset": "CelebA or LSUN (64x64)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/weihaox/awesome-gan-inversion"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 10,
+  "basis": "The survey does not provide code or a specific quantitative table; reproducing a number would require implementing a method from scratch, training or using a pretrained GAN, and running inversion, which is a multi-hour GPU task."
+ },
+ "blockers": [
+  "No code or data provided by the survey",
+  "Requires implementing a GAN inversion method from scratch",
+  "Needs a pretrained GAN generator (e.g., StyleGAN) and dataset",
+  "Optimization-based inversion is computationally expensive"
+ ],
+ "suitable": false,
+ "id": "2101.05278",
+ "title": "GAN Inversion: A Survey",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

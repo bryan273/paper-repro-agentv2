@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "Opus 4.8 Loop (ours) VUS-PR = 53.86 on TSB-AD univariate families (dataset-mean), beating FFT detector 35.00, Spectral Residual 34.75, C22MP 32.01, catch22+Mahalanobis 28.36",
+  "table_ref": "Table 3",
+  "dataset": "TSB-AD univariate families (11 families, Time-RCD 16-family protocol)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/TS-AD_submission-7E42/README.md",
+  "https://github.com/karpathy/autoresearch"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 20,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Detector is a short NumPy program (Appendix C) run on one CPU core, but reproducing the dataset-mean requires downloading the full TSB-AD univariate suite (11 families, thousands of series), reimplementing the Time-RCD protocol metrics (Aff-F, F1-T, Std-F1, VUS-PR) and the four baseline wrappers, then scoring every series; the detector itself is milliseconds per series."
+ },
+ "blockers": [
+  "TSB-AD data must be fetched and assembled across 11 families",
+  "Time-RCD 16-family protocol/metric code (affiliation F, VUS-PR) must be reimplemented or ported",
+  "baseline wrappers (FFT, Spectral Residual, C22MP, catch22+Mahalanobis) must be rebuilt to fill the comparison row",
+  "anonymized repo may not include the full harness/configs"
+ ],
+ "suitable": true,
+ "id": "2610.01223",
+ "title": "Have an LLM Write Your Anomaly Detector: Autonomous Discovery of Compact, Interpretable Detectors for Time Series",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

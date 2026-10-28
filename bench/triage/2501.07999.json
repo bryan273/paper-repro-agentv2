@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "Isolation Forest with TSFRESH features (FE) achieves a better mean rank than raw time-series (TS) on the SVDB dataset at window size W=32 (mean ranks 1.118 vs 1.882, p=1.522e-12)",
+  "table_ref": "Table III, SVDB row, W=32, Isolation Forest columns",
+  "dataset": "SVDB (MIT-BIH Supraventricular Arrhythmia Database), 76 series"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TheDatumOrg/TSB-UAD",
+  "https://github.com/numenta/NAB/tree/master/data",
+  "https://github.com/robjhyndman/tsfeatures"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "SVDB has 76 series of ~230k points; sliding windows of 32 with step 1 give ~230k windows per series, and TSFRESH 'Efficient' (777 features) must be computed on each window, which is the dominant cost and is CPU-bound (tsfresh parallelizes over cores); the paper's own code is anonymized/not linked, so the pipeline must be re-implemented from the text."
+ },
+ "blockers": [
+  "Paper's code link [34] is anonymized for double-blind review, so no runnable pipeline is provided",
+  "Exact retained series IDs and preprocessing details are only in the missing supplementary material",
+  "TSFRESH on ~230k windows per series for 76 series is heavy CPU work; full protocol (4 window sizes, 2 detectors) would take much longer than a few hours"
+ ],
+ "suitable": true,
+ "id": "2501.07999",
+ "title": "Unsupervised Feature Construction for Anomaly Detection in Time Series -- An Evaluation",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

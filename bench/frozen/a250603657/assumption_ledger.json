@@ -1,0 +1,225 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The community size parameter Π is not stated for the n=200, K=2 synthetic single-run experiment.",
+  "options": [
+   "balanced communities π=(0.5,0.5)",
+   "Dirichlet(1) random sizes",
+   "equal-size communities exactly 100/100"
+  ],
+  "chosen": "balanced communities π=(0.5,0.5)",
+  "rationale": "Balanced communities are the simplest reproducible convention when the paper fixes n and K but omits Π; this affects the sampled graph and error level.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "We consider a graph with n = 200 nodes, K = 2 communities, and connectivity parameters Γ11 = Γ22 = 0.65 and Γ12 = 0.35.",
+  "page": 6
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The random seed used to sample the synthetic SBM graph is not stated; only the S.A. seed is given.",
+  "options": [
+   "fix graph seed to 12345 as well",
+   "use a separate arbitrary fixed seed",
+   "average over multiple graph seeds"
+  ],
+  "chosen": "fix graph seed to 12345 for the reproduction, while noting it may not equal the authors' graph seed",
+  "rationale": "No graph seed is reported, so reusing the only stated seed gives a deterministic, documented choice.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "All S.A. experiments were run with seed=12345, cooling rate=0.99, n iters outer=1000",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The exact Beta(α,β) parameters for outlier corruption are not specified, only that E[Γ~ik]=Γ_z(i)k and variance is maximal on [0,1].",
+  "options": [
+   "Beta(pε,(1−p)ε) with very small ε to approach maximal variance",
+   "Moment-match a finite variance formula",
+   "Use Bernoulli(p) as a limiting two-point distribution"
+  ],
+  "chosen": "Beta(α=pε, β=(1−p)ε) with ε=1e-3, where p=Γ_z(i)k",
+  "rationale": "This keeps the requested mean p and drives the variance close to p(1−p), the supremum under the [0,1] constraint, while remaining a proper Beta.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Here, α and β are chosen so that E[ ̃Γik] = Γz(i)k and that the variance is the greatest possible (with the constraint that  ̃Γik ∈[0, 1]).",
+  "page": 6
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper says the initial subgraph is a randomly selected connected subgraph but does not specify the sampling distribution or algorithm.",
+  "options": [
+   "BFS growth from a uniformly random seed, adding uniformly random boundary nodes",
+   "draw a random node subset and take its largest connected component",
+   "uniform MCMC over connected subgraphs"
+  ],
+  "chosen": "BFS growth from a uniformly random seed, adding uniformly random boundary nodes until |S|=(1−γ)n",
+  "rationale": "This is simple, always connected, and gives a well-defined reproducible initial state.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "The algorithm begins with a randomly selected connected subgraph Scurrent ∈S and initial temperature T0.",
+  "page": 4
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The proposal distribution over valid swaps in the neighborhood N(S) is not specified.",
+  "options": [
+   "uniformly choose a boundary edge (u∈S,v∉S) and swap",
+   "uniformly choose an inside node, then a uniform outside neighbor",
+   "uniformly choose an outside node adjacent to S, then a uniform inside neighbor"
+  ],
+  "chosen": "uniformly choose a boundary edge (u∈S,v∉S) and swap u with v",
+  "rationale": "Uniform boundary-edge sampling is the natural symmetric proposal over the stated neighborhood.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "by swapping a node within S with an adjacent node outside of it.",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The K-means initialization, number of restarts, and eigenvector solver inside spectral clustering are not specified.",
+  "options": [
+   "scikit-learn defaults",
+   "k-means++ with 10 restarts and fixed seed",
+   "single random initialization"
+  ],
+  "chosen": "k-means++ with n_init=10 and fixed random_state=0; use the K smallest non-zero normalized-Laplacian eigenvectors as specified",
+  "rationale": "The paper defines the spectral embedding but not the K-means details; k-means++ with restarts is standard and stable.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "all clustering is performed using spectral clustering with this given K.",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The paper gives the normalized Laplacian formula but not handling of zero-degree nodes or numerical eigensolver details.",
+  "options": [
+   "use the formula exactly with L_ii=0 when deg(i)=0",
+   "add self-loops to avoid zero degrees",
+   "drop zero-degree nodes before clustering"
+  ],
+  "chosen": "use the paper's formula exactly, setting L_ii=1 only when i=j and deg(i)≠0, and otherwise follow the stated cases",
+  "rationale": "This is the paper's explicit definition and avoids introducing unstated graph modifications.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the symmetric normalized Laplacian matrix associated to it is defined as",
+  "page": 3
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The adaptive initial-temperature rule says acceptance rate should be 'close to one' but does not give a threshold, chain length exactly, or a cap.",
+  "options": [
+   "acceptance rate ≥0.90, chain length 100, cap 50 doublings",
+   "acceptance rate ≥0.95, chain length 100, cap 50 doublings",
+   "acceptance rate ≥0.99, chain length 1000"
+  ],
+  "chosen": "chain length 100, acceptance-rate threshold 0.90, multiply T0 by 1.5, cap at 50 doublings",
+  "rationale": "The paper's example length is 100 and 'close to one' is operationalized as a high but attainable 0.90.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "T0 is multiplied by 1.5 until the rate of acceptance of neighboring states is close to one",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The stopping rule's 'maximal absolute variation of the cost over t_tol chains' is not defined precisely.",
+  "options": [
+   "range (max−min) of best costs over the last 25 chains < 1e−4",
+   "max absolute consecutive change in best cost over the last 25 chains < 1e−4",
+   "range of current costs over the last 25 chains < 1e−4"
+  ],
+  "chosen": "range (max−min) of S_best costs over the last t_tol=25 chains < 1e−4",
+  "rationale": "This matches the phrase 'maximal absolute variation' most directly while using the reported t_tol and ε.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "stopping condition of n iters tolerance=25 iterations with absolute cost variation below tolerance=10−4.",
+  "page": 6
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "It is not explicitly stated whether the final Γhat is computed from spectral-clustering labels on S_best or from another labeling.",
+  "options": [
+   "spectral clustering on S_best, then plug-in density estimate",
+   "true labels on S_best",
+   "labels from the last accepted state"
+  ],
+  "chosen": "spectral clustering on S_best, then plug-in density estimate",
+  "rationale": "The paper says clustering is implicit in Qhat(S), so fidelity requires using inferred labels rather than true labels for the final estimate.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Notice that we implicitly cluster S when calculating c(S), due to ˆQ(S).",
+  "page": 5
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The estimation-error sum could be over all K×K ordered entries or only the upper triangle used in Theorem 3.1.",
+  "options": [
+   "sum over all K^2 entries",
+   "sum over k≤l upper triangle"
+  ],
+  "chosen": "sum over all K^2 entries, including symmetric duplicates",
+  "rationale": "The problem statement writes sum_{kl}|Γ_kl−Γhat_kl| without restricting to k≤l, and the reported single-run value uses that empirical error.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "in the sense of minimizing the empirical estimation error P kl|Γkl −ˆΓkl|.",
+  "page": 4
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "For the multi-run γ experiment, the per-temperature Markov chain length is not restated for each γ.",
+  "options": [
+   "L_t=round(γn) for each γ",
+   "fix L_t=60 as in the single run",
+   "L_t=n"
+  ],
+  "chosen": "L_t=round(γn) for each γ, following the stated L_t=m=γn rule",
+  "rationale": "The paper states L_t=m=γn and says other parameters remain the same as the single-run experiment.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Markov chains of length Lt = m = γn",
+  "page": 6
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "The jazz collaboration graph could be treated as weighted, directed, or unweighted.",
+  "options": [
+   "unweighted simple undirected graph",
+   "weighted undirected graph",
+   "directed graph"
+  ],
+  "chosen": "unweighted simple undirected graph",
+  "rationale": "The paper describes 198 nodes and 2742 edges and applies the same simple-graph SBM machinery.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "This graph contains 198 nodes, corresponding to jazz musicians, and 2742 edges",
+  "page": 8
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "The jazz experiment says |S|=178 corresponds to 90% of the graph, but does not explicitly name γ=0.1.",
+  "options": [
+   "fix |S|=178 exactly",
+   "set γ=0.1 and compute floor((1−γ)n)=178",
+   "use γ=0.096 from 19/198"
+  ],
+  "chosen": "fix |S|=178 exactly and set γ=0.1 for the node budget, with n_iters_inner=floor(γn)=19",
+  "rationale": "This reproduces both stated numbers: 178 nodes retained and Markov chain length 19.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We apply our method with a subgraph of size |S| = 178, corresponding to 90% of the size of the whole graph",
+  "page": 8
+ }
+]

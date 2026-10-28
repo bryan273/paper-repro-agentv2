@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "GOF score for the Gumbel-Hougaard copula on the insurance data (score = 1.0)",
+  "table_ref": "Table 1",
+  "dataset": "Insurance loss data (LOSS/ALAE) from R copula package, n=1466 uncensored observations"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hoval58/beta-tree-gof"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small dataset (n=1466), simple Beta-tree construction and copula probability evaluation; code provided but may need minor adaptation."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.29021",
+ "title": "Beta-trees for testing multivariate goodness-of-fit and localizing deviations from a model",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Qwen-PeRL (Ours)* achieves 76.39 on Mantis-Eval.",
+  "table_ref": "Table 1, row 'Qwen-PeRL (Ours)*', column Mantis-Eval",
+  "dataset": "Mantis-Eval (217 samples)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/alchemistyzz/PeRL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 256,
+  "disk_gb": 200,
+  "ref_minutes": 1000000,
+  "gpu_speedup": null,
+  "basis": "The target is a headline result from RL fine-tuning Qwen2.5-VL-7B with GRPO on 22K multi-image + 36K single-image examples using 8×H100 GPUs; there is no CPU-only or laptop-scale path described."
+ },
+ "blockers": [
+  "Requires RL training a 7B vision-language model; paper used 8×H100 GPUs.",
+  "GPT-4o API is used for data rephrasing and semantic-variation preprocessing.",
+  "No confirmed released PeRL checkpoint/config for direct evaluation of the exact headline score.",
+  "16 GB laptop RAM is insufficient for 7B VLM training and likely for practical full evaluation."
+ ],
+ "suitable": false,
+ "id": "2506.14907",
+ "title": "PeRL: Permutation-Enhanced Reinforcement Learning for Interleaved Vision-Language Reasoning",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

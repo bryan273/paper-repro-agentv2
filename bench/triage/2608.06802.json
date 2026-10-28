@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "Simple-OPD (LoRA warm-up on teacher CoT + standard OPD) raises the in-domain average on AIME24/AIME25 to 39.69 for a Qwen3-1.7B non-thinking student distilled from a GRPO-trained Qwen3-4B teacher, versus 38.34 for direct OPD (+1.35).",
+  "table_ref": "Table 1, vanilla OPD block, 'Simple-OPD' row, ID Avg column",
+  "dataset": "AIME24 + AIME25 (in-domain eval); warm-up/OPD prompts from DAPO-Math-17K"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Utaotao/Simple-OPD",
+  "https://github.com/InternLM/lmdeploy",
+  "https://github.com/open-compass/opencompass"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 120,
+  "ref_minutes": 100000,
+  "gpu_speedup": 30,
+  "basis": "The target cell requires the full pipeline — regenerate teacher CoT rollouts (Qwen3-4B teacher), LoRA SFT warm-up to saturation (~150-175 steps), then ~300 OPD steps with 128-prompt batches generating up to 8192-token on-policy rollouts under verl+vLLM, plus avg@16 AIME evaluation; on an 8-core CPU with no GPU, 1.7B-token-level rollout generation is prohibitively slow (paper itself uses 8 GPUs), putting this far outside a few CPU-hours."
+ },
+ "blockers": [
+  "No GPU: OPD training (student rollouts + teacher token-level supervision) on 1.7B/4B models is effectively infeasible on 8 CPU cores / 16 GB RAM",
+  "Paper's experiments run on eight GPUs; 300 OPD steps with 8192-token rollouts and global batch 128",
+  "Needs the RL/GRPO-trained teacher checkpoints (Qwen3-4B GRPO on DAPO-Math-17K; Qwen3-8B+DAPO for Sec. 3), whose public release is unclear",
+  "Requires reproducing the teacher's CoT rollout generation and the LoRA-near-saturation warm-up recipe (exact step count matters, 150 vs 175 differ)",
+  "Full training stack (verl + vLLM) plus OpenCompass/LMDeploy eval harness needed end-to-end"
+ ],
+ "suitable": false,
+ "id": "2608.06802",
+ "title": "Simple-OPD: Demystifying Warm-up for On-policy Distillation",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

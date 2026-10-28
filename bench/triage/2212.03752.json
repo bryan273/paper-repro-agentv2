@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "FID of 2.82 on LSUN Church for the proposed GLeaD method (StyleGAN2 + generator-leading task)",
+  "table_ref": "Table 1, row 'Ours', column 'LSUN Church FID'",
+  "dataset": "LSUN Church (256x256)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 20160,
+  "gpu_speedup": 100,
+  "basis": "Training StyleGAN2 with GLeaD on LSUN Church requires 50M images shown to D, which took 55.78 hours on 8 A100 GPUs (per Table 7); on a single RTX 3060 this would take weeks, and the 3M image dataset plus checkpoints need hundreds of GB of disk."
+ },
+ "blockers": [
+  "No code or model weights released (no links in PDF, project page not linked in text)",
+  "Requires training StyleGAN2 from scratch on LSUN Church (3M images, 50M images shown to D)",
+  "Training time is 55.78 hours on 8 A100 GPUs, far beyond a few hours on a laptop",
+  "Needs GPU with large VRAM (StyleGAN2 at 256x256 typically requires >16GB VRAM for batch training)",
+  "Dataset download and preprocessing (LSUN Church) requires significant disk space and time"
+ ],
+ "suitable": false,
+ "id": "2212.03752",
+ "title": "GLeaD: Improving GANs with A Generator-Leading Task",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

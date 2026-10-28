@@ -1,0 +1,9 @@
+[
+ {
+  "at": "reader->router",
+  "type": "omission",
+  "path": "requirements.4",
+  "marker": "INJ-O4",
+  "what": "requirement R5 (three-level cascading fallback for missing values) removed"
+ }
+]

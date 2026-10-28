@@ -1,0 +1,40 @@
+{
+ "route": "full_release",
+ "why": "The authors' complete C implementation, Makefile, benchmark drivers, and the required words_alpha.txt are present in the cloned repository. The match target C1 is produced by the included chaining_benchmark binary; only environment setup (a C toolchain/make on Windows) is needed.",
+ "repo": "https://github.com/rbtreechainingforhashtable/project",
+ "entrypoints": [
+  "make chaining_benchmark",
+  "make run-chaining-compare CHAIN_KEYS=500000",
+  "./chaining_benchmark (list/forced-bucket flags, seed 1)"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "Windows 11 does not ship POSIX make/cc by default; MinGW-w64/MSYS2 or WSL is needed to run the Makefile",
+  "The benchmark is single-threaded and CPU-bound, so extra CPU cores do not reduce C1 runtime",
+  "No GPU acceleration is applicable"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "about 10-18 min for a full C1 run; about 20-35 min if the clean re-run is also full",
+  "fits_budget": false,
+  "scale_down_plan": "Keep the 500k-key insert because it determines the exact 31,250.5 chain length, but sample e.g. 100k random successful lookups for the verification run; the expected average remains ~31,250 with roughly ±60 sampling noise. A 250k-key run would be ~4x cheaper but yields ~15,625, so it cannot reproduce C1.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "C1 is one single-threaded C benchmark; the paper reports 271.5 s insert + 338.3 s lookup on an M4 Pro, so ~10 min per full run and roughly 20-30 min including a clean second run on a reference laptop."
+ },
+ "repo_info": {
+  "url": "https://github.com/rbtreechainingforhashtable/project",
+  "cloned": true,
+  "n_files": 61,
+  "n_python": 2,
+  "python2_style_files": 0
+ }
+}

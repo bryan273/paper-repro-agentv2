@@ -1,0 +1,156 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper never states the F1 averaging mode or positive label for the fraud task.",
+  "options": [
+   "sklearn f1_score with pos_label=1, binary averaging (fraud = positive)",
+   "macro averaging over both classes",
+   "weighted averaging"
+  ],
+  "chosen": "sklearn f1_score(pos_label=1, average='binary') on the test fold",
+  "rationale": "The paper talks throughout about 'F1 on the fraud class' and about the positive class being rare, so a binary F1 on the fraud class is the only reading consistent with 0.861.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "We record precision, recall, F1, ROC-AUC, AUPRC, expected calibration error (both equal-width and equal-frequency binning), and the Brier score.",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "'mean ± standard deviation' is printed but the ddof of the spread across the 5 folds is not specified.",
+  "options": [
+   "sample std, ddof=1 (pandas/numpy default)",
+   "population std, ddof=0"
+  ],
+  "chosen": "sample std, ddof=1",
+  "rationale": "The folds are a sample of the data partition, and every mainstream tool (pandas .std(), np.std(ddof=1), sklearn's cross_validate reporting in pandas) uses ddof=1, which is what a released results CSV would contain.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Table 1. Credit-card fraud, 5-fold nested CV, mean ± standard deviation.",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The exact random seed(s) are not given, although the paper says seeds are fixed.",
+  "options": [
+   "42",
+   "0",
+   "a single arbitrary seed per fold, folds shuffled once"
+  ],
+  "chosen": "42 as the single global seed for the fold splitter and Random Forest",
+  "rationale": "Any fixed seed reproduces the protocol; 42 only shifts the third decimal of the fold-level spread, which the tolerance band absorbs.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Random seeds are fixed throughout.",
+  "page": 13
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether the 5 outer folds are shuffled (StratifiedKFold shuffle=True) or taken in index order is not stated.",
+  "options": [
+   "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+   "StratifiedKFold(n_splits=5, shuffle=False)"
+  ],
+  "chosen": "shuffle=True with a fixed seed",
+  "rationale": "The fraud CSV is ordered by Time, so unshuffled folds would double as (unintended) temporal blocks; the paper explicitly says it uses 'random stratified folds', not temporal ones.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "We use random stratified folds.",
+  "page": 11
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "It is unstated whether the scaler is applied to all columns of the fraud data, given V1–V28 are already PCA projections and only Time and Amount are on raw scales.",
+  "options": [
+   "apply StandardScaler to all 30 features",
+   "scale only Time and Amount, leave V1–V28 untouched"
+  ],
+  "chosen": "apply StandardScaler to all features inside each fold",
+  "rationale": "The protocol states the scaler is fitted on the inner training set and applied to both held-out folds without carving out exceptions, and Random Forest is invariant to monotone per-feature scaling anyway.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "StandardScaler is fitted on the inner training set alone and applied to the validation and test folds.",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "'plain' means no intervention, but the sklearn class_weight setting for it is not spelled out.",
+  "options": [
+   "class_weight=None (sklearn default)",
+   "class_weight='balanced'"
+  ],
+  "chosen": "class_weight=None",
+  "rationale": "'plain (no intervention)' contrasts with 'class_balanced_tuned (inverse-frequency class weights plus threshold selection)', so the plain arm must have no weighting.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "plain (no intervention, threshold 0.5)",
+  "page": 5
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Random Forest is specified only by n_estimators and max_depth; criterion, max_features, bootstrap and n_jobs are unstated.",
+  "options": [
+   "sklearn defaults: gini, max_features='sqrt', bootstrap=True",
+   "max_features='log2' or 0.33 (Breiman/regression-style variants)",
+   "bootstrap=False"
+  ],
+  "chosen": "sklearn defaults (gini, max_features='sqrt', bootstrap=True)",
+  "rationale": "The paper emphasises mainstream, deliberately untuned hyperparameters; sklearn defaults for RandomForestClassifier are the most likely implementation.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Random Forest (100 trees, max_depth 16)",
+  "page": 5
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "It is not stated whether F1 is averaged over per-fold scores or computed once on pooled out-of-fold predictions.",
+  "options": [
+   "mean of the 5 per-fold F1 values",
+   "F1 on pooled out-of-fold predictions"
+  ],
+  "chosen": "mean of per-fold F1 values (std across folds)",
+  "rationale": "The ± spread printed in Table 1 only makes sense as a dispersion of five per-fold scores, and every tuned/untuned contrast (ΔF1) is defined per fold.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "It is therefore a paired within-fold contrast, isolating the effect of the threshold choice",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The exact composition and generator settings of the 30 synthetic suite tasks (make_classification arguments beyond ratio, separation and dimensionality) are only partly pinned down.",
+  "options": [
+   "trust the listed sweep (ratio 10/30/100/300/1000, class_sep 0.6/1.0/1.8, n_features 20/50, informative 10/15) with 1000-2000 samples",
+   "guess sample sizes and remaining generator defaults"
+  ],
+  "chosen": "follow the listed sweep exactly and use make_classification defaults (flip_y=0.01, 2 classes) with a documented n_samples",
+  "rationale": "Only the axes the paper lists should be varied; any other variation is a guess. This affects C3-C7 only, not the C1 target.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Synthetic, 30 tasks: make_classification sweeping imbalance ratio (10, 30, 100, 300, 1000), class separation (0.6, 1.0, 1.8), and dimensionality (20 and 50 features, 10 and 15 informative).",
+  "page": 5
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Tie-breaking in the argmax over the threshold grid is unspecified.",
+  "options": [
+   "smallest threshold achieving the max validation F1",
+   "largest such threshold",
+   "np.argmax (first occurrence, i.e. smallest)"
+  ],
+  "chosen": "np.argmax over the ascending grid (smallest threshold attaining the maximum)",
+  "rationale": "The grid is given in ascending order, so np.argmax reproduces the first, lowest tied threshold; ties are rare with continuous scores and only affect the tuned arms.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "argmax over the grid {0.01, 0.02, ..., 0.99} of F1 on the inner validation fold",
+  "page": 5
+ }
+]

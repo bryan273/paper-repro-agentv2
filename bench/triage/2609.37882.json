@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Monolingual character n-gram TF-IDF + linear SVM trained on 400 labelled chiShona MasakhaNEWS examples reaches macro-F1 0.928 on the official test split (and 0.939 at full data, n95 raw = 200).",
+  "table_ref": "Table 1, MasakhaNEWS row chiShona, column '400 labels m' (0.928)",
+  "dataset": "MasakhaNEWS chiShona (sna), official train/test split"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Paper states the full monolingual model trains in 0.1-6 s on two CPU cores; the cost is downloading MasakhaNEWS, writing the TF-IDF(2-5 char n-grams, 200k features)+LinearSVC(C=0.5) pipeline and running 3 seeds at 400 labels plus the full-data run, all trivial on 8 cores."
+ },
+ "blockers": [
+  "No code link in the PDF (claims a release but no URL), so the pipeline must be re-implemented from the text",
+  "Exact stratified subsample seeds are unspecified, so the 0.928 cell will not be matched exactly (expect ~±0.01-0.02)",
+  "MasakhaNEWS must be fetched from HuggingFace/GitHub (public but requires knowing the repo)"
+ ],
+ "suitable": true,
+ "id": "2609.37882",
+ "title": "How Many Labels Does a Language Need? Annotation Budgets and Cross-Lingual Pooling for African-Language Text Classification",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

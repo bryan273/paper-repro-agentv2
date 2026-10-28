@@ -1,0 +1,261 @@
+{
+ "title": "Kernel Representation and Similarity Measure for Incomplete Data",
+ "summary": "Measuring similarity between incomplete web-mining data is difficult because deletion and imputation can lose information or bias similarity estimates. The paper proposes a proximity kernel that uses equal-frequency binning, proximity assignment, one-hot/KME encodings, and a cascading intersection-union-global fallback to build a sparse kernel representation without explicit original-space imputation. Across 12 UCI clustering tasks with K-means, it obtains the highest average NMI (0.4245) and best or second-best results on 10 of 12 datasets, including 0.2289 on Hepatitis.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The proposed proximity kernel achieves NMI 0.2289 on Hepatitis with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Hepatitis",
+   "split": "full dataset clustering",
+   "value": 0.2289,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column Hepatitis",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 155×19 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "The proposed proximity kernel achieves average NMI 0.4245 across the 12 UCI incomplete datasets.",
+   "metric": "NMI",
+   "dataset": "12 UCI incomplete datasets",
+   "split": "full dataset clustering average",
+   "value": 0.4245,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column AVG.",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~30 min for 12 datasets with bin search and 10 K-means runs each",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "The proposed method achieves the best or second-best NMI performance on 10 out of 12 datasets.",
+   "metric": "number of datasets where PK is best or second-best in NMI",
+   "dataset": "12 UCI incomplete datasets",
+   "split": "full dataset clustering",
+   "value": 10,
+   "unit": "datasets",
+   "higher_is_better": true,
+   "table_ref": "Section 5.2, Table 3",
+   "config_for_value": "12 datasets; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~30 min for 12 datasets with bin search and 10 K-means runs each",
+   "quote": "The proposed method achieves the best or second-best performance on 10 out of 12 datasets, and obtains the highest average NMI across all datasets.",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "The proposed proximity kernel achieves NMI 0.6964 on Kidney with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Kidney",
+   "split": "full dataset clustering",
+   "value": 0.6964,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column Kidney",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 400×25 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "The proposed proximity kernel achieves NMI 0.3315 on Mammo/Mammography with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Mammo (Mammography)",
+   "split": "full dataset clustering",
+   "value": 0.3315,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column Mammo",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 961×5 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C6",
+   "statement": "The proposed proximity kernel achieves NMI 0.2323 on Heart with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Heart",
+   "split": "full dataset clustering",
+   "value": 0.2323,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column Heart",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 303×13 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "The proposed proximity kernel achieves NMI 0.554 on Mushroom with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Mushroom (M.room in Table 3)",
+   "split": "full dataset clustering",
+   "value": 0.554,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column M.room",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2 min for 8124×22 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  },
+  {
+   "id": "C8",
+   "statement": "The proposed proximity kernel achieves NMI 0.3698 on Credit with K-means clustering using the ground-truth number of classes.",
+   "metric": "NMI",
+   "dataset": "Credit",
+   "split": "full dataset clustering",
+   "value": 0.3698,
+   "unit": "NMI",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Ours, column Credit",
+   "config_for_value": "Proximity kernel; K-means with ground-truth number of classes; NMI; average of 10 runs; nbins searched over {2,3,4,6,8}.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 690×15 dataset with bin search and 10 K-means runs",
+   "quote": "Ours 0.6964 0.3315 0.2323 0.2289 0.1911 0.785 0.3698 0.0791 0.4947 0.554 0.3774 0.7514 0.4245",
+   "page": 7
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Honors the user hint exactly: Table 3, proximity kernel NMI on Hepatitis with K-means. Hepatitis is small (155 samples), so it is the cheapest central clustering result rather than a side ablation or scalability experiment."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: the paper reports no standard deviation for the target value; NMI is a bounded score printed in [0,1] on Hepatitis with 155 examples (<2000), so use 0.02 absolute points."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "For each feature, compute bin centers from evenly spaced percentiles of observed non-missing values only.",
+   "cite": "Section 4.1.1, Eq. 4",
+   "quote": "The bin centers cj,kare determined by computing evenly-spaced percentiles of the observed distribution:",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Assign each observed value to the nearest bin center, creating a Voronoi-like bin assignment.",
+   "cite": "Section 4.1.2, Eq. 5",
+   "quote": "Given the bin centers {cj,1, ...,cj,nbins} for each feature j, we assign each observed value to its nearest center.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Encode each assigned bin as a one-hot vector and concatenate feature blocks into the complete representation z_i.",
+   "cite": "Section 4.1.3, Eq. 6-7",
+   "quote": "The complete encoding for sample iconcatenates the one-hot vectors across all features as:",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "For missing features, first find samples matching the target sample in every observed feature bin, excluding the target itself.",
+   "cite": "Section 4.2.1, Eq. 8-9",
+   "quote": "The first level seeks samples that match sample ion all observed features.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "If the intersection-based matching set is nonempty, estimate each missing feature block as the average encoding of matched samples.",
+   "cite": "Section 4.2.1, Eq. 10",
+   "quote": "If S1(i) ≠∅, we estimate missing encoding through kernel mean embedding:",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "If the intersection set is empty, relax to union-based matching over samples sharing at least one observed-feature bin and average their encodings.",
+   "cite": "Section 4.2.2, Eq. 11-12",
+   "quote": "If S2(i) ≠∅, we apply kernel mean embedding over this broader set:",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "If both intersection and union matching fail, set the missing feature block to the empirical global prior over bins.",
+   "cite": "Section 4.2.3, Eq. 13-14",
+   "quote": "The missing encoding is set to this probability distribution:",
+   "page": 5
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute similarity as the inner product of concatenated representations averaged over the d features.",
+   "cite": "Section 4.3, Eq. 15",
+   "quote": "This similarity measure has a probabilistic interpretation: it computes the expected probability that two samples fall into the same bin, averaged across all features.",
+   "page": 5
+  },
+  {
+   "id": "R9",
+   "stmt": "Cluster the constructed representation vectors with K-means using the ground-truth number of classes.",
+   "cite": "Section 4.4, Eq. 19; Section 5.1",
+   "quote": "For fair comparison, we applied K-means with the number of clusters to the ground-truth number of classes.",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Repeat each experiment 10 times and report the average result.",
+   "cite": "Section 5.1",
+   "quote": "Each experiment was conducted 10 times and report average results for stability.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Search the proximity-kernel hyperparameter nbins over {2,3,4,6,8}.",
+   "cite": "Section 5.1, Hyperparameter Settings",
+   "quote": "For the proximity kernel, we search the number of bins per dimension in {2, 3, 4, 6, 8}.",
+   "page": 6
+  },
+  {
+   "id": "R12",
+   "stmt": "Evaluate clustering quality with Normalized Mutual Information against true labels.",
+   "cite": "Section 5.1, Evaluation Protocol",
+   "quote": "we evaluate all methods on clustering quality using Normalized Mutual Information (NMI) as the metric.",
+   "page": 6
+  },
+  {
+   "id": "R13",
+   "stmt": "Use only observed non-missing values for feature-wise bin centers and global priors.",
+   "cite": "Section 4.1.1",
+   "quote": "Let Xobs,jdenote all observed (non-missing) values for feature j.",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "Hepatitis (UCI)",
+   "how_to_get": "Download from the UCI Machine Learning Repository at https://archive.ics.uci.edu/datasets and search for Hepatitis; use the original incomplete tabular dataset."
+  },
+  {
+   "name": "12 UCI incomplete datasets",
+   "how_to_get": "Download Kidney, Hepatitis, Heart, Horse, Cancer, Credit, Adult, Voting, Mushroom, Tumor, Soybean, and Mammography from https://archive.ics.uci.edu/datasets; Table 2 lists sample counts, dimensions, categorical/numerical counts, missing rates, and class counts."
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/proximity-kernel-2289",
+  "https://archive.ics.uci.edu/datasets",
+  "https://scikit-learn.org/stable/modules/impute.html",
+  "https://hyperimpute.readthedocs.io/en/latest/"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2510.13352",
+  "kind": "arxiv",
+  "arxiv_id": "2510.13352",
+  "url": "https://arxiv.org/abs/2510.13352",
+  "title": "Kernel Representation and Similarity Measure for Incomplete Data",
+  "pages": 9
+ }
+}

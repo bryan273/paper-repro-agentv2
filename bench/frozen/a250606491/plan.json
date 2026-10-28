@@ -1,0 +1,160 @@
+{
+ "approach": "Treat this as a full-release reproduction: clone the authors' ChauBoxplot repository, install the small R package when Rscript is available, and run the authors' seeded normal-data example through a thin reproduce.py that captures the Chauvenet and Tukey outlier counts and writes results/metrics.json. The primary path uses R's set.seed(1863), rnorm, type-7 quantiles, and the released Chauvenet package/logic; no working author code is rewritten. Because the sandbox inventory does not guarantee R and only python/pip/git are directly executable, reproduce.py probes for Rscript and, if unavailable, uses a validated Python port of R's Mersenne-Twister plus inversion-normal RNG and type-7 quantiles solely to reproduce the reported counts. C1 is the required target, while C2-C6 are computed as cross-checks and the metrics file records the execution path and pass/fail status.",
+ "files": [
+  {
+   "path": "r_rng_fallback.py",
+   "purpose": "Exact Python port of R's Mersenne-Twister RNG, inversion normal generation, and R type-7 quantile behavior; used only when Rscript is absent.",
+   "requirement_ids": [
+    "R1",
+    "R3",
+    "R6",
+    "R7",
+    "R8",
+    "R10"
+   ]
+  },
+  {
+   "path": "compute_counts.py",
+   "purpose": "Compute Chauvenet-type and Tukey counts from a simulated vector or from the fallback RNG; applies strict outside-fence rule and total count including appended contaminants.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "r_driver.R",
+   "purpose": "Thin R driver that sets R's seed, generates c(rnorm(n-2), 5, 6), prefers the authors' ChauBoxplot function, and prints machine-readable Chauvenet and Tukey counts without modifying author code.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: clone/verify repository, probe or install R package, run r_driver.R or Python fallback, validate counts, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "requirements.txt",
+   "purpose": "Python dependencies for fallback and orchestration; primarily numpy and scipy.",
+   "requirement_ids": [
+    "R1"
+   ]
+  }
+ ],
+ "config": {
+  "route": "full_release",
+  "repo_url": "https://github.com/tiejuntong/ChauBoxplot",
+  "repo_dir": "third_party/ChauBoxplot",
+  "author_entrypoints": [
+   "Examples/Section4_normal.R",
+   "Examples/Section5_n500.R"
+  ],
+  "r_package_install": "R CMD INSTALL --no-multiarch --with-keep.source .",
+  "r_driver": "r_driver.R",
+  "seed": 1863,
+  "r_rng_kind": "Mersenne-Twister",
+  "r_normal_kind": "Inversion",
+  "r_sample_kind": "Rejection",
+  "r_version_assumption": "R >= 3.6 defaults (A8)",
+  "n_values": [
+   500,
+   5000,
+   50000
+  ],
+  "optional_smoke_n": 50,
+  "contaminated_points": [
+   5,
+   6
+  ],
+  "normal_mean": 0,
+  "normal_sd": 1,
+  "generation_rule": "x <- c(rnorm(n-2, 0, 1), 5, 6) with seed reset before each n (A1, R6, R7)",
+  "chau_coefficient": "qnorm(1 - 0.25/n)/1.35 - 0.5 (paper Eq. 9, R1)",
+  "tukey_k": 1.5,
+  "quantile_type": 7,
+  "iqr_definition": "IQR = Q3 - Q1 (R3)",
+  "fence_lower": "Q1 - k*IQR (R2)",
+  "fence_upper": "Q3 + k*IQR (R2)",
+  "outlier_rule": "strictly outside: x < LF or x > UF (A5, R5)",
+  "count_definition": "total suspected outliers including appended 5 and 6 (A4, R9)",
+  "n_in_coefficient": "total sample size including contaminants (A6)",
+  "quartile_sample": "full simulated sample including contaminants (A10)",
+  "target_claim": "C1",
+  "target_value": 2,
+  "tolerance": {
+   "type": "relative",
+   "value": 0.1
+  },
+  "expected_counts": {
+   "C1": 2,
+   "C2": 3,
+   "C3": 2,
+   "C4": 48,
+   "C5": 3,
+   "C6": 357
+  },
+  "primary_execution": "Rscript --vanilla r_driver.R <n> <seed>; prefer ChauBoxplot::chau_boxplot, with manual formula as cross-check",
+  "fallback_execution": "python compute_counts.py --n <n> --seed 1863",
+  "fallback_rng_notes": "Port R's MT19937 seeding and runif outputs, then inversion normal via qnorm; use numpy.percentile(method='linear') for R type-7 quantiles; validate against R fixtures when R exists, otherwise validate by matching all published counts.",
+  "metric_output": "results/metrics.json",
+  "log_output": "results/reproduce.log"
+ },
+ "steps": [
+  "Create the work directory, clone https://github.com/tiejuntong/ChauBoxplot into third_party/ChauBoxplot, and verify the tree contains DESCRIPTION, R/chau_boxplot.R, Examples/Section4_normal.R, and Examples/Section5_n500.R.",
+  "Create requirements.txt with numpy and scipy, run python -m pip install -r requirements.txt, and record versions in results/reproduce.log.",
+  "Probe for Rscript with python subprocess. If found, record R --version and Rscript --version, run R CMD INSTALL for the cloned package, and verify library(ChauBoxplot) loads. If R is absent or install fails, set environment path to 'python_rng_fallback' and continue.",
+  "Implement r_rng_fallback.py as a minimal exact port of R's Mersenne-Twister seeding and inversion-normal generation, plus R type-7 quantiles; expose a function to generate c(rnorm(n-2), 5, 6) under seed 1863.",
+  "Implement r_driver.R as a thin wrapper only: parse n and seed from commandArgs, call set.seed(seed, kind='Mersenne-Twister', normal.kind='Inversion', sample.kind='Rejection'), build x <- c(rnorm(n-2, 0, 1), 5, 6), compute q <- quantile(x, c(.25,.75), type=7), k <- qnorm(1 - 0.25/n)/1.35 - 0.5, count strict outside-fence observations for Chauvenet and Tukey k=1.5, and also report length(boxplot(x, plot=FALSE)$out) and the authors' chau_boxplot result when available. Print one parseable TSV/CSV line per run.",
+  "Implement compute_counts.py to compute the same counts from either an explicit numeric vector or the fallback RNG, asserting length n, tail values 5 and 6, finite fences, and integer counts.",
+  "Run one integration invocation of the authors' Examples/Section4_normal.R and/or Examples/Section5_n500.R under Rscript --vanilla to confirm the released package/example executes; do not edit the example files. Use r_driver.R for machine-readable extraction if the example only plots or prints unstructured output.",
+  "Run the smoke test at n=50 or n=500 with seed 1863 through both available paths, verifying vector length, appended values 5 and 6, finite Q1/Q3/IQR/fences, and integer Chauvenet/Tukey counts before scaling to the full n values.",
+  "Run the full count extraction for n=500, 5000, and 50000, resetting set.seed(1863) before each n as specified by the claim config, and compute both Chauvenet-type and Tukey counts.",
+  "Validate C1 first: n=500 Chauvenet count must be 2, within the relative 10 percent tolerance. Then cross-check C2=3, C3=2, C4=48, C5=3, C6=357; if any mismatch occurs, inspect seed reset convention, R normal kind, quantile type=7, strict-vs-inclusive fence rule, and whether the authors' package function returns the same count as the manual formula. Do not tune the reported number.",
+  "Write results/metrics.json containing per-claim value, unit, n, method, expected value, pass flag, tolerance, primary/fallback execution path, R availability, package load status, seed, and RNG details; write a short results/reproduce.log with exact commands and versions.",
+  "Finish by running python reproduce.py as the single documented command and verifying it recreates results/metrics.json without relying on cached values."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke` which invokes either `Rscript --vanilla r_driver.R 50 1863` or `python compute_counts.py --n 50 --seed 1863`. Assert x has length 50, x[49:50] == [5, 6], Q1/Q3/IQR/fences are finite, Chauvenet and Tukey counts are nonnegative integers, and the same count is produced by the released Chauvenet package when R is available.",
+ "intermediate_checks": [
+  "Repository exists at third_party/ChauBoxplot and contains DESCRIPTION, R/chau_boxplot.R, Examples/Section4_normal.R, and Examples/Section5_n500.R.",
+  "If R is present: Rscript --version is >= 3.6 and `library(ChauBoxplot)` loads after R CMD INSTALL; if absent, log fallback path before computing metrics.",
+  "For n=500, seed 1863: length(x)==500 and tail(x, 2)==c(5, 6) with no NA/NaN.",
+  "For n=500, type-7 quartiles and IQR are finite; k^Chau_500 = qnorm(1-0.25/500)/1.35-0.5 is approximately 1.94, while Tukey k is 1.5.",
+  "For n=5000 and n=50000, coefficient values are approximately 2.38 and 2.77 respectively; fences are finite and counts are integers in [0, n].",
+  "Quick sanity baseline before full run: n=500 Chauvenet count should be 2 and Tukey count should be 3; n=5000 Tukey count should be near 48; n=50000 Tukey count should be near 357.",
+  "Confirm counts include the two appended contaminated points 5 and 6, not only false positives.",
+  "Confirm the two known contaminated points are outside both Chauvenet and Tukey fences for all three n values.",
+  "If R is unavailable, verify the Python RNG fallback reproduces all expected counts C1-C6 before accepting results; otherwise mark the run as failed rather than silently using a different RNG.",
+  "Confirm results/metrics.json is written by reproduce.py and not hand-edited."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Reference runtime is about 5 minutes, dominated by environment setup. Allocate roughly 55% to cloning, dependency installation, and R/Rscript probing or package installation (cap R provisioning at 10 minutes, then fall back); 10% to the n=50/500 smoke test; 10% to the full n=500,5000,50000 count extraction; and 25% to validation, logging, and writing metrics.json. The numerical experiment itself is sub-second, so no scale-down is needed."
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ResCAGCN + PUM achieves mR@50 of 20.2 on PredCls (Visual Genome), the headline mean-recall improvement over ResCAGCN's 18.3",
+  "table_ref": "Table 1, row 'ResCAGCN + PUM', column 'PredCls mR@50'",
+  "dataset": "Visual Genome (top-150 objects, top-50 predicates split of Xu et al. 2017)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 60,
+  "ref_minutes": 4320,
+  "gpu_speedup": 20,
+  "basis": "Requires training a Faster R-CNN backbone plus ResCAGCN+PUM on ~100k Visual Genome images (batch size 8, K=N=8 Monte-Carlo samples per pair), which is a multi-GPU-day training run; no code or configs are released, so the full pipeline must be rebuilt from the paper."
+ },
+ "blockers": [
+  "No code release (empty link list); ResCAGCN is only available as a separate concurrent arXiv paper, PUM code absent",
+  "Training Faster R-CNN + ResCAGCN + PUM on full Visual Genome is far beyond a few CPU-hours on a laptop",
+  "Requires GPU for any realistic training time"
+ ],
+ "suitable": false,
+ "id": "2103.05271",
+ "title": "Probabilistic Modeling of Semantic Ambiguity for Scene Graph Generation",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

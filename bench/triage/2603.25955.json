@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Anomaly-class F1-score of KMeans on Truck 1 (0.88), a single cell of the per-vehicle benchmark table",
+  "table_ref": "Table 1",
+  "dataset": "EngineAD (truck_1.pickle)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/Armanfard-Lab/EngineAD"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "basis": "Once the pickle is in hand, flattening 300x8 segments and fitting KMeans + 95th-percentile threshold is seconds of CPU work; the estimate is dominated by install and data handling, not compute."
+ },
+ "blockers": [
+  "Dataset is only available 'upon request' via the GitHub repo, not a direct download",
+  "No code or configs released to reproduce the benchmark pipeline",
+  "Exact train/test split and preprocessing details (PCA fit, scaler, threshold) must be re-implemented from the text"
+ ],
+ "suitable": false,
+ "id": "2603.25955",
+ "title": "EngineAD: A Real-World Vehicle Engine Anomaly Detection Dataset",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

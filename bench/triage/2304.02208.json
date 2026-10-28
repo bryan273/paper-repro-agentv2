@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "PIKS outlier detection on NY SPARCS 2009-2016 identifies 'INFLUENZA' and 'ADMIN/SOCIAL ADMISSION' as outliers at the first aggregation level (Diagnosis Description).",
+  "table_ref": "Table 4, row 1",
+  "dataset": "NY SPARCS 2009-2016"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/fdudatamining"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "basis": "Estimate assumes downloading ~17.5M-row SPARCS data (several GB), aggregating by CCS Diagnosis Description and year, and running iterative k-means; code may need adaptation or reimplementation from the paper's algorithm description."
+ },
+ "blockers": [
+  "Code repository may not contain exact scripts/configs for this table cell",
+  "Large dataset download and preprocessing required",
+  "Algorithm details (k=8, threshold=50, pruning) must be reimplemented if code is incomplete"
+ ],
+ "suitable": true,
+ "id": "2304.02208",
+ "title": "PIKS: A Technique to Identify Actionable Trends for Policy-Makers Through Open Healthcare Data",
+ "pages": 37,
+ "model": "DeepSeek-V4.1-Flash"
+}

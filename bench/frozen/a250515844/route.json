@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "No author repository, code link, or artifact was released — only a prose/table description of the pipeline (IQR cleaning, label encoding, correlation/RF feature selection, SMOTE, GridSearchCV, soft-voting/stacking). The match target C1 is a small CPU tabular stacking job whose components (RF, XGBoost, LightGBM, SVC, logistic meta-learner, 10-fold OOF) are all standard and fully specified enough to rebuild from the paper, so the right strategy is reimplementation from the claim contract rather than hunting for nonexistent code.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Authors' source code (no repository given)",
+  "Trained model weights / saved ensemble",
+  "Exact preprocessing script and Table-2 label-encoding map",
+  "Exact GridSearchCV search grids (Table 7 only partially quoted: LightGBM 200 estimators, lr 0.2, max_depth 7)",
+  "Full-Filled Brain Stroke Dataset CSV (Kaggle, may require credentials)",
+  "Exact random seeds for base learners and stack folds"
+ ],
+ "blockers_seen": [
+  "Kaggle dataset download may require authentication/API token",
+  "Paper text is the only specification of the preprocessing order; SMOTE-before-split vs after split ambiguity must be resolved to match numbers",
+  "Reported 97.2% accuracy on a ~5% prevalence dataset is unusually high; exact number may depend on undocumented leakage or tuning details"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "10–25 minutes: load ~5k rows, IQR filter to ~4.3k, SMOTE, fit 4 base learners with modest grid search and 10-fold OOF meta-features, then evaluate the stack on the 868-row test set",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (~4.3k rows, 10 features); stacking with 4 base learners, 10-fold OOF and modest grid search on a laptop CPU, roughly 10–30 s per tuned model family and seconds per fold fit."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

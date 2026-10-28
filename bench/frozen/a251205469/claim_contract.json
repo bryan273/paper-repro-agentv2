@@ -1,0 +1,280 @@
+{
+ "title": "How Ensemble Learning Balances Accuracy and Overfitting: A Bias-Variance Perspective on Tabular Data",
+ "summary": "Tree-based ensembles are often strong on tabular data, but the paper asks when their variance reduction actually improves test accuracy and reduces overfitting. It compares single models with nine ensembles on four public tabular datasets using five-seed repeated stratified cross-validation, dataset-complexity metrics, and Wilcoxon tests. The main result is three regimes: near-linear Breast Cancer gives no significant ensemble gain (RBF SVM 0.972 test accuracy), structured nonlinear Heart Disease gains 5–7 points, and noisy/imbalanced data require regularization and minority-class metrics.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "RBF-kernel SVM reaches 0.972 mean test accuracy on Breast Cancer over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Breast Cancer Wisconsin (Diagnostic)",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.972,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Breast Cancer / SVM (RBF), column Test Acc",
+   "config_for_value": "SVM (RBF) with probability calibration; z-score standardization via scikit-learn pipeline; five seeds; stratified 5-fold CV; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.008 (std across 5 seeds)",
+   "est_compute": "CPU, ~1–3 min on MacBook Air M2",
+   "quote": "Logistic Regression and RBF SVM achieve 97.0%–97.2% test accuracy with gaps < 2%",
+   "page": 5
+  },
+  {
+   "id": "C2",
+   "statement": "Logistic Regression reaches 0.970 mean test accuracy on Breast Cancer over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Breast Cancer Wisconsin (Diagnostic)",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.97,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Breast Cancer / Logistic Reg., column Test Acc",
+   "config_for_value": "Logistic Regression with l2 regularization; z-score standardization via scikit-learn pipeline; five seeds; stratified 5-fold CV; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.009 (std across 5 seeds)",
+   "est_compute": "CPU, ~1 min on MacBook Air M2",
+   "quote": "Logistic Regression achieves 97% test accuracy with a < 1% gap.",
+   "page": 8
+  },
+  {
+   "id": "C3",
+   "statement": "XGBoost reaches 0.867 mean test accuracy on Heart Disease over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Heart Disease",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.867,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Heart Disease / XGBoost, column Test Acc",
+   "config_for_value": "XGBoost; five seeds; stratified 5-fold CV; learning rate 0.03–0.1 with tuned depth and n-estimators; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.012 (std across 5 seeds)",
+   "est_compute": "CPU, ~2–5 min on MacBook Air M2",
+   "quote": "Random Forest, Bagging, Extra Trees, Gradient Boosting, XGBoost, LightGBM, and CatBoost achieve 85%–87% test accuracy",
+   "page": 5
+  },
+  {
+   "id": "C4",
+   "statement": "Logistic Regression reaches 0.814 mean test accuracy on Heart Disease over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Heart Disease",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.814,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Heart Disease / Logistic Reg., column Test Acc",
+   "config_for_value": "Logistic Regression with l2 regularization; z-score standardization via scikit-learn pipeline; five seeds; stratified 5-fold CV; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.016 (std across 5 seeds)",
+   "est_compute": "CPU, ~1 min on MacBook Air M2",
+   "quote": "Random Forest, Bagging, Extra Trees, Gradient Boosting, XGBoost, LightGBM, and CatBoost achieve 85%–87% test accuracy compared to 81% for Logistic Regression",
+   "page": 5
+  },
+  {
+   "id": "C5",
+   "statement": "Gradient Boosting reaches 0.781 mean test accuracy on Pima Diabetes over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Pima Indians Diabetes",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.781,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Pima Diabetes / Gradient Boost, column Test Acc",
+   "config_for_value": "GradientBoostingClassifier; five seeds; stratified 5-fold CV; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.015 (std across 5 seeds)",
+   "est_compute": "CPU, ~2–5 min on MacBook Air M2",
+   "quote": "While Gradient Boosting nominally achieves the highest test accuracy, its advantage over simpler models is marginal and unreliable.",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "Logistic Regression reaches 0.774 mean test accuracy on Pima Diabetes over five seeds.",
+   "metric": "test accuracy",
+   "dataset": "Pima Indians Diabetes",
+   "split": "5-seed repeated stratified CV, up to 5 folds; seeds 42, 123, 456, 789, 1011",
+   "value": 0.774,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Pima Diabetes / Logistic Reg., column Test Acc",
+   "config_for_value": "Logistic Regression with l2 regularization; z-score standardization via scikit-learn pipeline; five seeds; stratified 5-fold CV; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.014 (std across 5 seeds)",
+   "est_compute": "CPU, ~1 min on MacBook Air M2",
+   "quote": "Differences among top models are not statistically significant (p > 0.14)",
+   "page": 5
+  },
+  {
+   "id": "C7",
+   "statement": "XGBoost reaches 0.847 fraud-class F1 on Credit Card Fraud.",
+   "metric": "fraud-class F1",
+   "dataset": "Credit Card Fraud Detection",
+   "split": "10% stratified subsample; 3-fold stratified CV; single seed",
+   "value": 0.847,
+   "unit": "F1 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Credit Fraud / XGBoost, column F1",
+   "config_for_value": "XGBoost with scale_pos_weight = negative-to-positive ratio; 10% stratified subsample; 3-fold stratified CV; single seed; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.012 (fold-level std across 3 CV folds)",
+   "est_compute": "CPU, ~5–15 min on 10% subsample",
+   "quote": "Here, gradient-boosted ensembles (XGBoost: 0.847 ± 0.012, CatBoost: 0.839 ± 0.014)",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "XGBoost reaches 0.9994 overall test accuracy on Credit Card Fraud.",
+   "metric": "test accuracy",
+   "dataset": "Credit Card Fraud Detection",
+   "split": "10% stratified subsample; 3-fold stratified CV; single seed",
+   "value": 0.9994,
+   "unit": "test accuracy (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Credit Fraud / XGBoost, column Test Acc",
+   "config_for_value": "XGBoost with scale_pos_weight = negative-to-positive ratio; 10% stratified subsample; 3-fold stratified CV; single seed; light GridSearchCV selected by cross-validated F1.",
+   "reported_spread": "±0.0001 (fold-level std across 3 CV folds, not seeds)",
+   "est_compute": "CPU, ~5–15 min on 10% subsample",
+   "quote": "overall accuracy and gaps are uniformly high (> 99.9%) and small (< 0.2%) across models",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest target: one RBF-SVM model on the smallest dataset, and it is the paper's rank-1 Breast Cancer result for the clean/near-linear regime."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.024,
+  "why": "Rule 1: the paper reports ±0.008 std over five seeds for the target; 3 × 0.008 = 0.024, rounded to the printed 3-decimal precision."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the four main datasets with the sizes and feature counts reported in Table I.",
+   "cite": "Sec. IV, Table I",
+   "quote": "This dataset contains 569 instances with 30 real-valued features",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Apply z-score standardization inside scikit-learn pipelines for LR, KNN, and SVM; keep tree-based models on original scales.",
+   "cite": "Sec. V-B",
+   "quote": "Distance-based and linear models (LR, KNN, SVM) use z-score standardization via scikit-learn pipelines.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Use stratified k-fold cross-validation repeated over five seeds 42, 123, 456, 789, and 1011 for the three smaller datasets.",
+   "cite": "Sec. V-B",
+   "quote": "We use stratified k-fold cross-validation with five independent random seeds (42, 123, 456, 789, 1011) to estimate generalization and quantify uncertainty.",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "For Credit Card Fraud, use a 10% stratified subsample, 3-fold stratified CV, and a single seed.",
+   "cite": "Sec. V-B and Table III footnote",
+   "quote": "a 10% stratified subsample that preserves class imbalance, followed by three-fold stratified CV with a single seed",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Compare the single-model baselines against the nine ensemble methods described in the paper.",
+   "cite": "Sec. V-A",
+   "quote": "We compare the following models, chosen to represent commonly used baselines and ensembles",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Implement SVM with an RBF kernel, probability calibration, and standardized features.",
+   "cite": "Sec. V-A",
+   "quote": "SVM (RBF): RBF-kernel SVM with probability calibration; features standardized.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Handle class imbalance with class weights and scale_pos_weight as specified.",
+   "cite": "Sec. V-B",
+   "quote": "scale_pos_weight in XGBoost, LightGBM, and CatBoost set to the negative-to-positive ratio.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Run light GridSearchCV over compact grids rather than exhaustive optimization.",
+   "cite": "Sec. V-B",
+   "quote": "We perform light hyperparameter tuning with GridSearchCV over compact grids",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Use Random Forests with 200–400 trees and tune depth.",
+   "cite": "Sec. V-B",
+   "quote": "For Random Forests, we use nestimators = 200–400 with depth tuning",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "Define the overfitting gap as train accuracy minus test accuracy.",
+   "cite": "Sec. V-C, Eq. (1)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R11",
+   "stmt": "Use paired two-tailed Wilcoxon signed-rank tests at α = 0.05 for top-model comparisons.",
+   "cite": "Sec. V-D",
+   "quote": "pairwise Wilcoxon signed-rank tests (α = 0.05, two-tailed) between the top-performing models on each dataset",
+   "page": 5
+  },
+  {
+   "id": "R12",
+   "stmt": "Compute the five dataset-complexity indicators used to explain the regimes.",
+   "cite": "Sec. IV-E, Table II",
+   "quote": "To understand why different datasets fall into different generalization regimes, we compute five dataset-complexity indicators",
+   "page": 3
+  },
+  {
+   "id": "R13",
+   "stmt": "Implement Stacking with LR, Decision Tree, and RBF SVM base learners, LR meta-learner, and passthrough features.",
+   "cite": "Sec. V-A",
+   "quote": "LR, Decision Tree, and RBF SVM as base learners, with LR meta-learner and passthrough of original features.",
+   "page": 4
+  },
+  {
+   "id": "R14",
+   "stmt": "Make the implementation and result summaries available reproducibly.",
+   "cite": "Sec. X",
+   "quote": "Full code, result summaries, complexity metrics, and statistical test results are publicly available",
+   "page": 10
+  },
+  {
+   "id": "R15",
+   "stmt": "For Credit Card Fraud, emphasize fraud-class F1, recall, ROC-AUC, and PR-AUC rather than accuracy alone.",
+   "cite": "Sec. IV-D",
+   "quote": "We focus on fraud-class F1, recall, ROC-AUC, and PR-AUC rather than accuracy alone.",
+   "page": 3
+  }
+ ],
+ "data": [
+  {
+   "name": "Breast Cancer Wisconsin (Diagnostic)",
+   "how_to_get": "UCI ML Repository WDBC or sklearn.datasets.load_breast_cancer; 569×30, binary malignant/benign"
+  },
+  {
+   "name": "Heart Disease",
+   "how_to_get": "UCI/Kaggle Heart Disease combined 1,025×13 version; select the file matching Table I's 1,025 samples"
+  },
+  {
+   "name": "Pima Indians Diabetes",
+   "how_to_get": "UCI Pima Indians Diabetes; 768×8, binary diabetes onset"
+  },
+  {
+   "name": "Credit Card Fraud Detection",
+   "how_to_get": "Kaggle creditcardfraud: https://www.kaggle.com/mlg-ulb/creditcardfraud; 284,807×30, 0.172% fraud"
+  }
+ ],
+ "code_links": [
+  "https://github.com/zubair0831/ensemble-generalization-gap"
+ ],
+ "stated_compute": "MacBook Air M2, 8 CPU cores; Approximate runtime on MacBook Air M2 (8 cores, 8GB RAM): ∼2 hours for all four datasets.",
+ "paper_meta": {
+  "source": "2512.05469",
+  "kind": "arxiv",
+  "arxiv_id": "2512.05469",
+  "url": "https://arxiv.org/abs/2512.05469",
+  "title": "How Ensemble Learning Balances Accuracy and Overfitting: A Bias-Variance Perspective on Tabular Data",
+  "pages": 11
+ }
+}

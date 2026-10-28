@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "AnchorWorld (Ours) achieves Mat. Pix.(K) = 4493.4 and CLIP-V = 0.885 on the EGO Static Scene test set, the best scene-consistency score among all compared methods.",
+  "table_ref": "Table 1, row 'Ours', column 'Mat. Pix.(K)↑' under block 'EGO STATIC SCENE' (optionally paired with CLIP-V 0.885)",
+  "dataset": "Egocentric Static Test Set: 100 held-out sequences drawn from Ego-Exo4D / LEMMA and the internal 200K-video exocentric corpus"
+ },
+ "release": "none",
+ "code_links": [
+  "https://yuli0103.github.io/AnchorWorld/ (project page only; no repository, weights, configs or data released in the paper text)"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 16,
+  "disk_gb": 3000,
+  "ref_minutes": 43200,
+  "gpu_speedup": 50,
+  "basis": "The target number comes from a fully trained Wan2.2 TI2V 5B flow-matching DiT (77-frame 480p video generation) trained in four stages on ~200K internal third-person videos, 101K MultiCamVideo UE clips, plus Ego-Exo4D and LEMMA cross-view pairs; nothing about this run (nor even its inference/evaluation stack: GVHMR, MegaSaM, GIM, VideoAlign, VBench) is runnable on an 8-core/16 GB CPU-only laptop, so the estimate reflects infeasible command time (multi-week GPU cluster job) rather than a laptop re-run."
+ },
+ "blockers": [
+  "No code, weights, or training/inference configs released (only a project webpage); PlayerOne baseline itself is noted as having no official code",
+  "Requires training/fine-tuning a 5B-parameter video diffusion model for multiple progressive stages — many GPU-days on A100/H100-class hardware",
+  "Core training data is an internal proprietary corpus of 200K single-person action videos (Kuaishou), not obtainable",
+  "Ego-Exo4D is license-gated (application/agreement) and LEMMA requires a download request; MultiCamVideo UE data only covers part of the pipeline",
+  "Evaluation protocol needs heavy external models (MegaSaM camera estimation, GIM matcher, VideoAlign, VBench) plus ground-truth cross-view pairs that only exist in the gated datasets",
+  "Target metric (Mat. Pix. / CLIP-V PSNR-SSIM-LPIPS against pseudo-GT anchor renders) depends on reconstructed 3D pose/ancor annotations produced with GVHMR plus manual inspection, which is not reproducible from public artifacts"
+ ],
+ "suitable": false,
+ "id": "2606.07326",
+ "title": "AnchorWorld: Embodied Egocentric World Simulation with View-based Evolution Customization",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

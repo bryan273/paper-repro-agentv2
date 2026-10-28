@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Duration-relative k=4 consensus: profile membership accounts for 2.87% of variation in observation-window length (vs 38.18% for original-only consensus), with mean assignment support 0.739 and profile sizes 4,873/5,191/3,594/2,790",
+  "table_ref": "Table 1 / Section 4.2",
+  "dataset": "Anonymised Moodle LMS traces, South African public university, 2013-2019 (16,448 learner-course sequences, 152 courses)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code or data released; the proprietary institutional Moodle logs (1.17M learner-course-week records) cannot be obtained, so the entire pipeline (spline-ridge cross-fitted adjustment, 16-result consensus, sequence analyses) would have to be rebuilt from scratch on unavailable data."
+ },
+ "blockers": [
+  "Proprietary institutional LMS data not publicly available",
+  "No code or configuration released",
+  "Full pipeline (duration adjustment, 4 algorithms x 4 representations consensus, sequence clustering) must be reimplemented from prose"
+ ],
+ "suitable": false,
+ "id": "2610.17494",
+ "title": "Longitudinal Learner Participation Profiling in Online Learning: Heterogeneous Consensus Clustering under Unequal Observation Windows",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "The two-component contaminated Dirichlet mixture model fitted to the ATUS dataset yields a mixing proportion of 0.317 for cluster 1 (work-centred group).",
+  "table_ref": "Table 2, row g=1, column π̂_g",
+  "dataset": "American Time Use Survey (ATUS) 2025"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 480,
+  "basis": "No code is provided; the EM algorithm with nested Newton-Raphson updates must be implemented from scratch, and the ATUS microdata must be downloaded and processed into the 7-category compositional dataset with missing values, then the model fitted for G=1..6 to select G=2 by ICL, all on a laptop CPU."
+ },
+ "blockers": [
+  "No code or implementation provided",
+  "Complex custom EM algorithm with nested Newton-Raphson must be reimplemented",
+  "ATUS data requires substantial preprocessing to match the paper's 7 activity categories and missingness pattern",
+  "Model selection over G=1..6 and ICL computation needed to confirm the headline result"
+ ],
+ "suitable": false,
+ "id": "2608.23900",
+ "title": "Handling mild outliers and unobserved values in compositional datasets using finite mixtures of mean-parametrised Dirichlet models",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,44 @@
+{
+ "route": "partial_release",
+ "why": "The authors released TabMini, which includes a logistic-regression example and the benchmark harness needed for the target C1. However, the repository is not the exact PMLBmini release: it packages/ships only 25 TabMini datasets, not the 44 PMLBmini datasets, and parity5 is not present in the tree. For C1, the missing parity5 data can be fetched from PMLB/OpenML and the LR baseline can be kept/rebuilt from the authors' example using the stated L2 grid and nested 3-fold CV. Heavy AutoML/deep-learning dependencies are unnecessary for this target and should be avoided.",
+ "repo": "https://github.com/RicardoKnauer/TabMini",
+ "entrypoints": [
+  "example.py"
+ ],
+ "missing_artifacts": [
+  "PMLBmini 44-dataset manifest; repo README/data_info.py describes TabMini's 25 datasets instead",
+  "parity5 raw dataset, which must be fetched from PMLB/OpenML rather than being packaged in the repo",
+  "Exact LogisticRegression wrapper with the paper's λ grid [0.5,0.1,0.02,0.004] and nested stratified 3-fold CV, unless example.py already matches it",
+  "Precomputed PMLBmini logistic-regression result for parity5; this can be recomputed cheaply"
+ ],
+ "blockers_seen": [
+  "Repository/paper suite mismatch: TabMini 25 datasets vs PMLBmini 44 datasets",
+  "parity5 is not in the packaged dataset list",
+  "Full example may pull in AutoGluon/AutoPrognosis/HyperFast/TabPFN, which are irrelevant, heavy, and may not install cleanly on Windows/Python 3.12",
+  "PMLB/OpenML fetch requires network and may have dependency/version issues"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "3-10 minutes, dominated by installing scikit-learn/pmlb and downloading parity5; the nested-CV LR fits are milliseconds on 32 samples",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 8,
+  "gpu_speedup": null,
+  "basis": "One 32-example parity5 dataset with a 4-value λ grid under nested stratified 3-fold CV; each logistic-regression fit is tiny, so command time is mostly package installation and data download."
+ },
+ "repo_info": {
+  "url": "https://github.com/RicardoKnauer/TabMini",
+  "cloned": true,
+  "n_files": 160,
+  "n_python": 22,
+  "python2_style_files": 0
+ }
+}

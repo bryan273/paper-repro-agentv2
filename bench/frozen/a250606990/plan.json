@@ -1,0 +1,77 @@
+{
+ "approach": "Use the authors' released repository directly: clone it, install numpy, run py/run.py once from the repo root to confirm the shipped Iris pipeline works, then write a thin reproduce.py that imports py/LO_K_means.py and drives the authors' K-means and Min-D-LO routines with controlled paired initializations (seeds 0..19, K=5) on data/Iris.txt. reproduce.py only orchestrates the released code and computes the clustering loss externally as the raw sum of squared Euclidean distances, so R1–R14 are satisfied by the authors' implementation rather than a rewrite. It records per-run losses, mean, variance and minimum for both K-means and Min-D-LO in results/metrics.json and checks the paper's C1/C2 values at 10% relative tolerance. A 2-run smoke run proves the data flow before the 20-run full run, which takes seconds on CPU.",
+ "files": [
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin wrapper: imports the authors' py/LO_K_means.py, loads data/Iris.txt as raw features, builds 20 paired random initializations (K distinct points sampled without replacement, seeds 0..19), runs K-means and Min-D-LO to convergence, computes raw sum-of-squared-Euclidean loss externally, writes results/metrics.json with per-run losses, mean/variance/min, and pass/fail checks against C1=57.32 and C2=57.54 at 10% relative tolerance. Supports --runs N and --smoke for a 2-run smoke test.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/lmingyi/LO-K-means",
+  "dataset": "Iris, data/Iris.txt (repo)",
+  "N": "150 (paper)",
+  "d": "4 (paper)",
+  "K": "5 (paper, Table 1)",
+  "n_runs": "20 (paper, Sec 5.1)",
+  "seeds": "0..19, one per run (assumption A2)",
+  "initialization": "sample K distinct data points uniformly without replacement and use them as initial centers (paper Algorithm 1 Line 1; R3); same initial centers for both algorithms in each run (R11)",
+  "weights": "unit weight for every point (assumption A1)",
+  "distance": "squared Euclidean, ||x-c||_2^2 (paper Sec 2.1; R10)",
+  "preprocessing": "raw Iris features, no standardization (assumption A6)",
+  "loss_normalization": "none; raw sum of weighted squared distances (paper Table 1; assumption A8; R10)",
+  "convergence": "run until assignment vector no longer changes; no iteration cap (paper Sec 5.3.2; assumption A7; R12)",
+  "tie_break_assignment": "smallest cluster index, matching np.argmin (paper Algorithm 1 Line 5; R2)",
+  "empty_cluster_repair": "move the first valid point index from another cluster satisfying s_b(P) > w_g and x_g != c_b (assumption A3; R5; R14)",
+  "min_d_lo_tie_break": "first (n, k2) in nested loop order n=1..N, k2=1..K excluding k1 (assumption A4; R7)",
+  "center_update": "recompute weighted arithmetic mean from current assignments (assumption A5; R1)",
+  "variance": "population variance np.var(ddof=0) of the 20 losses; also report ddof=1 and std for transparency (assumption A10)",
+  "paper_values": {
+   "kmeans_mean": 57.54,
+   "kmeans_variance": 9.78,
+   "min_d_lo_mean": 57.32,
+   "min_d_lo_variance": 9.83
+  },
+  "tolerance": "10% relative on means: accept if |measured - paper| / paper <= 0.10",
+  "metric_output": "results/metrics.json"
+ },
+ "steps": [
+  "git clone https://github.com/lmingyi/LO-K-means into ./LO-K-means (if not already present); pip install numpy (already installed, verify import); confirm data/Iris.txt exists and py/LO_K_means.py and py/run.py are present.",
+  "Inspect the authors' code without modifying it: print inspect.signature for the K-means and repair functions in py/LO_K_means.py, check how py/run.py loads data, initializes centers, and returns labels/centers/loss. Note the exact function names and whether an initial-center argument is accepted.",
+  "Run the authors' shipped entrypoint once from the repo root: python py/run.py, capture stdout, and confirm it produces an Iris table-like result without errors.",
+  "Write reproduce.py: load Iris with numpy (space-separated, 4 columns; ignore any label column if present), compute clustering loss externally as sum over n of ||x_n - c_{assignment_n}||^2, use the authors' routines for K-means and Min-D-LO, and for each seed generate K distinct point indices via numpy.random.default_rng(seed).choice(N, K, replace=False), using the same starting centers for both algorithms.",
+  "Smoke test: python reproduce.py --smoke --runs 2 --dataset iris. Assert finite losses, loss(kmeans) >= loss(min_d_lo) per run (repair only accepts strictly decreasing moves), and print/write results/smoke_metrics.json.",
+  "Full run: python reproduce.py --runs 20 --dataset iris. Verify per-run losses are finite, clusters are non-empty with distinct centers at convergence (R14), and record mean, ddof=0 variance, ddof=1 variance, std and minimum for K-means and Min-D-LO.",
+  "Cross-check against paper: report measured K-means mean vs 57.54 and Min-D-LO mean vs 57.32 with 10% relative tolerance; write booleans and relative errors into results/metrics.json. If either fails, inspect loss definition (raw sum vs per-point), feature handling, initialization semantics, and whether Min-D-LO was actually invoked after K-means convergence (R6).",
+  "Optional verification: confirm the authors' repair routines implement strict-negative acceptance and exact delta (R7–R9, R13) by reading py/LO_K_means.py; do not modify the file. Finalize results/metrics.json as the claim artifact."
+ ],
+ "smoke_test": "python reproduce.py --smoke --runs 2 --dataset iris --seed-base 0: two paired runs on all 150 Iris points, K=5, printing per-run K-means and Min-D-LO losses and writing results/smoke_metrics.json; asserts loss is finite, Min-D-LO loss <= K-means loss in both runs, and clusters are non-empty.",
+ "intermediate_checks": [
+  "Iris loads as shape (150, 4) with no NaN/inf and no accidental label column.",
+  "Authors' modules import cleanly under Python 3.12 with numpy only; py/run.py completes.",
+  "K=5 <= N=150 and each initialization has K distinct indices.",
+  "Sanity baseline: first-seed K-means loss should be in a plausible Iris range (roughly 40–120 loss units), not 0 or thousands.",
+  "Min-D-LO loss <= K-means loss on every paired run, and repair only runs after K-means assignments stop changing (R6).",
+  "At convergence all 5 clusters are non-empty and centers are distinct (R14).",
+  "Mean over 20 runs is within 10% of 57.54 for K-means and 57.32 for Min-D-LO; variance magnitudes are of order 10, not 1e-6 or 1e3.",
+  "Reported loss is the raw sum over points (not divided by N or K); verify with an independent recomputation from final assignments."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~8 minutes on CPU. Setup 2 min: git clone (seconds), pip install numpy (already present, seconds), inspect authors' code and run py/run.py once (~1 min). Smoke test 1 min: 2 paired runs on Iris. Full run 2 min: 20 paired K-means + Min-D-LO runs on Iris, each <1 ms per the paper, dominated by Python overhead. Verification and metrics writing 2–3 min: recompute loss independently, check non-empty/distinct centers, compare against C1/C2 and write results/metrics.json. No C++ build or large dataset runs are needed for the match target."
+}

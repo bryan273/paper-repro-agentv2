@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average number of outliers detected by PCA, Isolation Forest, and Hotelling T-test at hour 07:00 in Season 1 (value 3.6)",
+  "table_ref": "Table 1, row 07:00, column 'Average number of outliers in Season 1'",
+  "dataset": "Substation 9 of local District Heating System (Niš, Serbia), hourly data 2018-05-05 to 2023-05-01, restricted to heating seasons 11-01 to 04-01"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The methods (z-score, Mahalanobis, PCA, Isolation Forest, Hotelling T2) are trivial to implement on a few thousand hourly points on CPU; the only real cost is obtaining the proprietary SCADA data and re-tuning thresholds to match the expert-chosen values."
+ },
+ "blockers": [
+  "Data is proprietary SCADA data from a specific local district heating substation (Substation 9, Niš, Serbia); no public dataset or data link is provided",
+  "No code repository or configs are linked in the paper",
+  "Thresholds (TMD=1, TPCA=2, CIF=0.015, AH=0.0007) were tuned by subjective expert judgment, so exact reproduction of the counts is not guaranteed even with data",
+  "Season definitions and zero-energy filtering are described only loosely"
+ ],
+ "suitable": false,
+ "id": "2608.11375",
+ "title": "Towards an approach to multivariate outlier detection for District Heating System data",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

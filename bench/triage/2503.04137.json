@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Logistic Regression test accuracy of 0.75 on the balanced BRFSS 2015 diabetes dataset",
+  "table_ref": "Table 7 (classification report of Logistic Regression)",
+  "dataset": "BRFSS 2015 Diabetes Health Indicators (balanced version, 70,692 rows, 21 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The balanced dataset is a small public Kaggle CSV (~70k rows x 22 cols); training sklearn LogisticRegression (lbfgs, L2, 100 iters) plus an 80/20 split takes seconds, so the bulk of time is downloading the data and installing scikit-learn/pandas."
+ },
+ "blockers": [
+  "No code or configs released; the exact preprocessing (min-max scaling, train/test split seed) and hyperparameters (C, max_iter) must be inferred from the text",
+  "Exact 0.75 accuracy may not reproduce bit-for-bit without the original random seed and split"
+ ],
+ "suitable": true,
+ "id": "2503.04137",
+ "title": "A Comparative Study of Diabetes Prediction Based on Lifestyle Factors Using Machine Learning",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

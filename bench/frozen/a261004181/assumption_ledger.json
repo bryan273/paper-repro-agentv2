@@ -1,0 +1,146 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The origin/centering of the age variable Xit in the autism model is not explicitly stated; centering changes the intercept-slope covariance.",
+  "options": [
+   "raw age in years (2,3,5,9,13)",
+   "center age at 2 years",
+   "center age at the mean age"
+  ],
+  "chosen": "raw age in years (2,3,5,9,13)",
+  "rationale": "The paper writes Xit as the child's age and reports the ages as 2, 3, 5, 9, and 13 years; using raw age is the most literal reading.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "where Yit is the score for child i at age Xit",
+  "page": 14
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The coding and reference category of the expressive language group fixed effect Gi is not specified.",
+  "options": [
+   "treatment coding with one baseline factor level",
+   "dummy coding all groups without an intercept",
+   "numeric ordinal coding of groups"
+  ],
+  "chosen": "treatment coding with the data's default factor levels and one baseline category",
+  "rationale": "This is conventional for R factor variables and should not change the primary covariance result much, but it can affect the restricted likelihood through X.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Gi indicates the child’s expressive language group at age two",
+  "page": 14
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether Table 1 uses exact restricted-likelihood nuisance profiling or the one-step nuisance approximation is not explicitly stated for every endpoint.",
+  "options": [
+   "exact maximization over the extended nuisance set",
+   "one-step update from the REML nuisance estimate",
+   "hybrid exact where possible and one-step otherwise"
+  ],
+  "chosen": "exact maximization over the extended nuisance set for Table 1 reproduction",
+  "rationale": "Table 1 is described as profile-score with nuisance parameters partially maximized on the extended set; exact profiling is the direct interpretation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The proposed confidence intervals instead use a nuisance estimator over a larger set.",
+  "page": 6
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The nuisance optimizer's convergence tolerances, iteration cap, and exact trust-region settings are not fully specified.",
+  "options": [
+   "trust-region with expected information, tight gradient tolerance, maximum iterations",
+   "generic Newton optimizer",
+   "grid/coordinate search"
+  ],
+  "chosen": "trust-region with expected information as Hessian proxy, gradient tolerance near 1e-8, and a generous iteration cap",
+  "rationale": "The paper recommends the trust-region expected-information algorithm; precise tolerances must be chosen by the implementation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "This is a nonconvex problem whose objective can be irregular.",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The endpoint search stopping rule and maximum number of test-statistic evaluations are not fully specified.",
+  "options": [
+   "warm-started secant/regula falsi to a tight ψ1 tolerance",
+   "fixed grid followed by refinement",
+   "bisection only"
+  ],
+  "chosen": "warm-started outward secant/regula-falsi search until T crosses q, with tolerance around 1e-6 and a safety cap above the paper's typical 15–20 evaluations",
+  "rationale": "The paper describes outward search, secant prediction, and regula falsi, but not a precise numerical stopping tolerance.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "a limit typically needs 15–20 evaluations of the statistic.",
+  "page": 7
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "How to handle the missing socialization observations among the five possible ages per child is not described in detail.",
+  "options": [
+   "use all available observed scores without imputation",
+   "complete-case only children with all five ages",
+   "impute missing scores"
+  ],
+  "chosen": "use all 610 available observed scores without imputation",
+  "rationale": "The paper explicitly says it uses the 610 observed scores, implying available-case longitudinal analysis.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We use the 610 observed scores on 158 children",
+  "page": 14
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The exact construction of the weight matrix W and whether software weights or explicit row scaling is used are not specified.",
+  "options": [
+   "explicitly multiply Y, X, and Z by W^{1/2} where W has diagonal w_it",
+   "pass weights to lme4 without explicit scaling",
+   "ignore weights and model heteroscedasticity separately"
+  ],
+  "chosen": "explicitly multiply Y, X, and Z by W^{1/2} with diagonal entries w_it = X_it^-2",
+  "rationale": "The paper states this transformation makes the theory and software apply unchanged.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "which is (1) after multiplying Y , X, and Z by W 1/2",
+  "page": 15
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Which REML fit and software should be used to initialize nuisance optimization and endpoint search is not fixed.",
+  "options": [
+   "lme4::lmer REML fit on transformed data",
+   "custom REML optimizer",
+   "reconf internal REML fit"
+  ],
+  "chosen": "obtain a REML estimate first, using lme4 or an equivalent REML fit on the transformed data, then start endpoint search there",
+  "rationale": "The paper says natural starting values come from fitting the model and mentions lme4 for comparison.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How candidates with non-positive-definite Σ(ψ) during nuisance optimization should be handled is not an algorithmic detail specified in full.",
+  "options": [
+   "restrict optimization to the open extended set tildeΥ and reject non-PD candidates",
+   "penalize non-PD candidates",
+   "project to the nearest PD matrix"
+  ],
+  "chosen": "restrict to the open extended set where tildeΣ(ψ) is positive definite and reject non-PD candidates",
+  "rationale": "The extended set is defined by positive definiteness and is open.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Let ˜Υ = {ψ : ˜Σ(ψ) ≻0}, where ≻ denotes positive definiteness",
+  "page": 6
+ }
+]

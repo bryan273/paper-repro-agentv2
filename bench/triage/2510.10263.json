@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "PCA(2D) + K-Means (k=4) clustering achieves Silhouette ≈ 0.413461, CH ≈ 106.77, DB ≈ 0.797568 on the 113-gamer survey data",
+  "table_ref": "Table 5, row 'PCA(2D) + K-Means', k=4",
+  "dataset": "Custom survey of 113 self-identified gamers (from ~236-250 respondents), collected by authors"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Pipeline is trivial (PCA + K-Means on ~113 rows, a few dozen features) and would run in seconds on a CPU; the only real cost is writing the preprocessing/encoding code, but the raw survey data is not available."
+ },
+ "blockers": [
+  "Survey data (113 gamers) is only available 'from the corresponding author upon reasonable request' — not publicly downloadable",
+  "No code or repository linked in the paper",
+  "Preprocessing details (feature consolidation, alias harmonization, category merging) are described only qualitatively, so exact feature matrix cannot be reconstructed"
+ ],
+ "suitable": false,
+ "id": "2510.10263",
+ "title": "Unveiling Gamer Archetypes through Multi modal feature Correlations and Unsupervised Learning",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Video-Zero (Iter 4) with Qwen3-VL-4B achieves 29.75 mIoU on ANet-RTL, compared with the base model's 16.86 mIoU.",
+  "table_ref": "Table 1",
+  "dataset": "ANet-RTL"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Zzz99999/Video-Zero"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The target requires reproducing multi-iteration GRPO self-evolution of a 4B video MLLM on video data, which is far beyond an 8-core CPU/16GB laptop and needs high-memory GPUs; the laptop cannot meaningfully run the protocol."
+ },
+ "blockers": [
+  "Requires training Qwen3-VL-4B with GRPO over multiple self-evolution iterations on video data, which needs high-memory GPUs.",
+  "CPU-only 8-core/16GB laptop cannot load or train a 4B video VLM at the scale needed for this result.",
+  "Exact 600-video sample, full training configs, and dependency details may not be fully packaged in the linked repo.",
+  "Evaluating the full protocol also requires downloading and preparing multiple video benchmarks."
+ ],
+ "suitable": false,
+ "id": "2605.14733",
+ "title": "Video-Zero: Self-Evolution Video Understanding",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Mean accuracy of Quant on the 112 UCR datasets subset (0.8671) or on a single small UCR dataset (e.g., GunPoint) to verify the method's accuracy.",
+  "table_ref": "Figure 1 (MCM) or Figure 6 (MCM) mean accuracy for Quant",
+  "dataset": "UCR Time Series Classification Archive (112 or 142 datasets)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/angus924/quant"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The method is a simple feature transform (quantiles over fixed intervals) plus extremely randomized trees; the paper reports <15 min total for 142 datasets on one CPU core, so a single small dataset or the 112-dataset subset should run in minutes on a laptop."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2308.00928",
+ "title": "QUANT: A Minimalist Interval Method for Time Series Classification",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

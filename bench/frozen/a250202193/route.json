@@ -1,0 +1,44 @@
+{
+ "route": "paper_only",
+ "why": "The only linked/cloned repository is aappleby/smhasher, which is the upstream C++ MurmurHash + hash-testing suite the paper cites as its hash primitive. It contains no Bloom filter, no Rational Bloom filter, no Variably-Sized Block Bloom filter, no Figure 6 experiment driver and no data-generation scripts. There is therefore no author entrypoint that produces C1 or C2, and nothing to run 'as released'. The claims are, however, small and fully specified (m=8192, n=1000, k*=5.678, 10,000 non-inserted queries, MurmurHash + double hashing), so they can be reimplemented directly from the paper's description with a Python Bloom filter plus an mmh3/pure-Python MurmurHash3-64 primitive. Missing code is cheap to rebuild, so a faithful reimplementation of the C1 inequality (with C2 as a free cross-check) is the right plan.",
+ "repo": "https://github.com/aappleby/smhasher",
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Rational Bloom filter (floor(k) hashes + one hash activated with probability frac(k)) implementation",
+  "Standard Bloom filter baseline used in Figure 6",
+  "Variably-Sized Block Bloom filter implementation (needed only for the secondary figure, not for C1)",
+  "Figure 6 experiment driver (k sweep, m/n settings, 10,000-query FPR measurement)",
+  "Data generator for the synthetic insertion / disjoint query sets (paper gives the recipe only)",
+  "Any author config or seed list tying the runs to the reported curve"
+ ],
+ "blockers_seen": [
+  "The linked repository is a hash-function test suite (C++, CMake), not the paper's Bloom filter code; running it produces hash benchmarks, not FPR numbers",
+  "No Python code in the repo (n_python=0) and no dependency files, so nothing in it is importable for a Python reproduction",
+  "Paper reports no exact FPR value for the Figure 6 top point, so only the Theorem-1 inequality (RBF_FPR - BF_FPR <= 0) can be targeted, not a numeric FPR",
+  "No GPU on this machine (irrelevant here: the whole experiment is a few million hash computations)"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Under 1 minute of pure-Python compute for the C1 point (1,000 insertions + 10,000 queries at k~6); a few minutes if the full Figure 6 k-sweep at both m/n settings is included, plus ~1 minute to install mmh3 (or 0 if MurmurHash3 is implemented in-repo).",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Two 8-16 kbit Python bitsets, 1,000 insertions and 10,000 queries with ~6 double-hashed probes each (about 66k hash evaluations), repeated over ~10 seeds plus a small k-sweep for the C2 cross-check; the cost is dominated by writing and validating the reimplementation, not by the runs."
+ },
+ "repo_info": {
+  "url": "https://github.com/aappleby/smhasher",
+  "cloned": true,
+  "n_files": 47,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

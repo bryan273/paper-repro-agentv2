@@ -1,0 +1,260 @@
+{
+ "title": "Selecting the 7th Smallest of 16 Elements Takes Exactly 28 Comparisons",
+ "summary": "The exact worst-case comparison complexity of selecting small ranks was known only up to 28 ≤ V7(16) ≤ 30 and 28 ≤ V8(16) ≤ 31, left open by the exhaustive search of Dörrer et al. The author runs a fixed-budget forward search with information-greedy comparison ordering and depth-first proof-number search, producing explicit decision-DAG certificates (Rust programs in the format of [5]) that an independently written static checker, an exact path-enumerating oracle, and a Lean 4 kernel verify. The result is V7(16) = 28 and V8(16) ∈ {28, 29}, plus V5(17) = 27 and new upper bounds 29, 30, 31, 31 for ranks 6–9 of 17 elements, together with a new Fussenegger–Gabow-style leaf lower bound Φ* that nevertheless cannot settle V8(16) ≥ 29.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "There exists a 329-function decision-DAG certificate of depth 28 that selects the 7th smallest (0-based rank 6) of 16 distinct elements, i.e. V7(16) ≤ 28, improving the previous upper bound of 30.",
+   "metric": "worst-case number of comparisons (depth of the decision tree/DAG)",
+   "dataset": "16 distinct elements, all total orders (worst case over inputs)",
+   "split": "full adversarial input space (exact oracle over all paths; 2·10^7 pseudorandom permutations as a sanity test)",
+   "value": 28,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V7(16) ≤ 28' (329 functions, 5 s, SHA-256 prefix eb8f064c12bb); also Table 1, row n=16, column i=7",
+   "config_for_value": "Depth-first proof-number search (df-pn) at the fixed budget k = 28 for 0-based rank 6 of 16 elements, single thread, AMD Ryzen 7 5800X; the first comparison on each path is the shared 15-comparison runner-up opening R16, followed by at most 13 further comparisons; certificate accepted by the static checker and by Lean 4 as SelectsWithin(Q, 16, 6, 28).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5 s to find the certificate (single thread); seconds to a few minutes to re-run the static checker and exact oracle on 329 functions",
+   "quote": "We construct algorithms showing V7(16) ≤28 and V8(16) ≤29, improving the previously reported upper bounds of 30 and 31.",
+   "page": 1
+  },
+  {
+   "id": "C2",
+   "statement": "There exists a 2937-function certificate of depth 29 selecting the 8th smallest (0-based rank 7) of 16 elements, i.e. V8(16) ≤ 29, improving the previous upper bound of 31.",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "16 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 29,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V8(16) ≤ 29' (2937 functions, 5 min, SHA-256 prefix 2e9615ae1d9b); Table 1, row n=16, column i=8",
+   "config_for_value": "df-pn at budget 29 for 0-based rank 7 of 16 elements, single thread; the certificate also passes through the 15-comparison R16 opening; verified by the checker, the exact oracle, and Lean (SelectsWithin(Q,16,7,29)).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5 min search single thread (Table 3; Table 4 reports 320 s for the same instance) plus minutes of checking 2937 functions",
+   "quote": "Theorem 2. V8(16) = V9(16) ≤29. Hence V8(16) ∈{28, 29}.",
+   "page": 1
+  },
+  {
+   "id": "C3",
+   "statement": "A 146-function certificate of depth 27 selects the 5th smallest (0-based rank 4) of 17 elements, meeting the lower bound [5], i.e. V5(17) = 27.",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "17 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 27,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V5(17) ≤ 27' (146 functions, 103 s, SHA-256 prefix 34e26f201b68); Table 2, row n=17, column i=5",
+   "config_for_value": "df-pn widened to representations of at most 19 elements, budget 27, rank 4 of 17, single thread; Lean-checked as SelectsWithin(Q,17,4,27).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~103 s search single thread plus checking 146 functions",
+   "quote": "For 17 elements, we establish V5(17) = 27 and improve the upper bounds for ranks 6 through 9 to 29, 30, 31, and 31, respectively.",
+   "page": 1
+  },
+  {
+   "id": "C4",
+   "statement": "V6(17) ≤ 29, witnessed by a 266-function certificate of depth 29 (previous bound 28–31).",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "17 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 29,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V6(17) ≤ 29' (266 functions, 89 s, SHA-256 prefix ae6d6b42e1c4); Table 2, row n=17, column i=6",
+   "config_for_value": "df-pn at budget 29 for 0-based rank 5 of 17 elements, single thread; Lean-checked as SelectsWithin(Q,17,5,29).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~89 s search single thread plus checking 266 functions",
+   "quote": "Moreover V6(17) ≤29, V7(17) ≤30, V8(17) ≤31, and V9(17) ≤31.",
+   "page": 1
+  },
+  {
+   "id": "C5",
+   "statement": "V7(17) ≤ 30, witnessed by a 977-function certificate of depth 30.",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "17 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 30,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V7(17) ≤ 30' (977 functions, 8 min, SHA-256 prefix 33718071f64a); Table 2, row n=17, column i=7",
+   "config_for_value": "df-pn at budget 30 for 0-based rank 6 of 17 elements, single thread; Lean-checked as SelectsWithin(Q,17,6,30).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~8 min search single thread plus checking 977 functions",
+   "quote": "Moreover V6(17) ≤29, V7(17) ≤30, V8(17) ≤31, and V9(17) ≤31.",
+   "page": 1
+  },
+  {
+   "id": "C6",
+   "statement": "V8(17) ≤ 31, witnessed by a 1077-function certificate of depth 31.",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "17 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 31,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V8(17) ≤ 31' (1077 functions, 19 min, SHA-256 prefix 5925b96967a8); Table 2, row n=17, column i=8",
+   "config_for_value": "df-pn at budget 31 for 0-based rank 7 of 17 elements, single thread; Lean-checked as SelectsWithin(Q,17,7,31).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~19 min search single thread plus checking 1077 functions",
+   "quote": "Moreover V6(17) ≤29, V7(17) ≤30, V8(17) ≤31, and V9(17) ≤31.",
+   "page": 1
+  },
+  {
+   "id": "C7",
+   "statement": "V9(17) ≤ 31, witnessed by a 1493-function certificate of depth 31 (previous range 29–35).",
+   "metric": "worst-case number of comparisons (decision-tree depth)",
+   "dataset": "17 distinct elements, all total orders (worst case)",
+   "split": "full adversarial input space",
+   "value": 31,
+   "unit": "comparisons",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row 'V9(17) ≤ 31' (1493 functions, 63 min, SHA-256 prefix 9ce649f22b2d); Table 2, row n=17, column i=9",
+   "config_for_value": "df-pn at budget 31 for 0-based rank 8 of 17 elements, single thread; Lean-checked as SelectsWithin(Q,17,8,31).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~63 min search single thread plus checking 1493 functions",
+   "quote": "Moreover V6(17) ≤29, V7(17) ≤30, V8(17) ≤31, and V9(17) ≤31.",
+   "page": 1
+  },
+  {
+   "id": "C8",
+   "statement": "The static checker reproduces the known optimal costs of all 70 published optimal algorithms of [5] and rejects every one of 12,046 generated wrong/ill-formed mutant programs.",
+   "metric": "number of published optimal algorithms accepted with their exact known costs (and mutant rejection rate)",
+   "dataset": "the 70 archived optimal algorithms from Dörrer et al. [5]; 12,046 generated mutants",
+   "split": "full set (no train/test split)",
+   "value": 70,
+   "unit": "algorithms accepted out of 70",
+   "higher_is_better": true,
+   "table_ref": "Section 3.2, paragraph 'Tests'",
+   "config_for_value": "Checker written from the mathematical definitions without access to the search code, accepting only a narrow grammar; each certificate must be accepted at exactly its published cost and each mutant rejected.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (70 certificates + 12,046 mutants)",
+   "quote": "The checker accepts all 70 optimal algorithms published with [5] with exactly their known costs",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user's hint is V7(16) ≤ 28, and this is also the paper's headline result and by far the cheapest to reproduce: a single 329-function certificate whose depth the static checker computes exactly, found by df-pn in 5 s on one core, and the only artifact needed to see the central contribution (no lower-bound computation, no [5] search code, no Lean required for the bound itself)."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4 applies: no std over repeated runs is reported, the metric is not a percentage/accuracy-like score and is not a bounded score in [0,1], so the band is 10% relative = ±2.8 comparisons on 28. Because the quantity is an integer worst-case depth computed exactly by the checker, a faithful reproduction lands on exactly 28; values below 28 would be a strictly stronger result, and any value above 28 (in particular the paper's own baseline 30, which falls inside the numeric band) must be recorded as a failed reproduction of the claim."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the standard deterministic decision-tree model: internal nodes are comparisons of two elements, leaves return an element, and the cost of an algorithm is the depth of the tree (worst case), not the number of functions/nodes.",
+   "cite": "Section 3.1",
+   "quote": "An input follows a single root-to-leaf path, so the worst-case number of comparisons is the depth of the tree",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Represent the certificate as a DAG obtained by merging identical subtrees: a set of functions, each solving a declared subproblem (n, 0-based rank r, known relations), with a root called on the empty order.",
+   "cite": "Section 3.1",
+   "quote": "Merging identical subtrees turns the tree into a directed acyclic graph. Our certificates are such graphs",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Annotations are not trusted: the checker must recompute each function's precondition as the relations known at every call site, propagating from the root, and only accept the program if every possible caller state is handled.",
+   "cite": "Section 3.2",
+   "quote": "It never uses the relations stated in comments. Instead it propagates knowledge from the root",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Reject a comparison of two elements whose order is already implied by the accumulated partial order (wasted comparison).",
+   "cite": "Section 3.2, rule 1",
+   "quote": "compared elements are incomparable before the comparison (this rejects wasted comparisons; soundness does not need it)",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Only discard an element that is provably below the requested 0-based rank (at least m − r known successors) or provably above it (at least r + 1 known predecessors), and pass the callee the rank r minus the number of elements discarded below.",
+   "cite": "Section 3.2, rules 3–4",
+   "quote": "each discarded element is certainly below the requested 0-based rank r among m elements",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "A directly returned element must have exactly r known predecessors and m − 1 − r known successors in the current partial order.",
+   "cite": "Section 3.2, rule 5",
+   "quote": "a directly returned element has exactly r known predecessors and m −1 −r known successors",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Compute the comparison bound backward over the call graph: a return costs 0, a comparison costs one plus the larger cost of its two branches; the root's cost is the reported worst case.",
+   "cite": "Section 3.2, 'Comparison bound'",
+   "quote": "a return costs 0, and a comparison costs one more than the larger cost of its two branches",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Check structural well-formedness: every function is reachable from the root, the root is never called by another function, and the call graph has no cycles (which also gives termination).",
+   "cite": "Section 3.2",
+   "quote": "It also checks that every function is reachable, the root is never called, and the call graph is acyclic.",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Maintain the partial order under union with a comparison outcome by transitive closure, i.e. P + ab is the closure of P plus the relation a < b.",
+   "cite": "Section 2",
+   "quote": "P + ab denotes the transitive closure of P with a < b added.",
+   "page": 2
+  },
+  {
+   "id": "R10",
+   "stmt": "Sanity-test the checker against ground truth: it must accept all 70 optimal programs of [5] at exactly their known costs, reject all generated mutants, and agree with an independent exact oracle that enumerates every path (checker bound = true worst case).",
+   "cite": "Section 3.2, 'Tests'; Theorem 1 lower bound sourcing",
+   "quote": "An independently written exact oracle, following every path without intersecting preconditions, confirms each of our certificates",
+   "page": 4
+  },
+  {
+   "id": "R11",
+   "stmt": "Provide a formal (Lean 4) witness for the bound: prove ∃Q SelectsWithin(Q, n, r, w) for the relevant triples, with SelectsWithin meaning 'returns, on every list of n distinct naturals, the input with exactly r smaller inputs, using at most w comparisons'.",
+   "cite": "Section 3.3",
+   "quote": "The development proves that acceptance by a checker implies the predicate",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Reproduce the shared 15-comparison opening of the 28-comparison certificate: 8 disjoint pairs, 4 group finals, 3 runner-up comparisons yielding the canonical order R16 (16 elements, rank 7, 13 comparisons left), then an irregular endgame of at most 13 further comparisons.",
+   "cite": "Section 4 and Figure 1",
+   "quote": "The 329-function certificate opens with 15 comparisons that reach the same partial order on every input",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "Code, certificates, static checker, exact oracle and Lean proofs (GitHub)",
+   "how_to_get": "Clone https://github.com/JCremerr/selection-7-of-16"
+  },
+  {
+   "name": "Archived release v1.0.0 (Zenodo, DOI 10.5281/zenodo.23346948)",
+   "how_to_get": "Resolve https://doi.org/10.5281/zenodo.23346948 and download release v1.0.0"
+  },
+  {
+   "name": "The 70 published optimal selection algorithms of Dörrer et al. [5] (ground truth for the checker)",
+   "how_to_get": "Published with SEA 2025 paper doi:10.4230/LIPIcs.SEA.2025.16; the authors' search code and optimal algorithms are public (credited in the Acknowledgments) and are also bundled/used by the repository above"
+  },
+  {
+   "name": "Evaluation corpora used for the lower bound section (partial orders up to 9 elements; 1,663,508 solved reduced problems)",
+   "how_to_get": "Generated by the authors' exact solver in the archived repository; no separate public dataset exists"
+  }
+ ],
+ "code_links": [
+  "https://github.com/JCremerr/selection-7-of-16",
+  "https://doi.org/10.5281/zenodo.23346948"
+ ],
+ "stated_compute": "found by proof-number search (single thread, AMD Ryzen 7 5800X)",
+ "paper_meta": {
+  "source": "2610.18740",
+  "kind": "arxiv",
+  "arxiv_id": "2610.18740",
+  "url": "https://arxiv.org/abs/2610.18740",
+  "title": "Selecting the 7th Smallest of 16 Elements Takes Exactly 28 Comparisons",
+  "pages": 11
+ }
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Residual GCN improves spatial-failure MAE by 0.0391 (95% hierarchical interval 0.0151–0.0662) on the expanded zero-shot OSM panel (13 areas).",
+  "table_ref": "Table 5, row GCN, column Spatial cluster",
+  "dataset": "13 cached OpenStreetMap road networks (48–1,259 nodes) in six Asian countries, with synthetic training graphs"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/lee-vtruong/ResiliRoad",
+  "doi:10.5281/zenodo.22307723"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "The paper reports CPU-only training (PyTorch CPU, 16 logical cores) with tiny graphs (≤1,259 nodes) and small models (~10k parameters); the expanded zero-shot protocol trains on 400 synthetic scenarios per mode and evaluates 20 scenarios per area/mode/seed across 13 areas, which should take well under an hour on a laptop, plus install and data download."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2609.11166",
+ "title": "When does a spectral prior help graph learning? Connectivity-loss estimation under road-network disruptions",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

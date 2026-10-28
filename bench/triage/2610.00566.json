@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Leiden (CPM) with adaptation achieves F-score 95.522% (PPV 95.933%, SEN 95.115%) on the NHLS HIV cohort, a 36.8% reduction in linkage error vs transitive closure",
+  "table_ref": "Table S4B",
+  "dataset": "NHLS HIV cohort (6.9M record edge list)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "Requires the de-identified 6.9M-record NHLS edge list (not public, ethics-restricted) plus reimplementing center/merge-center/weighted-diameter from pseudocode and tuning Leiden/CPM parameters; the paper reports ~2 min per Leiden run on 4 cores/32GB but the graph is multi-GB and the full tuning sweep plus 5-run averaging dominates."
+ },
+ "blockers": [
+  "NHLS HIV cohort edge list is confidential/ethics-restricted, not downloadable",
+  "No code repository linked in the paper",
+  "Synthetic 7M dataset also not publicly available (only generator code)",
+  "Weighted diameter code only from authors; center/merge-center only pseudocode"
+ ],
+ "suitable": false,
+ "id": "2610.00566",
+ "title": "Probabilistic linkage with graphs: leveraging cluster structure to improve the accuracy of entity resolution at scale",
+ "pages": 44,
+ "model": "DeepSeek-V4.1-Flash"
+}

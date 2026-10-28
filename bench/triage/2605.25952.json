@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "VEN-VL with a Qwen3-0.6B LLM backbone retains 7.5% of visual tokens and reaches 50.3 on AI2D, outperforming token-pruning baselines under identical training data (stop-pruning comparison).",
+  "table_ref": "Table 2 (VEN-VL row, AI2D column), ablated in Table 3",
+  "dataset": "LLaVA-1.5 instruction data (alignment: LCS-558K; SFT: ~10M mixed instruction data), evaluated on AI2D"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RobertLuo1/VEN-VL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 64,
+  "disk_gb": 300,
+  "ref_minutes": 200000,
+  "gpu_speedup": 50,
+  "basis": "Every headline/number in Tables 1-3 comes from a freshly trained VLM (frozen-encoder alignment stage on 558K pairs plus full SFT on a ~10M-sample instruction mix with MoE experts, dual encoders and SIP loss); even the smallest backbone (Qwen3-0.6B) needs a multi-day GPU training run, which is orders of magnitude beyond an 8-core CPU-only laptop."
+ },
+ "blockers": [
+  "No trained checkpoints or reproducible configs are guaranteed by the single GitHub link; results in the paper come from training, not inference of a released model",
+  "Requires two-stage VLM training (alignment + SFT) on ~10M instruction samples with MoE visual experts, SIP loss and custom merge operators",
+  "Two visual encoders (CLIP-ViT-L/14-336 and RADIOv2.5) plus variable-resolution tiling; heavy preprocessing/feature extraction",
+  "The only seemingly training-free result (applying HTE to Kimi-VL-16B-A3B, Table 7) requires inference of a 16B MoE model over full MME/MMB/GQA/AI2D/TextVQA benchmarks, far beyond 16 GB RAM / CPU",
+  "No GPU available in the target environment; training would be infeasible on CPU"
+ ],
+ "suitable": false,
+ "id": "2605.25952",
+ "title": "VEN-VL: A Visual Ensemble MoE Framework for Effective and Efficient Multi-Modal Understanding",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

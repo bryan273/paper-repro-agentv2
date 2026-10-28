@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "PocketSR achieves LPIPS 0.2713 on the RealSR benchmark, outperforming AdcSR (0.2885) and OSEDiff (0.2921).",
+  "table_ref": "Table 2, RealSR row, LPIPS column",
+  "dataset": "RealSR [44]"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/black-forest-labs/flux",
+  "https://github.com/madebyollin/taesd",
+  "https://huggingface.co/stabilityai/sd-turbo"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 500,
+  "ref_minutes": 1000000,
+  "gpu_speedup": 100,
+  "basis": "The target requires reproducing a trained 146M-parameter one-step diffusion SR model (168k training steps at batch 64 on 512px images) plus RealSR evaluation, and no PocketSR code or weights are released, making a CPU-only laptop run effectively infeasible."
+ },
+ "blockers": [
+  "No official PocketSR code or pretrained weights are released",
+  "Requires training a diffusion U-Net for 168,000 steps at batch size 64",
+  "Training needs GPU(s); CPU-only laptop is impractical",
+  "Training data (LSDIR ~500K images + FFHQ 10K) requires large download/disk",
+  "Architecture and pruning details are incomplete for exact reimplementation"
+ ],
+ "suitable": false,
+ "id": "2510.03012",
+ "title": "PocketSR: The Super-Resolution Expert in Your Pocket Mobiles",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

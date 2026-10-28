@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "NDCG@100 of the best BPR configuration on ML-20M (0.4012, from Table 5, SGD + adaptive negative sampling)",
+  "table_ref": "Table 5",
+  "dataset": "MovieLens-20M"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/nemexur/revisit-bpr"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "Training a BPR model with 1024-dim embeddings on ML-20M (9.7M interactions) for 1000 epochs plus hyperparameter search; the paper's code is available but may require adaptation, and the exact hyperparameters for the target cell are not fully specified in the text."
+ },
+ "blockers": [
+  "Exact hyperparameters (learning rate, regularization values) for the target cell are not given in the paper; they are only in the GitHub repo, which may be incomplete or outdated.",
+  "The paper's code is a research prototype; reproducing the exact number may require debugging and re-implementation of some parts."
+ ],
+ "suitable": true,
+ "id": "2409.14217",
+ "title": "Revisiting BPR: A Replicability Study of a Common Recommender System Baseline",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

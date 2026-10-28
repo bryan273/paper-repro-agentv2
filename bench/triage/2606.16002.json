@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "AUC of ODSVM-200 (SUM) on the Ecoli dataset when the minority class is treated as the one class, compared to OCSVM baseline.",
+  "table_ref": "Table 2, row Ecoli, column 'OCSVM-200 SUM' under 'One = minority class'",
+  "dataset": "Ecoli (imbalanced-learn, 35 minority / 301 majority, 7 dimensions)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ToshiHayashi/ODSVM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Ecoli is tiny (336 samples, 7 features); training 200 one-sample OCSVMs and scoring is seconds of CPU work, dominated by pip install and dataset download."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.16002",
+ "title": "Decomposing one-class support vector machine into an ensemble of one-data support vector machines",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "Text-image CLIP similarity of 0.7676 for the proposed method (Ours) in the quantitative comparison",
+  "table_ref": "Table 1",
+  "dataset": "5 stories, 35 prompts, 20 samples per prompt (700 generated images)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/VideoCrafter/TaleCrafter"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 1440,
+  "gpu_speedup": 20,
+  "basis": "The target requires the full multi-component system (S2P with GPT-4, T2L trained on Object365, C-T2I based on Stable Diffusion with LoRA personalization, and I2V), generating 700 images with 50-step DDIM sampling; no code or data is released, and the pipeline depends on GPT-4 and large-scale training."
+ },
+ "blockers": [
+  "No code or model weights released (only a project page link)",
+  "Requires GPT-4 API for S2P component",
+  "Requires training T2L on Object365 (2M images, 30M boxes)",
+  "Requires training C-T2I on Flickr30k and fine-tuning Stable Diffusion",
+  "Requires training personalized LoRA weights for each character",
+  "Generating 700 images with diffusion models is computationally heavy and impractical on CPU"
+ ],
+ "suitable": false,
+ "id": "2305.18247",
+ "title": "TaleCrafter: Interactive Story Visualization with Multiple Characters",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

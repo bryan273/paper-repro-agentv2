@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "IterComp achieves a Complex score of 0.4873 on T2I-CompBench, outperforming all baselines.",
+  "table_ref": "Table 2",
+  "dataset": "T2I-CompBench"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/YangLing0818/IterComp"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 2880,
+  "gpu_speedup": 10,
+  "basis": "Training requires 4 A100 GPUs for multiple iterations, and evaluation on T2I-CompBench involves generating thousands of images."
+ },
+ "blockers": [
+  "Requires 4 NVIDIA A100 GPUs for training",
+  "Training involves multiple iterations and large datasets",
+  "Evaluation requires generating many images and computing metrics"
+ ],
+ "suitable": false,
+ "id": "2410.07171",
+ "title": "IterComp: Iterative Composition-Aware Feedback Learning from Model Gallery for Text-to-Image Generation",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

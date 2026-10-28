@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Global LightGBM with station identifiers achieves PICP of 98.85% on Divvy bike-share demand (2023 train / 2024 test)",
+  "table_ref": "Table 5 / Conclusions (PICP for Divvy, global model)",
+  "dataset": "Chicago Divvy bike-share hourly demand 2023-2024 (11.5M trips, 1,782 stations)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 300,
+  "basis": "No code released; must rebuild full pipeline (Divvy trip download/aggregation to 3.5M station-hours, ACS/CTA spatial joins, PCA+K-means clustering, LightGBM quantile models for global/cluster/station schemes) from prose only, though LightGBM on CPU is feasible."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Full pipeline must be re-implemented from prose: feature engineering, lag structure, hyperparameters, cluster count unspecified",
+  "Large raw data (11.5M trips) download and hourly aggregation required",
+  "Exact PICP value depends on unspecified LightGBM hyperparameters and feature set"
+ ],
+ "suitable": false,
+ "id": "2509.08214",
+ "title": "Comparative Analysis of Global and Local Probabilistic Time Series Forecasting for Contiguous Spatial Demand Regions",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

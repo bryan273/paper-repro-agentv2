@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "CF-GAN achieves 24.13 FID on edges2shoes with 4.77 GFLOPs and 2.56 MB model size",
+  "table_ref": "Table 1, row CF-GAN, column FID",
+  "dataset": "edges2shoes"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 480,
+  "gpu_speedup": 20,
+  "basis": "Paper reports 8 GPU hours for the full coarse-to-fine search on edges2shoes; no code released, so the entire supernet training, three-stage search, and fine-tuning pipeline must be reimplemented from scratch, which is infeasible on a CPU-only laptop within a few hours."
+ },
+ "blockers": [
+  "No code or model release",
+  "Full NAS pipeline (supernet pretraining + path/operator/channel search + fine-tuning) must be reimplemented from scratch",
+  "Requires GPU training (8 GPU hours reported)",
+  "FID evaluation requires a pretrained Inception network"
+ ],
+ "suitable": false,
+ "id": "2104.09223",
+ "title": "Coarse-to-Fine Searching for Efficient Generative Adversarial Networks",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

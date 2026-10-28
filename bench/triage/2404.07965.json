@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "RHO-1-Math 1.1B achieves 29.8% few-shot accuracy on GSM8K after continual pretraining on 9B selected tokens from OpenWebMath.",
+  "table_ref": "Table 1, row 'RHO-1-Math 1.1B', column 'GSM8K'",
+  "dataset": "OpenWebMath (14B tokens) for pretraining; GSM8K for evaluation"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 10080,
+  "gpu_speedup": null,
+  "basis": "The target requires training a reference model on 0.5B high-quality math tokens, scoring 14B tokens, and then training a 1.1B model on 9B selected tokens. The paper reports using 32 H100 GPUs for 3.5 hours for 15B tokens; scaling to 9B tokens on a single GPU would take days, and the full pipeline (reference model training, scoring, selective training) is far beyond a few hours on a laptop."
+ },
+ "blockers": [
+  "No code or model release found",
+  "Requires training a reference model and a 1.1B model on billions of tokens",
+  "Needs GPU cluster (32 H100s in paper)",
+  "High-quality math reference data (0.5B tokens) is not publicly released"
+ ],
+ "suitable": false,
+ "id": "2404.07965",
+ "title": "Rho-1: Not All Tokens Are What You Need",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

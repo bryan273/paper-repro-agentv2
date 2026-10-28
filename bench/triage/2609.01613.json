@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Qwen2.5-VL-3B + SAS retains 68.0% average Hit@1 (99% of dense) with 36.6% FLOPs and 1.44x end-to-end speedup.",
+  "table_ref": "Table 3, row Qwen2.5-VL-3B + SAS",
+  "dataset": "MMEB retrieval split (12 benchmarks)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/GaoMengGladys/SAS"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 10080,
+  "gpu_speedup": 50,
+  "basis": "The target requires LoRA fine-tuning Qwen2.5-VL-3B on MMEB (paper uses 8x H100 for Stage I), training the Stage-II exit classifier, and evaluating SAS over 12 retrieval benchmarks, so it cannot be trained or fully evaluated on a normal CPU laptop within hours."
+ },
+ "blockers": [
+  "Stage I uses 8 NVIDIA H100 GPUs with LoRA on Qwen2.5-VL-3B",
+  "Full 12-benchmark MMEB retrieval evaluation is large and latency/FLOPs measurements assume A100-class GPU execution",
+  "SAS training code/configs are only advertised via a GitHub link and are not fully specified in the paper",
+  "Reproducing the speedup/FLOPs claim requires reimplementing influence-aware token filtering and adaptive early exit on top of Qwen2.5-VL"
+ ],
+ "suitable": false,
+ "id": "2609.01613",
+ "title": "Skim and Skip: Hierarchical Adaptive Inference for Efficient Multimodal Retrieval",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

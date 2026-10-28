@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "RSIF achieves AP = 0.17 on the glass dataset, outperforming IF (0.13), LOF (0.15), HBOS (0.15), ECOD (0.12), and SF (0.14).",
+  "table_ref": "Table 1, row 'glass', column 'RSIF'",
+  "dataset": "glass (214 examples, 7 numeric features, 4.21% outliers)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/SebChw/RSIF"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The glass dataset is tiny (214x7) and RSIF is a tree ensemble with default 100 trees and subsample 256; the official repository provides code and data, so a single run of 10 trials should take under a minute on CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2502.19122",
+ "title": "Random Similarity Isolation Forests",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,193 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Whether the final test-time SVD is fitted on the training split only or on train+validation.",
+  "options": [
+   "train only",
+   "train+validation",
+   "train+validation+test (leaky)"
+  ],
+  "chosen": "train only",
+  "rationale": "Validation is described only for selecting γ; using train only avoids leakage, but the paper does not explicitly state final refit behavior.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "we use the same train/validation/test splits as done in [He et al., 2020; Shen et al., 2021; Sachdeva et al., 2022].",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Ranking candidate set and negative-sampling protocol for HR/NDCG/PSP.",
+  "options": [
+   "full ranking over all unseen items",
+   "100 sampled negatives per user",
+   "use official baseline evaluation code"
+  ],
+  "chosen": "full ranking over all unseen items",
+  "rationale": "The paper only names the metrics and reuses prior splits; full ranking is the cleanest reproducible choice, but sampled negatives could change absolute values.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": "We evaluate the accuracy of all of the methods using HR@k, NDCG@k, and PSP@k",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether training interactions are removed from the candidate ranking list.",
+  "options": [
+   "exclude training items",
+   "do not exclude training items"
+  ],
+  "chosen": "exclude training items",
+  "rationale": "Standard top-k recommendation evaluation hides already-observed training interactions; the paper does not spell this out.",
+  "source": "convention",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "How to handle zero-degree users or items during symmetric normalization.",
+  "options": [
+   "clamp degree to 1",
+   "add epsilon",
+   "drop zero-degree nodes"
+  ],
+  "chosen": "clamp zero degrees to 1",
+  "rationale": "Normalization needs a defined inverse; clamping avoids division by zero while preserving matrix shape.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "DU = diagMat(R · 1) and DI = diagMat(1T R) are degree matrices.",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Exact randomized SVD backend, oversampling, power iterations, and random seed.",
+  "options": [
+   "scipy.sparse.linalg.svds with fixed seed",
+   "sklearn randomized_svd with default oversampling",
+   "torch.linalg.svd dense"
+  ],
+  "chosen": "scipy.sparse.linalg.svds with fixed seed 0, k=m",
+  "rationale": "The paper cites Halko et al. but gives no implementation details or seed.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "We use a fast randomized truncated SVD [Halko et al., 2011]",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The exact rounding rule for m when γ×min(|U|,|I|) is non-integer.",
+  "options": [
+   "floor",
+   "round to nearest",
+   "ceil"
+  ],
+  "chosen": "round to nearest integer",
+  "rationale": "The paper writes a rounding function around the product, which most naturally means nearest integer.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we use m = ⌊γ × min(|U|, |I|)⌉",
+  "page": 5
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Whether to enforce zero diagonal/self-similarity or any Lagrangian diagonal constraint.",
+  "options": [
+   "no diagonal constraint",
+   "zero the diagonal of B",
+   "zero self-scores in R̂"
+  ],
+  "chosen": "no diagonal constraint",
+  "rationale": "SVD-AE is described as not needing the EASE-style diagonal constraint or regularizer.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Unlike previous methods, SVD-AE does not require an additional regularizer by directly using the truncated SVD as a low-rank inductive bias",
+  "page": 5
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "NDCG@k formulation, especially relevance and discount.",
+  "options": [
+   "binary relevance with 1/log2(rank+1) discount",
+   "graded relevance",
+   "exponential gain"
+  ],
+  "chosen": "binary relevance with 1/log2(rank+1) discount",
+  "rationale": "The data are treated as implicit positive interactions and the paper cites standard HR/NDCG/PSP metrics.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Exact PSP@k propensity formula and implementation.",
+  "options": [
+   "official EASE/∞-AE PSP implementation",
+   "reimplement Jain et al. formula",
+   "use uniform propensity"
+  ],
+  "chosen": "reuse official EASE/∞-AE PSP implementation",
+  "rationale": "The paper cites Jain et al. for PSP@k but does not give the formula in text.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "We evaluate the accuracy of all of the methods using HR@k, NDCG@k, and PSP@k",
+  "page": 5
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "How to binarize ML-1M ratings into implicit interactions.",
+  "options": [
+   "all rated items positive",
+   "only ratings above a threshold positive",
+   "rating value as relevance"
+  ],
+  "chosen": "all rated items positive",
+  "rationale": "The paper states all user-item interactions are treated as positive implicit feedback.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "all user-item interactions are treated as positive, so that all the datasets are implicit feedback.",
+  "page": 13
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Tie-breaking when multiple items receive equal recommendation scores.",
+  "options": [
+   "score descending then item id ascending",
+   "score descending then item id descending",
+   "random tie-break with fixed seed"
+  ],
+  "chosen": "score descending then item id ascending",
+  "rationale": "Tie-breaking is not specified; deterministic item-id ordering makes runs reproducible.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Whether raw R̂ scores are used directly or post-normalized/sigmoid-transformed.",
+  "options": [
+   "raw R̂ entries",
+   "row-wise softmax/sigmoid",
+   "normalize each user row"
+  ],
+  "chosen": "raw R̂ entries",
+  "rationale": "The method defines R̂=R̃B and top-k ranking can use raw entries; no post-processing is mentioned.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Thus, the following is the reconstructed (or inferred) interaction matrix ˆR for recommendation:",
+  "page": 4
+ }
+]

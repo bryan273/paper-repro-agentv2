@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MAE of BiasedMF on MovieLens 100K = 0.754",
+  "table_ref": "Table 2, row MovieLens 100K, column BiasedMF",
+  "dataset": "MovieLens 100K"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/KNODIS-Research-Group/choice-of-mf-models",
+  "https://github.com/ferortega/cf4j"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The target is a single MAE cell from a grid search over 3 latent factors × 4 iteration counts × 4 learning rates × 4 regularization values × 4 folds = 768 BiasedMF runs on a small 100K-rating dataset; the Java CF4J framework is CPU-only and each run is seconds to a minute, so total command time is a few hours including setup and data download."
+ },
+ "blockers": [
+  "The linked repository may not contain the exact experiment configuration or may be outdated; the paper does not provide a runnable script for the full grid search.",
+  "The exact random seed and data split are not specified in the paper, so exact reproduction of the reported average may require reverse-engineering the code."
+ ],
+ "suitable": true,
+ "id": "2410.17644",
+ "title": "Comprehensive Evaluation of Matrix Factorization Models for Collaborative Filtering Recommender Systems",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

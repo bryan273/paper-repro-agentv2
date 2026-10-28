@@ -1,0 +1,259 @@
+{
+ "title": "Generalized implementation of invariant coordinate selection with positive semi-definite scatter matrices",
+ "summary": "Classical invariant coordinate selection (ICS) requires two positive definite scatter matrices and becomes unsolvable when collinearity makes at least one scatter matrix singular. The paper proposes and studies three generalizations: a Moore-Penrose pseudo-inverse approach, a dimension-reduction preprocessing approach, and a generalized singular value decomposition approach. Theoretically and empirically, GSVD appears most promising because it preserves affine invariance, treats V1 and V2 symmetrically, and can recover structure in null-space directions, whereas GINV and DR have important limitations.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "In the illustrative simulation with W1=I2 and W2=diag(2,0), ICS using the Moore-Penrose pseudo-inverse of V1 yields two unit eigenvalues: ρ1=ρ2=1.",
+   "metric": "eigenvalue pair ρ1=ρ2",
+   "dataset": "Simulated Gaussian mixture from Section 2.3 (n=1000, 20 outliers, p=4, W1=I2, W2=diag(2,0))",
+   "split": "not applicable (single simulated sample)",
+   "value": 1.0,
+   "unit": "eigenvalue (dimensionless); companion claim C2 gives ρ3=ρ4=0",
+   "higher_is_better": false,
+   "table_ref": "Figure 2 caption (left panel), Example 1",
+   "config_for_value": "Theoretical scatter functionals V1=diag(W1,0) and V2=diag(W1, εW2), W1=I2, W2=diag(2,0), p=4, ε=20/1000, GINV V1^+V2, eigenvalues sorted descending",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s (4x4 eigenproblem; simulation ~1 s)",
+   "quote": "with ρ1 = ρ2 = 1 and ρ3 = ρ4 = 0",
+   "page": 8
+  },
+  {
+   "id": "C2",
+   "statement": "In the same illustrative GINV simulation, the two remaining eigenvalues are zero: ρ3=ρ4=0.",
+   "metric": "eigenvalue pair ρ3=ρ4",
+   "dataset": "Simulated Gaussian mixture from Section 2.3 (n=1000, 20 outliers, p=4, W1=I2, W2=diag(2,0))",
+   "split": "not applicable (single simulated sample)",
+   "value": 0.0,
+   "unit": "eigenvalue (dimensionless); companion claim C1 gives ρ1=ρ2=1",
+   "higher_is_better": false,
+   "table_ref": "Figure 2 caption (left panel), Example 1",
+   "config_for_value": "Theoretical scatter functionals V1=diag(W1,0) and V2=diag(W1, εW2), W1=I2, W2=diag(2,0), p=4, ε=20/1000, GINV V1^+V2",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "with ρ1 = ρ2 = 1 and ρ3 = ρ4 = 0",
+   "page": 8
+  },
+  {
+   "id": "C3",
+   "statement": "After the Toeplitz affine transformation X*=AX, GINV gives ρ1=1.12 and ρ2=1 instead of the exact two-unit pattern, and ρ3, ρ4 are numerically nonzero.",
+   "metric": "largest GINV eigenvalue ρ1",
+   "dataset": "Transformed simulated data X*=AX from Section 2.3",
+   "split": "not applicable (single simulated sample)",
+   "value": 1.12,
+   "unit": "eigenvalue (dimensionless)",
+   "higher_is_better": false,
+   "table_ref": "Figure 2 caption (right panel), Example 2",
+   "config_for_value": "GINV of V1 on XnA, with A the p×p Toeplitz matrix defined in Section 2.3, W1=I2, W2=diag(2,0)",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "with ρ1 = 1.12, ρ2 = 1 and ρ3 = 1.4e−15, ρ4 = −2.3e−16.",
+   "page": 8
+  },
+  {
+   "id": "C4",
+   "statement": "In the same simulated example, GSVD recovers the outlier direction with an infinite eigenvalue and two unit finite eigenvalues: ρ1=∞ and ρ2=ρ3=1.",
+   "metric": "GSVD eigenvalues (ρ1; ρ2=ρ3)",
+   "dataset": "Simulated Gaussian mixture from Section 2.3 (n=1000, 20 outliers, p=4, W1=I2, W2=diag(2,0))",
+   "split": "not applicable (single simulated sample)",
+   "value": 1.0,
+   "unit": "finite eigenvalue ρ2=ρ3=1 (ρ1=∞; dimensionless)",
+   "higher_is_better": false,
+   "table_ref": "Figure 3 caption, Example 3",
+   "config_for_value": "GSVD of XV1 and XV2 with cross-product scatter matrices, W1=I2, W2=diag(2,0)",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "with ρ1 = ∞, ρ2 = ρ3 = 1",
+   "page": 12
+  },
+  {
+   "id": "C5",
+   "statement": "For the nearly singular HTP3 industrial data, three common SVD rank criteria give rank(Xn) estimates of 23, 33, and 3 respectively.",
+   "metric": "estimated rank(Xn)",
+   "dataset": "HTP3 data (R package ICSOutlier)",
+   "split": "not applicable (benchmark dataset)",
+   "value": 23.0,
+   "unit": "rank (number of dimensions)",
+   "higher_is_better": false,
+   "table_ref": "Subsection 4.2.1, text",
+   "config_for_value": "Relative rank criteria: λi/λ1 < sqrt(ν), λi/λ1 < max(n,p)ν, and cumulative squared eigenvalues < 0.99; n=371, p=33",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "Here, we obtain respectively a rank of 23, 33 or 3 based on the different criteria",
+   "page": 15
+  },
+  {
+   "id": "C6",
+   "statement": "For the collinear HTP2 industrial data, SVD rank estimates are 138 with the first criterion and 141 with the second, while the inertia-based criterion gives 1.",
+   "metric": "estimated rank(Xn)",
+   "dataset": "HTP2 data (R package ICSOutlier)",
+   "split": "not applicable (benchmark dataset)",
+   "value": 138.0,
+   "unit": "rank (number of dimensions)",
+   "higher_is_better": false,
+   "table_ref": "Subsection 4.3, text",
+   "config_for_value": "HTP2 n=149, p=457; rank criteria from Subsection 4.2 on original data",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "It is estimated to 138 with the first criterion mentioned in Subsection 4.2, 141 with the second and even to 1",
+   "page": 16
+  },
+  {
+   "id": "C7",
+   "statement": "For HTP2 with GSVD of COV and GCOV4, the GSVD estimates 141 non-trivial eigenvalues and identifies the defective part stably on original and standardized data.",
+   "metric": "number of non-trivial GSVD eigenvalues",
+   "dataset": "HTP2 data (R package ICSOutlier)",
+   "split": "not applicable (benchmark dataset)",
+   "value": 141.0,
+   "unit": "eigenvalues (count)",
+   "higher_is_better": false,
+   "table_ref": "Subsection 4.3, text",
+   "config_for_value": "GSVD of COV and GCOV4 on HTP2 original or standardized data",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes",
+   "quote": "It is noteworthy that the GSVD estimates 141 non-trivial eigenvalues.",
+   "page": 17
+  },
+  {
+   "id": "C8",
+   "statement": "In the collinear clustering simulation, GINV with COV-COV4 returns 5 components, and the last two have almost zero eigenvalues 1.5e−15 and −2.5e−18.",
+   "metric": "number of GINV components retained",
+   "dataset": "Simulated Gaussian mixture from Section 4.1 (n=1000, d=5, two collinear variables)",
+   "split": "not applicable (single simulated sample)",
+   "value": 5.0,
+   "unit": "components (count)",
+   "higher_is_better": false,
+   "table_ref": "Subsection 4.1.1, text and Figure 4",
+   "config_for_value": "V1=COV, V2=COV4, GINV; n=1000, d=5, X4=X2−3X3, X5=X3+5X4",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For GINV, 5 components are illustrated but the last two are associated with almost zero eigenvalues: 1.5e−15 and −2.5e−18.",
+   "page": 14
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint explicitly targets the GINV illustrative eigenvalue pattern. This is the cheapest faithful check: it is a 4×4 eigenproblem and captures the central GINV limitation, i.e. only the range of V1 is searched; the companion claim C2 records the two zero eigenvalues that show W2's outlier direction is missed."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: no standard deviation is reported, the target is not a bounded accuracy-like score, and eigenvalues are unbounded. A 10% relative band is used around the finite target ρ=1 (absolute ±0.1); for the companion zero eigenvalues, the same absolute 0.1 band is used because a relative band at zero is undefined."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement GINV by solving V1^+ V2 b = ρ b, replacing the inverse of V1 by its Moore-Penrose pseudo-inverse when V1 is singular.",
+   "cite": "Section 3.1, Eq. (7)",
+   "quote": "using the Moore-Penrose pseudo-inverse of V1 leads to optimize",
+   "page": 8
+  },
+  {
+   "id": "R2",
+   "stmt": "Construct V1^+ from the spectral decomposition of V1, retaining only the r1 nonzero eigenvalues and corresponding eigenvectors; do not invert zero eigenvalues.",
+   "cite": "Section 3.1, spectral decomposition of V1",
+   "quote": "with Λ−1 r1 containing only the inverse of the r1 nonzero eigenvalues of V1.",
+   "page": 7
+  },
+  {
+   "id": "R3",
+   "stmt": "For the illustrative example, use p=4 dimensions with W1=I2 and W2=diag(2,0).",
+   "cite": "Section 2.3",
+   "quote": "W1 = I2 and W2 = diag(2, 0).",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Generate the illustrative data with n=1000 observations and exactly 20 outliers.",
+   "cite": "Section 2.3",
+   "quote": "we generate 1000 observations with exactly 20 outliers, W1 = I2 and W2 = diag(2, 0).",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "For the exact eigenvalue check, use the theoretical scatter functionals V1=diag(W1,0) and V2=diag(W1, εW2), not sample estimates.",
+   "cite": "Section 2.3",
+   "quote": "a theoretical “perfectly robust” scatter functional V1 = diag(W1, 0)",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Keep the GINV roles asymmetric: V1 is the singular scatter matrix whose pseudo-inverse is taken; do not swap V1 and V2 for this target.",
+   "cite": "Remark 1",
+   "quote": "The roles of V1 and V2 are not exchangeable anymore.",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Report the GINV limitation that directions in null(V1) minus null(V2), where W2's outlier structure lies, are not recoverable by the pseudo-inverse approach.",
+   "cite": "Remark 1",
+   "quote": "if b ∈null(V1) −null(V2), then ρ = ∞.",
+   "page": 8
+  },
+  {
+   "id": "R8",
+   "stmt": "Return all four eigenvalues for the original simulated data, with two eigenvalues equal to one and two equal to zero.",
+   "cite": "Example 1",
+   "quote": "We obtain two eigenvalues equal to one since V1 is two-dimensional and two others equal to zero.",
+   "page": 8
+  },
+  {
+   "id": "R9",
+   "stmt": "If implementing the affine-transformation counterexample, apply the Toeplitz matrix A and verify that GINV eigenvalues change from the exact 1,1,0,0 pattern.",
+   "cite": "Example 2",
+   "quote": "we obtain two different eigenvalues, ρ1 = 1.12 and ρ2 = 1 instead of the two equal to one",
+   "page": 9
+  },
+  {
+   "id": "R10",
+   "stmt": "For the GSVD comparison, express both scatter matrices as cross-products XV1 and XV2 and solve β_i^2 V2 b_i = α_i^2 V1 b_i.",
+   "cite": "Section 3.3, Eq. (12)",
+   "quote": "we propose to solve the slightly modified following problem for i = 1, . . . , p",
+   "page": 11
+  },
+  {
+   "id": "R11",
+   "stmt": "Use R 4.3.3 and the paper's listed R packages (ICS, ICSClust, ICSOutlier, rrcov, geigen), or document exact equivalents.",
+   "cite": "Computational details",
+   "quote": "All computations are performed with R version 4.3.3 [38] and uses the R packages ICS[31] for ICS",
+   "page": 18
+  },
+  {
+   "id": "R12",
+   "stmt": "For DR comparisons, implement the paper's relative eigenvalue rank criteria and report that rank estimation is unstable.",
+   "cite": "Subsection 4.2.1",
+   "quote": "it is common practice to use a relative rule to estimate the rank based on the first eigenvalue",
+   "page": 15
+  }
+ ],
+ "data": [
+  {
+   "name": "Simulated Gaussian mixture from Section 2.3",
+   "how_to_get": "Generate n=1000, p=4 data with 980 rows from N(0, diag(W1,0)) and 20 rows from N(0, diag(W1,W2)), where W1=I2 and W2=diag(2,0); use a fixed seed. For the exact eigenvalue target, use the theoretical scatter matrices V1=diag(W1,0) and V2=diag(W1, eps*W2)."
+  },
+  {
+   "name": "HTP3 industrial data",
+   "how_to_get": "Available in the R package ICSOutlier (CRAN), as stated in the paper."
+  },
+  {
+   "name": "HTP2 industrial data",
+   "how_to_get": "Available in the R package ICSOutlier (CRAN), as stated in the paper."
+  },
+  {
+   "name": "Replication code",
+   "how_to_get": "https://github.com/AuroreAA/ICS_PSD_Replication"
+  }
+ ],
+ "code_links": [
+  "https://github.com/AuroreAA/ICS_PSD_Replication"
+ ],
+ "stated_compute": "All computations are performed with R version 4.3.3 [38] and uses the R packages ICS[31] for ICS, ICSClust[3], ICSOutlier[32], rrcov[45] for the MCD scatter matrix and geigen[17] for computing GSVD.",
+ "paper_meta": {
+  "source": "2409.02258",
+  "kind": "arxiv",
+  "arxiv_id": "2409.02258",
+  "url": "https://arxiv.org/abs/2409.02258",
+  "title": "Generalized implementation of invariant coordinate selection with positive semi-definite scatter matrices",
+  "pages": 21
+ }
+}

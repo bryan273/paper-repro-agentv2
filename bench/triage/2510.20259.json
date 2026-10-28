@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Fence coefficient for FDR (BH) at 0.01 with n=50 (k=1) on normal mixture data, averaged over 5000 replicates, equals 2.08.",
+  "table_ref": "Table 2, row 'FDR (BH) at 0.01', column 'k = 1'",
+  "dataset": "Simulated normal mixture: 99% N(0,1) + 1% N(5,1), n=50, 5000 replicates"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/bgang92/AdaptiveBoxplot"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Simulation of 5000 small datasets (n=50) with simple normal mixture and BH procedure; trivial CPU workload, but requires implementing the pipeline from scratch since only the R package (not simulation code) is linked."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2510.20259",
+ "title": "Unifying Boxplots: A Multiple Testing Perspective",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

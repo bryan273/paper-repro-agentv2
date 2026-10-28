@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "K-Means (scikit-learn) final inertia score is non-repeatable across 30 replications when using 4 OpenMP threads on the Iris dataset (bitwise repeatability fails)",
+  "table_ref": "Table 4",
+  "dataset": "Iris (UCI, 150 instances, 4 features)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://gitlab.limos.fr/anbertrand1/repeatability_quest_clustering",
+  "https://github.com/scikit-learn/scikit-learn/issues/27518"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Iris is tiny; 30 K-Means runs with n_init=5 at 4 threads take seconds, plus pip install of scikit-learn/numpy and a UCI download; the main cost is writing the harness and comparing JSON outputs."
+ },
+ "blockers": [
+  "The exact non-repeatability depends on OpenMP thread scheduling and CPU architecture; a laptop with 8 cores may not reproduce the same bitwise differences as the paper's 208-thread Xeon, so the qualitative claim (inertia differs across runs) may or may not appear",
+  "GitLab repo link may be inaccessible/private; code must be rewritten from the paper's described protocol"
+ ],
+ "suitable": true,
+ "id": "2512.19772",
+ "title": "A K-Means, Ward and DBSCAN repeatability study",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

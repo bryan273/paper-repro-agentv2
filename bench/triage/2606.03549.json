@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "OOB score / selected number of trees T for the proposed triplet-based plateau search on a single benchmark dataset (e.g., one UCI dataset), compared to TPE/Hyperband baselines",
+  "table_ref": "Section IV experimental results (main comparison table)",
+  "dataset": "one classical benchmark dataset (e.g., a small UCI dataset)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lange-am/rf_plateau_hpo"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "basis": "Random Forest HPO with Optuna over many trials on a small tabular dataset is CPU-only but requires running the full plateau-search protocol (multiple trials, several forest sizes) plus baselines; a few hours on 8 cores is plausible."
+ },
+ "blockers": [
+  "code repo may be incomplete/outdated relative to paper",
+  "full protocol involves many Optuna trials and multiple baselines, not a single quick run",
+  "exact headline cell may require reproducing the whole comparison pipeline"
+ ],
+ "suitable": true,
+ "id": "2606.03549",
+ "title": "How Many Trees in a Random Forest? A Revisited Approach with Plateau Search and Optuna Integration",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

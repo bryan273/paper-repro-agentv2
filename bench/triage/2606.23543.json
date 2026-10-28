@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "At a matched 10K SFT budget, two rounds of VeriEvol evolution improve the five-benchmark mean accuracy from 35.42 to 36.79 (+1.37) over one round of evolution.",
+  "table_ref": "Table 4 / Section 4.3 (Scaling Axis 4: evolution depth at fixed budget)",
+  "dataset": "Five-benchmark visual math suite at 10K SFT samples: MathVista_MINI, MathVision_MINI, MathVerse-VO, DynaMath, We-Math"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/",
+  "https://github.com/StarsfieldAI/R1-V",
+  "https://huggingface.co/datasets/Open-Bee/Honey-Data-15M"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 300,
+  "ref_minutes": 100000,
+  "gpu_speedup": 1000,
+  "basis": "The target requires constructing two rounds of evolved SFT data with proprietary teacher models, fine-tuning Qwen2.5-VL-7B twice on 10K samples, and evaluating five multimodal math benchmarks; this is far beyond an 8-core CPU / 16 GB laptop and the released links do not point to the VeriEvol code or the evolved corpora."
+ },
+ "blockers": [
+  "Requires fine-tuning Qwen2.5-VL-7B, which is not feasible on an 8-core CPU / 16 GB RAM laptop without a GPU.",
+  "Data construction uses closed-source proprietary teachers (Seed-2.0-Pro for SFT, Gemini-3-flash for RL), so the evolution step cannot be reproduced from the paper alone.",
+  "The listed code links are a generic GitHub placeholder and an unrelated R1-V repository; no usable VeriEvol code/config release is provided.",
+  "The evolved 10K SFT one-round and two-round corpora and model checkpoints needed for the target are not directly downloadable from the provided links.",
+  "Evaluation on five VLMEvalKit benchmarks requires substantial multimodal model inference even after training."
+ ],
+ "suitable": false,
+ "id": "2606.23543",
+ "title": "VeriEvol: Scaling Multimodal Mathematical Reasoning via Verifiable Evol-Instruct",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

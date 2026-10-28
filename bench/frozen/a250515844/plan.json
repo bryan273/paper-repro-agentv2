@@ -1,0 +1,460 @@
+{
+ "approach": "Reimplement the paper's pipeline from the claim contract because no author code exists. The critical path is the full-feature stack for C1-C3: load and validate the Full-Filled Brain Stroke dataset, hard-code the Table-2 label map, apply IQR cleaning to the continuous columns, split 80/20 stratified with random_state=42, scale continuous features on train only, apply SMOTE to train only, build 10-fold OOF probability meta-features from Random Forest, XGBoost, LightGBM and SVC, and train a logistic-regression meta-learner. Baselines C4-C6 are single LightGBM runs on the full, correlation-selected and RF-selected feature sets; C7 is the paper's alternate RF-selected stack. reproduce.py calls the shared experiment runner and writes results/metrics.json with C1's accuracy and the C2/C3/other claim metrics. Use Table 7/R14 fixed hyperparameters for the final C1 run, with an optional GridSearchCV verification script for R8.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Extra packages beyond the pre-installed stack: imbalanced-learn, xgboost, lightgbm, kagglehub, joblib.",
+   "requirement_ids": [
+    "R1",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "config.py",
+   "purpose": "Single source of truth: paths, seed, Table-2 label maps, feature lists, split/SMOTE/CV/OOF settings, fixed base-model and meta-learner hyperparameters, claim targets.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "download_data.py",
+   "purpose": "Acquire the public Full-Filled Brain Stroke CSV via kagglehub/Kaggle API, copy it to data/stroke.csv, and validate shape, columns and target.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "data_utils.py",
+   "purpose": "Load/validate data, apply hard-coded Table-2 encoding, IQR outlier removal on continuous columns, build full/correlation/RF feature sets, stratified 80/20 split, train-only StandardScaler, train-only SMOTE.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "models.py",
+   "purpose": "Factories for RandomForest, XGBoost, LightGBM, SVC, LogisticRegression meta-learner, and the alternate C7 base learners; all hyperparameters imported from config.",
+   "requirement_ids": [
+    "R9",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "tune.py",
+   "purpose": "Optional R8 verification: stratified 5-fold GridSearchCV optimizing ROC-AUC for the four C1 base learners; writes results/tuning.json and does not change the final Table 7 fixed C1 model unless explicitly requested.",
+   "requirement_ids": [
+    "R8",
+    "R13"
+   ]
+  },
+  {
+   "path": "stacking.py",
+   "purpose": "Build 10-fold stratified OOF predicted probabilities, fit meta-learner, refit base learners on full SMOTE train, predict test probabilities and classes at threshold 0.5.",
+   "requirement_ids": [
+    "R9",
+    "R10",
+    "R11",
+    "R14"
+   ]
+  },
+  {
+   "path": "evaluate.py",
+   "purpose": "Compute accuracy, precision, recall, F1, ROC-AUC and confusion matrix; compare C1-C7 claims to targets and write pass/fail fields.",
+   "requirement_ids": [
+    "R12"
+   ]
+  },
+  {
+   "path": "run_experiments.py",
+   "purpose": "Orchestrate the full run: C1-C3 full-feature stack, C4 full-feature LightGBM, C5 correlation LightGBM, C6 RF-selected LightGBM, C7 alternate RF-selected stack; supports --smoke and --check modes.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: run the full experiment and write results/metrics.json; --smoke runs a tiny data-flow test.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "seed": "42 (A6; used for split, SMOTE, OOF folds, RF, XGBoost, LightGBM, SVC, LR)",
+  "paths": {
+   "raw_csv": "data/stroke.csv",
+   "results_dir": "results",
+   "metrics_json": "results/metrics.json",
+   "tuning_json": "results/tuning.json",
+   "smoke_metrics_json": "results/smoke_metrics.json"
+  },
+  "dataset": {
+   "kaggle_slug": "zzettrkalpakbal/full-fi-lled-brain-stroke-dataset (R1)",
+   "expected_raw_rows": "4981 (R1; warn and stop to reconcile if the downloaded Full-Filled variant has a different row count)",
+   "expected_raw_cols": "11 (R1)",
+   "target": "stroke (R1)",
+   "predictors": [
+    "gender",
+    "age",
+    "hypertension",
+    "heart_disease",
+    "ever_married",
+    "work_type",
+    "Residence_type",
+    "avg_glucose_level",
+    "bmi",
+    "smoking_status"
+   ]
+  },
+  "label_maps": {
+   "source": "R2/Table 2; hard-coded, never sklearn LabelEncoder default",
+   "gender": {
+    "Male": 0,
+    "Female": 1,
+    "Other": 2
+   },
+   "ever_married": {
+    "No": 0,
+    "Yes": 1
+   },
+   "work_type": {
+    "Private": 0,
+    "Self-employed": 1,
+    "Govt_job": 2,
+    "children": 3,
+    "Never_worked": 4
+   },
+   "Residence_type": {
+    "Urban": 0,
+    "Rural": 1
+   },
+   "smoking_status": {
+    "formerly smoked": 0,
+    "never smoked": 1,
+    "smokes": 2,
+    "Unknown": 3
+   }
+  },
+  "outlier_removal": {
+   "method": "IQR bounds Q1 - 1.5*IQR and Q3 + 1.5*IQR (R3)",
+   "columns": [
+    "age",
+    "avg_glucose_level",
+    "bmi"
+   ],
+   "fit_on": "full cleaned dataset before the train/test split (A4)",
+   "expected_rows_after": "4337 (R3; log actual and stop if far off)"
+  },
+  "feature_sets": {
+   "full": [
+    "gender",
+    "age",
+    "hypertension",
+    "heart_disease",
+    "ever_married",
+    "work_type",
+    "Residence_type",
+    "avg_glucose_level",
+    "bmi",
+    "smoking_status"
+   ],
+   "correlation": [
+    "age",
+    "hypertension",
+    "ever_married",
+    "heart_disease",
+    "bmi",
+    "smoking_status",
+    "work_type"
+   ],
+   "correlation_source": "R4/A7; Table 4's 7 listed correlation features, including work_type and excluding avg_glucose_level",
+   "rf_selected": "top 7 by RandomForestClassifier(n_estimators=200, min_samples_split=2, random_state=42) fit on cleaned full data before split (R4; log the exact selected list)",
+   "rf_selected_expected_size": "7 (R4)"
+  },
+  "split": {
+   "test_size": "0.2 (R5)",
+   "stratify": "stroke (R5)",
+   "random_state": "42 (R5)",
+   "expected_test_rows": "868 (R5)"
+  },
+  "scaling": {
+   "scaler": "StandardScaler (R6)",
+   "columns": [
+    "age",
+    "avg_glucose_level",
+    "bmi"
+   ],
+   "fit_on": "training set only (R6)"
+  },
+  "smote": {
+   "library": "imbalanced-learn SMOTE",
+   "k_neighbors": "5 (R7)",
+   "random_state": "42 (A6)",
+   "sampling_strategy": "auto, balance minority to majority (R7)",
+   "apply_to": "training set only, before 5-fold CV and before 10-fold OOF (A5/R7)",
+   "expected_balanced_total": "6624 with 3312 per class if the split matches Table 6 (R7; log actual and do not fail if row counts differ slightly)"
+  },
+  "gridsearch": {
+   "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42) (R8)",
+   "scoring": "roc_auc (R8)",
+   "n_jobs": "-1",
+   "enabled_in_reproduce": "false; final C1 uses Table 7 fixed values (A3)",
+   "verification_command": "python tune.py --quick (R8)",
+   "grids": {
+    "RandomForest": {
+     "n_estimators": [
+      100,
+      200
+     ],
+     "max_depth": [
+      10,
+      15,
+      null
+     ],
+     "min_samples_split": [
+      2
+     ]
+    },
+    "XGBoost": {
+     "n_estimators": [
+      100,
+      200
+     ],
+     "learning_rate": [
+      0.1,
+      0.2
+     ],
+     "max_depth": [
+      4,
+      7
+     ]
+    },
+    "LightGBM": {
+     "n_estimators": [
+      100,
+      200
+     ],
+     "learning_rate": [
+      0.1,
+      0.2
+     ],
+     "max_depth": [
+      4,
+      7
+     ]
+    },
+    "SVC": {
+     "C": [
+      0.1,
+      1.0,
+      10.0
+     ],
+     "kernel": [
+      "rbf"
+     ],
+     "gamma": [
+      "scale"
+     ],
+     "class_weight": [
+      "balanced"
+     ]
+    }
+   }
+  },
+  "oof": {
+   "cv": "StratifiedKFold(n_splits=10, shuffle=True, random_state=42) (R10)",
+   "meta_features": "predicted P(stroke=1) from each base model, not hard labels (R11)",
+   "n_meta_features": "4 for C1-C3 (one per base model)"
+  },
+  "base_models": {
+   "RandomForest": {
+    "n_estimators": "200 (A3/Table 7 RF)",
+    "max_depth": "15 (A3)",
+    "min_samples_split": "2 (A3)",
+    "class_weight": "balanced (R15)",
+    "random_state": "42 (A6)",
+    "n_jobs": "-1"
+   },
+   "XGBoost": {
+    "n_estimators": "200 (R13/Table 7)",
+    "learning_rate": "0.2 (R13)",
+    "max_depth": "7 (R13)",
+    "scale_pos_weight": "1 after SMOTE (A8/R15)",
+    "eval_metric": "logloss",
+    "tree_method": "hist",
+    "random_state": "42 (A6)",
+    "n_jobs": "-1"
+   },
+   "LightGBM": {
+    "n_estimators": "200 (R13/Table 7)",
+    "learning_rate": "0.2 (R13)",
+    "max_depth": "7 (R13)",
+    "class_weight": "balanced (R15)",
+    "random_state": "42 (A6)",
+    "n_jobs": "-1",
+    "verbosity": "-1"
+   },
+   "SVC": {
+    "C": "1.0 (R14)",
+    "kernel": "rbf (R14)",
+    "gamma": "scale (R14)",
+    "class_weight": "balanced (R14/R15)",
+    "probability": "true (R14/R11)",
+    "random_state": "42 (A6)"
+   }
+  },
+  "meta_learner": {
+   "model": "LogisticRegression (A1/R9)",
+   "C": "1.0",
+   "penalty": "l2",
+   "solver": "lbfgs",
+   "max_iter": "1000",
+   "class_weight": "none (OOF training is SMOTE-balanced)",
+   "random_state": "42 (A6)"
+  },
+  "decision_threshold": "0.5 (A9)",
+  "secondary_c7_stack": {
+   "feature_set": "rf_selected",
+   "base_models": [
+    "DecisionTreeClassifier(random_state=42)",
+    "KNeighborsClassifier(n_neighbors=5)",
+    "GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)",
+    "LogisticRegression(max_iter=1000, random_state=42)",
+    "MLPClassifier(hidden_layer_sizes=(100,), max_iter=500, random_state=42)"
+   ],
+   "meta_learner": "LogisticRegression(max_iter=1000, random_state=42)",
+   "note": "C7 config in claim contract; run after C1-C6 if time remains"
+  },
+  "claims": {
+   "C1": {
+    "metric": "accuracy_pct",
+    "target": 97.2,
+    "tolerance_abs": 2.0,
+    "feature_set": "full",
+    "model": "RF+XGB+LGBM+SVC -> LR stack"
+   },
+   "C2": {
+    "metric": "f1_pct",
+    "target": 97.15,
+    "feature_set": "full",
+    "model": "RF+XGB+LGBM+SVC -> LR stack"
+   },
+   "C3": {
+    "metric": "roc_auc_pct",
+    "target": 99.66,
+    "feature_set": "full",
+    "model": "RF+XGB+LGBM+SVC -> LR stack"
+   },
+   "C4": {
+    "metric": "accuracy_pct",
+    "target": 91.36,
+    "feature_set": "full",
+    "model": "LightGBM"
+   },
+   "C5": {
+    "metric": "accuracy_pct",
+    "target": 91.24,
+    "feature_set": "correlation",
+    "model": "LightGBM"
+   },
+   "C6": {
+    "metric": "accuracy_pct",
+    "target": 90.32,
+    "feature_set": "rf_selected",
+    "model": "LightGBM"
+   },
+   "C7": {
+    "metric": "accuracy_pct",
+    "target": 95.56,
+    "feature_set": "rf_selected",
+    "model": "alternate RF-selected stack"
+   }
+  }
+ },
+ "steps": [
+  "Create the project skeleton and install extras with `pip install -r requirements.txt` (or `pip install imbalanced-learn xgboost lightgbm kagglehub joblib`).",
+  "Implement config.py exactly as above, including the hard-coded Table-2 label maps and the fixed Table 7/R14 model hyperparameters.",
+  "Implement download_data.py. Try kagglehub.dataset_download('zzettrkalpakbal/full-fi-lled-brain-stroke-dataset'); if unavailable, try the Kaggle API with KAGGLE_USERNAME/KAGGLE_KEY; if a local data/raw CSV exists, use it. Copy the found CSV to data/stroke.csv. Validate 4,981 rows and 11 expected columns, or stop with a clear blocker message.",
+  "Implement data_utils.py. Load data/stroke.csv, apply config.label_maps to the categorical columns, and assert no unmapped category remains. Do not call sklearn LabelEncoder.",
+  "Apply IQR removal on age, avg_glucose_level and bmi using the full cleaned dataset before splitting (A4). Log row count before/after and target counts; expect ~4,337 rows.",
+  "Build the three feature sets from config. For rf_selected, fit RandomForestClassifier(n_estimators=200, min_samples_split=2, random_state=42) on cleaned full data and take the top 7 importances; log the selected names. Use the fixed Table-4 correlation list for the correlation set.",
+  "For each feature set used, split 80/20 with stratify=stroke and random_state=42. Fit StandardScaler on the training continuous columns only, transform train/test, then apply SMOTE(k_neighbors=5, random_state=42) to the training set only. Verify the untouched test set still has 868 rows and original prevalence.",
+  "Implement models.py with the four C1 base learners and logistic meta-learner. Implement stacking.py: run StratifiedKFold(n_splits=10, shuffle=True, random_state=42) on the SMOTE-balanced training set, collect each base learner's validation P(stroke=1) into an OOF matrix, fit LogisticRegression on the OOF matrix, refit each base learner on the full SMOTE training set, predict test probabilities, and threshold the meta-probability at 0.5.",
+  "Implement evaluate.py to compute accuracy, precision, recall, F1, ROC-AUC and the confusion matrix on the untouched test set, using stroke=1 as the positive class. Include helper to write claim values in percent and check C1 against 97.2 +/- 2.0.",
+  "Implement run_experiments.py orchestration. The main run executes C1-C3 on the full-feature stack, C4 with a single full-feature LightGBM, C5 with a correlation-feature LightGBM, C6 with an RF-selected LightGBM, and then C7 using the secondary RF-selected stack if time permits.",
+  "Implement reproduce.py. Default mode calls the full experiment and writes results/metrics.json. `--smoke` mode runs the tiny data-flow test. `--check` mode runs only intermediate checks and exits.",
+  "Run `python reproduce.py --smoke` first. Fix data-flow errors before any full fit.",
+  "Run `python reproduce.py --check` and inspect all intermediate checks: raw shape, category maps, IQR row count, test size, SMOTE class counts, OOF matrix shape, finite probabilities, and majority-class baseline.",
+  "Optionally run `python tune.py --quick` for R8 verification. It performs stratified 5-fold GridSearchCV with ROC-AUC over the small config grids and writes results/tuning.json; the final C1 run still uses the fixed Table 7 values unless the runner is explicitly told to use best_params.",
+  "Run `python reproduce.py`. Confirm results/metrics.json contains C1 accuracy, C2 F1, C3 ROC-AUC, C4-C7 baseline accuracies, the exact config, dataset counts, selected RF features, and the C1 pass/fail against 97.2 +/- 2.0.",
+  "If C1 misses the tolerance, inspect the non-test side only: verify SMOTE was train-only, OOF used probabilities, SVC probability=True, Table 7 hyperparameters were used, and the test set was never rescaled or resampled. Do not tune on the test set."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` uses a stratified 300-row subset, test_size=0.2, SMOTE k_neighbors=2, 2-fold OOF, n_estimators=10 for RF/XGB/LGBM, max_iter=100 for LR/MLP, and skips GridSearch and C7. It must print and write results/smoke_metrics.json with non-empty OOF shape (n_train_smoke, 4), finite probabilities in [0,1], a confusion matrix, and accuracy/F1/ROC-AUC for the tiny stack.",
+ "intermediate_checks": [
+  "Raw CSV exists and has shape (4981, 11) with columns gender, age, hypertension, heart_disease, ever_married, work_type, Residence_type, avg_glucose_level, bmi, smoking_status, stroke.",
+  "Target prevalence is approximately 4-5% stroke; print exact counts. A DummyClassifier(strategy='prior') accuracy should be near the majority-class share and its ROC-AUC near 0.5.",
+  "Table-2 hard-coded encoding leaves no NaN and no unmapped category strings; compare value sets before/after mapping.",
+  "IQR removal on age/avg_glucose_level/bmi reduces the dataset to approximately 4,337 rows; log exact before/after and target counts.",
+  "Each 80/20 stratified split has a test set of 868 rows with stroke prevalence matching train (R5).",
+  "SMOTE is applied only after split and only to train; log original train class counts and balanced train class counts (Table 6 target: 3,312/3,312, total 6,624 if the split matches).",
+  "10-fold OOF probability matrix for C1 has shape (n_smote_train, 4), no NaNs, all values in [0,1], and each column has both classes represented.",
+  "SVC is instantiated with probability=True; otherwise OOF meta-features cannot be built.",
+  "Meta-learner output probabilities are finite and the 0.5 threshold produces a sensible confusion matrix; log predicted positive rate.",
+  "Single-model LightGBM on full features should beat the majority baseline substantially, and C1 stack should be at least as strong as the best single model before claiming the stack result."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup and dataset acquisition: 4-6 min. Smoke test and intermediate checks: 3-4 min. Optional GridSearchCV verification: 2-3 min, skippable if time is tight. Full C1-C6 run: 12-18 min on CPU. C7 alternate stack: 3-5 min only if the main run is already within budget. Reporting and JSON validation: 1 min. If the total approaches 30 min, skip tune.py and C7; C1-C3 are already produced by the main full-feature stack run."
+}

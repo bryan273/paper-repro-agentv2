@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Maximum likelihood estimate of the concentration parameter κ̂ = 54.167 for the cuWN (double-contaminated wrapped normal) model fitted to the Col de la Roa wind dataset (Table 6)",
+  "table_ref": "Table 6",
+  "dataset": "Col de la Roa wind dataset (available in R 'circular' package)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is released, so the EM algorithm (with nested optim() over μ, κ, η and hierarchical AIC-based initialization) must be re-implemented from the paper's equations; the data are small and CPU-only, but debugging the EM to match the reported estimates is the main cost."
+ },
+ "blockers": [
+  "No code or supplementary material linked in the paper",
+  "EM/optimization must be re-implemented from equations; exact reproduction of estimates depends on initialization and optimizer settings not fully specified"
+ ],
+ "suitable": true,
+ "id": "2606.29524",
+ "title": "Modelling and detecting mild and gross anomalies in circular data via double-contaminated models",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,128 @@
+{
+ "approach": "The linked repository contains only the raw CDR CSV, so the whole pipeline is rebuilt from the paper's Section III description using scikit-learn + imbalanced-learn (+ xgboost for C6/C7). One data module loads the CSV (from the cloned repo, or a raw GitHub download if the clone is absent), drops rows with missing values, drops the unique phone-number identifier, label-encodes the categorical state/plan fields, applies Min-Max scaling per Eq. 1, applies SMOTE with default 1:1 balancing, then splits 80/20 — the paper's stated order (A1/A8), which puts synthetic minority points in the test set and is the only ordering consistent with a 99.9% RF result. A second, leak-free variant (split first, SMOTE only on the training fold, scaler fit on train) is run alongside and reported as an honest lower bound, since the paper's ordering is a known defect. Random Forest (scikit-learn defaults, A3) and XGBoost (library defaults, A4) are fit over five fixed seeds; accuracy, precision, recall, F1 and ROC AUC are computed with fraud as the positive class (Eqs. 9-12) plus the confusion matrix, and everything is written to results/metrics.json keyed by claim id with the mean over seeds and per-seed values. C8 is reported but explicitly flagged non-reproducible because the paper's matrix sums to 300,000 predictions for a 101,174-record dataset.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Single dict CONFIG with every hyperparameter, path, seed list and variant definition; imported by all other modules. No magic numbers anywhere else.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Dataset acquisition + preprocessing in the paper's order: locate 'Call Details-Data.csv' in the cloned repo (recursive glob) or download it via requests from the GitHub raw URL if missing; load with pandas; detect the label column (binary column whose positive count == 8830); report and drop rows with any missing value (R1); drop the unique 'phone number' identifier column; label-encode state and binary plan columns (A6); MinMaxScaler to [0,1] on all features (R2, Eq. 1); SMOTE(k_neighbors=5, sampling_strategy=1.0) on the full preprocessed frame (R3); then train_test_split(test_size=0.2, stratify=y, random_state=seed). Also exposes build_leakfree() which does split -> fit scaler on train -> SMOTE on train only, for the secondary variant. Returns X_train, X_test, y_train, y_test plus a dict of dataset statistics.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R6",
+    "R7",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/models.py",
+   "purpose": "Factory functions make_rf() and make_xgb() returning the configured estimators (RF: n_estimators=100, criterion='gini', max_depth=None, n_jobs=-1; XGB: n_estimators=100, learning_rate=0.3, max_depth=6, objective='binary:logistic', tree_method='hist', n_jobs=-1), plus evaluate(model, X_test, y_test) returning accuracy (Eq. 9), precision/recall/F1 for the fraud class = 1 (Eqs. 10-12), ROC AUC, and the 2x2 confusion matrix as a dict. xgboost import is guarded: on ImportError the XGB entries are marked 'unavailable' instead of aborting the run.",
+   "requirement_ids": [
+    "R5",
+    "R7",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/run_experiment.py",
+   "purpose": "Orchestrator: loops over CONFIG['variants'] x CONFIG['seeds'] x {RF, XGB}, calls data builders and models, accumulates per-seed metric rows, writes results/metrics.json (mean, std, per-seed list, test-set size, confusion matrix, dataset stats per variant/seed), results/per_seed.csv, a DummyClassifier/most-frequent sanity row, and saves the RF confusion-matrix figure to results/figures/rf_confusion_matrix.png. Maps results onto claim ids C1-C8 with a 'matches_claim' flag using the 1.0-absolute-point tolerance band and a note for C8 that the reported 300,000-prediction matrix is inconsistent with the dataset.",
+   "requirement_ids": [
+    "R5",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin entrypoint: `python reproduce.py` runs the full protocol (all seeds, both variants, both models) and prints the C1-C8 summary table; `python reproduce.py --smoke` runs the reduced smoke configuration; `--variant`, `--seeds`, `--n-estimators` overrides only mutate a copy of CONFIG. Must not contain modelling logic.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "csv_filename": "Call Details-Data.csv (repo file, 8,191,461 B)",
+  "csv_raw_url": "https://raw.githubusercontent.com/jamesrawlins1000/Telecom-CDR-Dataset-/main/Call%20Details-Data.csv (fallback only)",
+  "label_column": "auto-detect: binary column whose positive count == 8830 (README calls it 'churners'); fallback name 'Churn' / 'churners'",
+  "positive_class": "fraud/churn = 1 (A9; low-risk, matches Fig. 4 TP=26,127 for class 1)",
+  "missing_value_policy": "dropna(how='any', axis=0) listwise row deletion (R1, paper Sec III.B)",
+  "dropped_columns": "\"phone number\" (all-unique identifier, A6); any other column with nunique == n_rows auto-dropped",
+  "categorical_encoding": "label/ordinal encoding of 'state' and binary plan columns (label_encode_plans), stated as A6",
+  "scaler": "sklearn MinMaxScaler(feature_range=(0,1)), Eq. 1 (R2); variant 'paper_order' fits it on the full pre-split frame (A1), variant 'leakfree' fits on train only",
+  "smote_k_neighbors": "5 (imbalanced-learn default, assumption A2)",
+  "smote_sampling_strategy": "1.0 -> 1:1 balanced classes (assumption A2)",
+  "smote_placement": "'before_split' for the primary variant (paper Fig. 1 order, A1/A8); 'train_only' for the leak-free variant",
+  "test_size": "0.20 (R4, Sec III.D)",
+  "split_stratify": "y (both classes present in test)",
+  "seeds": "[42, 43, 44, 45, 46] (A5: no seed reported; 42 primary)",
+  "rf_params": "n_estimators=100, criterion='gini', max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', bootstrap=True, n_jobs=-1 (A3: scikit-learn defaults, unreported in paper)",
+  "xgb_params": "n_estimators=100, learning_rate=0.3, max_depth=6, subsample=1.0, colsample_bytree=1.0, objective='binary:logistic', eval_metric='logloss', tree_method='hist', n_jobs=-1 (A4: library defaults)",
+  "metrics": "accuracy, precision, recall, f1, roc_auc (percent, x100) with fraud=1 positive (R8, R9, R12); average='binary'",
+  "tolerance": "absolute 1.0 percentage point on C1 (98.9-100.0)",
+  "smoke_size": 2000,
+  "smoke_estimators": 10,
+  "smoke_seeds": "[42]",
+  "output_json": "results/metrics.json",
+  "output_csv": "results/per_seed.csv",
+  "output_figure": "results/figures/rf_confusion_matrix.png",
+  "timing": "~30-120 s per RF fit, ~1-2 min per XGB fit, ~20-40 s per SMOTE pass"
+ },
+ "steps": [
+  "Environment setup: `pip install -q imbalanced-learn xgboost` (scikit-learn, pandas, numpy, matplotlib, requests already present); verify `python -c \"import sklearn, imblearn, xgboost\"` and record versions into results/metrics.json['environment'].",
+  "Locate the data: recursively glob the cloned repo for '*.csv' (expected `Call Details-Data.csv`); if not found, `requests.get` the raw GitHub URL (URL-encoded filename) and save to data/raw/. Assert the file is >5 MB and loads with pandas.",
+  "Write config.py with the CONFIG dict exactly as specified above.",
+  "Write src/data.py. First run it standalone in a diagnostic mode that prints: raw shape, dtypes, per-column null counts, the auto-detected label column and its value counts — assert 101,174 rows, 8,830 positives (R6) or log the discrepancy verbatim.",
+  "Implement the paper-order preprocessing: dropna -> drop identifier -> encode categoricals -> MinMaxScaler on all features -> SMOTE(1:1) -> stratified 80/20 split. Return shapes/class counts in a stats dict at every stage.",
+  "Implement the leak-free preprocessing path (split -> fit scaler on train -> SMOTE on train only) in the same module, sharing all cleaning code.",
+  "Write src/models.py: make_rf, make_xgb, evaluate() returning accuracy/precision/recall/f1/roc_auc in percent plus TP/FP/TN/FN. Include a DummyClassifier(strategy='most_frequent') sanity path.",
+  "Write src/run_experiment.py: nested loop over variants x seeds x models, collect rows, aggregate mean/std, build results/metrics.json with claim-keyed entries (C1-C8), results/per_seed.csv, and the RF confusion-matrix heatmap.",
+  "Write reproduce.py with --smoke / --variant / --seeds overrides; default invocation runs the full protocol.",
+  "Run `python reproduce.py --smoke` and confirm metrics.json appears with all keys, no NaN, and a test-set size of ~400 for the 2,000-row subsample.",
+  "Run the full protocol `python reproduce.py`. Expect ~15 minutes.",
+  "Inspect results/metrics.json: check C1 against the 98.9-100.0 band for the paper_order variant, note the leak-free variant's lower number as the honest bound, and record the C8 mismatch explanation."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` — stratified 2,000-row subsample of the cleaned frame, n_estimators=10 for both models, single seed 42, paper_order variant only. Proves: CSV loads, label auto-detects, dropna/encode/scale/SMOTE/split all run (test size ~400 with both classes), both models fit and predict, and results/metrics.json + results/per_seed.csv are written with all five metrics as finite floats. Expected runtime < 90 s.",
+ "intermediate_checks": [
+  "Raw shape assertion: 101,174 rows x (17-21) columns; label column has exactly 8,830 positives and 92,344 negatives (fraud ratio 8.7%, imbalance 10.5:1) — R6/A6 validation; print the real column list next to the paper's 17 attributes and record any mismatch.",
+  "Missing-value audit: number of rows dropped by dropna and which columns drive it; assert a non-trivial but not catastrophic drop (report exact count into metrics.json).",
+  "Identifier check: assert 'phone number' has nunique == n_rows before dropping it; assert no remaining feature has nunique == n_rows.",
+  "Post-scaling check: every feature has min 0.0 and max 1.0 (tolerance 1e-9), no NaN/inf, dtype float64 (R2).",
+  "Post-SMOTE check: class counts exactly equal (sampling_strategy=1.0) and total rows == 2 * majority count (expected ~184,688); confirm synthetic rows were added only to the minority class.",
+  "Split check: len(X_test) == round(0.2 * n_total) for paper_order (expected ~36,938) and round(0.2 * n_clean) for leakfree (~20,235); both classes present in y_test with counts printed (R4/A7).",
+  "Sanity baselines BEFORE the full run: DummyClassifier most_frequent on the balanced test set (accuracy ~50%) and a single DecisionTreeClassifier(max_depth=5)/LogisticRegression (~90-97% expected) — confirms the features carry signal and the metric code is not inverted.",
+  "Metric-code unit test: feed a hand-built y_true/y_pred pair into evaluate() and assert accuracy/precision/recall/F1/confusion counts match the hand computation exactly (guards R8/R9).",
+  "Positive-class check: explicitly confirm fraud=1 is used as pos_label in precision/recall/F1/roc_auc, and that the RF confusion matrix prints in the same TP/TN/FP/FN orientation as Fig. 4.",
+  "Parameter/scale check: print n_features, n_train, n_test, RF n_estimators and observed max tree depth, so the C1 number can be interpreted against A3."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "~20 min total. Setup (3 min): pip install imbalanced-learn/xgboost, locate or download the 8 MB CSV, confirm it loads. Smoke (1.5 min): 2,000-row, 10-tree run through both models to validate the whole data flow and the metric code. Pre-flight checks (1.5 min): dataset shape/label counts, post-scale and post-SMOTE assertions, split sizes, dummy + shallow-tree baselines. Full run (12 min): 2 variants x 5 seeds x 2 models on the full preprocessed data — the dominant cost is 10 RF fits (~60 s each on ~148k x 17 train rows) and 10 XGB fits (~60-90 s each), with SMOTE (~30 s) run once per (variant, seed). Reporting (2 min): aggregate, write results/metrics.json + per_seed.csv + confusion-matrix figure, print the C1-C8 comparison against the tolerance band. If the machine proves slower than expected, fall back to seeds [42, 43, 44] and note the reduced repeat count in metrics.json rather than dropping the leak-free variant."
+}

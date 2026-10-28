@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Median ROC AUC of BISECT-based self-supervised one-class classification on the Wilt dataset (0.975)",
+  "table_ref": "Table 4, row Wilt, column BISECT",
+  "dataset": "Wilt (from Campos et al. 2016 outlier evaluation benchmark)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/jcribeiro98/Bisect"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target is a single table cell from a small tabular dataset (4819x5); the paper's code is available but may require R/Python environment setup and the exact data splits are not fully specified, so reproducing the exact median AUC over 7 random splits may take a couple of hours of command time."
+ },
+ "blockers": [
+  "Code repository may not include exact data splits or preprocessing scripts",
+  "Requires R and Python with reticulate, caret, and other packages",
+  "Exact random seeds for the 7 splits are not reported"
+ ],
+ "suitable": true,
+ "id": "2402.03846",
+ "title": "Efficient Generation of Hidden Outliers for Improved Outlier Detection",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

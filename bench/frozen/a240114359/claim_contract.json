@@ -1,0 +1,244 @@
+{
+ "title": "A Stability Framework for Parameter Selection in the Minimum Covariance Determinant Problem",
+ "summary": "The paper addresses selection of the MCD subset size h, equivalently the number of outliers, which is usually chosen by arbitrary rules. It proposes a depth-initialized best-subset MCD algorithm without reweighting, a bootstrap clustering-instability estimator, and an integrated instability metric that adds a normalized log-Wasserstein correction to handle masking. On real data it selects h = 40 for StarsCYG with 7 outliers, h = 84 for banknotes with 16 outliers, and sensible (q, h) settings for fruit, glass, and breast-cancer examples, with simulations supporting the metric.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "On StarsCYG, the integrated instability metric selects h = 40, implying 7 outliers out of n = 47.",
+   "metric": "selected subset size h",
+   "dataset": "StarsCYG",
+   "split": "full dataset",
+   "value": 40,
+   "unit": "subset size h (n=47; implies 7 outliers)",
+   "higher_is_better": false,
+   "table_ref": "Figure 4, middle panel; Section 5.1, Star Data",
+   "config_for_value": "Algorithm 2; all h in {25,26,...,46}; B=100 bootstrap pairs; lambda=3; projection depth directions max{1000,100p}; n=47, p=2; h=47 excluded.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~3 s (paper reports grid search takes 3 seconds)",
+   "quote": "The integrated instability metric selects h = 40, leading us to conclude that there are 7 outliers in total.",
+   "page": 19
+  },
+  {
+   "id": "C2",
+   "statement": "On the Swiss banknote data, the integrated instability metric is minimized at h = 84, indicating 16 outliers.",
+   "metric": "selected subset size h",
+   "dataset": "Swiss banknote data",
+   "split": "full dataset",
+   "value": 84,
+   "unit": "subset size h (n=100; implies 16 outliers)",
+   "higher_is_better": false,
+   "table_ref": "Figure 5, right panel; Section 5.2, Bank Note Data",
+   "config_for_value": "Algorithm 2; h in {50,51,...,99}; B=100 bootstrap pairs; lambda=3; n=100, p=6.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~9 s (paper reports grid search takes 9 seconds)",
+   "quote": "Figure 5 demonstrates that the integrated instability metric is minimized at h = 84, indicating our instability framework identifies 16 outliers.",
+   "page": 20
+  },
+  {
+   "id": "C3",
+   "statement": "On the fruit spectra data, the IIM is minimized at floor(0.825n), suggesting about 17.5% outliers.",
+   "metric": "selected outlier percentage",
+   "dataset": "Fruit spectra data",
+   "split": "full dataset",
+   "value": 17.5,
+   "unit": "% outliers (selected inlier fraction is floor(0.825n))",
+   "higher_is_better": false,
+   "table_ref": "Figure 6, right panel; Section 5.3, Fruit Data",
+   "config_for_value": "Algorithm 2; h = floor(0.5n), floor(0.525n), ..., floor(0.975n); B=50 bootstrap pairs; lambda=3; n=1096, p=256.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~437 s (paper reports grid search takes 437 seconds)",
+   "quote": "so our instability framework suggests that there are around 17.5% outliers.",
+   "page": 21
+  },
+  {
+   "id": "C4",
+   "statement": "On the glass EPXMA data, the integrated instability metric attains its minimum at q = 3 principal components and h = floor(0.625n).",
+   "metric": "selected number of principal components q",
+   "dataset": "Glass EPXMA spectra",
+   "split": "full dataset",
+   "value": 3,
+   "unit": "principal components q (with h = floor(0.625n))",
+   "higher_is_better": false,
+   "table_ref": "Figure 7, middle panel; Section 5.4, Glass Data",
+   "config_for_value": "Algorithm 3; q in {2,3,10}; h = floor(0.5n), floor(0.525n), ..., floor(0.975n); B=50 bootstrap pairs; PcaHubert alpha=0.5; n=180, p=750.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~75 s (paper reports grid search takes 75 seconds)",
+   "quote": "Among the three integrated instability metric paths, the minimum is attained at q = 3 and h = floor(0.625n).",
+   "page": 22
+  },
+  {
+   "id": "C5",
+   "statement": "On TCGA-BRCA, the integrated instability metric favors q = 2, with best parameter combination q = 2 and h = floor(0.75n).",
+   "metric": "selected number of principal components q",
+   "dataset": "TCGA-BRCA mRNA expression",
+   "split": "1,050 ER-positive or ER-negative samples",
+   "value": 2,
+   "unit": "principal components q (with h = floor(0.75n))",
+   "higher_is_better": false,
+   "table_ref": "Figure 8, top right panel; Section 5.5, Breast Cancer Data",
+   "config_for_value": "Algorithm 3; q in {2,5,10}; h = floor(0.5n), floor(0.525n), ..., floor(0.975n); B=50 bootstrap pairs; n=1050, p=2000; top 2,000 variable genes after log2(x+1).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1695 s (paper reports grid search takes 1695 seconds)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C6",
+   "statement": "In simulated Setting 6, the integrated instability metric underestimates the true inlier proportion by 0.025.",
+   "metric": "absolute inlier-proportion error",
+   "dataset": "Simulated Setting 6",
+   "split": "generated data n=400, p=40",
+   "value": 0.025,
+   "unit": "absolute inlier-proportion error",
+   "higher_is_better": false,
+   "table_ref": "Figure 2, Setting 6; Section 4.2, High-dimensional Examples",
+   "config_for_value": "Algorithm 2; n=400, p=40; h = floor(0.5n), floor(0.525n), ..., floor(0.975n); B=50 bootstrap pairs; lambda=3; Setting 6 has 5% point outliers with r=5 and 20% cluster outliers with r=50.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (runtime not reported for simulations)",
+   "quote": "For setting 6, we slightly underestimate the true inlier proportion by 0.025",
+   "page": 18
+  },
+  {
+   "id": "C7",
+   "statement": "On StarsCYG, the clustering-instability path alone is minimized at h = 43, unlike the integrated metric's h = 40.",
+   "metric": "selected subset size h by clustering instability",
+   "dataset": "StarsCYG",
+   "split": "full dataset",
+   "value": 43,
+   "unit": "subset size h",
+   "higher_is_better": false,
+   "table_ref": "Figure 4, left panel; Section 5.1, Star Data",
+   "config_for_value": "Algorithm 2 clustering-instability component; all h in {25,26,...,46}; B=100 bootstrap pairs; n=47, p=2.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~3 s (paper reports grid search takes 3 seconds)",
+   "quote": "From the left panel of Figure 4, we observe that clustering instability is minimized at h = 43.",
+   "page": 19
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "StarsCYG is tiny (n=47, p=2), the paper reports a 3-second grid search, and h=40 with 7 outliers is the paper's headline real-data demonstration of the integrated instability metric."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "No repeated-run standard deviation is reported. Rule 4 (10% relative) applied to the implied 7-outlier count gives 0.7, rounded up to integer precision; allowance is +/- 1 on the selected h or outlier count for this discrete target pair (h=40, 7 outliers)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Compute projection depths using the hybrid direction scheme: the first 500 data-driven directions, remaining uniform on the unit sphere; total max{1000, 100p}.",
+   "cite": "Section 2.1; Algorithm 1, step 1",
+   "quote": "the first 500 directions are generated using the data-driven method, while the remaining directions are sampled uniformly from the unit sphere.",
+   "page": 6
+  },
+  {
+   "id": "R2",
+   "stmt": "Initialize H as the h observations with largest projection depths, then repeatedly apply C-steps until the subset stabilizes.",
+   "cite": "Algorithm 1, steps 2-3; Section 2, equations (1)-(3)",
+   "quote": "Update H using concentration steps (1), (2), and (3) until H stabilizes.",
+   "page": 8
+  },
+  {
+   "id": "R3",
+   "stmt": "Do not apply reweighting in the Depth-MCD best-subset algorithm.",
+   "cite": "Section 3.1, Best Subset Selection",
+   "quote": "so we choose to omit reweighting in our subset selection algorithm.",
+   "page": 8
+  },
+  {
+   "id": "R4",
+   "stmt": "For each bootstrap pair, apply Depth-MCD to both bootstrap samples and reuse original-sample projection depths for all h.",
+   "cite": "Algorithm 2; Section 3.2",
+   "quote": "we set the depths of observations within a bootstrapped sample to be their computed depth in the original sample.",
+   "page": 10
+  },
+  {
+   "id": "R5",
+   "stmt": "For each bootstrap pair, compute Mahalanobis distances of the original n observations using the bootstrap subset estimates and define psi=1 outside the h-largest distances.",
+   "cite": "Algorithm 2, steps 4-5",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R6",
+   "stmt": "Use the scaled clustering distance p^c = p/c with c = 2(h/n)((n-h)/n), and average log(1 + p^c) over B independent bootstrap pairs.",
+   "cite": "Theorem 3.1; equations (9)-(10)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R7",
+   "stmt": "Compute the squared Wasserstein distance between bootstrap normal estimates using equation (11), apply log(1 + W2), and average over bootstrap pairs.",
+   "cite": "Section 3.3; equations (11)-(12)",
+   "quote": "To stabilize the variance of the Wasserstein distances, we apply a log(1 + x) transformation.",
+   "page": 11
+  },
+  {
+   "id": "R8",
+   "stmt": "Form the integrated instability metric I(h) = (1-beta)s(h) + beta(w(h)-min_l w(l)), with beta chosen so the standard deviation of (1-beta)s is lambda=3 times that of beta(w-min w).",
+   "cite": "Section 3.3; equation (13)",
+   "quote": "Based on empirical evidence, we consistently use lambda = 3 throughout the paper, as it performs well across a wide range of scenarios.",
+   "page": 12
+  },
+  {
+   "id": "R9",
+   "stmt": "Select h by minimizing the integrated instability metric over the search grid; for StarsCYG use all h in {25,...,46} with 100 bootstrap pairs and exclude h=47.",
+   "cite": "Section 5.1, Star Data",
+   "quote": "The grid search takes 3 seconds to complete, applying Algorithm 2 with 100 bootstrap pairs.",
+   "page": 19
+  },
+  {
+   "id": "R10",
+   "stmt": "For ROBPCA extension, perform PcaHubert with alpha=0.5 on each bootstrap sample, apply Depth-MCD to robust principal component scores, and select (q,h) minimizing instability.",
+   "cite": "Algorithm 3; Section 3.4",
+   "quote": "we leverage the PcaHubert function (Hubert et al., 2005) from the R package rrcov with alpha = 0.5.",
+   "page": 13
+  },
+  {
+   "id": "R11",
+   "stmt": "Use the MCD covariance determinant and Mahalanobis distance definitions from equations (1)-(2); each C-step must decrease the determinant monotonically.",
+   "cite": "Section 2; equations (1)-(3)",
+   "quote": "Rousseeuw and Driessen (1999) showed that each C-step monotonically decreases det(Sigma-hat).",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "StarsCYG",
+   "how_to_get": "Use starsCYG from the R package robustbase, or the copy in the StableMCD GitHub repository; n=47, p=2 log light/temperature."
+  },
+  {
+   "name": "Swiss banknote data",
+   "how_to_get": "Use the Flury (1988) banknote data, available via the StableMCD GitHub repository; n=100, p=6."
+  },
+  {
+   "name": "Fruit spectra data",
+   "how_to_get": "Use the cantaloupe cultivar spectra data from Hubert and Van Driessen (2004), available via the StableMCD GitHub repository; n=1096, p=256."
+  },
+  {
+   "name": "Glass EPXMA spectra",
+   "how_to_get": "Use the glass EPXMA data from Lemberge et al. (2000), available via the StableMCD GitHub repository; n=180, p=750."
+  },
+  {
+   "name": "TCGA-BRCA mRNA expression",
+   "how_to_get": "Download TCGA-BRCA mRNA expression and ER status from cBioPortal at https://www.cbioportal.org/; apply log2(x+1), retain top 2,000 variable genes, and use the 1,050 ER-positive/negative samples."
+  },
+  {
+   "name": "Simulated settings 1-8",
+   "how_to_get": "Generate from the protocols in Sections 4.1 and 4.2; no external data files are needed."
+  }
+ ],
+ "code_links": [
+  "https://github.com/qhengncsu/StableMCD"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2401.14359",
+  "kind": "arxiv",
+  "arxiv_id": "2401.14359",
+  "url": "https://arxiv.org/abs/2401.14359",
+  "title": "A Stability Framework for Parameter Selection in the Minimum Covariance Determinant Problem",
+  "pages": 30
+ }
+}

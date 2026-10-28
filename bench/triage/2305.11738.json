@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "CRITIC improves ChatGPT's F1 on AmbigNQ from 64.3 (CoT) to 74.9",
+  "table_ref": "Table 1, row 'CRITIC' under ChatGPT, column 'AmbigNQ F1'",
+  "dataset": "AmbigNQ (500 sampled validation examples)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/microsoft/ProphetNet/tree/master/CRITIC",
+  "https://github.com/ZubinGou/llm-agent-web-tools"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 300,
+  "gpu_speedup": null,
+  "basis": "Requires OpenAI API calls for ChatGPT (gpt-3.5-turbo) and Google search API; no GPU needed but API costs and rate limits dominate; 500 examples with up to 3 correction rounds and 7 search interactions each."
+ },
+ "blockers": [
+  "Requires OpenAI API access for gpt-3.5-turbo (closed model, paid)",
+  "Requires Google search API or scraping (may be blocked/rate-limited)",
+  "Code release is partial: prompts and some scripts available but full pipeline may need adaptation",
+  "Temporal instability of web search results may affect reproducibility"
+ ],
+ "suitable": false,
+ "id": "2305.11738",
+ "title": "CRITIC: Large Language Models Can Self-Correct with Tool-Interactive Critiquing",
+ "pages": 78,
+ "model": "DeepSeek-V4.1-Flash"
+}

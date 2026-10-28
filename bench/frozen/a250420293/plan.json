@@ -1,0 +1,198 @@
+{
+ "approach": "Clone the authors' repository and treat the published notebook as the source of truth for the KMeansCD implementation. A small extractor copies the KMeansCD class and any helper/success code verbatim into an importable module; reproduce.py then loads data/atom.data and data/atom.labels0 and runs the Atom protocol with k=20, 100 repeats, and best-of-five sklearn k-means fits per repeat. Each fit is post-processed with the author radius/connected-components merge and scored against ground truth with the author's clustering-success function, falling back to Hungarian-matched accuracy if necessary. The entrypoint writes results/metrics.json and can optionally run the other FCPS rows.",
+ "files": [
+  {
+   "path": "src/extract_author_code.py",
+   "purpose": "Load the authors' notebook with nbformat, locate the KMeansCD class cell and any required helper/import/success-function cells, and write them verbatim into src/author_kmeanscd.py and optionally src/author_success.py. If extraction is ambiguous, it prints cell indices/markers for the coding agent to copy the class manually.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/author_kmeanscd.py",
+   "purpose": "Generated verbatim author implementation of KMeansCD and any required helper functions; no manual edits.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/success.py",
+   "purpose": "Wrapper around the author's clustering-success function if found in the notebook; otherwise implements Hungarian-matched clustering accuracy using sklearn.metrics.cluster.contingency_matrix and scipy.optimize.linear_sum_assignment, plus median/IQR helpers.",
+   "requirement_ids": [
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/run_experiment.py",
+   "purpose": "Generic one-claim runner: loads an FCPS .data/.labels0 pair, executes the 100-repeat x best-of-five protocol with the author KMeansCD, applies radius/connected-components merging, scores each run, and returns median success and IQR.",
+   "requirement_ids": [
+    "R1",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/tiled_extension.py",
+   "purpose": "Optional R12 path only, not used by the C1 entrypoint: split the first two feature dimensions into four quadrants, set local k as round(pct * tile_n) clipped to at least 1, run local KMeansCD, then apply global radius merging.",
+   "requirement_ids": [
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint. Defaults to claim C1 (FCPS Atom, k=20), calls src/run_experiment.py, writes results/metrics.json, supports --smoke and --all-claims, and records dataset shapes, seeds, library versions, median, IQR, expected value, and tolerance check.",
+   "requirement_ids": [
+    "R1",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "requirements.txt",
+   "purpose": "Pinned or recorded versions: numpy, scipy, pandas, scikit-learn, nbformat, nbconvert. Jupyter/nbconvert is only needed for notebook inspection/extraction.",
+   "requirement_ids": []
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/stefankober/radius-guided-kmeans (route)",
+  "notebook_path": "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results.ipynb",
+  "default_claim": "C1",
+  "output_path": "results/metrics.json",
+  "smoke_output_path": "results/smoke_metrics.json",
+  "claim_specs": {
+   "C1": {
+    "dataset": "FCPS Atom",
+    "data": "data/atom.data",
+    "labels": "data/atom.labels0",
+    "k": "20 (Table 2/C1; A7)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.0 (Table 2)"
+   },
+   "C2": {
+    "dataset": "FCPS Chainlink",
+    "data": "data/chainlink.data",
+    "labels": "data/chainlink.labels0",
+    "k": "16 (Table 2/C2)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.177 (Table 2)"
+   },
+   "C3": {
+    "dataset": "FCPS Hepta",
+    "data": "data/hepta.data",
+    "labels": "data/hepta.labels0",
+    "k": "20 (Table 2/C3)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.0 (Table 2)"
+   },
+   "C4": {
+    "dataset": "FCPS Lsun",
+    "data": "data/fcps_lsun.data",
+    "labels": "data/fcps_lsun.labels0",
+    "k": "20 (Table 2/C4)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.075 (Table 2)"
+   },
+   "C5": {
+    "dataset": "FCPS Target",
+    "data": "data/fcps_target.data",
+    "labels": "data/fcps_target.labels0",
+    "k": "17 (Table 2/C5)",
+    "expected_median": "0.9143 (Table 2)",
+    "expected_iqr": "0.2172 (Table 2)"
+   },
+   "C6": {
+    "dataset": "FCPS Tetra",
+    "data": "data/tetra.data",
+    "labels": "data/tetra.labels0",
+    "k": "4 (Table 2/C6)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.0 (Table 2)"
+   },
+   "C7": {
+    "dataset": "FCPS TwoDiamonds",
+    "data": "data/twodiamonds.data",
+    "labels": "data/fcps_twodiamonds.labels0",
+    "k": "10 (Table 2/C7)",
+    "expected_median": "1.0 (Table 2)",
+    "expected_iqr": "0.0 (Table 2)"
+   },
+   "C8": {
+    "dataset": "FCPS Wingnut",
+    "data": "data/wingnut.data",
+    "labels": "data/fcps_wingnut.labels0",
+    "k": "70 (Table 2/C8)",
+    "expected_median": "0.9823 (Table 2)",
+    "expected_iqr": "0.4870 (Table 2)"
+   }
+  },
+  "n_repeats": "100 (R7; Section 5.1)",
+  "best_of": "5 (R7; Section 5.1)",
+  "seed_rule": "seed = random_seed_base + repeat_index * best_of + run_index; random_seed_base=0 (assumption A2)",
+  "random_seed_base": "0 (A2)",
+  "kmeans_implementation": "sklearn.cluster.KMeans via author KMeansCD (R11)",
+  "kmeans_defaults": {
+   "init": "k-means++ (sklearn default, A4)",
+   "n_init": "10 (sklearn default, A4)",
+   "max_iter": "300 (sklearn default, A4)",
+   "tol": "1e-4 (sklearn default, A4)",
+   "algorithm": "lloyd (sklearn default, A4)",
+   "n_jobs": "1 (reproducibility)"
+  },
+  "standardize_features": "False; raw coordinates (A3)",
+  "radius_definition": "r_i = max_{x in C_i} ||x - c_i||_2 (R2)",
+  "merge_condition": "merge if ||c_i - c_j||_2 <= r_i + r_j, equality merged (R3; A5)",
+  "merge_implementation": "Build a graph edge for every qualifying pair; merge labels by scipy.sparse.csgraph.connected_components (R4)",
+  "label_propagation": "Assign each point the component id of its pre-merge cluster (R5)",
+  "radius_zero_filter": "No filtering for FCPS Atom (A6)",
+  "empty_cluster_handling": "scikit-learn default reseeding (A9)",
+  "success_metric": "Use author notebook function if present; otherwise Hungarian-matched clustering accuracy after optimal label permutation (A1)",
+  "iqr_method": "Q3 - Q1 using numpy linear interpolation over the 100 repeat scores (A8)",
+  "tolerance": "absolute 0.02 (contract)",
+  "full_suite_excludes_engytime": "True (R10); no Engytime file is present in the repo tree",
+  "tiled_extension": "Not used for C1; if enabled: four quadrants by splitting first two feature dimensions in half, local k=round(pct*tile_n) clipped to >=1, then global radius merge (R12/A12)",
+  "smoke_settings": {
+   "n_repeats": "2 (smoke only)",
+   "best_of": "1 (smoke only)"
+  }
+ },
+ "steps": [
+  "Set up the sandbox: clone https://github.com/stefankober/radius-guided-kmeans into repo/, then pip install numpy scipy pandas scikit-learn nbformat nbconvert. Record Python and scikit-learn versions.",
+  "Inspect the notebook JSON for the code cell containing 'class KMeansCD', its imports/helper functions, the FCPS Atom experiment cells, and any clustering-success function. Inspect data/README.md and data/atom.data/atom.labels0 to confirm the delimiter, coordinate columns, and label encoding.",
+  "Run python src/extract_author_code.py --notebook \"Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results.ipynb\" --out src/author_kmeanscd.py. The extractor must copy author code verbatim. If extraction is ambiguous, manually copy the KMeansCD class cell and required helpers into src/author_kmeanscd.py without rewriting them.",
+  "Open experimental_data/atom_k-means_plus_postprocessing*.csv and the notebook's Atom cells to confirm the definition of 'clustering success'. If the notebook defines it, import/use that function exactly; otherwise implement Hungarian-matched clustering accuracy in src/success.py.",
+  "Implement src/success.py: validate perfect labels -> 1.0, permuted labels -> 1.0, random labels < 1.0; implement median and IQR helpers using numpy.percentile with linear interpolation.",
+  "Implement src/run_experiment.py: load FCPS data with the author loader if available, else np.loadtxt; verify X.shape and y.shape; for each of 100 repeats run 5 KMeansCD fits with seeds from the seed rule, post-process each with the author radius/connected-components merge, compute clustering success, keep the maximum of the five, then return median and IQR over the 100 repeat scores.",
+  "Implement reproduce.py: parse --claim (default C1), --all-claims, and --smoke; call run_experiment; write results/metrics.json with claim_id, dataset, k, n_repeats, best_of, metric name, median, IQR, expected value, absolute tolerance, passed boolean, seeds, library versions, and data shapes. Do not tune k after seeing results.",
+  "Run the smoke test: python reproduce.py --claim C1 --smoke. This uses 2 repeats x 1 fit, verifies Atom loads as 240 points, KMeans(k=20) runs, radius merging reduces the cluster count, final labels have length 240, and success is in [0,1].",
+  "Run the full C1 reproduction: python reproduce.py --claim C1. Check that the median clustering success is ~1.0 within the 0.02 absolute tolerance and that IQR is ~0.0. If it fails, debug in order: merge condition <= vs <, radius zero filtering, standardization, success-metric permutation, and data/label alignment. Do not change k=20.",
+  "If time remains, run python reproduce.py --all-claims to fill the other FCPS rows, excluding Engytime (R10). Validate results/metrics.json parses and contains all requested claim entries. The optional tiled path is not exercised for C1."
+ ],
+ "smoke_test": "python reproduce.py --claim C1 --smoke  # 2 repeats x 1 fit; prints/records X.shape=(240,2), y unique/counts, k=20 before merge, n_clusters_after_merge < 20, labels length 240, success in [0,1], and writes results/smoke_metrics.json",
+ "intermediate_checks": [
+  "FCPS Atom data loads with 240 points and the expected 2-D feature shape; labels load with 240 entries and no NaN/empty rows.",
+  "Ground-truth class balance is sensible for Atom (check unique label counts) and label rows align with data rows.",
+  "Author KMeansCD imports and its constructor/method signature is inspected before running; if random_state is unsupported, set numpy random seed before each fit.",
+  "Plain k-means with k=20 produces 20 clusters; after radius merge the cluster count drops substantially (ideally to 2 for Atom). If it stays 20, radius or merge condition is wrong.",
+  "Success metric sanity: perfect labels -> 1.0, permuted labels -> 1.0, random labels < 1.0.",
+  "Radius merge unit sanity: two identical centers with positive radii must merge; two far-separated centers outside r_i+r_j must not merge.",
+  "Protocol cost sanity: 100 repeats x 5 fits = 500 KMeans fits for C1; estimate time on one smoke fit and confirm the full run is minutes.",
+  "Check scikit-learn version and that KMeans uses k-means++, n_init=10, max_iter=300, tol=1e-4 unless the author notebook explicitly overrides them.",
+  "Compare the first few run scores and component counts to the author notebook outputs/experimental_data CSV to catch a metric or merge mismatch early."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup and install: ~3 min. Notebook inspection/extraction and data-format checks: ~2 min. Smoke test: ~1 min. Full C1 run (500 KMeans fits on 240 2-D points plus merging/scoring): ~3-5 min. Validation and metrics writing: ~1 min. Reserve ~2 min buffer. Total ~12 min. Optional all-claims run adds a few minutes if the core C1 path is already validated."
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "GRU autoencoder achieves F1 = 0.8737 on the ERENO IEC-61850 test set",
+  "table_ref": "Table II, row GRU, column F1",
+  "dataset": "ERENO IEC-61850"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": 2.0,
+  "basis": "No code released; agent must reimplement preprocessing (malformed CSV header fix, one-hot encoding, feature presets), GRU autoencoder training on normal-only windows, and Youden-index threshold selection on a 10% validation split; ERENO dataset is public but requires download and cleaning; training a small GRU on ~93% normal traffic is feasible on CPU in under an hour, but exact F1 reproduction is uncertain due to unspecified hyperparameters (epochs, learning rate, batch size, latent dim)."
+ },
+ "blockers": [
+  "No code or configs released; full reimplementation required",
+  "Hyperparameters (epochs, learning rate, batch size, latent dimension) not specified",
+  "Exact feature preset and preprocessing details for GRU only partially described",
+  "ERENO dataset requires manual header correction and column mapping"
+ ],
+ "suitable": true,
+ "id": "2604.14233",
+ "title": "Anomaly Detection in IEC-61850 GOOSE Networks: Evaluating Unsupervised and Temporal Learning for Real-Time Intrusion Detection",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

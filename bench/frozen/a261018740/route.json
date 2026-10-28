@@ -1,0 +1,47 @@
+{
+ "route": "full_release",
+ "why": "The cloned repository already contains every artifact needed for the match target C1: the 28-comparison certificate certificates/V7_16_le28/select_7th_of_16_28cmp.rs with SHA256SUMS, a from-scratch static checker (code/verifier/verify_rs_algorithm.py, pure Python 3.12 stdlib), an independent exact path oracle (code/independent_checks/checker/pathcheck.py), the search code that re-derives the certificate in ~5 s (code/core, Rust stdlib only), a compiled random-execution harness, and Lean 4 proofs. Nothing must be rebuilt or ported: the README quick-start reproduces V7(16)=28 from a fresh clone with Python alone in seconds, and with a Rust toolchain the search re-finds the byte-identical certificate. Only toolchain availability (cargo/rustc, optional elan/Lean) is a possible environment gap, not a missing research artifact.",
+ "repo": "https://github.com/JCremerr/selection-7-of-16",
+ "entrypoints": [
+  "code/verifier/verify_rs_algorithm.py certificates/V7_16_le28/select_7th_of_16_28cmp.rs --expect-n 16 --expect-i 7 --expect-worst 28",
+  "code/independent_checks/checker/pathcheck.py certificates/V7_16_le28/select_7th_of_16_28cmp.rs",
+  "code/core (cargo build --release && target/release/dfpn 16 7 28 --out=found.rs)",
+  "code/randtest/build_and_run.sh certificates/V7_16_le28/select_7th_of_16_28cmp.rs 20000000",
+  "code/lean (lake build && lake env lean tests/Axioms.lean)"
+ ],
+ "missing_artifacts": [
+  "Rust toolchain (cargo/rustc >= 1.75) not confirmed installed on this Windows machine - needed only for the 5 s search re-run and the 2e7-permutation randtest, not for the headline check",
+  "Lean 4 / elan toolchain (pinned v4.34.1, ~2 GB download) not confirmed installed - needed only for the redundant Lean kernel check of SelectsWithin(Q,16,6,28)",
+  "code/upstream patches to Dörrer et al.'s search code require cloning JGDoerrer/selection_generator into external/ - optional, not used by any C1 path",
+  "Bash-only helper scripts (build_and_run.sh, leancheck_all.sh) need Git-Bash/WSL or manual equivalent commands on Windows"
+ ],
+ "blockers_seen": [
+  "Windows host: shell scripts are POSIX bash; the Python checker/oracle and the cargo binaries are cross-platform, so this is a driver-script nuisance, not a code blocker",
+  "Rust crates are built with -C target-cpu=native (fine here, x86-64) and have no external dependencies",
+  "Lean build pulls a pinned toolchain from the network (lake-manifest.json) - needs internet and ~2 GB disk"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 3-5 min for the decisive part: SHA-256 verification of the nine certificates plus the static checker and the exact path oracle on the 329-function V7_16_le28 certificate (all pure-Python, seconds each). Adding the Rust search re-derivation of the identical certificate costs ~1-2 min of cargo build plus ~5 s of df-pn; the 2e7-permutation randtest is ~2-3 min including rustc compile. The Lean kernel check is ~3 min of build/elaboration once a ~2 GB toolchain is downloaded (~5 min). Total realistically 10-20 min on this 22-core, 15.4 GB, GPU-less box.",
+  "fits_budget": true,
+  "scale_down_plan": "If the Rust and Lean toolchains are absent and installing them would eat the 20-minute budget, drop to the paper's own 'first three checks' path: checksums + static checker + exact oracle, which alone pin the target number (depth exactly 28 over all paths of the 329-function DAG). That removes the compiled random-execution sanity test and the redundant Lean proof, leaving the reported value unchanged at 28; the only loss is the third independent verification channel, so the verdict would be reported as reproduced for C1 with two of the three published checks executed. C2-C7 certificates are checkable the same way in seconds; skipping the 63-minute V9(17) df-pn re-search is the only material omission there.",
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 3,
+  "ref_minutes": 18,
+  "gpu_speedup": null,
+  "basis": "Seconds of pure-Python static checking and exact path enumeration over a 329-function, depth-28 decision DAG, plus a ~5 s single-thread df-pn re-search (Rust build ~1-2 min), a ~2e7-permutation compiled randtest, and a ~3 min Lean build on a pinned core-Lean toolchain, with the README's own timings (5 s search, 3 min Lean, 1.8 GB RAM) as the anchor."
+ },
+ "repo_info": {
+  "url": "https://github.com/JCremerr/selection-7-of-16",
+  "cloned": true,
+  "n_files": 216,
+  "n_python": 34,
+  "python2_style_files": 0
+ }
+}

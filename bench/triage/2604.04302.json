@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "CavMerge achieves average ARI = 0.990 on the Aggregation 2D dataset (Table 1, 100 random trials)",
+  "table_ref": "Table 1",
+  "dataset": "Aggregation (2D simulated, ~788 points)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code link in the PDF (supplemental R package referenced but not linked); the algorithm is simple point-counting plus K-means over K=1..Kmax with 25 starts, so reimplementation is feasible but the exact K-means/jump-statistic pipeline and 100-seed protocol must be rebuilt from scratch."
+ },
+ "blockers": [
+  "No code repository linked in the PDF; supplemental R package not accessible from the text",
+  "Simulated 2D datasets (e.g., Aggregation) must be regenerated or sourced from prior papers (Almodóvar-Rivera & Maitra 2020; Peterson et al. 2018)",
+  "Exact reproduction of the 0.990 ARI requires matching the jump-statistic K selection and 25 random starts"
+ ],
+ "suitable": true,
+ "id": "2604.04302",
+ "title": "CavMerge: Merging K-means Based on Local Log-Concavity",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

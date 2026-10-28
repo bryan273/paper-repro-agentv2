@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Clustering accuracy (ACC) of OR-TLRR-DFT on the Umist dataset (complete data)",
+  "table_ref": "Table 8",
+  "dataset": "Umist"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/twugithub/2024-AISTATS-ORTLRR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Estimate based on running ADMM with SVDs on 575 samples of size 56x46x? (likely n3=1 or small), plus spectral clustering; code is in MATLAB, so Octave or reimplementation needed; data is public but may require preprocessing."
+ },
+ "blockers": [
+  "Code is in MATLAB, requiring Octave or reimplementation in Python",
+  "Data preprocessing (e.g., resizing, normalization) not fully specified",
+  "Hyperparameters (lambda) given but may need tuning"
+ ],
+ "suitable": true,
+ "id": "2307.09055",
+ "title": "Robust Data Clustering with Outliers via Transformed Tensor Low-Rank Representation",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

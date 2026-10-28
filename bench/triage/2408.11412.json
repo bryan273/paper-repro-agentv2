@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average Gmean of 93.6±6.4 for REF with default hyperparameters (abs folding, L1/D distance, T=1, J=101) on the Iris1 task (Setosa as target class).",
+  "table_ref": "Table II, row Iris1, column 'abs' under 'Default hyperparams'",
+  "dataset": "Iris (UCI), task Iris1 (Setosa target, 35 training samples, 4 features)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/JenniRaitoharju/REF"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The target is a single small tabular task (150 samples, 4 features) with a simple iterative algorithm (101 iterations of element-wise abs and standardization); the Matlab code is available but would need porting to Python, and the 5 random train-test splits must be recreated."
+ },
+ "blockers": [
+  "Code is in Matlab, not Python; an AI agent would need to reimplement the simple algorithm in Python.",
+  "The exact random splits used in the paper are not provided, so the mean and standard deviation may differ slightly from the reported values."
+ ],
+ "suitable": true,
+ "id": "2408.11412",
+ "title": "Linear-time One-Class Classification with Repeated Element-wise Folding",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

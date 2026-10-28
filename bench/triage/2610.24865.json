@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Harvest ratio of recruitment vs solitary search up to 7.6x on sparse clustered fields (headline efficiency number, Q4)",
+  "table_ref": "Table I / Fig. 9 (harvest ratio, clustered field)",
+  "dataset": "synthetic 2D torus resource field (simulated, no external data)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/galenwilkerson/collective-foraging-cascades"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "Pure agent-based simulation with N~10^2 agents over ~10^3 ticks and tens of replicas; all synthetic, CPU-only, but requires re-implementing the model from the text if the repo is incomplete and sweeping parameters to locate the clustered-field harvest ratio."
+ },
+ "blockers": [
+  "Repo may not contain exact configs/scripts to reproduce the 7.6x cell",
+  "Exact clustered-field parameters and replica counts must be inferred from text",
+  "Headline number is a max over a parameter sweep, so locating it requires a small search"
+ ],
+ "suitable": true,
+ "id": "2610.24865",
+ "title": "A mechanism for collective foraging: percolating recruitment cascades coupled to a maximum-entropy",
+ "pages": 48,
+ "model": "DeepSeek-V4.1-Flash"
+}

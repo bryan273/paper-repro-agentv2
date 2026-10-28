@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "SongSage (SFT) rewrites user queries for zero-shot playlist recommendation and reaches Recall@1 = 13.69% (R@5 = 26.72%, Emb-Sim = 88.92), beating GPT-4o's 11.45 / 23.25 / 60.52 on the PlaylistSense queries.",
+  "table_ref": "Table 2 (top block, 'User-query Rewrite' column), Section 5.1",
+  "dataset": "PlaylistSense (5,000 NetEase Music playlists, 10 queries each, Chinese) against a 300k 'Golden Descriptions' library"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 400,
+  "ref_minutes": 4320,
+  "gpu_speedup": 20,
+  "basis": "The paper gives no code/checkpoint/data URL; its own pipeline requires 5.48B-token continual pretraining of a 7B model on 16 A100 GPUs (Table 7: 7147 steps) plus a 300k golden-description pool, and even the inference-only path means running a 7B model over 5,000 playlists (20 lyrics each) plus retrieval on a CPU-only laptop, which is tens of hours."
+ },
+ "blockers": [
+  "LyricBank, LyricBank-SFT, the preference set and PlaylistSense are explicitly NOT released ('keep the datasets inaccessible due to copyright restrictions')",
+  "PlaylistSense/LyricBank are scraped from NetEase Music (2.5M songs, 200K playlists) - copyright-restricted, not downloadable",
+  "the 300k 'Golden Descriptions' retrieval library and the rewritten-query references are generated with DeepSeek (closed model) and are not published",
+  "no code, checkpoint or training-script links appear anywhere in the PDF despite the promise to 'release the SongSage and training script'",
+  "full reproduction requires continual pretraining 5.48B tokens on 16 A100 GPUs (2x8) plus LoRA SFT and DPO",
+  "data quality/instruction sets were built with LLM+human curation that cannot be replicated"
+ ],
+ "suitable": false,
+ "id": "2601.01153",
+ "title": "SongSage: A Large Musical Language Model with Lyric Generative Pre-training",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

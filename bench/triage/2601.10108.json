@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "Gemini-3-pro achieves the best average overall score of 0.566 on SIN-Bench",
+  "table_ref": "Table 1, Avg. Overall column, Gemini-3-pro row",
+  "dataset": "SIN-Bench (490 samples across SIN-Find, SIN-Verify, SIN-QA, SIN-Summary)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/sin-bench",
+  "https://github.com/allenai/s2orc-doc2json",
+  "https://github.com/arxiv-vanity/engrafo"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target requires running proprietary closed-source models (Gemini-3-pro, GPT-5, etc.) via API, which is not feasible on a laptop; even if open-weight models were used, the benchmark data and evaluation code are not confirmed to be publicly available, and the full pipeline involves large-scale data processing and LLM-based evaluation."
+ },
+ "blockers": [
+  "Requires proprietary closed-source models (Gemini-3-pro, GPT-5, Claude-sonnet-4.5, Grok-4) via API, which cannot be run locally",
+  "Benchmark data (SIN-Bench) and evaluation code may not be publicly released; only a GitHub link is provided but not confirmed to contain the necessary data and configs",
+  "Full reproduction would require processing 50k raw source packages and running multiple MLLMs, which is beyond a laptop's capacity"
+ ],
+ "suitable": false,
+ "id": "2601.10108",
+ "title": "SIN-Bench: Tracing Native Evidence Chains in Long-Context Multimodal Scientific Interleaved Literature",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

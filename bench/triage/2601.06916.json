@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Diversity sampling achieves MAE 0.813 ± 0.035 eV/atom on the Ti–O system, a 10.9% improvement over random baseline (0.912 ± 0.041), p = 0.008",
+  "table_ref": "Table 2, Ti–O / Diversity row",
+  "dataset": "Ti–O structures from Materials Project (480) + OQMD (29), 509 total, 407/102 pool/test split"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Tiny MLP ensemble (17-dim input, 2x128 hidden) on ~500 samples, 5 seeds x 4 strategies x 6 AL iterations is trivially CPU-cheap; the real cost is re-deriving the exact dataset (MP API key required, OQMD qmpy client, undocumented filtering/dedup) and re-implementing the whole pipeline from scratch since no code is linked."
+ },
+ "blockers": [
+  "No code link despite claiming open-source GitHub availability",
+  "Materials Project API requires a registered API key (not freely anonymous)",
+  "Exact dataset construction (filters, dedup threshold, feature definitions) underspecified, so exact numbers unlikely to match",
+  "OQMD retrieval via qmpy client and DFT-protocol matching not fully specified"
+ ],
+ "suitable": false,
+ "id": "2601.06916",
+ "title": "Active Learning Strategies for Efficient Machine-Learned Interatomic Potentials Across Diverse Material Systems",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,183 @@
+{
+ "approach": "The AIDA repository is an R package, but the sandbox can only execute Python/pip/git, so the plan uses the shipped AIDA sources and vignettes as the executable specification and ports only the tiny Cars pipeline to Python. We read data/intCars.rda with pyreadr/rdata, extract the interval bounds and car labels, then port the reweighted IMCD, farness transform, squared Interval-Mahalanobis distance, and closed-form Shapley/interaction formulas line-by-line from R/IMCD.r, R/farness.r, R/int_distances.r, and R/Shapley.r. The primary target is C1: reproduce the five Figure 1 outlier labels with h=20, farness cutoff 0.9, and strict score>0.9 flagging. The same fit is reused for the Figure 2a top-six and Figure 3 Shapley diagnostics. C2-C6 are recorded in results/metrics.json as intermediate checks rather than separate experiments.",
+ "files": [
+  {
+   "path": "src/config.py",
+   "purpose": "Central constants: repo paths, data path, expected labels, h, cutoff, seed, random starts, tolerance, figure/metric paths.",
+   "requirement_ids": [
+    "R4",
+    "R7",
+    "R8",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/interval_ops.py",
+   "purpose": "Interval center/range representation, latent uniform moment helpers, symbolic covariance helpers, and squared Interval-Mahalanobis distance ported from AIDA R sources.",
+   "requirement_ids": [
+    "R1",
+    "R5",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/rdata_loader.py",
+   "purpose": "Load data/intCars.rda via pyreadr, with rdata fallback, recursively extract S4 slots LowerBounds/UpperBounds/Centers/Ranges/Class and car labels; apply natural-log lnPrice only if the data are still on the raw Price scale.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/imcd.py",
+   "purpose": "Reweighted IMCD estimator: random h-subsets, C-steps minimizing symbolic covariance determinant, best-of-many-starts selection, and farness-based reweighting at cutoff 0.9.",
+   "requirement_ids": [
+    "R4",
+    "R5",
+    "R7"
+   ]
+  },
+  {
+   "path": "src/farness.py",
+   "purpose": "Farness outlier score transform: median/MAD standardization, robust Yeo-Johnson, second median/MAD standardization, Normal-CDF scoring, ported from R/farness.r.",
+   "requirement_ids": [
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "src/shapley.py",
+   "purpose": "Closed-form Shapley values and Shapley interaction index for the robust squared interval Mahalanobis distance; set Psi=0 for symmetric uniform Cars latent variables; implement diagonal definition making row sums equal Shapley values.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/plots.py",
+   "purpose": "Generate Figure 1 outlier plot, Figure 2a top-six Shapley barplot, Figure 3a center/range decomposition, and Figure 3b Ferrari interaction tile plot.",
+   "requirement_ids": [
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/metrics.py",
+   "purpose": "Assemble claim diagnostics into results/metrics.json, including flagged labels/count, dataset dimensions, top-six ordering, h percent, cutoff, and zero cross-term check.",
+   "requirement_ids": [
+    "R3",
+    "R7",
+    "R9",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that clones/inspects AIDA if needed, loads Cars, fits IMCD, computes farness flags, Shapley values/interactions, writes metrics.json and figures; supports --smoke.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/catarinaploureiro/AIDA",
+  "local_repo": "third_party/AIDA",
+  "data_file": "third_party/AIDA/data/intCars.rda",
+  "expected_n_obs": 27,
+  "expected_n_vars": 4,
+  "expected_var_names": [
+   "lnPrice",
+   "Engine Capacity",
+   "Top Speed",
+   "Acceleration"
+  ],
+  "expected_outlier_labels": [
+   "MercedesClasseS",
+   "Ferrari",
+   "Porsche",
+   "MercedesSL",
+   "HondaNSK"
+  ],
+  "expected_n_outliers": 5,
+  "h_subset_size": 20,
+  "h_source": "floor(0.75*27)=20 (A1)",
+  "subset_percent_target": 75.0,
+  "computed_h_percent": 74.074,
+  "farness_cutoff": 0.9,
+  "farness_cutoff_source": "paper Sec 5.1; C4/C5; A3",
+  "flag_rule": "score > 0.9 (A7)",
+  "reweight_rule": "retain observations with farness score <= 0.9 when reweighting; report both h-percent and final inlier-percent (A3)",
+  "log_transform": "natural log applied to Price only, producing lnPrice (A4; R2)",
+  "latent_distribution": "independent Uniform[-1,1], E[U]=0, E[U^2]=1/3 (A5; R1)",
+  "additional_standardization": "none (A6)",
+  "seed": 20240601,
+  "n_random_starts": 2000,
+  "n_seed_blocks": 5,
+  "c_step_max_iter": 100,
+  "c_step_tol": 1e-10,
+  "best_determinant_stability": "relative determinant difference < 1e-6 across seed blocks (A2)",
+  "shapley_efficiency_tol": 1e-08,
+  "cross_term_zero_tol": 1e-10,
+  "top_k": 6,
+  "top_k_rule": "six largest squared distances regardless of outlier flag (A10)",
+  "expected_top6_includes": [
+   "Bmwserie7"
+  ],
+  "interaction_target": "Ferrari",
+  "metric_output": "results/metrics.json",
+  "figures_dir": "results/figures"
+ },
+ "steps": [
+  "Use Python to ensure third_party/AIDA exists; if not, run git clone --depth 1 https://github.com/catarinaploureiro/AIDA.git third_party/AIDA. Do not modify author files.",
+  "Install Python dependencies needed for parsing RData: pip install pyreadr rdata; keep preinstalled numpy, scipy, pandas, matplotlib.",
+  "Inspect third_party/AIDA/data/intCars.rda from Python. First try pyreadr; if the intData S4 object is not directly convertible, use rdata to recursively dump object classes and attributes and locate slots LowerBounds, UpperBounds, Centers, Ranges, and Class/labels. Use man/ and R/intData_class.r to identify slot names.",
+  "Build the Cars matrix as n=27, p=4 lower/upper arrays with car-model labels. Confirm the four variables are lnPrice, Engine Capacity, Top Speed, and Acceleration; if Price is not already logged, apply natural log to both Price bounds and rename to lnPrice. Drop only the class variable from distance computations.",
+  "Compute interval centers c=(a+b)/2 and ranges r=b-a for the four variables. Assert finite values, positive ranges, and no accidental extra variables.",
+  "Port the symbolic covariance construction from R/int_cov.r using the Uniform[-1,1] latent moments; verify the 4x4 covariance matrix is symmetric positive definite on the full data.",
+  "Implement IMCD in src/imcd.py: for each random start draw h=20 observations, compute symbolic covariance determinant, perform concentration C-steps retaining the h smallest robust distances, and keep the subset with the smallest determinant. Use five seed blocks of 2000 starts and select the best determinant; verify determinant stability across blocks.",
+  "Reweight the best IMCD fit: compute farness scores for all 27 observations using the current center/covariance, retain observations with score <= 0.9, recompute the robust barycenter and covariance, and iterate until the retained set is stable. Record the initial h subset size and final reweighted inlier count.",
+  "Port the squared robust Interval-Mahalanobis distance from R/int_distances.r and compute distances and farness scores for all 27 Cars observations. Assert all distances and scores are finite and farness scores lie in [0,1].",
+  "Flag observations with farness score strictly greater than 0.9. Record the flagged labels in descending squared-distance order. Compare the count to 5 and the labels to MercedesClasseS, Ferrari, Porsche, MercedesSL, and HondaNSK.",
+  "Compute Shapley values for all observations using the closed-form expression ported from R/Shapley.r. For Cars set Psi=0 and cross center-range terms to zero per the symmetric uniform assumption. Check that sum_j phi_j equals the squared distance to numerical tolerance 1e-8.",
+  "Select the six observations with the largest squared distances, as in Figure 2a, regardless of outlier flag. Confirm the set contains the five expected outliers and Bmwserie7.",
+  "Compute the Shapley interaction matrix from Equations (10)-(12), setting diagonal terms so each row sums to that observation's Shapley value. Produce the Ferrari interaction tile data for Figure 3b.",
+  "Generate results/figures/cars_farness_outliers.png, cars_shapley_top6.png, cars_center_range_decomp.png, and ferrari_interaction_tile.png. Plot expected versus computed labels where useful for debugging.",
+  "Write results/metrics.json with a claim-level section for C1-C6 plus diagnostic arrays: car labels, distances, farness scores, flagged labels, top-six labels/order, h and h-percent, final reweighted count, Shapley efficiency errors, and maximum absolute cross center-range term.",
+  "Run python reproduce.py for the full result and verify metrics.json contains C1 count/labels and all intermediate checks. Keep the full run deterministic with the configured seed."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`: load intCars and assert shape 27x4, compute centers/ranges, fit IMCD with h=20 and 50 random starts for one seed block, compute distances and farness scores, and run Shapley values for the first observation. Assert finite outputs, covariance determinant >0, and Shapley efficiency error <1e-8. Write results/smoke.json and exit without making full figures. Target runtime <90 seconds.",
+ "intermediate_checks": [
+  "Dataset check: intCars has exactly 27 rows, 4 interval variables, and labels including the five expected car names; class labels are present but excluded from distances.",
+  "Preprocessing check: lnPrice lower/upper bounds are on log scale; EngCap, Top Speed, Acceleration are untouched; no extra standardization is applied.",
+  "Geometry check: all ranges positive; centers/ranges finite; symbolic covariance symmetric positive definite; condition number below 1e12.",
+  "Subset check: h=20, h/n=74.07%, reported as approximately 75%; final reweighted inlier count at score<=0.9 is recorded separately.",
+  "IMCD stability check: best covariance determinant agrees across five independent seed blocks to relative tolerance 1e-6; if not, increase starts before proceeding.",
+  "Distance sanity check: a classical non-robust interval Mahalanobis baseline should rank the same suspected outliers near the top; large disagreement signals an IMCD/porting bug.",
+  "Farness check: all scores in [0,1], values around the 0.9 cutoff are printed with labels so a borderline flag is visible.",
+  "C1 check: flagged count must be 5 for exact label match, and within 2 observations for the tolerance-based claim.",
+  "C3/C10 check: top six by descending squared distance must include the five expected outliers plus Bmwserie7, with Bmwserie7 present even if not flagged.",
+  "Shapley efficiency check: for every observation, |sum(phi)-distance| <= 1e-8.",
+  "C6 check: maximum absolute cross centers-ranges Shapley contribution is <= 1e-10 for all Cars observations.",
+  "Interaction check: for Ferrari, row sums of the interaction matrix equal the Shapley values to tolerance 1e-8."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~25 minutes. Setup 6-8 min: git clone and pip install pyreadr/rdata plus data introspection. Smoke 1-2 min: 50-start IMCD and one-observation Shapley check. Full fit 6-8 min: five seed blocks of 2000 starts on 27x20 subsets, reweighting, Shapley values and interactions. Figures/metrics 2-3 min. Reserve 4-5 min for debugging S4 extraction or a borderline farness flag; if IMCD starts are slow, reduce to 1000 starts per block only after confirming determinant stability."
+}

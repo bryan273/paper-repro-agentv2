@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "PSNR of 31.11 dB on REDS4 for VSR Transformer with image-level patch alignment (Table 3, row 1)",
+  "table_ref": "Table 3",
+  "dataset": "REDS4"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/XPixelGroup/RethinkVSRAlignment",
+  "https://github.com/xinntao/BasicSR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 43200,
+  "gpu_speedup": 50,
+  "basis": "Training a 36-block VSR Transformer for 300K iterations on REDS requires ~30 days on a single A100 GPU; on an 8-core CPU laptop this is infeasible within a few hours."
+ },
+ "blockers": [
+  "Requires training a large VSR Transformer for 300K iterations",
+  "Needs GPU with at least 24GB VRAM",
+  "Training time is ~30 days on A100, far beyond a few hours on CPU"
+ ],
+ "suitable": false,
+ "id": "2207.08494",
+ "title": "Rethinking Alignment in Video Super-Resolution Transformers",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

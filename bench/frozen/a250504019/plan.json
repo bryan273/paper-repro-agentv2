@@ -1,0 +1,160 @@
+{
+ "approach": "Use the authors' cloned DPG library unchanged for predicate formatting and graph/visualization utilities, but implement the missing Isolation Forest DPG and IOP-Score in new reproduction files. Download the UCI Annthyroid train/test files, drop the hypothyroid class (class 3), keep the six numerical features age/TSH/T3/TT4/T4U/FTI, map hyperthyroid class 2 to model-style outliers, and assert the paper's 6,916 samples and 250 anomalies. Fit sklearn IsolationForest with 200 trees, traverse every sample through every tree, collapse predicates to (feature, sign), append model-predicted Outlier/Inlier terminals, apply class-imbalance edge weights, and compute Eq. 2 IOP-Scores for every predicate node. Validate C1 directly (TSH > = -0.2429, tolerance 0.02) and also C2/C3 from the same graph; only attempt synthetic C4-C6 if the DPG-iForest repository supplies the missing Table 2/4 generator values.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Central constants: repo URLs, UCI URLs, feature names, class filtering, iForest hyperparameters, Eq. 1 weights, Eq. 2 variants, tolerance, seed list, paths.",
+   "requirement_ids": [
+    "R1",
+    "R11",
+    "R13",
+    "R14",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "data_prep.py",
+   "purpose": "Download and parse UCI ann-train.data + ann-test.data, drop class 3, keep six numeric features, map class 2 to outlier and class 1 to inlier, assert 6916 rows/250 anomalies, save data/annthyroid.csv. Also copy or regenerate synthetic datasets only if DPG-iForest contains the missing generator/table values.",
+   "requirement_ids": [
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "iforest_dpg.py",
+   "purpose": "Fit sklearn IsolationForest; extract (feature, sign, threshold) predicates from every internal node; traverse every sample; filter outlier paths longer than dmax; collapse to (feature, sign); append model labels; build class-weighted directed graph; compute IOP-Score with Eq. 2; write DOT/PNG if Graphviz dot exists.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: ensure data exists, run the full 200-tree Annthyroid experiment, compare TSH >, T3 > and TSH <= against Table 6, run the documented ambiguity/seed sweeps, write results/metrics.json and results/table6_reproduced.csv. Supports --smoke for a tiny data-flow run.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "README_reproduction.md",
+   "purpose": "Short reproducibility note listing assumptions A1-A13, the exact commands, selected IOP variant, and why C4-C6 may be marked unverified if Table 2/4 values are absent.",
+   "requirement_ids": []
+  }
+ ],
+ "config": {
+  "repo_dpg": "https://github.com/LeonardoArrighi/DPG",
+  "repo_iforest": "https://github.com/Math0097/DPG-iForest",
+  "dataset": "Annthyroid",
+  "data_urls": [
+   "https://archive.ics.uci.edu/ml/machine-learning-databases/thyroid-disease/ann-train.data",
+   "https://archive.ics.uci.edu/ml/machine-learning-databases/thyroid-disease/ann-test.data"
+  ],
+  "features": [
+   "age",
+   "TSH",
+   "T3",
+   "TT4",
+   "T4U",
+   "FTI"
+  ],
+  "drop_class": [
+   3
+  ],
+  "outlier_class": 2,
+  "expected_n": 6916,
+  "expected_outliers": 250,
+  "expected_outlier_rate": "250/6916 = 0.03615 (R14)",
+  "n_estimators": "200 (R1)",
+  "max_samples": "'auto' = min(256, n_samples) (A4)",
+  "contamination": "0.0361 primary to preserve R14; 'auto' also logged as sensitivity (A3)",
+  "random_state": "42 primary (A1); use DPG-iForest seed if found; seed sweep [42,0,1,2,3]",
+  "n_jobs": -1,
+  "bootstrap": false,
+  "max_features": 1.0,
+  "predicate_sign": {
+   "left": "<=",
+   "right": ">"
+  },
+  "dmax": "ceil(log2(min(256, n_samples))) = 8 for Annthyroid (R11)",
+  "remove_outlier_paths_longer_than_dmax": "yes (R4/A7); do not apply to inlier paths",
+  "merge_predicates": "globally merge identical (feature, sign) nodes and discard split threshold v (R5/A8)",
+  "count_repeated_pairs": "each consecutive occurrence per sample-tree counts separately (A12)",
+  "terminal_nodes": [
+   "Outlier",
+   "Inlier"
+  ],
+  "edge_weight": "wo=(No+Ni)/No for model-labelled outliers; wi=(No+Ni)/Ni for model-labelled inliers (R7)",
+  "terminal_edges_weighted": "yes primary (A6); unweighted also logged as sensitivity",
+  "iop_formula_primary": "(f_inlier_direct - f_outlier_direct) / fin(v), with fin=sum incoming weighted edge frequencies (R8/R9); if incoming=0 use outgoing sum for root predicates (A5)",
+  "iop_denominator_variants": [
+   "incoming",
+   "outgoing"
+  ],
+  "table6_anchors": {
+   "TSH >": -0.2429,
+   "T3 >": -0.0282,
+   "TSH <=": 0.0965
+  },
+  "tolerance": "absolute 0.02 (claim contract)",
+  "synthetic_policy": "Attempt only if DPG-iForest contains the Section 4.1 generator and Table 2/4 altered values; otherwise mark C4-C6 unverified rather than inventing values.",
+  "render": "Write Graphviz DOT; render PNG only if dot is on PATH, otherwise matplotlib fallback (R15)"
+ },
+ "steps": [
+  "Clone https://github.com/LeonardoArrighi/DPG into external/DPG and https://github.com/Math0097/DPG-iForest into external/DPG-iForest. Inspect DPG-iForest first for an Annthyroid loader, IOP-Score code, random seed, and synthetic generators; do not modify either repository.",
+  "Install minimal dependencies with pip: numpy, scipy, pandas, scikit-learn, networkx, matplotlib, graphviz, requests, tqdm. Install the cloned DPG package with pip install -e external/DPG or add external/DPG to sys.path and verify import dpg.",
+  "Implement config.py with all constants from the config object above, especially features, expected sample/anomaly counts, 200 trees, contamination, random seed, dmax, edge weighting, and IOP variants.",
+  "Implement data_prep.py: download ann-train.data and ann-test.data with requests, parse whitespace into the 22 UCI columns, keep age/TSH/T3/TT4/T4U/FTI, drop class 3, map class 2 to outlier label 1 and class 1 to inlier label 0, save data/annthyroid.csv, and raise if the result is not 6916 rows with 250 anomalies.",
+  "Implement iforest_dpg.py: fit IsolationForest(n_estimators=200, max_samples='auto', contamination=0.0361, random_state=42, n_jobs=-1) on all Annthyroid samples. Get model labels with model.predict(X): -1 -> Outlier, 1 -> Inlier; compute No, Ni, wo=(No+Ni)/No, wi=(No+Ni)/Ni.",
+  "For every tree and every sample, traverse from root to leaf, recording (feature, sign, threshold) for each satisfied split. For outlier-labelled samples only, drop paths longer than dmax=8. Collapse the remaining path to ordered (feature, sign) pairs, append the model label as the terminal Outlier/Inlier node, and add a weighted edge for every consecutive predicate pair and for the final predicate-to-terminal transition.",
+  "Build a networkx.DiGraph with globally merged predicate nodes named exactly like 'TSH >', 'TSH <=', etc. Keep terminal nodes 'Outlier' and 'Inlier'. Edge weight is the summed class-weighted frequency; log any self-loops and repeated pairs.",
+  "Compute IOP-Score for every predicate node using Eq. 2 primary variant: numerator = sum of outgoing weight to Inlier minus sum of outgoing weight to Outlier; denominator = sum of incoming weight, falling back to outgoing sum only when incoming is zero. Also compute and store the outgoing-denominator, unweighted-terminal, and contamination='auto' variants for sensitivity.",
+  "Run the smoke test: python reproduce.py --smoke. It uses the first 200 Annthyroid rows, 10 trees, max_samples=64, writes results/smoke_metrics.json, and asserts both terminal nodes exist, at least one weighted edge exists, all IOP scores are finite and in [-1,1].",
+  "Run the full experiment: python reproduce.py. It writes all predicate scores to results/table6_reproduced.csv and results/metrics.json, including TSH >, T3 >, TSH <=, absolute errors to Table 6, and boolean ranking checks: TSH > is the minimum predicate score, TSH <= is the maximum predicate score, T3 > is negative but closer to zero than TSH >.",
+  "If C1 is outside the 0.02 absolute tolerance, run the documented ambiguity grid: contamination in {0.0361, 'auto'}, denominator in {incoming, outgoing}, terminal edges in {weighted, unweighted}. Select the first variant that satisfies the published orderings and is closest to the three Table 6 anchors; record every variant in metrics.json and do not hardcode the reported values.",
+  "Run the five-seed sweep [42,0,1,2,3] for the selected variant on Annthyroid and write mean/std for TSH >, T3 > and TSH <= to results/seed_sweep.csv and metrics.json.",
+  "Attempt synthetic datasets 1 and 2 only if DPG-iForest supplies the Section 4.1 generator and Table 2/4 altered values. If not, write synthetic_status='not_attempted_missing_table_values' for C4-C6 and keep the main C1-C3 result complete.",
+  "Write the DPG DOT file and, if the Graphviz dot executable is available, a PNG rendering. If dot is absent, log a matplotlib fallback and continue because explanation numbers are unaffected.",
+  "Finalize results/metrics.json with dataset checks, model label counts, graph statistics, all IOP scores, target comparisons, selected variant, seed spread, and a top-level 'C1_pass' boolean."
+ ],
+ "smoke_test": "python reproduce.py --smoke uses the first 200 Annthyroid rows, 10 iTrees, max_samples=64, seed=42. It must load the CSV, train the forest, traverse samples, build a graph containing both 'Outlier' and 'Inlier' terminal nodes, produce at least one weighted predicate edge, compute finite IOP-Scores within [-1,1], and write results/smoke_metrics.json.",
+ "intermediate_checks": [
+  "Dataset check: data/annthyroid.csv has exactly 6,916 rows, six columns age/TSH/T3/TT4/T4U/FTI plus label, no missing values, 250 label=1 anomalies, 6,666 label=0 inliers, and positive rate 0.03615.",
+  "Feature check: graph predicate names must include TSH, T3, TT4, T4U, FTI and age; no binary UCI columns such as sex, on_thyroxine, sick, etc. are present.",
+  "Model check: 200 estimators fitted; max_samples=256; model-labelled No/Ni counts are logged; wo and wi are finite and positive; if contamination=0.0361 then No=250 and Ni=6666.",
+  "Tree check: dmax=8; path-length histogram is logged; outlier paths longer than dmax are counted and removed; inlier paths are not removed.",
+  "Graph check: number of predicate nodes, terminal nodes, edges, self-loops, and total edge weight are logged; every predicate node has at least one outgoing edge; terminal nodes have only incoming edges.",
+  "IOP check: all scores are finite and within [-1,1]; mean score is logged; 'TSH >' is negative; 'TSH <=' is positive; 'T3 >' is negative and closer to zero than 'TSH >' in the selected primary run.",
+  "Baseline sanity check: run a randomized-label control or the contamination='auto' variant and confirm that the IOP ranking is not identical to the primary run, proving the score responds to model labels rather than a constant.",
+  "Parameter-count check: report total internal nodes across the 200 trees and compare against expected order 10^3-10^4 predicate occurrences; if node count is wildly outside this range, stop before the full validation."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 22 minutes total: 0-5 min clone both repos and pip-install minimal dependencies; 5-8 min download/parse Annthyroid and assert 6,916 rows / 250 anomalies; 8-10 min smoke test and graph sanity checks; 10-17 min full 200-tree run plus small Eq. 2 / contamination / denominator variant grid; 17-20 min five-seed sweep and Table 6 comparison; 20-22 min write metrics.json, table6_reproduced.csv, DOT/optional PNG, and short README. This leaves margin under the ~20-minute reference compute budget because the iForest fit and traversal are seconds of CPU work."
+}

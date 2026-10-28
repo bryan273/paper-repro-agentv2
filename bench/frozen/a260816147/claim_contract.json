@@ -1,0 +1,258 @@
+{
+ "title": "When Single-Dataset Conclusions Fail: A 45-Task Study of Threshold Tuning and Resampling for Imbalanced Classification",
+ "summary": "The paper argues that imbalance-handling conclusions drawn from a single benchmark do not transfer: on the Kaggle credit-card fraud dataset a plain Random Forest at the 0.5 threshold reaches F1 = 0.861 ± 0.021 and threshold tuning gives it nothing (ΔF1 = -0.002), while SMOTE hurts. Re-running an identical leakage-free nested-CV protocol (scaler and SMOTE fitted only on the inner training fold, threshold picked on an inner validation fold) over 45 binary tasks and 2,025 fits shows the conclusion reverses: Random Forest is the family that gains most from threshold tuning across the suite (ΔF1 = +0.101 ± 0.134). The benefit is inverted-U shaped in the imbalance ratio (peak +0.120 at 1:15–1:40, +0.045 beyond 1:100), which explains why the 1:577 fraud dataset is unrepresentative, and validation-fold calibration error fails as a diagnostic for when to tune (ECE r = -0.087).",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "A plain Random Forest at the default 0.5 decision threshold attains F1 = 0.861 on the credit-card fraud dataset under 5-fold nested CV.",
+   "metric": "F1 on the fraud (positive) class",
+   "dataset": "Kaggle credit-card fraud (Dal Pozzolo et al.): 284,807 rows, 492 positives, imbalance 1:577",
+   "split": "5-fold outer stratified CV (Study A), F1 computed on the held-out test fold and averaged over the 5 folds",
+   "value": 0.861,
+   "unit": "F1",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'Random Forest / plain', column F1 (also Abstract, §1, §7.3)",
+   "config_for_value": "Random Forest, 100 trees, max_depth 16; no resampling, no class weights, threshold fixed at 0.5; StandardScaler fitted on the inner training set only; inner split 80/20 of the outer training set",
+   "reported_spread": "± 0.021 (standard deviation over the 5 outer folds)",
+   "est_compute": "CPU only, ~1-2 min for these 5 fits (the whole Study A, 85 fits, is ~9 min on a consumer laptop)",
+   "quote": "a plain Random Forest at the default 0.5 decision threshold attains F1 = 0.861 ± 0.021",
+   "page": 1
+  },
+  {
+   "id": "C2",
+   "statement": "On the fraud dataset, threshold tuning changes Random Forest F1 by -0.002 relative to the fixed 0.5 threshold (paired within-fold contrast).",
+   "metric": "ΔF1 = F1(threshold t*) - F1(threshold 0.5)",
+   "dataset": "Kaggle credit-card fraud (284,807 rows, 492 positives)",
+   "split": "5-fold outer stratified CV; same fitted model and same test fold for both thresholds",
+   "value": -0.002,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'Random Forest', column 'ΔF1, credit-card fraud' (Table 1: plain 0.861 vs tuned 0.859)",
+   "config_for_value": "Random Forest 100 trees, max_depth 16; t* = argmax over grid {0.01,...,0.99} of F1 on the inner validation fold; no resampling, no class weights",
+   "reported_spread": null,
+   "est_compute": "CPU only, ~2 min (5 extra fits plus a 99-point threshold sweep)",
+   "quote": "every intervention applied to that Random Forest makes it worse — threshold tuning is neutral (ΔF1 = -0.002)",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "Across the 45-task suite, Random Forest gains ΔF1 = +0.101 ± 0.134 from threshold tuning, the largest of the four model families — the reverse of its fraud-dataset behaviour.",
+   "metric": "ΔF1 from threshold tuning (mean over runs)",
+   "dataset": "45-task suite (Study B): 14 real tasks (digits one-vs-rest, breast cancer, wine one-vs-rest), 1 rarefied breast cancer (1:21), 30 synthetic make_classification tasks, imbalance 1:1.5 to 1:178",
+   "split": "3-fold outer stratified CV per task, 45 tasks × 3 folds = 135 paired runs per model family; inner split 75/25",
+   "value": 0.101,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'Random Forest', column 'ΔF1, 45-task suite'",
+   "config_for_value": "Random Forest 100 trees, max_depth 16; tuned_threshold vs plain, paired within each fold; StandardScaler and any SMOTE fitted on the inner training set only",
+   "reported_spread": "± 0.134 (std over the 135 runs)",
+   "est_compute": "CPU only, ~8 min for the entire Study B (2,025 fits); the Random Forest arm alone is ~hours/20 of that",
+   "quote": "across the suite it gains more from threshold tuning than any other family (ΔF1 = +0.101)",
+   "page": 2
+  },
+  {
+   "id": "C4",
+   "statement": "Pooled over the 45-task suite, tuned threshold improves F1 by a mean of +0.0592 (median +0.0260), with 138 wins and 31 losses against plain.",
+   "metric": "Mean ΔF1 vs the plain configuration (paired at dataset × model level)",
+   "dataset": "45-task suite (Study B)",
+   "split": "3-fold CV, n = 180 pairs; per-pair paired difference, then averaged",
+   "value": 0.0592,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Tuned threshold'",
+   "config_for_value": "tuned_threshold strategy (t* from inner validation grid {0.01,...,0.99} maximising F1) vs plain (0.5), all four model families pooled",
+   "reported_spread": null,
+   "est_compute": "CPU only, ~8 min for all of Study B",
+   "quote": "Threshold tuning helps on average (mean ΔF1 = +0.059 across dataset × model pairs; 138 wins, 31 losses; Wilcoxon p = 4.1 × 10−20)",
+   "page": 2
+  },
+  {
+   "id": "C5",
+   "statement": "SMOTE + tuned threshold improves F1 across the 45-task suite by a mean of +0.0757 (median +0.0260), 138 wins vs 39 losses.",
+   "metric": "Mean ΔF1 of smote_tuned vs plain",
+   "dataset": "45-task suite (Study B)",
+   "split": "3-fold CV, n = 180 pairs (SMOTE applied only to the inner training set after scaling)",
+   "value": 0.0757,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'SMOTE + tuned'",
+   "config_for_value": "SMOTE on the inner training set after StandardScaler, then threshold selection on inner validation; compared against plain at (dataset, model) level",
+   "reported_spread": null,
+   "est_compute": "CPU only, ~8 min for all of Study B",
+   "quote": "beneficial across the suite (mean ΔF1 = +0.076, 138 wins / 39 losses, Wilcoxon p = 2.7 × 10−17)",
+   "page": 1
+  },
+  {
+   "id": "C6",
+   "statement": "Threshold-tuning benefit peaks at moderate imbalance: mean ΔF1 = +0.1199 (std 0.131, n = 84 runs) in the 1:15–1:40 band, versus -0.0088 below 1:5 and +0.0447 beyond 1:100.",
+   "metric": "Mean ΔF1 from threshold tuning within an imbalance-ratio band",
+   "dataset": "45-task suite (Study B), all model families pooled",
+   "split": "3-fold CV runs grouped by the task's imbalance ratio",
+   "value": 0.1199,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row '1:15 – 1:40', column 'Mean ΔF1'",
+   "config_for_value": "All suite runs pooled by imbalance band; benefit = tuned threshold - plain within each run",
+   "reported_spread": "std 0.131 over the 84 runs in this band",
+   "est_compute": "CPU only, no extra fits beyond Study B",
+   "quote": "peaking at ΔF1 = +0.120 in the 1:15–1:40 band, and declining to +0.045 beyond 1:100",
+   "page": 1
+  },
+  {
+   "id": "C7",
+   "statement": "Validation-fold expected calibration error (equal-width) does not predict threshold-tuning benefit: Pearson r = -0.087 over 540 paired tuning runs.",
+   "metric": "Pearson correlation between validation-fold ECE (equal-width) and ΔF1",
+   "dataset": "540 paired tuning runs pooled across the 45-task suite",
+   "split": "correlation computed across all runs, not per fold",
+   "value": -0.087,
+   "unit": "Pearson r",
+   "higher_is_better": false,
+   "table_ref": "Table 5, row 'Expected calibration error (equal-width)', column 'Pearson r'",
+   "config_for_value": "ECE computed on the inner validation fold with equal-width bins; correlated against the run's ΔF1 from threshold tuning",
+   "reported_spread": null,
+   "est_compute": "CPU only, seconds given the recorded per-run metrics",
+   "quote": "(expected calibration error r = -0.087; Brier score r = +0.137)",
+   "page": 1
+  },
+  {
+   "id": "C8",
+   "statement": "On the fraud dataset, SMOTE + tuned threshold is 2.3 F1 points worse for Random Forest than the plain configuration (0.838 ± 0.028 vs 0.861 ± 0.021).",
+   "metric": "ΔF1 (smote_tuned vs plain)",
+   "dataset": "Kaggle credit-card fraud (284,807 rows, 492 positives)",
+   "split": "5-fold outer stratified CV",
+   "value": -0.023,
+   "unit": "ΔF1",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'Random Forest / SMOTE + tuned' (0.838 ± 0.028) vs row 'Random Forest / plain' (0.861 ± 0.021); §5.2 text",
+   "config_for_value": "Random Forest 100 trees, max_depth 16; SMOTE applied to the inner training set only, after StandardScaler; threshold selected on inner validation",
+   "reported_spread": "± 0.028 (std over 5 folds)",
+   "est_compute": "CPU only, ~2 min (5 extra fits)",
+   "quote": "class weighting costs 1.7 F1 points, and SMOTE costs 2.3 points and 1.0 point of AUPRC",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the paper's headline single-dataset number and the result the whole reversal is built against. It is also the cheapest to reproduce faithfully: five Random Forest fits on the public Kaggle CSV with no SMOTE, no class weighting and no threshold sweep — a plain 0.5 cut — which the authors say runs in ~9 min for the entire Study A on a laptop CPU with no GPU."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.063,
+  "why": "Rule 1 applies: the paper reports a standard deviation for this exact value (± 0.021 over the 5 outer folds), so the band is 3 x std = 0.063 F1, quoted at the 3-decimal precision the paper prints."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Outer evaluation for the fraud study must be a stratified 5-fold partition of the full dataset, with the held-out fold used only for reporting.",
+   "cite": "§3.1 step 1 (Outer split)",
+   "quote": "Stratified k-fold partition of the dataset (k = 5 for the fraud study, k = 3 for the 45-task suite",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Each outer training set is split 80/20 into inner training and inner validation; the validation set is used only to choose the threshold, never to fit parameters.",
+   "cite": "§3.1 step 2 (Inner split)",
+   "quote": "A stratified split of the outer training set into an inner training set and an inner validation set (80/20 for the fraud study",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "StandardScaler is fit on the inner training set only and then applied to the inner validation and outer test folds.",
+   "cite": "§3.1 step 3 (Preprocessing)",
+   "quote": "StandardScaler is fitted on the inner training set alone and applied to the validation and test folds.",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "The plain strategy keeps the decision threshold fixed at 0.5; no threshold search is performed anywhere in the pipeline for it.",
+   "cite": "§3.1 step 4 (Threshold selection)",
+   "quote": "For the plain strategy the threshold is fixed at 0.5.",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Random Forest must be configured with 100 trees and max_depth 16 (mainstream, deliberately untuned hyperparameters).",
+   "cite": "§3.3 (Model families and strategies)",
+   "quote": "Four supervised families are common to both studies: Logistic Regression (L-BFGS, max_iter 500–1000); Random Forest (100 trees, max_depth 16)",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "For tuned strategies, the threshold is the argmax of F1 over the grid {0.01, 0.02, ..., 0.99} evaluated on the inner validation fold only.",
+   "cite": "§3.1 step 4 (Threshold selection)",
+   "quote": "argmax over the grid {0.01, 0.02, ..., 0.99} of F1 on the inner validation fold",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "Where SMOTE is used, it is applied to the inner training set only, after scaling, and never to the validation or test folds.",
+   "cite": "§3.1 step 3 (Preprocessing)",
+   "quote": "Where SMOTE is used it is applied only to the inner training set, after scaling.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "The pipeline must leak nothing: no test-fold information may enter preprocessing, model fitting, or threshold selection.",
+   "cite": "§3.1, final paragraph",
+   "quote": "No information from the test fold influences preprocessing, fitting, or threshold selection.",
+   "page": 5
+  },
+  {
+   "id": "R9",
+   "stmt": "ΔF1 must be a paired within-fold contrast: both thresholds evaluated on the same test fold with the same fitted model.",
+   "cite": "§3.2 (The paired F1-difference statistic)",
+   "quote": "computed on the same test fold using the same fitted model. It is therefore a paired within-fold contrast",
+   "page": 5
+  },
+  {
+   "id": "R10",
+   "stmt": "Reported values are the mean ± standard deviation of the per-fold F1 over the 5 outer folds of the full Kaggle dataset.",
+   "cite": "Table 1 caption",
+   "quote": "Table 1. Credit-card fraud, 5-fold nested CV, mean ± standard deviation.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Study A uses the complete Kaggle credit-card table (284,807 rows, 492 positives, imbalance 1:577), not a subsample or a rebalanced variant.",
+   "cite": "§3.4 (Study A — credit-card fraud)",
+   "quote": "The full Kaggle dataset (284,807 rows, 492 positives, imbalance 1:577), 5 outer folds",
+   "page": 5
+  },
+  {
+   "id": "R12",
+   "stmt": "Hyperparameters are held at mainstream scikit-learn values; no per-fold or per-dataset tuning of the model itself is allowed.",
+   "cite": "§3.3 (Model families and strategies)",
+   "quote": "Hyperparameters are deliberately mainstream; the object of study is the evaluation protocol and the interventions, not a tuned model.",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "Credit Card Fraud Detection (Kaggle / ULB Machine Learning Group; Dal Pozzolo et al.)",
+   "how_to_get": "Kaggle dataset 'mlg-ulb/creditcardfraud' (creditcard.csv): 284,807 transactions, 492 frauds (0.172%), columns Time, Amount, V1-V28. https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud"
+  },
+  {
+   "name": "Study B real tasks: scikit-learn built-in datasets",
+   "how_to_get": "sklearn.datasets.load_digits (10 one-vs-rest tasks), load_breast_cancer (plus a version subsampled to 1:21), load_wine (3 one-vs-rest tasks); no download required."
+  },
+  {
+   "name": "Study B synthetic tasks",
+   "how_to_get": "sklearn.datasets.make_classification sweeping imbalance ratio (10, 30, 100, 300, 1000), class separation (0.6, 1.0, 1.8) and dimensionality (20/50 features, 10/15 informative); generated locally, seeded."
+  }
+ ],
+ "code_links": [
+  "code/fraud_pipeline.py (Study A; named in the Reproducibility section, no URL given)",
+  "code/multi_dataset_study.py (Study B, resumable)",
+  "code/results_nested_cv/per_fold_met... (85 rows; filename truncated in the PDF)",
+  "code/results_multi/per_run_metrics.csv (2,025 rows)"
+ ],
+ "stated_compute": "Study A runs in approximately nine minutes and Study B in approximately eight minutes on a consumer laptop, with no GPU requirement and no dependency outside scikit-learn, imbalanced-learn, pandas, NumPy, SciPy, and Matplotlib.",
+ "paper_meta": {
+  "source": "2608.16147",
+  "kind": "arxiv",
+  "arxiv_id": "2608.16147",
+  "url": "https://arxiv.org/abs/2608.16147",
+  "title": "When Single-Dataset Conclusions Fail: A 45-Task Study of Threshold Tuning and Resampling for Imbalanced Classification",
+  "pages": 13
+ }
+}

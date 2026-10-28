@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "XGBoost classifier achieves 87.5% accuracy in classifying EV acceleration performance (High/Mid/Low) from battery cell configuration and related features on 276 EV models",
+  "table_ref": "Section VII.A / IX.A (reported in text, no table number)",
+  "dataset": "EV specifications dataset (478 models, 276 after listwise deletion), sourced from EV-Database.org"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code or data link is provided; the dataset must be scraped/reconstructed from EV-Database.org (including the rarely-disclosed 'number_of_cells' field), then a small XGBoost model trained on 276 samples, so most time is data reconstruction rather than compute."
+ },
+ "blockers": [
+  "No code repository or data link in the paper",
+  "Dataset must be reconstructed from EV-Database.org; 'number_of_cells' is often undisclosed, so exact 276-sample subset is unlikely to be recovered",
+  "Exact train/test split and hyperparameters not specified, so 87.5% accuracy may not be exactly reproducible"
+ ],
+ "suitable": false,
+ "id": "2603.01275",
+ "title": "The Impact of Battery Cell Configuration on Electric Vehicle Performance: An XGBoost-Based Classification with SHAP Interpretability",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

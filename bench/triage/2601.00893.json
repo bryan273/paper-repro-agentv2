@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "F1-score of the baseline Random Forest (or Logistic Regression) anomaly detector on the Carbon-Aware Cybersecurity Traffic Dataset, as reported in the baseline model comparison table",
+  "table_ref": "Baseline model comparison table (Section 3.3/4, table not explicitly numbered in provided text)",
+  "dataset": "Carbon-Aware Cybersecurity Traffic Dataset (2,300 flow-level observations)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "basis": "Classic ML (LR/RF/SVM/IF/XGBoost) on 2,300 rows is trivial compute, but no code is released and the 'Carbon-Aware Cybersecurity Traffic Dataset' is not clearly a public, locatable dataset, so the agent must reconstruct the pipeline (SMOTE, scaling, splits) and possibly the data itself."
+ },
+ "blockers": [
+  "No code or repository linked in the paper",
+  "Dataset 'Carbon-Aware Cybersecurity Traffic Dataset' is not verifiably public/downloadable; may need to be reconstructed or synthesized",
+  "Exact preprocessing/hyperparameters and random seeds not fully specified, so exact F1 cell may not match"
+ ],
+ "suitable": false,
+ "id": "2601.00893",
+ "title": "Towards eco friendly cybersecurity: machine learning based anomaly detection with carbon and energy metrics",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Clean F1-score of PCA detector on SWaT pointwise benchmark (0.8134 ± 0.0038, mean over 3 seeds)",
+  "table_ref": "Table V, row PCA, column Clean F1",
+  "dataset": "SWaT (Secure Water Treatment), pointwise pool 449,919 samples x 44 features"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ANTS-OntarioTechU/Robustness-Anomaly-Detection-ICS-Data-Contamination"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "basis": "PCA on ~276k x 44 normal training rows is seconds of CPU; the cost is obtaining SWaT (request-based access) and re-implementing the preprocessing/split/threshold pipeline from the repo, plus 3 seeds."
+ },
+ "blockers": [
+  "SWaT requires a signed request form to iTrust/SUTD; not freely downloadable",
+  "Repo link is a bare org URL in the PDF; exact code/config availability unverified",
+  "Preprocessing details (file alignment, dropped rows) must be matched to hit the exact F1"
+ ],
+ "suitable": true,
+ "id": "2608.23547",
+ "title": "Robustness of Anomaly Detection Models for Industrial Control Systems under Training-Time Data Contamination",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

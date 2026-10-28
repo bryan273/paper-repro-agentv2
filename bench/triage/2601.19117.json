@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "VIF of k-means color quantization of the statlab image in RGB colorspace with k=8 is 0.500",
+  "table_ref": "Figure 4(b), row RGB, column k=8",
+  "dataset": "statlab image (486×1155 pixels, publicly available)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The target requires implementing k-means (with k-means++ initialization and Hartigan-Wong updates) on a small image (486×1155 pixels) and computing VIF; no code is provided, but the image is publicly available and the computation is lightweight on a CPU."
+ },
+ "blockers": [
+  "No code or data links provided in the paper; must implement k-means and VIF from scratch.",
+  "The statlab image is not directly linked; it is described as a photograph of a plaque at Iowa State University, and may need to be sourced from the web or recreated."
+ ],
+ "suitable": true,
+ "id": "2601.19117",
+ "title": "Optimized $k$-means color quantization of digital images in machine-based and human perception-based colorspaces",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

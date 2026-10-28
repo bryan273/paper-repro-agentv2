@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "DnLUT attains 29.88 dB CPSNR on CBSD68 for Gaussian color image denoising at noise level σ=25, beating SPF-LUT (28.56 dB) by over 1 dB.",
+  "table_ref": "Table 2, DnLUT(Ours) column, CBSD68 σ=25",
+  "dataset": "CBSD68"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/Stephen0808/DnLUT"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 180,
+  "gpu_speedup": 8,
+  "basis": "The DnNet is a tiny LUT-oriented CNN, but reproducing the table cell still requires training on DIV2K/Flickr2K/BSD400/WaterlooED for 2e5 iterations, converting to 3D/4D LUTs, and evaluating on the small public CBSD68 set; this is CPU-feasible but not instant."
+ },
+ "blockers": [
+  "If the GitHub repo lacks released pretrained LUTs/checkpoints, the 200k-iteration training run becomes the dominant CPU cost; the paper text does not specify patch size or full training configs."
+ ],
+ "suitable": true,
+ "id": "2503.15931",
+ "title": "DnLUT: Ultra-Efficient Color Image Denoising via Channel-Aware Lookup Tables",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

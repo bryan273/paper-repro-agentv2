@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "pFDTane (PerValue) run time on the BKB WaterQualityData 2020084 dataset at error threshold 0 (exact FD discovery) is 2.013 s, compared to AFDTane's 0.935 s.",
+  "table_ref": "Table VII, row 'BKB WaterQualityData 2020084', column 'pFDTane per value' (Time)",
+  "dataset": "BKB WaterQualityData 2020084.csv (2370 rows, 17 attributes, 180 KB)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Mstrutov/Desbordante (PR 300)",
+  "https://gist.github.com/iliya-b/f67cf0aa8397ec0a5ab7849376ec8a31"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "The dataset is tiny (180 KB, 2370 rows) and the algorithm is a CPU TANE variant; the main cost is building Desbordante (C++/CMake) and locating the PR-300 pFDTane code, then a single run of a few seconds."
+ },
+ "blockers": [
+  "pFDTane implementation is in a pull request (PR 300) that may not be merged into the main Desbordante branch; may need to check out the PR branch or reconstruct the validation functions from Listings 3-4",
+  "Exact timing value (2.013 s) depends on hardware; reproduction would confirm order of magnitude rather than exact number"
+ ],
+ "suitable": true,
+ "id": "2607.23636",
+ "title": "Extending Desbordante with Probabilistic Functional Dependency Discovery Support",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

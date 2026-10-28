@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "UniMod-3B achieves 91.26% average image moderation score (BeaverTails-V + SPA-VL) on the vision-based benchmarks",
+  "table_ref": "Table 3, Image Scores Avg column, UniMod-3B row",
+  "dataset": "BeaverTails-V and SPA-VL"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/open-compass/opencompass"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 3000,
+  "basis": "Reproducing UniMod-3B requires building the UniTrace 18K consensus dataset via three proprietary teacher VLMs (Seed1.6-vision, GLM-4.5V, Gemini-2.5-Pro), training UniRM on the human-annotated UniReward corpus, then cold-start SFT plus GRPO RL (paper reports 10-15h on 8x H200 for the 3B dynamic variant), none of which is feasible on an 8-core CPU laptop."
+ },
+ "blockers": [
+  "No code or data release linked (only an unrelated OpenCompass leaderboard URL)",
+  "UniTrace/UniReward datasets not public",
+  "Requires proprietary teacher models (Seed1.6-vision, GLM-4.5V, Gemini-2.5-Pro) for data construction",
+  "Training uses 8x NVIDIA H200 GPUs; RL run alone is 10-15 GPU-hours",
+  "Human annotation pipeline for UniReward cannot be replicated"
+ ],
+ "suitable": false,
+ "id": "2602.02536",
+ "title": "From Sparse Decisions to Dense Reasoning: A Multi-attribute Trajectory Paradigm for Multimodal Moderation",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

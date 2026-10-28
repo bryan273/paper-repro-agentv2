@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "DreamPortrait (ours) achieves FID 28.47, MSC 20.72, R-P 66.31 on CelebAText-HQ (3D Forward row of Table 1)",
+  "table_ref": "Table 1",
+  "dataset": "CelebAText-HQ"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/NVlabs/eg3d",
+  "https://github.com/ashawkey/stable-dreamfusion"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 3360,
+  "basis": "Training requires 8 Tesla V100 GPUs for ~56 hours (500K + 1000K images, batch 32) plus EG3D pretrained weights and diffusion model; no code release, so full reimplementation of D-SDS, adapters, and training pipeline is needed."
+ },
+ "blockers": [
+  "No code release for DreamPortrait",
+  "Requires 8 V100 GPUs for ~56 hours",
+  "CelebAText-HQ dataset access unclear (manual annotations, likely restricted)",
+  "Needs pretrained EG3D weights and Stable Diffusion 2.0-base",
+  "Full training pipeline must be reimplemented from scratch"
+ ],
+ "suitable": false,
+ "id": "2306.02083",
+ "title": "Efficient Text-Guided 3D-Aware Portrait Generation with Score Distillation Sampling on Distribution",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

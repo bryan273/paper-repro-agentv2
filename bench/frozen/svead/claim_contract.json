@@ -1,0 +1,219 @@
+{
+ "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+ "summary": "Anomaly detection methods struggle with data exhibiting varying local densities, where distance-based methods miss local anomalies and density-based methods require careful parameter selection and incur quadratic time complexity. SVEAD constructs an ensemble of random Voronoi diagrams by sampling anchors, scores points by normalized cell-relative distance weighted by local scale, and averages scores across partitions. Across 45 ADBench datasets it achieves the highest average AUC-ROC (0.8538) and AUC-PR (0.5000) among 12 baselines, including 0.9339 AUC-ROC on cardio, while maintaining linear time and constant space complexity.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "SVEAD achieves AUC-ROC 0.9339 on the cardio dataset.",
+   "metric": "AUC-ROC",
+   "dataset": "cardio",
+   "split": "Unsupervised ADBench dataset; no train/test split stated in paper",
+   "value": 0.9339,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row cardio, column VEAD (SVEAD)",
+   "config_for_value": "Unsupervised ADBench cardio (1831 samples, 21 features, 9.61% anomalies); m selected by grid search over {2^1, ..., 2^8}; ensemble size t=100; 5-run average.",
+   "reported_spread": "std 0.0063 over 5 runs (Table 5, row cardio, column VEAD)",
+   "est_compute": "CPU, ~1 min per run; 5 runs ~5 min",
+   "quote": "cardio 0.6179 0.9260 0.9447 0.9531 0.9350 0.9219 0.9001 0.7507 0.6089 0.9281 0.4975 0.7651 0.9339",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "SVEAD achieves AUC-PR 0.5356 on the cardio dataset.",
+   "metric": "AUC-PR",
+   "dataset": "cardio",
+   "split": "Unsupervised ADBench dataset; no train/test split stated in paper",
+   "value": 0.5356,
+   "unit": "AUC-PR",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row cardio, column VEAD (SVEAD)",
+   "config_for_value": "Unsupervised ADBench cardio (1831 samples, 21 features, 9.61% anomalies); m selected by grid search over {2^1, ..., 2^8}; ensemble size t=100; 5-run average.",
+   "reported_spread": "std 0.0246 over 5 runs (Table 7, row cardio, column VEAD)",
+   "est_compute": "CPU, ~1 min per run; 5 runs ~5 min",
+   "quote": "cardio 0.1729 0.5861 0.5684 0.6381 0.5674 0.5776 0.5231 0.3038 0.2066 0.5909 0.1653 0.2948 0.5356",
+   "page": 16
+  },
+  {
+   "id": "C3",
+   "statement": "SVEAD achieves mean AUC-ROC 0.8538 across the 45 ADBench datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "45 ADBench benchmark datasets",
+   "split": "Unsupervised ADBench protocol; no train/test split stated in paper",
+   "value": 0.8538,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table 4, Average row, column VEAD (SVEAD)",
+   "config_for_value": "45 ADBench datasets; m selected by grid search over {2^1, ..., 2^8}; ensemble size t=100; average over datasets and 5 runs.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1-3 hours for 45 datasets; largest dataset has 619,326 samples",
+   "quote": "Average 0.6879 0.7772 0.8213 0.8327 0.7435 0.7504 0.7172 0.7558 0.6933 0.7348 0.7493 0.6651 0.8538",
+   "page": 14
+  },
+  {
+   "id": "C4",
+   "statement": "SVEAD achieves mean AUC-PR 0.5000 across the 45 ADBench datasets.",
+   "metric": "AUC-PR",
+   "dataset": "45 ADBench benchmark datasets",
+   "split": "Unsupervised ADBench protocol; no train/test split stated in paper",
+   "value": 0.5,
+   "unit": "AUC-PR",
+   "higher_is_better": true,
+   "table_ref": "Table 6, Average row, column VEAD (SVEAD)",
+   "config_for_value": "45 ADBench datasets; m selected by grid search over {2^1, ..., 2^8}; ensemble size t=100; average over datasets and 5 runs.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1-3 hours for 45 datasets; largest dataset has 619,326 samples",
+   "quote": "Average 0.2765 0.3941 0.4336 0.4414 0.3462 0.3394 0.3344 0.2990 0.2723 0.3111 0.3244 0.2471 0.5000",
+   "page": 16
+  },
+  {
+   "id": "C5",
+   "statement": "SVEAD requires less than 3 seconds to process 500,000 instances on CPU.",
+   "metric": "Runtime",
+   "dataset": "Scalability synthetic run, 500,000 instances, fixed dimensionality 10",
+   "split": "Not applicable",
+   "value": 3.0,
+   "unit": "seconds (upper bound for 500,000 samples, d=10, CPU)",
+   "higher_is_better": false,
+   "table_ref": "Figure 5 and Section 5.3 Scalability Analysis",
+   "config_for_value": "500,000 instances, fixed dimensionality 10, CPU @AMD Ryzen 9 9950X.",
+   "reported_spread": null,
+   "est_compute": "CPU @AMD Ryzen 9 9950X, <3 s as reported",
+   "quote": "requiring less than 3 seconds to process 500,000 instances on CPU.",
+   "page": 8
+  },
+  {
+   "id": "C6",
+   "statement": "With GPU parallel distance computation, SVEAD processes the same 500,000-instance dataset in less than 1 second.",
+   "metric": "Runtime",
+   "dataset": "Scalability synthetic run, 500,000 instances, fixed dimensionality 10",
+   "split": "Not applicable",
+   "value": 1.0,
+   "unit": "seconds (upper bound for 500,000 samples, d=10, GPU)",
+   "higher_is_better": false,
+   "table_ref": "Section 5.3 Scalability Analysis",
+   "config_for_value": "500,000 instances, fixed dimensionality 10, GPU @Nvidia RTX 4090 with parallel distance computation.",
+   "reported_spread": null,
+   "est_compute": "GPU @Nvidia RTX 4090, <1 s as reported",
+   "quote": "SVEAD processes the same dataset in less than 1 second",
+   "page": 8
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user target hint is Table 4 SVEAD AUC-ROC on cardio; this is the cheapest single-dataset claim that directly exercises the full SVEAD scoring pipeline and is reported with a 5-run standard deviation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.0189,
+  "why": "Rule 1: the paper reports AUC-ROC std 0.0063 over 5 runs for cardio (Table 5, row cardio, column VEAD); 3 x 0.0063 = 0.0189, rounded to the 4-decimal precision the paper prints."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Sample m anchors uniformly from the dataset without replacement for each partition.",
+   "cite": "Section 4.1, Anchor Sampling",
+   "quote": "we randomly sample m points from the dataset X without replacement to form an anchor set",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Assign each point to its nearest anchor using Euclidean distance, without building explicit Voronoi cells.",
+   "cite": "Section 4.1, Voronoi Cell Assignment; Equation (1)",
+   "quote": "Each point x ∈X is assigned to its nearest anchor, creating a partition",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Compute the within-cell score as the normalized relative distance times the cell's mean anchor distance.",
+   "cite": "Section 4.2, Within-Cell Scoring; Equations (2)-(3)",
+   "quote": "where the first term δ/δmax normalizes the distance by the maximum cell radius, and the second term δmean represents the mean distance within the cell.",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "For each cell, compute the maximum and mean distances from its anchor before scoring.",
+   "cite": "Algorithm 1, lines 7-10",
+   "quote": "computing cell statistics including maximum and mean distances.",
+   "page": 6
+  },
+  {
+   "id": "R5",
+   "stmt": "Skip a point in a partition when its cell contains only the anchor, relying on the remaining partitions.",
+   "cite": "Section 4.2, Within-Cell Scoring",
+   "quote": "In the rare case where a cell contains only the anchor (|Ci| = 1), we skip scoring for this point in this partition",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Aggregate per-partition scores by arithmetic mean over the t partitions.",
+   "cite": "Section 4.2, Ensemble Aggregation; Equation (5)",
+   "quote": "The final anomaly score is computed as the arithmetic mean:",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "Tune the number of sampled anchors m by grid search and fix ensemble size t at 100.",
+   "cite": "Section 5.1, Parameter Settings",
+   "quote": "the number of sample points is searched over {21, 22, . . . , 28}, with ensemble size fixed at 100.",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Repeat each dataset-method experiment 5 times and report the average.",
+   "cite": "Section 5.1, Evaluation Metrics",
+   "quote": "For each dataset and method, we repeat experiments 5 times and report the average performance.",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Use AUC-ROC and AUC-PR as the evaluation metrics.",
+   "cite": "Section 5.1, Evaluation Metrics",
+   "quote": "We adopt Area Under the Receiver Operating Characteristic curve (AUC-ROC) and Area Under the Precision-Recall curve (AUC-PR) in the experiment.",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Use labels only after anomaly scores are produced, preserving the unsupervised setting.",
+   "cite": "Section 5.1, Evaluation Metrics",
+   "quote": "the labels are used to compute the AUC-ROC and AUC-PR for each dataset only after the models have made predictions.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "Implement implicit Voronoi diagrams via nearest-anchor queries rather than explicit cell-boundary construction.",
+   "cite": "Section 4.1, Voronoi Cell Assignment",
+   "quote": "we do not compute cell boundaries or vertices; we only determine point-to-cell membership through nearest-anchor queries.",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Maintain linear time complexity in the number of points, anchors, dimensions, and ensemble size.",
+   "cite": "Section 4.4, Time Complexity",
+   "quote": "The total time complexity is O(nmdt) + O(nmdt) = O(nmdt)",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "ADBench benchmark (45 datasets)",
+   "how_to_get": "Public anomaly detection benchmark from Han et al. (2022); repository: https://github.com/Minqi824/ADBench"
+  },
+  {
+   "name": "cardio",
+   "how_to_get": "Included in ADBench; 1831 samples, 21 features, 176 anomalies (9.61% anomaly rate)."
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/SVEAD-2B97/"
+ ],
+ "stated_compute": "The test device is on CPU @AMD Ryzen 9 9950X and GPU @Nvidia RTX 4090.",
+ "paper_meta": {
+  "source": "2601.03664",
+  "kind": "arxiv",
+  "arxiv_id": "2601.03664",
+  "url": "https://arxiv.org/abs/2601.03664",
+  "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+  "pages": 17
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "The paper releases no code (no repository, no code_links, no stated compute), so there is nothing to run as-is. The target claim C1 is a single L2-regularised logistic regression on a public 7,043-row tabular dataset with a standard sklearn pipeline (label/one-hot encoding, min-max scaling, SMOTE on the training partition only, stratified 80/20 split, fixed 0.5 threshold). That is cheap and fully specified in the claim contract and Table 1 config, so the cheapest faithful path is to reimplement the pipeline from the paper text and the claim contract rather than hunt for author artefacts.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "author code for preprocessing / model training / evaluation (never released)",
+  "exact random seed(s) and sklearn/imbalanced-learn/XGBoost/LightGBM versions used for Table 1",
+  "hyperparameters for XGBoost and LightGBM (C2) — not specified in the paper",
+  "IBM Telco Customer Churn CSV (public, but must be fetched manually from Kaggle 'blastchar/telco-customer-churn'; Kaggle API credentials may be needed)",
+  "SHAP/LIME analysis scripts and the CRM four-layer workflow artefacts (not needed for the match target C1)"
+ ],
+ "blockers_seen": [
+  "no author repository or code link anywhere in the contract",
+  "Kaggle download requires an authenticated API token or a manual CSV drop; a mirror/alternative URL must be used if credentials are unavailable",
+  "Python 3.12 is fine for modern sklearn/imbalanced-learn, but historical library versions from the paper are not pinned, so exact bit-level reproduction of 0.8411 is not guaranteed",
+  "single 80/20 split means the reported AUC depends on the seed; only the 5-fold CV claim (C4, 0.845±0.013) is seed-robust"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "about 6-10 minutes of command time: ~3 minutes to install scikit-learn, imbalanced-learn and pandas, ~1 minute to fetch the CSV, under 5 seconds to fit the logistic regression, and a few minutes for the 5-fold CV and the optional RF/XGB/LGBM comparison rows",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "7,043 x 21 tabular CSV; a 40-feature logistic regression fit takes well under a second on CPU, SMOTE on 5,634 training rows is near-instant, and the full 5-fold CV plus the tree-model comparison rows is a few minutes of command time on an 8-core laptop."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

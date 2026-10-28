@@ -1,0 +1,10 @@
+[
+ {
+  "at": "planner->implementer",
+  "type": "false_info",
+  "path": "config.dim",
+  "value": "100 (paper: h = 100, Sec 3.1, Table 1)",
+  "marker": "INJ-F2",
+  "what": "hidden size is 100; the paper and the target say 10"
+ }
+]

@@ -1,0 +1,247 @@
+{
+ "title": "An Efficient Machine Learning-based Framework for Detection and Prevention of Frauds in Telecom Networks",
+ "summary": "Telecom fraud causes large financial losses and needs scalable, accurate detection; the paper evaluates machine-learning classifiers on a Call Detail Record (CDR) dataset with 101,174 customer records, 17 attributes and 8,830 fraud cases. The pipeline removes records with missing values, applies Min-Max scaling (Eq. 1), balances classes with SMOTE, splits 80/20 into train/test, and fits Random Forest and XGBoost models, which are also compared against reported DBSCAN, RoBERTa and K-means baselines using accuracy, precision, recall, F1-score and ROC AUC. Random Forest is reported as the best model with 99.9% accuracy, precision, recall and F1-score (XGBoost 99.7% accuracy and 99.8% on the other metrics), and the RF confusion matrix shows 26,127 TP, 273,871 TN, 0 FP and 2 FN.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Random Forest test-set accuracy on the Telecom CDR fraud task",
+   "metric": "accuracy",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.9,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table II, row Accuracy, column RF",
+   "config_for_value": "Random Forest on the preprocessed Telecom CDR data: missing-value rows removed, Min-Max scaling (Eq. 1), SMOTE balancing, 80/20 train-test split; scikit-learn stack",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min for one RF fit plus SMOTE on ~100k x 17 tabular data",
+   "quote": "RF recorded a high level of accuracy at 99.9% while XGBoost at 99.7%.",
+   "page": 1
+  },
+  {
+   "id": "C2",
+   "statement": "Random Forest precision on the fraud class",
+   "metric": "precision",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.9,
+   "unit": "% precision",
+   "higher_is_better": true,
+   "table_ref": "Table II, row precision, column RF",
+   "config_for_value": "Random Forest, same preprocessing (missing-value removal, Min-Max scaling, SMOTE) and 80/20 split as C1",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min",
+   "quote": "Among all the models, RF was seen to give the highest performance with an accuracy of 99.9%, precision of 99.9%, recall of 99.9% and F1-score of 99.9%",
+   "page": 1
+  },
+  {
+   "id": "C3",
+   "statement": "Random Forest recall on the fraud class",
+   "metric": "recall",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.9,
+   "unit": "% recall",
+   "higher_is_better": true,
+   "table_ref": "Table II, row Recall, column RF",
+   "config_for_value": "Random Forest, same preprocessing (missing-value removal, Min-Max scaling, SMOTE) and 80/20 split as C1",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min",
+   "quote": "Among all the models, RF was seen to give the highest performance with an accuracy of 99.9%, precision of 99.9%, recall of 99.9% and F1-score of 99.9%",
+   "page": 1
+  },
+  {
+   "id": "C4",
+   "statement": "Random Forest F1-score on the fraud class",
+   "metric": "F1-score",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.9,
+   "unit": "% F1",
+   "higher_is_better": true,
+   "table_ref": "Table II, row F1-Score, column RF",
+   "config_for_value": "Random Forest, same preprocessing (missing-value removal, Min-Max scaling, SMOTE) and 80/20 split as C1",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min",
+   "quote": "Among all the models, RF was seen to give the highest performance with an accuracy of 99.9%, precision of 99.9%, recall of 99.9% and F1-score of 99.9%",
+   "page": 1
+  },
+  {
+   "id": "C5",
+   "statement": "Random Forest ROC AUC",
+   "metric": "ROC AUC",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.9,
+   "unit": "% ROC AUC",
+   "higher_is_better": true,
+   "table_ref": "Table II, row ROC AUC, column RF",
+   "config_for_value": "Random Forest, same preprocessing and 80/20 split as C1; note the body text and Fig. 5 instead report 'an AUC of 1.0' for RF while Table II lists 99.9",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min",
+   "quote": "The curve closely follows the top-left corner, and the AUC is 1.0, indicating perfect classification.",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "XGBoost test-set accuracy on the Telecom CDR fraud task",
+   "metric": "accuracy",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.7,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table II, row Accuracy, column XGBoost",
+   "config_for_value": "XGBoost on the same preprocessed data (missing-value removal, Min-Max scaling, SMOTE, 80/20 split) as C1",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5-10 min",
+   "quote": "The models achieved 99.9% and 99.7% accuracy respectively and other measures performance for fraud detection.",
+   "page": 5
+  },
+  {
+   "id": "C7",
+   "statement": "XGBoost F1-score on the fraud class",
+   "metric": "F1-score",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "20% held-out test set after missing-value removal, Min-Max scaling and SMOTE",
+   "value": 99.8,
+   "unit": "% F1",
+   "higher_is_better": true,
+   "table_ref": "Table II, row F1-Score, column XGBoost",
+   "config_for_value": "XGBoost, same preprocessing and 80/20 split as C6 (Table II also lists 99.8 for precision, recall and ROC AUC)",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5-10 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C8",
+   "statement": "Random Forest false negatives (fraud cases missed) in the reported confusion matrix",
+   "metric": "false negatives",
+   "dataset": "Telecom CDR Dataset (101,174 records, 17 attributes, 8,830 fraud cases)",
+   "split": "Reported RF confusion matrix (26,127 TP + 273,871 TN + 0 FP + 2 FN = 300,000 predictions)",
+   "value": 2,
+   "unit": "count",
+   "higher_is_better": false,
+   "table_ref": "Fig. 4, Random Forest Confusion Matrix",
+   "config_for_value": "Random Forest predictions on the evaluated set, with fraud as the positive class; note the matrix totals 300,000 predictions, which exceeds the 101,174-record dataset",
+   "reported_spread": null,
+   "est_compute": "CPU (i7, 16 GB RAM), ~5 min",
+   "quote": "There are no false positives (0), and only 2 false negatives, showcasing excellent predictive performance.",
+   "page": 5
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Random Forest accuracy of 99.9% is the paper's headline result and the user's stated target; it needs only one scikit-learn RandomForest fit on a small tabular dataset after missing-value removal, Min-Max scaling and SMOTE (no GPU, no deep model, no baselines), so it is by far the cheapest claim that still demonstrates the central finding."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "Rule 2: the target is an accuracy-like percentage with no reported std or CI, and the evaluated test set is far larger than 2,000 examples (the paper's confusion matrix sums to 300,000 predictions), so the band is 1.0 absolute point (98.9-100)%."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Records with missing values are removed before training (listwise deletion of rows with missing critical features).",
+   "cite": "Section III.B, Data Preprocessing - Handling Missing Values",
+   "quote": "Missing values were identified and removed to maintain the integrity of the dataset.",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Features are rescaled with Min-Max scaling using Eq. 1, (x - x_min) / (x_max - x_min).",
+   "cite": "Section III.B, Eq. 1",
+   "quote": "Min-Max Scaling formulate as equ.1.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Class imbalance is corrected with SMOTE oversampling of the minority (fraud) class.",
+   "cite": "Section III.C, Data balancing with SMOTE",
+   "quote": "To improve the representation of under-represented groups in datasets, SMOTE employs an oversampling technique",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "The dataset is split 80% train / 20% test.",
+   "cite": "Section III.D, Data splitting",
+   "quote": "Two portions of the dataset were separated: 80% for training and 20% for testing.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Both Random Forest and XGBoost classifiers are trained and evaluated on the same preprocessed data.",
+   "cite": "Section III.E, Prediction with ML-based RF and XGBoost model",
+   "quote": "In this study, have utilized both RF and XGBoost models for predictive analysis.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "The data source is the Telecom CDR dataset with 17 attributes, 101,174 customer records and 8,830 fraud cases.",
+   "cite": "Section III.A, Data Collection",
+   "quote": "The dataset used for this study includes 17 attributes from 101,174 customers, with 8,830 fraud, shows in figure 2.",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "The implementation uses a Python Jupyter/scikit-learn stack (scikit-learn, NumPy, Pandas, Keras, Matplotlib).",
+   "cite": "Section IV, Result & Discussion",
+   "quote": "these included; Scikit-learn, NumPy, Pandas, Keras, Matplotlib",
+   "page": 5
+  },
+  {
+   "id": "R8",
+   "stmt": "Accuracy is computed as (TP+TN)/(TP+TN+FP+FN) per Eq. 9.",
+   "cite": "Section III.F, Eq. 9",
+   "quote": "Accuracy is a ratio of a number of correctly classified samples to a total number of samples.",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Precision, recall and F1-score are computed from TP/FP/FN with the fraud class as positive, per Eqs. 10-12.",
+   "cite": "Section III.F, Eqs. 10-12",
+   "quote": "Precision is best understood as follows, according to mathematical equation (10)",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "The reported workflow order is: collect data, remove missing values, Min-Max scale, SMOTE-balance, then split into train/test.",
+   "cite": "Section III, Fig. 1 flowchart",
+   "quote": "the dataset underwent preprocessing, including handling missing values, noise reduction, and balancing data using the SMOTE technique",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "Splitting happens on the already-preprocessed (scaled and balanced) data according to the described order.",
+   "cite": "Section III, flowchart narrative",
+   "quote": "The data that had already been preprocessed was then divided into two parts: training and testing.",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "ROC AUC is reported alongside accuracy, precision, recall and F1-score for each model.",
+   "cite": "Section III.F / Table II",
+   "quote": "the research used a comprehensive set of performance indicators, including accuracy, precision, recall, F1-score, and ROC AUC",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "Telecom CDR Dataset",
+   "how_to_get": "GitHub repository linked in the paper: https://github.com/jamesrawlins1000/Telecom-CDR-Dataset- (paper reports 101,174 customer records, 17 attributes, 8,830 fraud cases)"
+  }
+ ],
+ "code_links": [
+  "https://github.com/jamesrawlins1000/Telecom-CDR-Dataset-"
+ ],
+ "stated_compute": "A Python-based simulation environment using Jupyter Notebook running on Google Colab was used to carry out the experimental results. ... A local machine with an Intel i7 processor, 16 GB of RAM, and an NVIDIA GTX 1660 Ti GPU for best performance was used to run the simulation.",
+ "paper_meta": {
+  "source": "2605.17245",
+  "kind": "arxiv",
+  "arxiv_id": "2605.17245",
+  "url": "https://arxiv.org/abs/2605.17245",
+  "title": "An Efficient Machine Learning-based Framework for Detection and Prevention of Frauds in Telecom Networks",
+  "pages": 7
+ }
+}

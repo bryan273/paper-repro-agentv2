@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Conditional logistic regression coefficient/odds ratio for Cluster 11 (infrastructure and strategy) on best-answer selection: OR = 1.34, 95% CI [1.23, 1.46]",
+  "table_ref": "Table 4 / Fig. 5 (Section 4.4)",
+  "dataset": "Yahoo! Chiebukuro logistics corpus (40,871 questions, 78,641 answer-tier posts) scraped via Selenium"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "No code or data released; reproducing requires rebuilding a Selenium scraper for Yahoo! Chiebukuro (rate-limited, 22-year span, day-windowed pagination), running offline OPUS-MT translation over ~120k posts, NLTK noun extraction, Word2Vec+HDBSCAN clustering, then the conditional logit — the scrape alone is many hours and may be blocked."
+ },
+ "blockers": [
+  "No code released",
+  "No dataset released (data availability statement says no datasets generated/analysed)",
+  "Requires re-scraping a live third-party platform (Yahoo! Chiebukuro) with Selenium, subject to rate limits/blocking",
+  "Full pipeline (scrape + MT translation of ~120k posts + clustering + regression) is far beyond a few hours"
+ ],
+ "suitable": false,
+ "id": "2610.21807",
+ "title": "Content associations with answer selection and engagement in supply chain community question answering",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

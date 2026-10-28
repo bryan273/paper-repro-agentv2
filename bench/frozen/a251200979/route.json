@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "The GitHub repo contains only three rendered PDFs (PCA_Kmeans.pdf, PCA_Kmeans_Decathlon.pdf, PCA_Kmeans_Iris.pdf) — zero source files, no R/Python scripts, no data, no README. There is nothing to run or port, so the only viable path is to reimplement the paper's method (standardize USArrests -> PCA loadings -> K-means on the transposed standardized matrix with K=2 -> S_{k,j} = sum of absolute loadings, P_{k,j} = S_{k,j}/sum_k S_{k,j}) from the paper and the claim contract. The method is fully specified and the numbers are self-consistent: with prcomp-style loadings |0.536|+|0.583|+|0.278|+|0.543| on PC1, S_{2,PC1} = 0.536+0.583+0.543 = 1.662 and S_{1,PC1} = 0.278, giving P_{2,PC1} = 1.662/1.940 = 0.857, exactly matching C1-C4; PC1/PC2 variance shares (~62%/25%) match standard prcomp on standardized USArrests up to the paper's rounding. The whole target is a 50x4 dataset and a single K-means fit, so no author code is needed.",
+ "repo": "https://github.com/vsaquicela/PCA-K-means",
+ "entrypoints": [],
+ "missing_artifacts": [
+  "all source code (repo has only PDFs)",
+  "USArrests data file (R built-in dataset; must be obtained from R datasets or a mirrored copy)",
+  "any seed / K-means initialization setting for reproducing the exact C2 = {Murder, Assault, Rape} partition",
+  "scripts for the Iris and Decathlon2 examples (secondary, not in the match target)"
+ ],
+ "blockers_seen": [
+  "repository ships only PDF renders of the analysis; no executable code at all",
+  "original results were produced in R (prcomp + kmeans); Python 3.12 reimplementation must match R's standardization (n-1 sd) and PCA sign convention",
+  "PCA loading signs are arbitrary — must compare absolute values as the contract does",
+  "K-means on 4 points in 50-dim space is seed/init sensitive; needs multiple starts or fixed init to guarantee the {Murder, Assault, Rape} vs {UrbanPop} split"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "under 1 minute of command time (a few seconds of actual compute)",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.2,
+  "ref_minutes": 8,
+  "gpu_speedup": null,
+  "basis": "One PCA on a 50x4 standardized table plus one K-means fit on 4 points; the cost is essentially environment setup and fetching USArrests, with milliseconds of numeric work per seed."
+ },
+ "repo_info": {
+  "url": "https://github.com/vsaquicela/PCA-K-means",
+  "cloned": true,
+  "n_files": 3,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

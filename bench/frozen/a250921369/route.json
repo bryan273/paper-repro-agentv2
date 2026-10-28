@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "The only code link the paper gives (https://github.com/oyenigun/RouteOptimization) returns 404, so there is no author code and no author dataset to run. The target C1 is nonetheless cheap and fully specified in the text: K-means (k=5, 10 iterations) on 100 Istanbul charging-station points, a GA over the order of the 5 clusters (mutation 0.10, 100 iterations), and a TSP-style ordering inside each cluster, compared against the sequential dataset-order tour (C2). Everything must be reimplemented from the paper's description, and the 100 station coordinates plus the pairwise distance/duration matrix have to be reconstructed since they were shipped only through the dead repository.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Author code repository (https://github.com/oyenigun/RouteOptimization returns 'Repository not found')",
+  "Istanbul EV charging station dataset: the 100 station records (id, name, latitude, longitude) and their dataset order, which defines both the sequential baseline C2/C4 and the K-means input",
+  "Precomputed 100x100 distance (km) and duration (min) matrices used for Table 4; the paper's numbers imply road-network distances (likely Google Maps Directions API), which cannot be regenerated without an API key and are not bit-reproducible in any case",
+  "K-means initialization / random seed and GA seed, selection and crossover operators, and the intra-cluster routing rule (exact TSP vs nearest neighbour vs 2-opt) - none are specified precisely enough to pin the exact 308.49 km"
+ ],
+ "blockers_seen": [
+  "GitHub repository 404: no code, no weights, no data of any kind released",
+  "Target dataset is distributed only via that missing repository, so the 100-station coordinates and their ordering must be re-sourced or reconstructed",
+  "Reported distances/durations appear to come from a proprietary routing API (Google Maps), so exact reproduction of 308.49 km / 568.15 min is not achievable even with the code; only the qualitative and approximate-magnitude result (large saving over the sequential route) is recoverable",
+  "K-means and GA hyperparameters beyond (k=5, 10 iter, mutation 0.10, 100 iter) - selection, crossover, population size, seed, intra-cluster solver - are not reported, so the optimizer's exact output is seed-dependent",
+  "No GPU on this machine, but the workload is tiny and CPU-only anyway"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Under 5 minutes of command time per full run: K-means on 100 points is milliseconds, a 100-iteration GA over 5 cluster centres with a 100x100 distance lookup is a fraction of a second, and the intra-cluster TSP over 5 clusters of ~20 nodes each is trivial with 2-opt. The whole configuration sweep plus baselines is well under a minute; the real cost is writing the ~200 lines of reimplementation.",
+  "fits_budget": true,
+  "scale_down_plan": "Not a runtime scale-down but a fidelity scale-down: rebuild a 100-station Istanbul EV charging-station set from public coordinate sources (or, failing that, sample 100 points from Istanbul's road network weighted toward the published station distribution) and use haversine (or an OSM road-network shortest path) instead of the unrecoverable Google Maps matrix. Keep the full protocol - 100 stations, 5 clusters, 10 K-means iterations, GA mutation 0.10, 100 GA iterations - and average over ~10 random seeds so the K-means/GA seed sensitivity is visible. Expected effect: the absolute value will not land on 308.49 km; what should reproduce is the structure of the result - the optimized tour is far shorter than the 417.53 km sequential tour, of the order of the claimed ~25-35% saving. Ceiling is therefore partially_reproduced.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 25,
+  "gpu_speedup": null,
+  "basis": "K-means on 100 points plus a 100-iteration GA over 5 cluster labels with lookup-table distances is sub-second per run, so the estimate is dominated by sourcing/reconstructing the 100 station coordinates and the pairwise matrix rather than by any actual computation."
+ },
+ "repo_info": {
+  "url": "https://github.com/oyenigun/RouteOptimization",
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

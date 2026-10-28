@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "UniBi-O(2) achieves MRR 0.487 on WN18RR",
+  "table_ref": "Table 2",
+  "dataset": "WN18RR"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 720,
+  "gpu_speedup": 3,
+  "basis": "Training a 500-dimensional bilinear model on WN18RR (86k triples) for up to 200 epochs on CPU is estimated to take ~12 hours; GPU would be ~3x faster."
+ },
+ "blockers": [
+  "No code released",
+  "No hyperparameters for exact reproduction (only grid search ranges)",
+  "Training time on CPU may exceed a few hours"
+ ],
+ "suitable": false,
+ "id": "2309.13834",
+ "title": "Prior Bilinear Based Models for Knowledge Graph Completion",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

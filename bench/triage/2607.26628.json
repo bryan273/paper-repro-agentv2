@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Mean ROC AUC for TabPFN with random context of size k=16 on the diabetes dataset, reported as .738±.042 (mean ± 95% CI over 20 random contexts).",
+  "table_ref": "Table 2, row 'diabetes', column 'k=16'",
+  "dataset": "diabetes (OpenML, 768 rows, 8 features, 2 classes)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/mohammed1916/tabmx"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": 2.0,
+  "basis": "TabPFN v3 inference on 20 contexts of 16 rows each for a 768-row dataset is tiny; the main cost is installing TabPFN and downloading the pretrained model (~100 MB) and the OpenML dataset, with inference taking seconds per context on CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2607.26628",
+ "title": "Understanding Context Sampling in TabPFN on Small Tabular Datasets",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

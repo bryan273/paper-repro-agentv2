@@ -1,0 +1,247 @@
+{
+ "title": "Accelerometry-Derived Digital Biomarkers for Cardiometabolic Risk: A Population-Representative Tabular Benchmark with Uncertainty Quantification",
+ "summary": "The paper introduces a population-representative NHANES 2003–2006 tabular benchmark (N=1,381) linking hip-worn accelerometry and lifestyle covariates to HbA1c, triglycerides, and CRP, with subgroup evaluation and conformal uncertainty. It compares ridge, XGBoost, and TabPFN v2 on a single 60/20/20 stratified split and applies split conformal prediction at 90% coverage. TabPFN v2 gives the best point predictions, most clearly for CRP (R2=0.383), while triglycerides remain nearly unpredictable and subgroup coverage reveals fairness gaps.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "TabPFN v2 attains R^2 = 0.383 for CRP prediction on the held-out test set, the paper's best CRP result.",
+   "metric": "R^2 (coefficient of determination)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.383,
+   "unit": "R^2",
+   "higher_is_better": true,
+   "table_ref": "Table 2, CRP row, TabPFN v2 column R2; narrative: largest margin on CRP",
+   "config_for_value": "CRP log-transformed; 6 accelerometry features plus 12 demographic/clinical covariates; Ntrain=828; TabPFN v2 used in-context with all 828 training examples, CPU inference, no subsampling because Ntrain<1,000; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes",
+   "quote": "with the largest margin on CRP (R2=0.383 vs. 0.339 for ridge).",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "TabPFN v2 attains R^2 = 0.156 for HbA1c prediction on the held-out test set.",
+   "metric": "R^2 (coefficient of determination)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.156,
+   "unit": "R^2",
+   "higher_is_better": true,
+   "table_ref": "Table 2, HbA1c row, TabPFN v2 column R2; also abstract",
+   "config_for_value": "HbA1c log-transformed; 6 accelerometry features plus 12 demographic/clinical covariates; Ntrain=828; TabPFN v2 in-context with all 828 examples, CPU inference; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes",
+   "quote": "TabPFN v2 achieves the best overall performance (HbA1c R2=0.156, CRP R2=0.383)",
+   "page": 1
+  },
+  {
+   "id": "C3",
+   "statement": "TabPFN v2 attains R^2 = 0.048 for triglycerides, still below 0.05 and consistent with the paper's report that triglycerides are largely unpredictable.",
+   "metric": "R^2 (coefficient of determination)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.048,
+   "unit": "R^2",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Triglycerides row, TabPFN v2 column R2",
+   "config_for_value": "Triglycerides log-transformed; 6 accelerometry features plus 12 demographic/clinical covariates; Ntrain=828; TabPFN v2 in-context with all 828 examples, CPU inference; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes",
+   "quote": "while triglycerides remain largely unpredictable from lifestyle features alone (R2 < 0.05 across all models)",
+   "page": 1
+  },
+  {
+   "id": "C4",
+   "statement": "Ridge regression attains R^2 = 0.339 for CRP prediction, the strongest non-TabPFN CRP baseline in Table 2.",
+   "metric": "R^2 (coefficient of determination)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.339,
+   "unit": "R^2",
+   "higher_is_better": true,
+   "table_ref": "Table 2, CRP row, Ridge column R2",
+   "config_for_value": "Ridge alpha=1.0; CRP log-transformed; numerical features standardized with training-set statistics; categorical features label-encoded; Ntrain=828; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 minute",
+   "quote": "with the largest margin on CRP (R2=0.383 vs. 0.339 for ridge).",
+   "page": 3
+  },
+  {
+   "id": "C5",
+   "statement": "TabPFN v2's empirical 90% split-conformal coverage for CRP on the test set is 0.939.",
+   "metric": "empirical conformal coverage (target 0.90)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.939,
+   "unit": "coverage (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, CRP row, TabPFN v2 column Cov.; narrative",
+   "config_for_value": "Split conformal with calibration set (20%), non-conformity = absolute residual, alpha=0.10, finite-sample quantile; TabPFN v2 CRP model; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (same run as point model)",
+   "quote": "Conformal coverage is closest to the 90% target for ridge regression (HbA1c: 0.910, CRP: 0.917) and TabPFN v2 on CRP (0.939).",
+   "page": 3
+  },
+  {
+   "id": "C6",
+   "statement": "For TabPFN v2 on HbA1c, empirical conformal coverage in Mexican American participants is 0.719, far below the 0.90 target.",
+   "metric": "empirical conformal coverage (target 0.90)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276), Mexican American subgroup",
+   "value": 0.719,
+   "unit": "coverage (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Figure 1, HbA1c panel, Mexican American subgroup, TabPFN v2",
+   "config_for_value": "TabPFN v2 HbA1c model; split conformal with calibration set, alpha=0.10; subgroup defined by NHANES race/ethnicity; empirical coverage computed within Mexican American test participants.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes (same run as point model)",
+   "quote": "notable undercoverage is observed for Mexican American participants on HbA1c (0.719), while other groups achieve ≥0.87 coverage on this outcome.",
+   "page": 3
+  },
+  {
+   "id": "C7",
+   "statement": "XGBoost's empirical 90% split-conformal coverage for triglycerides is 0.823, showing undercoverage on the least predictable outcome.",
+   "metric": "empirical conformal coverage (target 0.90)",
+   "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381)",
+   "split": "test set (N=276; 20% stratified random split, seed=42)",
+   "value": 0.823,
+   "unit": "coverage (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Triglycerides row, XGBoost column Cov.; narrative",
+   "config_for_value": "XGBoost 500 estimators, learning rate 0.05, max depth 6, early stopping on calibration; triglycerides log-transformed; split conformal alpha=0.10; test N=276.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes",
+   "quote": "XGBoost shows slight undercoverage on triglycerides (0.823), reflecting greater overconfidence in its residual distribution.",
+   "page": 3
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the user's target and the paper's headline result: TabPFN v2 CRP R2=0.383 has the largest model margin and requires only one small tabular fit plus test evaluation, making it the cheapest claim that still demonstrates the central finding."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: R^2 is a bounded score printed as a fraction in [0,1] on a test set of N=276 (<2,000), and the paper reports no std over repeated runs; the band is therefore 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use NHANES 2003–2006 cycles C and D and restrict to participants with valid hip-worn accelerometry: at least 4 wear days and at least 600 min/day wear time.",
+   "cite": "Section 2.1 and Section 2.2",
+   "quote": "Starting from participants with valid accelerometry data (≥4 wear days, ≥600 min/day wear time)",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Apply inclusion criteria: age 20–85 years, non-missing HbA1c, triglycerides, and CRP, and fasting duration at least 8 hours before blood draw; target final N=1,381.",
+   "cite": "Section 2.2 Analytic Sample",
+   "quote": "age 20–85 years; non-missing HbA1c, triglycerides, and CRP; and fasting duration ≥8 hours prior to blood draw",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Construct the six accelerometry features: TAC, log-TAC, sedentary time, MVPA, light PA, and wear time from minute-level accelerometry with standard Troiano cutpoints.",
+   "cite": "Section 2.3 Features",
+   "quote": "Activity features (6): total activity counts (TAC), log-TAC (TLAC), sedentary time (ST), moderate-to-vigorous PA (MVPA), light PA (LIPA), and wear time (WT)",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "Construct the 12 demographic/clinical covariates: age, sex, race/ethnicity, poverty-income ratio, BMI, systolic blood pressure, smoking status, and energy, carbohydrate, fat, protein, and fibre intake.",
+   "cite": "Section 2.3 Features",
+   "quote": "age, sex, race/ethnicity, poverty-income ratio, BMI, systolic blood pressure, smoking status, and total energy, carbohydrate, fat, protein, and fibre intake",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Use a single stratified random 60/20/20 train/calibration/test split with seed=42; the test set should be N=276.",
+   "cite": "Section 3.1 Experimental Setup",
+   "quote": "train (60%), calibration (20%), and test (20%) sets using stratified random splitting (seed=42)",
+   "page": 2
+  },
+  {
+   "id": "R6",
+   "stmt": "Standardize numerical features using training-set statistics and label-encode sex, race/ethnicity, and smoking status.",
+   "cite": "Section 3.1 Experimental Setup",
+   "quote": "Numerical features were standardised using training-set statistics. Categorical features (sex, race/ethnicity, smoking) were label-encoded.",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Log-transform all three outcomes before modelling; compute reported R2 and MAE on the log scale.",
+   "cite": "Section 3.1 Experimental Setup",
+   "quote": "All outcomes were log-transformed prior to modelling to address right-skewed distributions; reported metrics are computed on the log scale.",
+   "page": 2
+  },
+  {
+   "id": "R8",
+   "stmt": "Fit ridge regression with alpha=1.0 as the linear baseline.",
+   "cite": "Section 3.2 Models",
+   "quote": "Ridge Regression (α=1.0): a linear specialised baseline providing an interpretable lower bound on predictive performance.",
+   "page": 2
+  },
+  {
+   "id": "R9",
+   "stmt": "Fit XGBoost with 500 estimators, learning rate 0.05, max depth 6, and early stopping on the calibration set.",
+   "cite": "Section 3.2 Models",
+   "quote": "We used 500 estimators with learning rate 0.05, max depth 6, and early stopping on the calibration set.",
+   "page": 2
+  },
+  {
+   "id": "R10",
+   "stmt": "Use TabPFN v2 without task-specific gradient training: pass training examples directly as in-context examples and do not subsample when Ntrain=828 (<1,000). Use CPU inference.",
+   "cite": "Section 3.2 Models",
+   "quote": "training instances are passed directly as in-context examples, with subsampling to 1,000 examples applied only when the training set exceeds this size",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "Apply split conformal prediction per model and outcome using absolute calibration residuals and alpha=0.10, producing intervals yhat ± qhat.",
+   "cite": "Section 3.3 Conformal Prediction, Eq. 2",
+   "quote": "For each model and outcome, we computed the non-conformity score as the absolute residual |yi −ˆyi| on the calibration set",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "Report R2, MAE on the log scale, and empirical conformal coverage for every model–outcome combination on the test set.",
+   "cite": "Section 4.1 Predictive Performance; Table 2 caption",
+   "quote": "Table 2 reports R2, mean absolute error (MAE, log scale), and empirical conformal coverage",
+   "page": 3
+  },
+  {
+   "id": "R13",
+   "stmt": "Evaluate subgroup conformal coverage by sex and race/ethnicity, including Mexican American, Other Hispanic, Non-Hispanic White, Non-Hispanic Black, and Other.",
+   "cite": "Section 3.4 Subgroup Coverage Analysis",
+   "quote": "using the NHANES oversampling design that ensures adequate representation of minority groups",
+   "page": 3
+  }
+ ],
+ "data": [
+  {
+   "name": "NHANES 2003–2004 (cycle C) and 2005–2006 (cycle D) public-use files",
+   "how_to_get": "Download demographics, examination, laboratory, questionnaire, dietary, and accelerometry (PAXRAW_C/PAXRAW_D) files from the CDC/NCHS NHANES website: https://www.cdc.gov/nchs/nhanes/"
+  },
+  {
+   "name": "NHANES Accelerometry Cardiometabolic Benchmark derived dataset",
+   "how_to_get": "Public repository linked by the paper: https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark"
+  },
+  {
+   "name": "TabPFN v2 model/package",
+   "how_to_get": "Install the official TabPFN implementation and use the v2 checkpoint; the paper cites Hollmann et al. (2025) and does not provide a separate URL."
+  }
+ ],
+ "code_links": [
+  "https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark",
+  "https://github.com/felizzi/"
+ ],
+ "stated_compute": "We used CPU inference throughout.",
+ "paper_meta": {
+  "source": "2606.30702",
+  "kind": "arxiv",
+  "arxiv_id": "2606.30702",
+  "url": "https://arxiv.org/abs/2606.30702",
+  "title": "Accelerometry-Derived Digital Biomarkers for Cardiometabolic Risk: A Population-Representative Tabular Benchmark with Uncertainty Quantification",
+  "pages": 5
+ }
+}

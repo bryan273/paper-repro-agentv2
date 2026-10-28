@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "DC-MK-means DPD achieves trimmed R2 = 0.672 (highest among compared methods) on the Covid-19 country dataset",
+  "table_ref": "Table 4",
+  "dataset": "Covid-19 country-level CFR/infection-rate + demographic data (Kaggle 'countries of the world')"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code released; the full MK-means DPD / DC-MK-means DPD pipeline (core-point initialization, iterative weighted DPD estimation with BFGS/Armijo fallback, robust DBIM/CHItrim indexes) must be reimplemented from the paper's equations, and the exact Kaggle data version/cleaning and alpha choice are unspecified, so most of the effort is code writing plus tuning rather than raw compute."
+ },
+ "blockers": [
+  "no code or configs released",
+  "exact data preprocessing, alpha tuning parameter, and cluster count selection not fully specified",
+  "robust internal indexes (DBIM, CHItrim) must be reimplemented from prose"
+ ],
+ "suitable": false,
+ "id": "2608.30093",
+ "title": "Robust K-means Clustering using the Density Power Divergence Measure",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

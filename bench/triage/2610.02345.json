@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "KCM achieves mean AUROC of 0.871 across the 47 ADBench datasets (highest among 46 label-free detectors), with the untrimmed variant giving 0.866.",
+  "table_ref": "Section 5, claim (R1) / Figure 3",
+  "dataset": "ADBench (47 tabular datasets)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/jose-melo/kernel-contraction-matching",
+  "https://github.com/jose-melo/kernel-contraction-"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "basis": "KCM is closed-form (O(N^2 D) bandwidth selection + O(NMD) scoring, capped at N0=2000), paper reports median fit 0.33 s and worst total 38.5 s per dataset on one CPU core; the cost is downloading ADBench (47 datasets) and running the full sweep over 3 seeds, plus verifying the repo reproduces the exact 0.871."
+ },
+ "blockers": [
+  "Repo link is provided but not verifiable here; if code/configs are incomplete the closed-form KCM must be re-implemented from Algorithm 1 (feasible but adds time)",
+  "ADBench download is large (47 datasets, some with >1000 features and large sample counts) and needs preprocessing to the semi-supervised 50%-normal splits",
+  "Baseline numbers (DTE-NP, LUNAR, etc.) come from the TCCM benchmark and are not re-run, so only KCM's own mean AUROC is reproducible"
+ ],
+ "suitable": true,
+ "id": "2610.02345",
+ "title": "Mitigating Convergence Collapse in Fixed-Target Anomaly Detectors via Kernel-Anchored Locality Regularization",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

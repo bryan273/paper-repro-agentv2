@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "MLP model achieves 99.24% accuracy on the PhiUSIIL test partition",
+  "table_ref": "Table 7",
+  "dataset": "PhiUSIIL Phishing URL Dataset"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small MLP on 16 tabular features, 188k training samples; paper reports 342s training on CPU, plus data download and feature extraction, all feasible on a laptop."
+ },
+ "blockers": [
+  "No code released; must reimplement feature extraction and MLP from paper description",
+  "Feature extraction details (e.g., suspicious TLD list, URL shortening services) are not fully specified"
+ ],
+ "suitable": true,
+ "id": "2606.00889",
+ "title": "A Lightweight Hybrid MLP-Based Framework for Real-Time Phishing URL Detection Using Structural URL Features",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

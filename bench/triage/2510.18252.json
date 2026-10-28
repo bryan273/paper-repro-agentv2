@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "ADASYN 1x augmentation achieves test AUC of 0.6778 (Gini 0.3557) on the Give Me Some Credit dataset, vs baseline AUC 0.6727",
+  "table_ref": "Table 2 / Table 5 (ADASYN 1x row)",
+  "dataset": "Give Me Some Credit (Kaggle), 97,243 obs after cleaning, 7.07% default rate"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "XGBoost (100 trees, depth 6) on ~73k rows x 6 features plus ADASYN/SMOTE resampling and 1000-iteration bootstrap on 29k test rows is minutes of CPU work; main cost is downloading the Kaggle dataset and writing the pipeline from scratch since no code is released."
+ },
+ "blockers": [
+  "No code released (paper promises a future GitHub repo but links none)",
+  "Kaggle dataset requires a free account/API token to download",
+  "Preprocessing caps/outlier rules are only loosely described, so exact AUC may not match to 4 decimals"
+ ],
+ "suitable": true,
+ "id": "2510.18252",
+ "title": "Finding the Sweet Spot: Optimal Data Augmentation Ratio for Imbalanced Credit Scoring Using ADASYN",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

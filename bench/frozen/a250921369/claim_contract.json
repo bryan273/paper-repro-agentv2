@@ -1,0 +1,213 @@
+{
+ "title": "Smart Routing for EV Charge Point Operators in Mega Cities: Case Study of Istanbul",
+ "summary": "The paper addresses route planning for EV charge point operators who must visit 100 charging stations across Istanbul. It clusters stations geographically with K-means and uses a genetic algorithm to order the clusters, then combines intra-cluster and inter-cluster routes. The best reported configuration (5 clusters, 10 K-means iterations, GA mutation 0.10, 100 GA iterations) gives 308.49 km versus 417.53 km for the sequential reference, described by the authors as roughly 35% savings.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Total route distance for Configuration 2, the best reported optimized route.",
+   "metric": "total route distance",
+   "dataset": "Istanbul EV charging station dataset (100 stations)",
+   "split": "all 100 stations (no train/test split)",
+   "value": 308.49,
+   "unit": "km",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row Config No 2, column Total Distance (km); also Figure 9",
+   "config_for_value": "K-means clusters=5; K-means iterations=10; GA mutation rate=0.10; GA iterations=100",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "the shortest distance was obtained with configuration-2 (308.49 km)",
+   "page": 9
+  },
+  {
+   "id": "C2",
+   "statement": "Total distance of the sequential reference route over all 100 stations in dataset order.",
+   "metric": "total route distance",
+   "dataset": "Istanbul EV charging station dataset (100 stations)",
+   "split": "all 100 stations (no train/test split)",
+   "value": 417.53,
+   "unit": "km",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row Sequential Route, column Total Distance (km); also Section 4.2",
+   "config_for_value": "Reference route: 100 stations visited sequentially in dataset order; no optimization applied",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "The longest distance was reached in the \"Sequential\" route (417.53 km)",
+   "page": 9
+  },
+  {
+   "id": "C3",
+   "statement": "Total route duration for Configuration 2.",
+   "metric": "total route duration",
+   "dataset": "Istanbul EV charging station dataset (100 stations)",
+   "split": "all 100 stations (no train/test split)",
+   "value": 568.15,
+   "unit": "minutes",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row Config No 2, column Total Duration (min); also Figure 10",
+   "config_for_value": "K-means clusters=5; K-means iterations=10; GA mutation rate=0.10; GA iterations=100",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min if duration is precomputed; Google Maps API calls if road durations are queried",
+   "quote": "the shortest time was obtained in configuration-2 (568.15 minutes)",
+   "page": 10
+  },
+  {
+   "id": "C4",
+   "statement": "Total duration of the sequential reference route over all 100 stations.",
+   "metric": "total route duration",
+   "dataset": "Istanbul EV charging station dataset (100 stations)",
+   "split": "all 100 stations (no train/test split)",
+   "value": 706.22,
+   "unit": "minutes",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row Sequential Route, column Total Duration (min); also Figure 10",
+   "config_for_value": "Reference route: 100 stations visited sequentially in dataset order; no optimization applied",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s if duration is precomputed; Google Maps API calls if road durations are queried",
+   "quote": "The \"Sequential\" route is again completed in the longest time (706.22 minutes)",
+   "page": 10
+  },
+  {
+   "id": "C5",
+   "statement": "Reported distance saving of the optimized route versus the sequential reference route.",
+   "metric": "distance reduction vs sequential reference",
+   "dataset": "Istanbul EV charging station dataset (100 stations)",
+   "split": "all 100 stations (no train/test split)",
+   "value": 35,
+   "unit": "% distance reduction",
+   "higher_is_better": true,
+   "table_ref": "Abstract; Section 4.2 (Improvement Rate, Eq. 3)",
+   "config_for_value": "Best optimized scenario compared with the sequential reference route",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "the optimized route reduced total travel distance by approximately 35%",
+   "page": 10
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint names this exact result, and it is the paper's central optimized distance. Reproducing it requires only K-means on 100 points plus a small GA over 5 cluster centers, so it is cheaper than reproducing the entire configuration sweep."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the paper reports no std/CI for this value and total distance in km is an unbounded score, so use a 10% relative band."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use a real dataset of 100 EV charging stations in Istanbul with latitude, longitude, and station name.",
+   "cite": "Section 3.1, Materials",
+   "quote": "A collection of 100 EV charging stations, each with latitude, longitude, and station name.",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Combine latitude and longitude into coordinate pairs for spatial analysis and keep station names in a separate list.",
+   "cite": "Section 3.2.1, Data Preprocessing",
+   "quote": "Latitude and longitude values were combined into coordinate pairs for spatial analysis.",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "Initialize K-means centroids randomly rather than using k-means++ by default, unless a documented deviation is reported.",
+   "cite": "Section 3.1 and Section 3.2.2, step 1",
+   "quote": "randomly selected centers; this process is completed iteratively by updating the centers",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "Assign each station to the nearest centroid using Euclidean distance.",
+   "cite": "Section 3.2.2, step 2, Eq. 1",
+   "quote": "Assign each point to the nearest centroid using Euclidean distance as given in Equation 1",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Update each centroid to the mean of its assigned stations and repeat assignment/update until convergence or the configured iteration limit.",
+   "cite": "Section 3.2.2, steps 3-4, Eq. 2",
+   "quote": "Repeat the assignment and update steps until convergence or a fixed iteration limit is reached.",
+   "page": 6
+  },
+  {
+   "id": "R6",
+   "stmt": "Determine an intra-cluster route through the stations of each K-means cluster before global cluster ordering.",
+   "cite": "Algorithm 1, Step 3",
+   "quote": "route ←determine optimal route within point_list (e.g., using TSP)",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Use the genetic algorithm to optimize the global order of K-means cluster centers, then concatenate the corresponding intra-cluster routes.",
+   "cite": "Algorithm 1, Steps 4-5; Section 3.2.3",
+   "quote": "the genetic algorithm was used to determine the shortest routes between clusters",
+   "page": 2
+  },
+  {
+   "id": "R8",
+   "stmt": "Initialize the GA with random cluster-order chromosomes, evaluate fitness by total distance, select shorter routes, crossover, and mutate.",
+   "cite": "Section 3.2.3, steps 1-5",
+   "quote": "Random sequences of clusters were generated to form initial candidate routes.",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "Support the four reported parameter configurations, including the target configuration with 5 clusters, 10 K-means iterations, GA mutation rate 0.10, and 100 GA iterations.",
+   "cite": "Table 3; Section 4.1",
+   "quote": "Key parameters include the number of clusters, iteration count, mutation rate, and genetic algorithm iteration count.",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Compute the reference route distance as the sum of Euclidean distances between consecutive stations in dataset order, and the optimized distance as the sum of intra-cluster and inter-cluster distances.",
+   "cite": "Section 4.2, Comparison Between Reference Route and Optimized Route",
+   "quote": "Reference Route Distance: Summation of Euclidean distances between consecutive data points in dataset order.",
+   "page": 9
+  },
+  {
+   "id": "R11",
+   "stmt": "Compute improvement percentage with Eq. 3: (reference distance minus optimized distance) divided by reference distance, times 100.",
+   "cite": "Section 4.2, Eq. 3",
+   "quote": "The evaluations were made by considering the given calculations, reference route and optimized route distances",
+   "page": 9
+  },
+  {
+   "id": "R12",
+   "stmt": "Render K-means clusters in different colors and the final route as connecting lines, exporting an interactive HTML map.",
+   "cite": "Section 3.2.4, Visualization and Mapping",
+   "quote": "The final map was exported as an interactive HTML file for practical use by field operators.",
+   "page": 6
+  },
+  {
+   "id": "R13",
+   "stmt": "Use Google Maps API and gmplot for mapping/visualization; do not treat Google road-network distance as the Table 4 optimization metric unless reproducing road-based duration separately.",
+   "cite": "Section 3.1; Section 3.2.4",
+   "quote": "Google Maps API and the gmplot Python library were used for mapping and visualization.",
+   "page": 3
+  },
+  {
+   "id": "R14",
+   "stmt": "Report total distance and total duration for each configuration; treat duration reproduction as secondary because the paper gives no duration formula.",
+   "cite": "Section 4.2; Table 4",
+   "quote": "Table 4 shows the distance and running time information obtained as a result of certain optimizations.",
+   "page": 9
+  }
+ ],
+ "data": [
+  {
+   "name": "Istanbul EV charging station dataset (100 stations)",
+   "how_to_get": "Public GitHub repository linked by the paper: https://github.com/oyenigun/RouteOptimization ; the paper states all codes and the dataset are shared there."
+  }
+ ],
+ "code_links": [
+  "https://github.com/oyenigun/RouteOptimization"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2509.21369",
+  "kind": "arxiv",
+  "arxiv_id": "2509.21369",
+  "url": "https://arxiv.org/abs/2509.21369",
+  "title": "Smart Routing for EV Charge Point Operators in Mega Cities: Case Study of Istanbul",
+  "pages": 12
+ }
+}

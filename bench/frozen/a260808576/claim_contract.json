@@ -1,0 +1,259 @@
+{
+ "title": "Exact Conditional Distributions of Chi-Square-Family Statistics for Two-Way Contingency Tables, by Cell-Separable Dynamic Programming",
+ "summary": "Chi-square-family statistics for two-way contingency tables are usually referred to continuous approximations, which miscalibrate because the exact both-margins-conditional law is an atomic lattice over a fibre with astronomically many tables. The paper exploits additivity of the statistic over cells and cell-wise factorization of the multivariate Fisher noncentral hypergeometric law to walk the table one cell at a time, carrying either four moment accumulators, a value-to-probability map, or one complex characteristic-function value per row-capacity state. The engine returns exact conditional moments to 5x5 at three per cell in about three seconds, exact conditional tails within its smaller reach to machine precision (e.g. 1.7e-16 on a 2x2 where a three-moment chi-square misses by 0.281), and exact simultaneous critical values for the maximum adjusted residual.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "On the 3x3 N=18 (406-table) margin fibre, the exact-moment dynamic program reproduces the brute-force-enumerated conditional mean, variance and third cumulant of S to a maximum relative error of 8.9e-15, in 5.5 ms.",
+   "metric": "maximum relative error vs brute-force enumeration (mean, variance, third cumulant)",
+   "dataset": "synthetic 3x3 table, N=18, 406 tables on the margin fibre",
+   "split": "N/A (full margin fibre)",
+   "value": 8.9e-15,
+   "unit": "relative error (dimensionless)",
+   "higher_is_better": false,
+   "table_ref": "Section 2.2 verification paragraph; reach also in Table 1",
+   "config_for_value": "Null (all cell odds w=1); 3x3 table with N=18 and 406 tables on the fibre (equivalently all margins equal 6); moments M, V, K3 of the additive statistic S compared with brute-force enumeration; float64.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, <1 s (reported 5.5 ms plus enumeration of 406 tables)",
+   "quote": "returns the mean, variance, and third cumulant to a maximum relative error of 8.9e-15 in 5.5 milliseconds",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "The vectorized moment engine agrees with the enumeration-verified engine to a worst relative disagreement of 2.4e-13 across five design families.",
+   "metric": "worst relative disagreement between vectorized and reference moment engine",
+   "dataset": "balanced, null, extreme (V = 1.2), heterogeneous, and degenerate (zero-margin) designs",
+   "split": "N/A",
+   "value": 2.4e-13,
+   "unit": "relative disagreement (dimensionless)",
+   "higher_is_better": false,
+   "table_ref": "Section 2.2, paragraph after the verification result",
+   "config_for_value": "Vectorized form (exact_moments_dp_fast.py) compared against the enumeration-verified exact_moments_dp.py on the five named design families.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, seconds per design",
+   "quote": "The vectorized engine agrees with the enumeration-verified engine to a worst relative disagreement of 2.4e-13",
+   "page": 3
+  },
+  {
+   "id": "C3",
+   "statement": "The moment engine computes exact conditional moments of a 5x5 table at three per cell (about 79 billion tables on the fibre) in three seconds in vectorized form.",
+   "metric": "wall-clock time",
+   "dataset": "synthetic 5x5, N=75, three expected counts per cell, about 79,000,000,000 tables",
+   "split": "N/A",
+   "value": 3.0,
+   "unit": "s (wall clock)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row 5x5 N=75 per cell 3, column time; also abstract",
+   "config_for_value": "5x5 table, N=75, three per cell, vectorized engine exact_moments_dp_fast.py; moments only (four accumulators), no atom map.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, ~3 s",
+   "quote": "The moment engine handles a five-by-five table at three per cell (about 79 billion tables) in three seconds",
+   "page": 1
+  },
+  {
+   "id": "C4",
+   "statement": "On a 2x2 table at five per cell the distribution engine's worst tail error against enumeration is 1.7e-16, whereas the three-moment chi-square fit misses the tail by 0.281.",
+   "metric": "worst absolute tail error vs enumeration",
+   "dataset": "synthetic 2x2, five per cell (11 tables on the fibre)",
+   "split": "N/A (full fibre enumerated)",
+   "value": 1.7e-16,
+   "unit": "absolute tail error (probability)",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row 2x2, 5/cell; also text in Section 3.2",
+   "config_for_value": "2x2 table with all margins 5 (N=10, 11 tables, 6 atoms of S); Anscombe-root per-cell summand; worst tail error over the test grid, enumeration reference.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, <1 s",
+   "quote": "On a 2x2 the chi-square fit misses the tail by 0.281; the distribution engine misses it by 1.7e-16.",
+   "page": 6
+  },
+  {
+   "id": "C5",
+   "statement": "For the 3x3 at two per cell (paper: 406 tables, 21 atoms of S), the exact conditional tail at the fitted 0.95 quantile is 0.0390 under the null, not 0.0500.",
+   "metric": "exact conditional tail probability at the fitted 0.95 quantile",
+   "dataset": "synthetic 3x3 at two per cell (paper states 406 tables, 21 atoms)",
+   "split": "N/A (full fibre enumerated)",
+   "value": 0.039,
+   "unit": "tail probability",
+   "higher_is_better": false,
+   "table_ref": "Section 3.1, paragraph on chunky atoms; Table 2 row 3x3, 2/cell",
+   "config_for_value": "Null (w=1), Anscombe-root statistic S carried by the engine; 0.95 quantile fitted by a moment-matched (Patnaik) chi-square; tail read from the exact atomic law.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, <1 s (enumeration of the fibre)",
+   "quote": "its true tail at the fitted 0.95 quantile is 0.0390 under the null, not 0.0500",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "The exact conditional characteristic function computed by the one-complex-per-state walk matches direct enumeration to 2.7e-15.",
+   "metric": "maximum absolute discrepancy vs direct enumeration",
+   "dataset": "small table designs with enumerable fibres",
+   "split": "N/A",
+   "value": 2.7e-15,
+   "unit": "absolute discrepancy (probability scale)",
+   "higher_is_better": false,
+   "table_ref": "Section 3.3, characteristic-function variant",
+   "config_for_value": "Characteristic function φ(t) = E[exp(itS)] accumulated cell by cell carrying one complex number per row-capacity state; compared with direct enumeration.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, seconds",
+   "quote": "The exact conditional characteristic function so computed matches direct enumeration to 2.7e-15.",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "The COS cosine-series inversion recovers the mid-p upper tail to about 7e-4 against the exact distribution engine at 3x3, except at an unresolved boundary half-atom.",
+   "metric": "mid-p upper-tail error vs exact distribution engine",
+   "dataset": "3x3 designs within the distribution engine's reach",
+   "split": "N/A",
+   "value": 0.0007,
+   "unit": "absolute tail error (probability)",
+   "higher_is_better": false,
+   "table_ref": "Section 3.3, COS inversion paragraph",
+   "config_for_value": "Characteristic-function engine (cf_tail.py) with COS inversion (cos_tail.py); approximate mid-p upper tail compared with the exact distribution engine at 3x3.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, seconds",
+   "quote": "It recovers the mid-p tail to about 7e-4 in the upper tail against the exact distribution engine at 3x3",
+   "page": 7
+  },
+  {
+   "id": "C8",
+   "statement": "For the maximum adjusted residual on the 4x4 design with margins (30,5,3,2), N=40 and m=16, the exact conditional cutoff 3.43 holds family-wise error at 0.048, while the Sidak-normal cutoff 2.95 delivers 0.223.",
+   "metric": "family-wise error rate of the simultaneous procedure (alpha = 0.05)",
+   "dataset": "synthetic 4x4 table, row = column margins (30, 5, 3, 2), N=40",
+   "split": "N/A (truncation DP over the fibre)",
+   "value": 0.048,
+   "unit": "family-wise error (probability)",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row margins (30, 5, 3, 2), columns exact cutoff / family-wise error exact",
+   "config_for_value": "M = max_ij |r_ij| with adjusted residuals r_ij = (O_ij - E_ij)/sqrt(E_ij (1 - a_i/N)(1 - b_j/N)); alpha = 0.05, m = 16; indicator-truncation dynamic program (rerun/m0h_fwe_truncation_dp.py), validated against the enumerated 3x3 cases of Table 3.",
+   "reported_spread": null,
+   "est_compute": "CPU, single core, seconds to minutes",
+   "quote": "an exact conditional cutoff of 3.43 that holds at 4.8 percent",
+   "page": 11
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user's target hint points exactly at this verification result. It is the cheapest claim that still demonstrates the paper's central contribution: a cell-separable DP that reproduces brute-force exact conditional moments of a chi-square-family statistic on a both-margins-conditioned fibre. The fibre has only 406 tables and 18 observations, so the reference enumeration is trivial and the DP run is milliseconds; no distribution map, characteristic function, or 79-billion-table lattice is needed."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4 applies (unbounded error-like ratio, not a bounded score): 10% relative around 8.9e-15, i.e. roughly 8.0e-15 to 9.8e-15. The paper reports no std over repeated runs and this is not an accuracy percentage on a test set, so Rule 1 and Rules 2-3 do not apply; a faithful DP plus enumeration pair on the same fibre should land at machine precision and inside this band."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Treat the statistic as additive over cells, S = sum_ij s(O_ij, E_ij), so its moments and law accumulate by convolution as cells are added.",
+   "cite": "Section 1.3 / Section 2.1 opening",
+   "quote": "First, every chi-square-family statistic is additive over cells",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Use the both-margins-conditional law, which factorizes cell by cell as the table is built subject to running margin constraints.",
+   "cite": "Section 1.3",
+   "quote": "the margin-conditional law factorizes cell by cell as the table is built up subject to the running margin constraints",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Carry four accumulators A0 = sum w, A1 = sum w s, A2 = sum w s^2, A3 = sum w s^3 per state and expand (s_new + s_partial)^r to obtain the exact first three central moments.",
+   "cite": "Section 2.1, accumulator recursion",
+   "quote": "expanding (snew + spartial)r on each step gives the exact first three central moments (mean M, variance V, third cumulant K3) of S",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Walk the table one cell at a time in a fixed row-major order; the transition is a shifted slice of a dense array, not a scatter over column vectors.",
+   "cite": "Section 2.1 and Figure 1",
+   "quote": "The fix is to walk one cell at a time",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Keep the state as the row-capacity vector only: colleft is determined by the row capacities and the column total, and the last column is forced by the row capacities.",
+   "cite": "Section 2.1, state-reduction argument",
+   "quote": "it carries no information of its own, so the state stays the row-capacity vector and nothing else",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "Prune at each column boundary: a partial state is admissible only if its remaining row capacities can still meet the remaining column totals.",
+   "cite": "Section 2.1, paragraph after the state argument",
+   "quote": "a partial state is admissible if and only if its remaining row capacities can still meet the remaining column totals",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "Use w = 1 for all cells under the null (independence) for the reported null-fibre moments.",
+   "cite": "Section 1.2",
+   "quote": "with w the cell odds parameters (all w = 1 under independence)",
+   "page": 2
+  },
+  {
+   "id": "R8",
+   "stmt": "For the distribution engine, carry a map from partial statistic value to probability and merge coincident atoms as each cell is convolved in.",
+   "cite": "Section 3.2",
+   "quote": "carry a map S →probability, convolving it as each cell is added and merging coincident atoms",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "Key atoms in exact rational arithmetic whenever the per-cell contribution is a rational function of integer counts (Pearson, likelihood ratio, rational-order power divergence); use fixed-decimal keys only for the irrational Anscombe-root atoms.",
+   "cite": "Section 3.2, atom-key paragraph",
+   "quote": "the atoms can be keyed in exact rational arithmetic, removing the rounding choice entirely",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Support the characteristic-function variant: accumulate φ(t) = E[exp(itS)] by the same cell-at-a-time walk with one complex number per state, and invert with the COS cosine series rather than a truncated Gil-Pelaez integral.",
+   "cite": "Section 3.3",
+   "quote": "the characteristic function φ(t) = E[exp(itS)] is accumulated by the same cell-at-a-time walk carrying one complex number per state",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "Verify against brute-force enumeration of the fixed-margin fibre using multiple-hypergeometric probabilities, not against Monte Carlo.",
+   "cite": "Section 5.3 and Section 2.2",
+   "quote": "enumerating the fixed-margin fibre with its multiple-hypergeometric probabilities and taking the quantile of M atom by atom",
+   "page": 10
+  },
+  {
+   "id": "R12",
+   "stmt": "Make the per-cell summand pluggable so the same recursion returns the exact law for Pearson, likelihood-ratio and Cressie-Read members.",
+   "cite": "Section 3.2, closing paragraph",
+   "quote": "The same engine, with the per-cell summand swapped, reproduces the exact conditional law of the Pearson, likelihood-ratio, and Cressie-Read members",
+   "page": 6
+  },
+  {
+   "id": "R13",
+   "stmt": "Handle degenerate and zero-margin designs without special-casing failures; the vectorized engine is tested on them.",
+   "cite": "Section 2.2, agreement paragraph",
+   "quote": "across balanced, null, extreme (V = 1.2), heterogeneous, and degenerate (zero-margin) designs",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic fixed-margin contingency tables (3x3 N=18, 2x2, 3x5, 4x4, 5x5 designs)",
+   "how_to_get": "Generated in-code by the deposited scripts; no external dataset. Enumerate the margin fibre with multiple-hypergeometric probabilities for the reference values."
+  },
+  {
+   "name": "condexact reproducibility archive (code, tests, derivations appendix DH1-DH8)",
+   "how_to_get": "Zenodo concept DOI 10.5281/zenodo.21831680; this release 10.5281/zenodo.21831681"
+  }
+ ],
+ "code_links": [
+  "https://doi.org/10.5281/zenodo.21831680",
+  "https://doi.org/10.5281/zenodo.21831681"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2608.08576",
+  "kind": "arxiv",
+  "arxiv_id": "2608.08576",
+  "url": "https://arxiv.org/abs/2608.08576",
+  "title": "Exact Conditional Distributions of Chi-Square-Family Statistics for Two-Way Contingency Tables, by Cell-Separable Dynamic Programming",
+  "pages": 16
+ }
+}

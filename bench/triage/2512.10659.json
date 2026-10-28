@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "DCFO achieves validity 1.00 on the sonar dataset (k=10), i.e., a valid counterfactual is found for every outlier",
+  "table_ref": "Table 1 (also Table 11)",
+  "dataset": "sonar (OpenML)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/DCFO-E37E/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "Small tabular dataset (~208 instances, 60 features); DCFO is a CPU SLSQP optimisation per outlier, runtimes in Table 9 are ~1.6 s/outlier, so a single-dataset validity cell is minutes of compute plus install/download overhead; main risk is re-implementing the region-based SLSQP algorithm from the paper if the anonymous repo is incomplete."
+ },
+ "blockers": [
+  "Anonymous.4open.science repo may be expired/incomplete; algorithm (region keys, FIFO restart, SLSQP) must be re-implemented from paper text if code is missing",
+  "Exact outlier selection/threshold rule (1.5 vs 95th percentile) and random k choice must be matched to reproduce the exact cell"
+ ],
+ "suitable": true,
+ "id": "2512.10659",
+ "title": "DCFO: Density-Based Counterfactuals for Outliers -- Additional Material",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

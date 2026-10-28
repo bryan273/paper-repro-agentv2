@@ -1,0 +1,233 @@
+{
+ "title": "The Interconnectedness Coefficient: A Semi-Local Graph-Theoretic Measure for Connector Vertices between Cohesive Network Regions",
+ "summary": "The paper introduces the Interconnectedness Coefficient (IC), a bounded semi-local node measure for connector vertices between locally cohesive network regions, defined as the product of low focal clustering and high mean leave-one-out cohesion behind adjacent vertices. It derives range and extremal properties and uses exact graph families to calibrate maxima, cohesion defects, hub-extension robustness, and a fragmentation threshold, then applies the score to a Human Interactome Map. The central exact result relevant to the target is that the connector x in the hub-extended bridge family Hp,q,r has IC(x)=2/3 and is the unique global maximizer over V≥2.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "In the hub-extended bridge family Hp,q,r with p,q ≥ 3 and r ≥ 1, the connector vertex x has IC(x)=2/3 and is the unique global IC maximizer over V≥2.",
+   "metric": "Interconnectedness Coefficient (IC)",
+   "dataset": "Synthetic hub-extended bridge graph Hp,q,r",
+   "split": "Not applicable (analytic graph family)",
+   "value": 0.6666666667,
+   "unit": "IC (dimensionless, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Eq. (14); Table 1, row Connector x; Proposition 3",
+   "config_for_value": "Construct Bp,q from cliques Kp and Kq (p,q ≥ 3) with gateways a,b; add x adjacent to a,b; add hub s adjacent to x and to r ≥ 1 leaves.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s for a small synthetic instance (e.g., p=q=3, r=1)",
+   "quote": "For all integers p, q ≥3 and r ≥1, x is the unique global maximizer of the IC over V≥2 in Hp,q,r.",
+   "page": 9
+  },
+  {
+   "id": "C2",
+   "statement": "In the two-sided bridge graph Bp,q with p,q ≥ 3, the connector x attains the maximum IC(x)=1.",
+   "metric": "Interconnectedness Coefficient (IC)",
+   "dataset": "Synthetic two-sided bridge graph Bp,q",
+   "split": "Not applicable (analytic graph family)",
+   "value": 1.0,
+   "unit": "IC (dimensionless, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Eq. (9); Figure 4",
+   "config_for_value": "Vertex-disjoint cliques Kp and Kq with gateways a and b; x is adjacent to a and b; p,q ≥ 3.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For p, q ≥3, C(x) = 0 and Ca\\x = Cb\\x = 1. Therefore IC(x) = 1.",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "After removing one non-gateway edge from the left clique of Bp,q with p=4, IC(x)=5/6≈0.833.",
+   "metric": "Interconnectedness Coefficient (IC)",
+   "dataset": "Synthetic Bp,q with one cohesion defect",
+   "split": "Not applicable (analytic graph family)",
+   "value": 0.833,
+   "unit": "IC (dimensionless, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Eq. (13); Section 4.1 single cohesion defect",
+   "config_for_value": "Start from Bp,q with p=4 (p ≥ 4); remove one edge between two non-gateway vertices of the left clique while leaving the right clique unchanged.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For p = 4 this gives IC(x) = 5/6 ≈0.833, while for p = 10 it gives IC(x) = 71/72 ≈0.986.",
+   "page": 8
+  },
+  {
+   "id": "C4",
+   "statement": "After removing one non-gateway edge from the left clique of Bp,q with p=10, IC(x)=71/72≈0.986.",
+   "metric": "Interconnectedness Coefficient (IC)",
+   "dataset": "Synthetic Bp,q with one cohesion defect",
+   "split": "Not applicable (analytic graph family)",
+   "value": 0.986,
+   "unit": "IC (dimensionless, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Eq. (13); Section 4.1 single cohesion defect",
+   "config_for_value": "Start from Bp,q with p=10 (p ≥ 4); remove one edge between two non-gateway vertices of the left clique while leaving the right clique unchanged.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For p = 4 this gives IC(x) = 5/6 ≈0.833, while for p = 10 it gives IC(x) = 71/72 ≈0.986.",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "In the density-controlled windmill family Jc,h,r, the unique IC maximizer is x for c=1, while for c≥2 the maximizer set shifts to {a,b}; the fragmentation threshold is at c=2.",
+   "metric": "IC maximizer identity / fragmentation threshold c",
+   "dataset": "Synthetic windmill family Jc,h,r",
+   "split": "Not applicable (analytic graph family)",
+   "value": 2,
+   "unit": "c threshold (branch multiplicity; c=2 is first fragmented case)",
+   "higher_is_better": false,
+   "table_ref": "Proposition 5; Eq. (15)–(18)",
+   "config_for_value": "Jc,h,r with c ≥ 1 leaf groups per branch, h ≥ 3 vertices per group, r ≥ 1 leaves on hub s; c=1 gives complete branch, c≥2 fragments each branch-side neighborhood into c groups.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "For all integers c ≥1, h ≥3, and r ≥1, the unique IC maximizer is x when c = 1, whereas the maximizer set is {a, b} when c ≥2.",
+   "page": 11
+  },
+  {
+   "id": "C6",
+   "statement": "For the Human Interactome Map, high-degree IC values narrow toward approximately the network mean clustering coefficient 0.114.",
+   "metric": "High-degree IC plateau level (approximate)",
+   "dataset": "Human Interactome Map (HIM) [3]",
+   "split": "Full graph (9,222 vertices, 36,324 edges; no train/test split)",
+   "value": 0.114,
+   "unit": "IC / mean clustering coefficient (dimensionless, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Section 5.2, Eq. (21); Figure 7; Conclusion",
+   "config_for_value": "HIM graph with 9,222 vertices and 36,324 edges; high-degree limit approximation μ∞≈⟨C⟩=0.114 under c∞=0 and μ∞≈⟨C⟩.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes for 9k vertices / 36k edges; no training",
+   "quote": "At high degree, IC values narrow toward a level close to the network’s mean clustering coefficient of 0.114.",
+   "page": 16
+  },
+  {
+   "id": "C7",
+   "statement": "The HIM graph used for the IC analysis has 9,222 vertices and 36,324 edges, with mean ordinary local clustering coefficient 0.114.",
+   "metric": "Mean ordinary local clustering coefficient",
+   "dataset": "Human Interactome Map (HIM) [3]",
+   "split": "Full graph (no train/test split)",
+   "value": 0.114,
+   "unit": "Mean local clustering coefficient (dimensionless, 0–1)",
+   "higher_is_better": false,
+   "table_ref": "Section 5.1, Eq. (19)",
+   "config_for_value": "HIM graph as analyzed in Section 5: 9,222 vertices and 36,324 edges.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for 9k vertices / 36k edges; no training",
+   "quote": "The graph used for the IC analysis contains 9,222 vertices and 36,324 edges. Its mean ordinary local clustering coefficient is ⟨C⟩= 0.114.",
+   "page": 12
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest central target: the analytic Hp,q,r family needs no dataset download or training, and checking IC(x)=2/3 plus uniqueness over V≥2 directly verifies the hub-extension theorem the user named."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: the target is a bounded IC score printed in [0,1], with no std over repeated runs and no test-set sampling; use the 0.02 absolute band for [0,1]-scale bounded scores."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Restrict the ranked candidate set to vertices with degree at least two; do not assign ranks to degree-0 or degree-1 vertices.",
+   "cite": "Eq. (2), Section 3",
+   "quote": "Vertices outside V≥2 are not ranked. This is the minimal structural restriction required for a connector to possess at least two incident directions.",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Compute the ordinary local clustering coefficient C(v) as 2e(N(v))/(d(v)(d(v)-1)) for d(v)≥2 and set C(v)=0 for d(v)<2.",
+   "cite": "Eq. (1)",
+   "quote": "we set C(v) = 0 because there is no pair of neighbors on which a nontrivial local clustering value can be based.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "For an ordered adjacent pair (u,v), compute leave-one-out clustering C_u\\v on N(u) after removing v, using denominator (d(u)-1)(d(u)-2) for d(u)≥3, and 0 otherwise.",
+   "cite": "Eq. (3)",
+   "quote": "Removing the focal vertex from this branch-side neighborhood prevents the connection uv from artificially lowering the cohesion assigned to an otherwise cohesive branch.",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Average leave-one-out clustering over all neighbors of v: CLOO(v)=1/d(v) sum over u in N(v) of C_u\\v, not a sum.",
+   "cite": "Eq. (4)",
+   "quote": "The use of a mean rather than a sum is deliberate.",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Define IC(v)=(1-C(v)) CLOO(v) for every v in V≥2.",
+   "cite": "Eq. (5)",
+   "quote": "The focal factor 1 −C(v) rewards low clustering among the immediate neighbors of v.",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Implement and test the exact maximum equality condition: IC(v)=1 only when C(v)=0 and every adjacent leave-one-out term equals 1.",
+   "cite": "Proposition 1",
+   "quote": "IC(v) = 1 if and only if C(v) = 0 and Cu\\v = 1 for every u ∈N(v).",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "Use triangle counts and common-neighbor intersections so that e(N(u) without v)=T(u)-t(u,v) with t(u,v)=|N(u)∩N(v)|.",
+   "cite": "Eq. (6), Section 3.1",
+   "quote": "Removing v from N(u) removes exactly the t(u, v) edges joining v to common neighbors",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Construct Hp,q,r by adding to Bp,q a hub s with r leaf neighbors and the edge sx; x remains adjacent to gateways a and b.",
+   "cite": "Section 4.2",
+   "quote": "Form the hub-extended bridge family Hp,q,r from Bp,q by adding a vertex s with r leaf neighbors and the edge sx",
+   "page": 9
+  },
+  {
+   "id": "R9",
+   "stmt": "For Hp,q,r set C(x)=0, the two clique-gateway leave-one-out terms to 1, the hub-direction term to 0, and average to get IC(x)=2/3.",
+   "cite": "Eq. (14), Table 1, Section 4.2",
+   "quote": "The two clique gateways remain maximally cohesive after exclusion of x, while the direction through the hub s has leave-one-out clustering zero.",
+   "page": 9
+  },
+  {
+   "id": "R10",
+   "stmt": "Ensure the hub s has IC=0 and leaves are outside V≥2; increasing r must not change IC(x).",
+   "cite": "Table 1; Proposition 3",
+   "quote": "Increasing r raises the degree of s without creating cohesive structure behind its leaf neighbors.",
+   "page": 9
+  },
+  {
+   "id": "R11",
+   "stmt": "Verify uniqueness by comparing x only against positive competitors: gateways with IC=2(m-1)/m^2 ≤3/8 for m≥4 and 0 for m=3.",
+   "cite": "Proposition 3 proof; Table 1",
+   "quote": "Table 1 leaves only the two clique gateways as potential positive competitors.",
+   "page": 9
+  },
+  {
+   "id": "R12",
+   "stmt": "Return IC values as dimensionless scores on [0,1], not percentages.",
+   "cite": "Section 6",
+   "quote": "The IC is dimensionless and bounded between zero and one.",
+   "page": 14
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic graph families Bp,q, Hp,q,r, and Jc,h,r",
+   "how_to_get": "Generate locally from the definitions in Section 4; no external data are needed."
+  },
+  {
+   "name": "Human Interactome Map (HIM) used in Section 5",
+   "how_to_get": "From Wiebringhaus 2009 PhD dissertation [3], doi:10.25358/openscience-1612; use the graph with 9,222 vertices and 36,324 edges if available. Preprocessing is not specified in the paper."
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2609.13928",
+  "kind": "arxiv",
+  "arxiv_id": "2609.13928",
+  "url": "https://arxiv.org/abs/2609.13928",
+  "title": "The Interconnectedness Coefficient: A Semi-Local Graph-Theoretic Measure for Connector Vertices between Cohesive Network Regions",
+  "pages": 18
+ }
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Random Forest 10-fold cross-validation accuracy of 0.984 for 3-class (authentic honey / sugar syrup / adulterated honey) classification using mineral element profiles",
+  "table_ref": "Table 7 (Random Forest row, Accuracy column)",
+  "dataset": "Public honey mineral element dataset (429 instances, 13 variables; from Liu et al. 2021, Food Chemistry 343:128455)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Tiny tabular dataset (429x13) with standard sklearn models (LR/DT/RF) and 10-fold CV; the only real work is locating the underlying public dataset and re-implementing the trivial preprocessing (ND->0, min-max) and CV protocol."
+ },
+ "blockers": [
+  "No code or configs released; preprocessing and CV protocol must be re-implemented from the text",
+  "Dataset is not hosted by the authors and must be sourced from the cited prior work (Liu et al. 2021) or a repository; exact file/version and class-label construction (pure/syrup/adulterated) must be inferred",
+  "Exact RF hyperparameters and random seed are unspecified, so exact 0.984 may not be bit-reproducible"
+ ],
+ "suitable": true,
+ "id": "2507.23412",
+ "title": "A Machine Learning Approach for Honey Adulteration Detection using Mineral Element Profiles",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

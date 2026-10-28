@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "SVM classifier after hyperparameter tuning achieves 99.12% accuracy (and FAR 0.0091) on the KDD Cup 1999 intrusion dataset, the best among all evaluated classifiers.",
+  "table_ref": "Table 6 (SVM row)",
+  "dataset": "KDD Cup 1999"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "basis": "KDD Cup 1999 is freely downloadable (~4.9M records, ~700MB); scikit-learn SVM with grid search + 10-fold CV + RFE on a subsample is CPU-feasible, but no code/configs are provided so the full pipeline (preprocessing, RFE, tuning grid, CV protocol) must be re-implemented and the exact 99.12% number is unlikely to be hit exactly."
+ },
+ "blockers": [
+  "No code or configs released; pipeline (RFE, tuning grids, train/test split details) must be reverse-engineered from prose",
+  "Paper's dataset statistics are internally inconsistent (e.g., 'unique data points' vs record counts), making exact reproduction of the split ambiguous",
+  "Exact 99.12% accuracy depends on unspecified preprocessing and tuning grid, so exact match is unlikely"
+ ],
+ "suitable": true,
+ "id": "2512.15779",
+ "title": "Hyperparameter Tuning-Based Optimized Performance Analysis of Machine Learning Algorithms for Network Intrusion Detection",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

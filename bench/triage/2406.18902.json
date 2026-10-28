@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Power of the proposed method on Data1 with n=100 (0.57) vs oc (0.07)",
+  "table_ref": "Table 1, row n=100, column Data1",
+  "dataset": "UCI Machine Learning Repository (one of eight datasets, e.g., Concrete Compressive Strength)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/shirara1016/statistical_test_for_feature_selection_pipelines",
+  "https://github.com/shirara1016/statistical_test_"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires running 1000 subsampled datasets through a selective inference pipeline with line search; code is provided but may need adaptation, and 1000 runs of the pipeline on small data (n<=200, d~10) should take ~1-2 hours on CPU."
+ },
+ "blockers": [
+  "Code may be outdated or require setup",
+  "Exact dataset mapping (Data1-Data8) not specified in paper text",
+  "Selective inference implementation may be slow per run"
+ ],
+ "suitable": true,
+ "id": "2406.18902",
+ "title": "Statistical Test for Feature Selection Pipelines by Selective Inference",
+ "pages": 48,
+ "model": "DeepSeek-V4.1-Flash"
+}

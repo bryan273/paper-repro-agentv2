@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "LOTUS achieves the best average rank (2.2456) across 57 clustering datasets, outperforming KMeans (2.7193), MiniBatchKMeans (2.8772), Birch (3.4737), AgglomerativeClustering (4.8070), OPTICS (5.5965), and DBSCAN (6.2807) in the critical difference diagram.",
+  "table_ref": "Figure 7",
+  "dataset": "57 OpenML clustering datasets"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/prabhant/LOTUS-CL-OD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 300,
+  "gpu_speedup": null,
+  "basis": "Requires running AutoML pipeline search (1 hour per dataset) for 57 datasets to build the meta-dataset, then leave-one-out evaluation with GW distance; code is available but meta-dataset may need regeneration."
+ },
+ "blockers": [
+  "Meta-dataset of optimal pipelines for 57 datasets may not be provided, requiring 57 hours of AutoML search",
+  "GW distance computation for leave-one-out evaluation across 57 datasets is computationally intensive"
+ ],
+ "suitable": false,
+ "id": "2510.07569",
+ "title": "Automated Machine Learning for Unsupervised Tabular Tasks",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

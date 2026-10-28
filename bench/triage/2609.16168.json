@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean Sentinel-2 dNBR for vineyard pixels inside the Kincade Fire perimeter = 0.130 (vs 0.337 for wildland pixels)",
+  "table_ref": "Section 3.3 / Table 3 (landscape spectral response)",
+  "dataset": "Sentinel-2 SR Harmonized composites over the 2019 Kincade Fire perimeter, intersected with CA DWR 2019 vineyard polygons"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/MohammadrezaNarimaniUCDavis/Kincade_Vineyard_Wildfire_Resilience",
+  "https://doi.org/10.5281/zenodo.22713181"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "basis": "All inputs are public (Sentinel-2, WFIGS perimeter, DWR crop polygons, Zenodo analysis-ready products), but the Sentinel-2 median composites are built in Google Earth Engine (71 pre-fire + 24 post-fire scenes) and the pipeline is a multi-stage orchestrator; on a laptop this means either GEE exports or downloading/processing ~95 scenes locally, plus polygon zonal statistics."
+ },
+ "blockers": [
+  "Core compositing is implemented in Google Earth Engine, requiring a GEE account and export workflow rather than a pure local run",
+  "Repository completeness/configs not verifiable from the paper text; may need to rebuild parts of the pipeline",
+  "Large Sentinel-2 scene downloads and mosaicking are I/O heavy on a laptop"
+ ],
+ "suitable": true,
+ "id": "2609.16168",
+ "title": "Multisource Remote Sensing and Geospatial Analysis of Vineyard Wildfire Impacts and Resilience: The 2019 Kincade Fire",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

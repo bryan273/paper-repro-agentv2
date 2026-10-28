@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Cluster contribution S_{2,PC1} = 1.662 (sum of absolute PCA loadings of Murder, Assault, Rape on PC1) for the USArrests dataset with K=2 clusters",
+  "table_ref": "Table IV",
+  "dataset": "USArrests (50 states, 4 variables)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/vsaquicela/PCA-K-means"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "USArrests is a 50x4 built-in R dataset; PCA and K-means on a 4x50 transpose run in milliseconds, so the only cost is installing R/Python and downloading the tiny dataset."
+ },
+ "blockers": [
+  "Repo link in PDF is truncated ('PCA-') and may not resolve; code may need to be reimplemented from the algorithm description",
+  "K-means cluster assignment depends on random seed, so exact reproduction of the 2-cluster split may require matching the seed"
+ ],
+ "suitable": true,
+ "id": "2512.00979",
+ "title": "An Approach to Variable Clustering: K-means in Transposed Data and its Relationship with Principal Component Analysis",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

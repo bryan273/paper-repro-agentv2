@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average Gmean of 79.5 for OC-SVM+GRKneg variant 7 with 5 negative samples (averaged over all 14 one-class tasks)",
+  "table_ref": "Table III, row 'Aver.', column 'variant 7' under '5 negative samples'",
+  "dataset": "UCI datasets (Iris, Seeds, Ionosphere, Sonar, Qualitative Bankruptcy, Somerville Happiness) - 14 one-class tasks"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/JenniRaitoharju/GRKneg"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Small UCI datasets (max 351 samples, 60 dims) with LIBSVM; but the code is Matlab R2017b, so an agent must reimplement GRKneg + OC-SVM/SVM in Python and rerun 14 tasks x 5 negative-sample settings x 5 splits x 5-fold CV hyperparameter search."
+ },
+ "blockers": [
+  "Reference implementation is Matlab (R2017b) + LIBSVM, not Python; agent must reimplement Algorithm 1 and the full CV protocol",
+  "Exact random seeds for negative-sample selection and train/test splits are not specified, so exact reproduction of 79.5 is unlikely (only approximate)"
+ ],
+ "suitable": true,
+ "id": "2506.14895",
+ "title": "Generalized Reference Kernel With Negative Samples For Support Vector One-class Classification",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Stacked Ensemble Classifier accuracy of 0.910638 (91.06%) on the combined Statlog+Cleveland+Hungary heart disease dataset",
+  "table_ref": "Table 3, row 'Stacked Classifier', column 'Accuracy'",
+  "dataset": "Combined Statlog + Cleveland + Hungary heart disease datasets (1190 records, 11 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (~1190 rows) with classic sklearn/XGBoost classifiers; the main cost is reconstructing the exact combined dataset and preprocessing (outlier removal, 80/20 split, CV, stacking) since no code or exact split/seed is given, so exact reproduction of 0.9106 is unlikely but the pipeline runs in minutes on CPU."
+ },
+ "blockers": [
+  "No code or configs released; pipeline (outlier removal, split, meta-learner, seeds) must be reverse-engineered",
+  "Exact combined dataset construction (which UCI files, how merged/deduplicated) is unspecified, so the headline number may not be exactly reproducible",
+  "Reported metrics (e.g., log-loss ~3.08) are internally inconsistent, suggesting errors in the paper"
+ ],
+ "suitable": true,
+ "id": "2304.06015",
+ "title": "An Improved Heart Disease Prediction Using Stacked Ensemble Method",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

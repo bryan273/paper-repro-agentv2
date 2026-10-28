@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Geom 50 achieves Point Jaccard distance ~0.064 at p-q=0.10 on NYC zip codes (vs Centroid/Random Point needing p-q~0.35-0.4)",
+  "table_ref": "Figure 3 (NYC Zip Codes)",
+  "dataset": "NYC ZIP code polygons (263 polygons, 248 ZIPs)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/foadnamjoo/sampling-region-scan",
+  "https://github.com/michaelmathen/pyscan"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Paper reports ~0.3 s per pyScan discovery on 3,711 regions; NYC has 263 regions x 50 points, so 20 trials x ~11 p-values is minutes of scan time, dominated by install and shapefile download."
+ },
+ "blockers": [
+  "NYC ZIP shapefile source not explicitly cited in text (likely NYC open data / Census TIGER, needs locating)",
+  "exact planted rectangle coordinates and seeds not given, so exact 0.064 value may not match; trend reproducible",
+  "pyScan install/build may need C++ toolchain"
+ ],
+ "suitable": true,
+ "id": "2607.01451",
+ "title": "Sampling for Region-Aggregated Spatial Scan Statistics",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

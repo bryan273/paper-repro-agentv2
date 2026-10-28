@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "FreqLite test MSE = 0.373 (±0.001) at ETTh1, H=96, L=336 (best lightweight model cell; part of the 0.3244 average headline)",
+  "table_ref": "Table 2, ETTh1 row H=96, FreqLite column",
+  "dataset": "ETTh1"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Orqly-AI/FreqLite-Forecasting"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "Tiny linear model (~65k params) on a 17k-step 7-channel dataset; 3 seeds x <=20 epochs on CPU should take tens of minutes, plus install/download; paper's own runs took ~1.6 s/epoch on a 4 GB laptop GPU."
+ },
+ "blockers": [
+  "Repo link may be placeholder/unverified; code must be written from paper if absent",
+  "Exact numbers depend on unspecified details (early-stopping, split handling) so exact match not guaranteed"
+ ],
+ "suitable": true,
+ "id": "2606.01339",
+ "title": "FreqLite: A Lightweight Frequency-Decomposed Linear Model with Adaptive Reversible Normalization for Robust Long-Term Time-Series Forecasting",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

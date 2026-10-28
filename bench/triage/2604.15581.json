@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "NDCG@10 for TAI2Vec-Cont on MovieLens-100k = 0.0805 (vs Item2Vec 0.0575, +40.17%)",
+  "table_ref": "Table 2",
+  "dataset": "MovieLens-100k"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/UFSCar-LaSID/tai2vec"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "MovieLens-100k is tiny (100k interactions, 943 users) and the model is a lightweight skip-gram with negative sampling; the main cost is implementing the TAI2Vec-Cont weighting from the paper (code repo may be incomplete) and running a small hyperparameter grid (alpha, Wmin, epochs) on CPU."
+ },
+ "blockers": [
+  "Repository may not contain the exact TAI2Vec-Cont implementation or tuned configs; paper describes the method but not all code details",
+  "Hyperparameter grid (alpha in {3,5}, Wmin in {0.3,0.5}, epochs in {20,50,100}, etc.) must be re-run to match the reported number",
+  "Exact preprocessing (binarization midpoint, filtering) must be inferred from text"
+ ],
+ "suitable": true,
+ "id": "2604.15581",
+ "title": "Learning Behaviorally Grounded Item Embeddings via Personalized Temporal Contexts",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

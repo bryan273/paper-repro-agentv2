@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Greedy decoding achieves 12.80% pass@1 on HumanEval with Llama2-7B.",
+  "table_ref": "Table 1, row: Llama2-7B, HumanEval, column: Greedy",
+  "dataset": "HumanEval"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/DavidFanzz/llm_decoding.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 30,
+  "ref_minutes": 90,
+  "gpu_speedup": 5,
+  "basis": "Estimate based on running a 7B model on CPU for 164 HumanEval problems, each generating up to 512 tokens; includes model download, environment setup, and evaluation."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2402.06925",
+ "title": "A Thorough Examination of Decoding Methods in the Era of LLMs",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

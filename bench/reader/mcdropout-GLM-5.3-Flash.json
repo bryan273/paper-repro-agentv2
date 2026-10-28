@@ -1,0 +1,259 @@
+{
+ "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+ "summary": "Standard deep networks trained with dropout return point predictions with no principled model uncertainty, while Bayesian neural networks are computationally prohibitive. The authors show dropout training is approximate variational inference in a deep Gaussian process, so leaving dropout on at test time and averaging T stochastic forward passes ('MC dropout') yields predictive mean and variance (sample variance + τ−1) at no extra modelling cost, with model precision τ tied to weight decay via τ = p l²/(2Nλ). On ten UCI regression datasets (Table 1, 20 random splits), MC dropout beats PBP and Graves-style VI on RMSE and predictive log-likelihood on every dataset except Yacht — e.g., Boston Housing RMSE 2.97 ± 0.19 vs PBP 3.01 ± 0.18 — using a 50-unit network trained with Adam.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "MC dropout (mean of T stochastic dropout forward passes) achieves average test RMSE 2.97 on Boston Housing over 20 random splits, beating PBP (3.01 ± 0.18) and VI (4.32 ± 0.29).",
+   "metric": "test RMSE",
+   "dataset": "Boston Housing (UCI, N=506, Q=13)",
+   "split": "20 random train/test splits; metric averaged over splits (Table 1 protocol)",
+   "value": 2.97,
+   "unit": "RMSE (native target units)",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Boston Housing, column Dropout (Avg. Test RMSE)",
+   "config_for_value": "1-hidden-layer NN, 50 units; Bernoulli dropout p in {0.05, 0.005}; weight decay λ = p·l²/(2Nτ) with prior length-scale l = 10−2 and τ tuned by 40-iteration BO over validation LL; Adam, minibatch 32; 400 epochs (= 10× PBP's 40, per footnote 4); prediction = MC average of stochastic forward passes; averaged over 20 random splits",
+   "reported_spread": "±0.19 (standard error over 20 splits; footnote 3 confirms 0.19, correcting an earlier 4.5×-inflated 0.85)",
+   "est_compute": "CPU-only; 50-unit MLP trains in seconds; ~2-5 min/split incl. 40-candidate BO; ~1-2 h total for 20 splits",
+   "quote": "Boston Housing 506 13 4.32 ±0.29 3.01 ±0.18 2.97 ±0.19 -2.90 ±0.07 -2.57 ±0.09 -2.46 ±0.06",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "MC dropout achieves average test predictive log-likelihood −2.46 on Boston Housing over 20 splits, beating PBP (−2.57) and VI (−2.90).",
+   "metric": "predictive test log-likelihood",
+   "dataset": "Boston Housing (UCI)",
+   "split": "20 random train/test splits; averaged",
+   "value": -2.46,
+   "unit": "predictive log-likelihood (nats)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Boston Housing, column Dropout (Avg. Test LL)",
+   "config_for_value": "Same run as C1; LL computed via eq. (8) (log-sum-exp over T stochastic passes with the BO-tuned τ)",
+   "reported_spread": "±0.06 (standard error over 20 splits)",
+   "est_compute": "CPU-only; same run as C1 (~1-2 h total for 20 splits)",
+   "quote": "Dropout significantly outperforms all other models both in terms of RMSE as well as test log-likelihood",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "MC dropout achieves average test RMSE 5.23 on Concrete Strength over 20 splits (VI 7.19, PBP 5.67); text also gives median 5.15.",
+   "metric": "test RMSE",
+   "dataset": "Concrete Strength (UCI, N=1,030, Q=8)",
+   "split": "20 random train/test splits; averaged",
+   "value": 5.23,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Concrete Strength, column Dropout (Avg. Test RMSE)",
+   "config_for_value": "Same protocol as C1 (50-unit net, l = 10−2, BO-tuned τ, Adam batch 32, 400 epochs, MC-dropout prediction)",
+   "reported_spread": "±0.12 (standard error over 20 splits)",
+   "est_compute": "CPU-only; ~2-5 min/split incl. BO; ~1-2 h for 20 splits",
+   "quote": "Concrete Strength 1,030 8 7.19 ±0.12 5.67 ±0.09 5.23 ±0.12 -3.39 ±0.02 -3.16 ±0.02 -3.04 ±0.02",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "MC dropout achieves average test RMSE 1.66 on Energy Efficiency over 20 splits (VI 2.65, PBP 1.80).",
+   "metric": "test RMSE",
+   "dataset": "Energy Efficiency (UCI, N=768, Q=8)",
+   "split": "20 random train/test splits; averaged",
+   "value": 1.66,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Energy Efficiency, column Dropout (Avg. Test RMSE)",
+   "config_for_value": "Same protocol as C1",
+   "reported_spread": "±0.04 (standard error over 20 splits)",
+   "est_compute": "CPU-only; ~2-5 min/split incl. BO; ~1 h for 20 splits",
+   "quote": "Energy Efficiency 768 8 2.65 ±0.08 1.80 ±0.05 1.66 ±0.04 -2.39 ±0.03 -2.04 ±0.02 -1.99 ±0.02",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "On Yacht Hydrodynamics dropout obtains RMSE 1.11 ± 0.09 over 20 splits; the paper concedes PBP is better there (1.02 ± 0.05).",
+   "metric": "test RMSE",
+   "dataset": "Yacht Hydrodynamics (UCI, N=308, Q=6)",
+   "split": "20 random train/test splits; averaged",
+   "value": 1.11,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row Yacht Hydrodynamics, column Dropout (Avg. Test RMSE)",
+   "config_for_value": "Same protocol as C1; only dataset in Table 1 where dropout does not win RMSE",
+   "reported_spread": "±0.09 (standard error over 20 splits)",
+   "est_compute": "CPU-only; smallest dataset (308 points); <1-2 min/split incl. BO; <1 h total",
+   "quote": "on all datasets apart from Yacht, for which PBP obtains better RMSE",
+   "page": 7
+  },
+  {
+   "id": "C6",
+   "statement": "On Boston Housing, dropout's median RMSE over the 20 splits is 2.68 with IQR [2.45, 3.35] (median LL −2.34, IQR [−2.54, −2.29]) — the paper notes medians beat the Table 1 means.",
+   "metric": "median test RMSE",
+   "dataset": "Boston Housing (UCI)",
+   "split": "20 random train/test splits; median and IQR over splits",
+   "value": 2.68,
+   "unit": "RMSE (median over splits)",
+   "higher_is_better": false,
+   "table_ref": "Sec. 5.3 text, p.7 (below Table 1)",
+   "config_for_value": "Same protocol as C1; summary statistic changed from mean to median over the 20 splits",
+   "reported_spread": "IQR [2.45, 3.35] for RMSE; LL median −2.34, IQR [−2.54, −2.29]",
+   "est_compute": "CPU-only; same run as C1 (only the reported statistic changes)",
+   "quote": "on the Boston Housing dataset dropout achieves median RMSE of 2.68 with an IQR interval of [2.45, 3.35]",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "Ablation: repeating the Boston Housing experiment with dropout probability 0 gives RMSE 3.07 and LL −2.59, showing the small dropout probability itself (not just MC averaging) drives the improvement over 2.97 / −2.46.",
+   "metric": "test RMSE (dropout-off ablation)",
+   "dataset": "Boston Housing (UCI)",
+   "split": "20 random train/test splits; averaged",
+   "value": 3.07,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Sec. 5.3 text, p.8",
+   "config_for_value": "Identical to C1 except dropout probability set to 0 (deterministic network; no MC sampling effect)",
+   "reported_spread": null,
+   "est_compute": "CPU-only; same cost or cheaper than C1",
+   "quote": "repeating the same experiment with dropout probability 0 results in RMSE of 3.07 and predictive log-likelihood of -2.59",
+   "page": 7
+  },
+  {
+   "id": "C8",
+   "statement": "Training 10× longer than Table 1 (4000 epochs vs 400, i.e., 100× PBP's 40) with identical model precision improves Boston Housing RMSE to 2.80 ± 0.19 and LL to −2.39 ± 0.05 (Table 2, '10x Epochs'); a 2-layer variant reaches 2.80 ± 0.13 / −2.34 ± 0.02.",
+   "metric": "test RMSE (longer-training variant)",
+   "dataset": "Boston Housing (UCI)",
+   "split": "20 random train/test splits; averaged",
+   "value": 2.8,
+   "unit": "RMSE",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row Boston Housing, column 10x Epochs (added October 2016 update, footnote 4)",
+   "config_for_value": "Same as C1 but 100× PBP's 40 epochs (10× the Table 1 epochs) with identical model precision τ; separately, 2 hidden layers × 50 units at 400 epochs",
+   "reported_spread": "±0.19 (standard error over 20 splits)",
+   "est_compute": "CPU-only; ~10× training time of C1; a few hours for 20 splits",
+   "quote": "Boston Housing 2.97 ±0.19 2.80 ±0.19 2.80 ±0.13 -2.46 ±0.06 -2.39 ±0.05 -2.34 ±0.02",
+   "page": 12
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "User hint names Table 1 Boston Housing MC-dropout RMSE in the '40-epoch x10' setting on 20 splits: footnote 4 states Table 1 used 'only 10x more epochs compared to PBP's 40 epochs' (i.e., 400 epochs), which is exactly C1 = 2.97 ± 0.19. It is the cheapest faithful demonstration of the paper's central result (naive dropout + MC test-time sampling matches/beats specialised Bayesian methods): a 50-unit, 1-hidden-layer net trained with Adam on CPU in minutes per split. Guard against confusion: Table 2's '10x Epochs' column (C8, 2.80) is 100× PBP's epochs, a different setting; if the hint actually meant that column, C8 should also be reproduced, but C1 remains primary since the hint says 'Table 1'."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.57,
+  "why": "Rule 1: the paper reports a spread over repeated runs for this exact value — Table 1 gives Boston RMSE 2.97 ±0.19, and footnote 3 confirms 0.19 is the standard error over the 20 splits ('for Boston RMSE we reported standard error 0.85 instead of 0.19 for example'). Band = 3 × 0.19 = 0.57, held at the paper's printed precision (0.01). Note the paper's spread is a standard error (caption: 'Std. Errors'), which is the variability measure it reports for the value; using it as the rule-1 spread. (If instead treated as unbounded-with-no-spread under rule 4, the band would be 10% ≈ 0.30, so 0.57 is the stricter-of-reasonings faithful choice here.)"
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Train with the dropout objective: per-example loss (Euclidean/square loss for regression) plus L2 weight decay λ on every weight matrix and bias, averaged over minibatches (Eq. 1); the GP objective Eq. 4 recovers this cost with E set to the scaled squared error.",
+   "cite": "Sec. 3, Eq. (1) and Eq. (4)",
+   "quote": "During NN optimisation a regularisation term is often added. We often use L2 regularisation weighted by some weight decay λ",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "UCI regression model: one hidden layer with 50 units, following the PBP set-up that the paper replicates.",
+   "cite": "Sec. 5.3",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R3",
+   "stmt": "Use Bernoulli dropout with a small probability — the paper lists 0.05 and 0.005; use 0.05 for Boston (see A3) — active during training.",
+   "cite": "Sec. 5.3",
+   "quote": "We used dropout with probabilities 0.05 and 0.005 since the network size is very small",
+   "page": 7
+  },
+  {
+   "id": "R4",
+   "stmt": "Derive weight decay from the Bayesian parameters by inverting Eq. (7): λ = p·l²/(2·N·τ), with prior length-scale l, dropout prob p, training size N, and BO-tuned precision τ; the same τ is reused in the predictive log-likelihood (Eq. 8).",
+   "cite": "Sec. 4 Eq. (7); Sec. 5.3",
+   "quote": "the prior length-scale l and model precision τ are simply used to define the model's weight decay through eq. (7)",
+   "page": 7
+  },
+  {
+   "id": "R5",
+   "stmt": "Tune τ by Bayesian optimisation over validation log-likelihood: 40 BO iterations (candidates trained ~40 epochs), then retrain the final model 10× longer (400 epochs) at the optimal τ.",
+   "cite": "Sec. 5.3 + footnote 4",
+   "quote": "The BO runs used 40 iterations following the original setup, but after finding the optimal parameter values we used 10x more iterations",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Optimise with Adam using mini-batches of size 32.",
+   "cite": "Sec. 5.3",
+   "quote": "Finally, we used mini-batches of size 32 and the Adam optimiser (Kingma & Ba, 2014).",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Evaluate on 20 random train/test splits per dataset and report average RMSE and average LL with standard errors over splits, as in Table 1.",
+   "cite": "Sec. 5.3; Table 1 caption",
+   "quote": "All experiments were averaged on 20 random splits of the data",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "At test time keep dropout active: the reported RMSE is the mean of T stochastic forward passes (Eq. 6, MC dropout), not the standard single weight-scaled pass.",
+   "cite": "Sec. 4 Eq. (6); Sec. 5.3",
+   "quote": "Dropout's RMSE in table 1 is given by averaging stochastic forward passes through the network following eq. (6) (MC dropout).",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Compute predictive log-likelihood via Eq. (8): log-sum-exp over the T stochastic passes with the printed constant terms (−log T, −(1/2)log 2π, and the τ term) exactly as given, using the BO-tuned τ.",
+   "cite": "Sec. 4, Eq. (8)",
+   "quote": "with a log-sum-exp of T terms and byt stochastic forward passes through the network",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "Apply Bernoulli dropout before every weight layer (masks on layer inputs), as in the derivation; do not substitute drop-connect or Gaussian multiplicative noise for the target.",
+   "cite": "Sec. 3",
+   "quote": "a neural network with arbitrary depth and non-linearities, with dropout applied before every weight layer",
+   "page": 2
+  },
+  {
+   "id": "R11",
+   "stmt": "Set the prior length-scale l = 10−2 for the UCI datasets.",
+   "cite": "Sec. 5.3",
+   "quote": "set the prior length-scale to 10−2 for most datasets based on the range of the data",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "Report spread as standard errors over the 20 splits (Boston RMSE SE = 0.19 per the corrected footnote 3, not the earlier erroneous 0.85).",
+   "cite": "Table 1 caption ('Std. Errors'); footnote 3",
+   "quote": "in an earlier version of this paper our reported dropout standard error was erroneously scaled-up by a factor of 4.5",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "Boston Housing (UCI)",
+   "how_to_get": "UCI Machine Learning Repository 'Boston housing' (506 rows × 13 features); canonical mirror at CMU StatLib: http://lib.stat.cmu.edu/datasets/boston; keras.datasets.boston_housing also carries all 506 rows (concatenate its train/test arrays). Build your own 20 random splits per A1."
+  },
+  {
+   "name": "Full UCI regression suite (Concrete, Energy Efficiency, Kin8nm, Naval Propulsion, Power Plant, Protein, Wine Quality Red, Yacht, YearMSD)",
+   "how_to_get": "Each dataset individually from the UCI ML Repository; Hernández-Lobato & Adams (2015) describes the preprocessing the paper replicates. Pre-assembled copies and split generators circulate with the author's follow-up code (github.com/yaringal/DropoutUncertaintyExperiments). Only needed for claims C3-C5, C8."
+  },
+  {
+   "name": "Paper appendix (exact per-dataset hyperparameters, Sec. E.1)",
+   "how_to_get": "http://arxiv.org/abs/1506.02157 — download and follow E.1 for the UCI regression set-up (nonlinearity, per-dataset dropout p, BO details) to resolve assumptions A2/A3/A5."
+  }
+ ],
+ "code_links": [
+  "http://yarin.co (footnote 1: 'Code and demos are available at')",
+  "http://arxiv.org/abs/1506.02157 (appendix with experiment set-up, Sec. E.1/E.2)",
+  "https://github.com/fchollet/keras ('To implement the model we used Keras (Chollet, 2015)')",
+  "https://github.com/JasperSnoek/spearmint (Bayesian optimisation tool cited for tuning τ)",
+  "https://github.com/karpathy/convnetjs (base for the RL experiment; not needed for the Boston target)"
+ ],
+ "stated_compute": "No hardware is named. Runtimes only: 'On Naval Propulsion for example our model takes 276 seconds on average per split (start-to-finish, divided by the number of splits). With the optimal parameters BO found, model training took 95 seconds.' (Keras/Theano implementation, stated comparable to PBP's Theano runtime; Kin8nm: 188 s incl. BO / 65 s without).",
+ "paper_meta": {
+  "source": "1506.02142",
+  "kind": "arxiv",
+  "arxiv_id": "1506.02142",
+  "url": "https://arxiv.org/abs/1506.02142",
+  "title": "Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning",
+  "pages": 12
+ }
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SimpleCount effective test ROC-AUC = 0.664 on Bitcoin-Alpha (one-feature baseline, no parameter fitting)",
+  "table_ref": "Table 2, Bitcoin-Alpha row, SimpleCount column",
+  "dataset": "Bitcoin-Alpha (signed trust network, 24,186 edges, 3.61% positives)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Omairss/beat_the_counter_first"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "SimpleCount is a single O(|E|) chronological pass over 24K edges plus a train-slice AUC feature selection and test AUC; the only real work is fetching Bitcoin-Alpha and reimplementing the 14-feature extractor from Algorithm 1 if the repo is incomplete."
+ },
+ "blockers": [
+  "Repo may not include the exact SimpleCount feature-extraction script or the Bitcoin-Alpha preprocessing/split, requiring reimplementation from Algorithm 1",
+  "Bitcoin-Alpha must be obtained from the original signed-network source (not bundled by the paper)",
+  "Exact reproduction of 0.664 depends on matching the 85/15 chronological split and B=1000 bucketing conventions"
+ ],
+ "suitable": true,
+ "id": "2608.15965",
+ "title": "Beat the Counter First: A Baseline for Temporal-Graph Anomaly Detectors",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "CAKE(PR) achieves ARI 0.855 on the Iris dataset after filtering to the top 70% of points by CAKE score, using an ensemble of 20 k-means runs.",
+  "table_ref": "Table 2, row IR, column CAKE(PR), metric avg ARI",
+  "dataset": "Iris (IR)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/semoglou/cake",
+  "https://pypi.org/project/cake-ensemble/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "Iris is tiny (150x4); 20 k-means runs plus pairwise Hungarian alignment and silhouette computation take seconds on a CPU, and the paper provides a pip-installable package and GitHub repo."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2602.18435",
+ "title": "CAKE: Confidence in Assignments via K-partition Ensembles",
+ "pages": 37,
+ "model": "DeepSeek-V4.1-Flash"
+}

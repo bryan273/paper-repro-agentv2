@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Semantic/XGBoost mean average precision (AP) of 0.676 ± 0.086 under the chronological BGL 70/30 split (frozen parser snapshot, inductive access)",
+  "table_ref": "Table V (BGL, Semantic/XGB, Chronological AP)",
+  "dataset": "BGL (Blue Gene/L), Loghub release"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released (replication package only 'planned'); agent must reimplement Drain-style parser, Word2vec Template2Vec, and XGBoost from scratch, but BGL is small (~47k windows, 2.7k templates) and the archived runs used 2 CPU cores / 8 GB, so a laptop finishes in a few hours."
+ },
+ "blockers": [
+  "No code or configs released (replication package is future work)",
+  "Exact parser snapshot, tokenization, and IDF fallback details must be reverse-engineered from prose",
+  "Reported SDs depend on unspecified seed/group procedures"
+ ],
+ "suitable": true,
+ "id": "2610.05807",
+ "title": "Protocol-Sensitive Evaluation of Log Anomaly Detection: Component Costs and Target-Access Sensitivity on HDFS and BGL",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

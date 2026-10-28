@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Median angle (or MSE) attained by cellPCA on the ALYZ covariance model with n=100, p=20, without NAs, under cellwise/casewise/mixed contamination (one point of the simulation curve, e.g. cellPCA median angle at a given gamma)",
+  "table_ref": "Figure 22 (top-left panel, p=20, ALYZ, no NAs)",
+  "dataset": "Synthetic data from ALYZ covariance model (simulation), n=100, p=20"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is linked; the agent must reimplement cellPCA (IRLS with tanh loss), MacroPCA initial estimator (DDC + robust PCA), and competing methods, then run a Monte Carlo simulation with many replications across contamination settings; data are synthetic so no download, but reimplementation and debugging dominate the time."
+ },
+ "blockers": [
+  "No code or supplementary code repository linked in the paper",
+  "Requires reimplementing MacroPCA/DDC initial estimator and cellPCA IRLS from scratch",
+  "Competing methods (CANDES, ROBPCA, CPCA) needed for the full figure but a single cellPCA cell is feasible",
+  "Simulation requires many replications to match reported medians"
+ ],
+ "suitable": true,
+ "id": "2408.13596",
+ "title": "Robust Principal Components by Casewise and Cellwise Weighting",
+ "pages": 83,
+ "model": "DeepSeek-V4.1-Flash"
+}

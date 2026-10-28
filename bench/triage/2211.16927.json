@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "MSE of 0.0082 for the proposed SPI method on CelebA-HQ test set (original view reconstruction)",
+  "table_ref": "Table 1",
+  "dataset": "CelebA-HQ"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 12,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "Requires pre-trained EG3D generator (GPU), per-image optimization of latent and generator parameters (500+1000 steps), and evaluation on CelebA-HQ; no code released, so reimplementation from scratch is needed."
+ },
+ "blockers": [
+  "No code released",
+  "Requires pre-trained EG3D model and dependencies",
+  "Per-image optimization is computationally heavy on CPU"
+ ],
+ "suitable": false,
+ "id": "2211.16927",
+ "title": "3D GAN Inversion with Facial Symmetry Prior",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

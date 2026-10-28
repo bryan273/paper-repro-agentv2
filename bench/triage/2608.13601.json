@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Clean-label uncertainty-minus-random normalized balanced-accuracy AULC advantage of 1.45 percentage points on Banknote Authentication (95% CI 1.28 to 1.64)",
+  "table_ref": "Section 4.1 / Figure 1 (H1 result, Banknote)",
+  "dataset": "UCI Banknote Authentication (1372 instances, 4 features)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/dev-juy/hard-cases-bad-labels"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Banknote is tiny (1372x4); the target needs 100 paired seeds x 2 strategies x 21 budgets of logistic regression with 3-fold CV over 7 C values plus a 500-tree random forest cross-fit per seed, all CPU-only sklearn work that finishes in well under an hour once the repo is installed."
+ },
+ "blockers": [
+  "Repo link in PDF is split across a line break ('hard-c' + 'ases-bad-labels'); must reconstruct the correct URL",
+  "Full 12,800-trial pipeline is much larger than the single target; must restrict to the Banknote clean-label component",
+  "Exact CI/p-value reproduction depends on the frozen seed rule and bootstrap implementation matching the repo"
+ ],
+ "suitable": true,
+ "id": "2608.13601",
+ "title": "Hard Cases, Bad Labels: Testing Error Exposure and Error Location in Uncertainty Sampling Under Bounded Label Noise",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

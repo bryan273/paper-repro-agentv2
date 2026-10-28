@@ -1,0 +1,41 @@
+{
+ "route": "paper_only",
+ "why": "No repository was found or given (repository.url is null, cloned false). The only code pointer is a project page (stateoftheart.nl/causal) claimed to host the scorer, the RECI re-implementation and the SLOPE harness, but nothing is inspected or available on this machine, so there are no authors' entrypoints to run. However, the match target C1 is fully specified in the contract (256-level min-max quantization, stable argsort, int8 first difference, bz2 level 9 compressed length with marginal normalization, official pairmeta weights, forced decision) and needs only the public 102 Tübingen pairs, so a short deterministic reimplementation from the paper is the right route and is likely to reproduce the headline number exactly.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "authors' compression scorer (stateoftheart.nl/causal) — not fetched/verified, must be reimplemented from the contract",
+  "per-pair score outputs and bootstrap/split-half scripts",
+  "SLOPE v20181208 R code plus bundled slope.tab / sloper.tab outputs (needed only for C3/C6, not for the match target)",
+  "pre-registration documents for the frozen baseline settings"
+ ],
+ "blockers_seen": [
+  "no repository and no verified code download; the claimed project page cannot be relied on as a runnable entrypoint",
+  "SLOPE rows (C3, C6) would additionally require an R toolchain and the authors' private CEP outputs — out of scope for the match target",
+  "Tübingen data download from webdav.tuebingen.mpg.de must succeed; otherwise the 102 pairs have to be reconstructed from a mirror"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "under 5 minutes of command time: ~1 min to download/extract the CEP bundles and pairmeta.txt, ~10 min of CPU-seconds at most for scoring 102 pairs (contract says 0.2 s aggregate), plus a clean re-run and tolerance check",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.5,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "Download of a few-MB benchmark plus a pure-Python bz2 scorer over 102 pairs at ~1 ms/pair (0.2 s aggregate per the paper), with allowance for writing and validating the ~100-line scorer and one clean re-run."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

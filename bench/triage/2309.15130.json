@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Regression tree model predicting number of atoms from 14 original properties on QM7b test set: MSE = 0.1397, RMSE = 0.3737, MAE = 0.2451, R = 0.9906",
+  "table_ref": "Table II (QM7b, 14 original features)",
+  "dataset": "QM7b"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "QM7b is small (7211 molecules, 14 features); regression tree training and evaluation take seconds, but the paper provides no code, so the agent must implement preprocessing, UMAP embedding (for the 2-feature variant), and tree model from scratch, plus download data."
+ },
+ "blockers": [
+  "No code or configuration provided; must reimplement preprocessing, UMAP, and regression tree pipeline",
+  "Exact random 90/10 split and tree hyperparameters unspecified, so exact metric values may not be reproducible"
+ ],
+ "suitable": true,
+ "id": "2309.15130",
+ "title": "Understanding the Structure of QM7b and QM9 Quantum Mechanical Datasets Using Unsupervised Learning",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

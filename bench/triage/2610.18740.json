@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "V7(16) ≤ 28: there exists a comparison decision tree of depth 28 that selects the 7th smallest (0-based rank 6) of 16 distinct elements.",
+  "table_ref": "Table 3, row V7(16) ≤ 28 (also Theorem 1)",
+  "dataset": "none (combinatorial certificate; no external data)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/JCremerr/selection-7-of-16",
+  "https://doi.org/10.5281/zenodo.23346948"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "The 28-comparison certificate is a small Rust program (329 functions) archived with the paper; verifying it means compiling and running the static checker plus a few million random permutation tests, which takes minutes on a laptop CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2610.18740",
+ "title": "Selecting the 7th Smallest of 16 Elements Takes Exactly 28 Comparisons",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

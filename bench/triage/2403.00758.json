@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "SPT (Tri, w/ sem) achieves 87.0% exact-match accuracy on the reverse-direction QA subset (A2Q), vs 3.0% for the standard model",
+  "table_ref": "Table 9",
+  "dataset": "Question Answer (Berglund et al. 2023)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/tatsu-lab/stanford_alpaca"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 100,
+  "ref_minutes": 1200,
+  "gpu_speedup": 8,
+  "basis": "Requires fine-tuning LLaMA-7B for 20 epochs plus running Vicuna-13B segmentation over the training data; both are multi-GPU jobs (paper uses 8x AMD MI200), far beyond an 8-core/16GB CPU laptop."
+ },
+ "blockers": [
+  "No code release (only a link to the unrelated Stanford Alpaca repo)",
+  "Requires fine-tuning LLaMA-7B (13B assistant Vicuna-13B) - not feasible on CPU",
+  "QA dataset from Berglund et al. 2023 not clearly downloadable",
+  "Segmentation pipeline depends on Vicuna-13b-v1.3 inference"
+ ],
+ "suitable": false,
+ "id": "2403.00758",
+ "title": "Mitigating Reversal Curse in Large Language Models via Semantic-aware Permutation Training",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

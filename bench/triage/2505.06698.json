@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "PC2-based pointwise judge (ours) with Deepseek-R1 as judge achieves 0.6962 accuracy, versus naive pointwise judging at 0.5694.",
+  "table_ref": "Table 2",
+  "dataset": "SCAN-HPD human-preference evaluation set (636 examples across writing, roleplay, knowledge, coding, mathematics, reasoning)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/liudan193/SCAN"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The judge itself must be a large model such as Deepseek-R1; using APIs avoids local GPUs but still requires many paid/closed-model calls over the preference set, and the exact data/prompt release is unclear."
+ },
+ "blockers": [
+  "Requires closed-source or very large judge models (Deepseek-R1, Qwen3-32B, claude-3.7-sonnet, gpt-4.1) that a 16 GB CPU laptop cannot run locally",
+  "Availability of the human-preference labels and model responses for the judge-accuracy table is not clear",
+  "PC2 evaluation prompts/configs may not be fully released or may require substantial reconstruction"
+ ],
+ "suitable": false,
+ "id": "2505.06698",
+ "title": "SCAN: Structured Capability Assessment and Navigation for LLMs",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

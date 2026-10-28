@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GTRC at ε=0.05 achieves a median gap of approximately 0.002% to the best observed objective across 34 UCI datasets, using a median of 32 restarts.",
+  "table_ref": "Figure 1 (left panel) / Section 5 text",
+  "dataset": "34 UCI datasets (e.g., Iris, Wine, etc.)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RCdeAmorim/Good-Turing-Restart-Criterion"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "34 UCI datasets, 200 repetitions of GTRC (median 32 restarts) plus fixed-restart baselines; k-means++ on up to 581k points (Cover Type) is CPU-bound and may take hours on 8 cores."
+ },
+ "blockers": [
+  "Code repository may not include exact preprocessing/configs for all 34 datasets",
+  "Cover Type (581k points) and other large datasets may be slow on CPU",
+  "Exact median gap depends on random seeds and implementation details"
+ ],
+ "suitable": true,
+ "id": "2607.08243",
+ "title": "An interpretable Good--Turing restart criterion for k-means++",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "PTD-SQL + Deepseek-coder-6.7b-instruct achieves 76.7% execution accuracy on Spider-dev",
+  "table_ref": "Table 2",
+  "dataset": "Spider-dev"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lrlbbzl/PTD-SQL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 300,
+  "gpu_speedup": 5,
+  "basis": "Requires fine-tuning Llama-2-7b with LoRA (GPU needed), generating targeted drilling banks via LLM inference, and running inference on 1034 Spider-dev questions with a 6.7B model; on CPU this would be extremely slow, likely hours to days."
+ },
+ "blockers": [
+  "Fine-tuning Llama-2-7b requires GPU (16GB VRAM minimum)",
+  "Generating targeted drilling banks requires LLM inference (could use API but cost/time)",
+  "Running inference on 1034 questions with 6.7B model on CPU is impractical"
+ ],
+ "suitable": false,
+ "id": "2409.14082",
+ "title": "PTD-SQL: Partitioning and Targeted Drilling with LLMs in Text-to-SQL",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

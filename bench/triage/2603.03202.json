@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Augmenting the original training data with Code2Math-evolved problems improves Qwen3-8B Avg@10 accuracy on AIME24 from 42.3% (original) to 48.0% (+5.7)",
+  "table_ref": "Table 2, row AIME24, column Qwen3-8B Orig.+Evol.",
+  "dataset": "AIME-2024 (evaluation) with 2,500-problem training corpus"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TarferSoul/Code2Math"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 10,
+  "basis": "Requires evolving 2,500 problems via closed-source LLM APIs (GLM-5.3-Flash), generating CoT solutions with Qwen3-30B, and SFT training Qwen3-8B for 6 epochs on a GPU; the 8-core/16GB CPU laptop cannot run the training or the API-based evolution pipeline."
+ },
+ "blockers": [
+  "Requires closed-source LLM APIs (GLM-5.3-Flash, GPT-5.2-High) for evolution and judging",
+  "Requires GPU for SFT training of Qwen3-8B",
+  "Training corpus of 2,500 problems and evolved versions not confirmed as publicly downloadable",
+  "Full pipeline involves multiple stages (evolution, verification, CoT generation, SFT) not feasible on a CPU-only laptop"
+ ],
+ "suitable": false,
+ "id": "2603.03202",
+ "title": "Code2Math: Can Your Code Agent Evolve Math Problems Through Exploration?",
+ "pages": 36,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,5 @@
+{
+  "outputDirectory": "web",
+  "cleanUrls": true,
+  "headers": [{"source": "/demo-runs/(.*)", "headers": [{"key": "Cache-Control", "value": "public, max-age=300"}]}]
+}

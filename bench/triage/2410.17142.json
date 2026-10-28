@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Isolation forest prediction time for 10^6 samples with 2 features using coniferest 0.0.13 (single thread) on Apple M3 Pro, as shown in Figure 1.",
+  "table_ref": "Figure 1",
+  "dataset": "synthetic dataset of 10^6 samples with 2 features"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/snad-space/coniferest"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The target is a timing benchmark of a single-threaded prediction on a synthetic dataset; the code is available and the dataset can be generated, so the main cost is installing the package and running the benchmark, which should take a few minutes on a laptop."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2410.17142",
+ "title": "Coniferest: a complete active anomaly detection framework",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

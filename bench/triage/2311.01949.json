@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "HICL with HER_DPR achieves 41.53 EM on Natural Questions (NQ) with gpt-3.5-turbo, 5-shot",
+  "table_ref": "Table 1, row 'HICL HER_DPR', column 'NQ EM'",
+  "dataset": "Natural Questions (NQ) test set"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "Requires re-implementing the full HICL pipeline (retriever, hint extraction, HER training) and calling gpt-3.5-turbo for hint extraction and final answers on 300 queries × 5 seeds, which is API-bound and cannot be GPU-accelerated."
+ },
+ "blockers": [
+  "No code or data release linked in the paper",
+  "Requires paid OpenAI gpt-3.5-turbo API for hint extraction and final answer generation",
+  "Requires re-implementing the entire HICL pipeline and HER training from scratch",
+  "Requires building the 3429 hint-labeled training triples using gpt-3.5-turbo"
+ ],
+ "suitable": false,
+ "id": "2311.01949",
+ "title": "Hint-enhanced In-Context Learning wakes Large Language Models up for knowledge-intensive tasks",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

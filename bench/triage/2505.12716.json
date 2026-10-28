@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "Shadow-FT (LoRA, r=128) tuned on BAAI-2k raises the Math-7 average of Llama-3.2-1B-Instruct to 27.2, versus 25.3 for conventional LoRA FT and 23.8 for the vanilla INSTRUCT baseline.",
+  "table_ref": "Table 1 (row: Llama-3.2-1B; column: Avg./Math-7 under Full & LoRA)",
+  "dataset": "BAAI-2k (2000 samples subsampled from BAAI/Infinity-Instruct, Gen split)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/wutaiqiang/Shadow-FT",
+  "https://huggingface.co/datasets/BAAI/Infinity-Instruct",
+  "https://huggingface.co/datasets/BAAI/Infinity-Instruct/tree/main/Gen"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 40,
+  "ref_minutes": 420,
+  "gpu_speedup": 25,
+  "basis": "Training two LoRA runs (base + instruct) on a 1B model over 2k samples is small, but the target cell is a 7-benchmark generation average (AIME24, GSM8K 0-/8-shot, MATH, MATH-500, Minerva_Math, SVAMP) that the paper averages over three independent training runs, so CPU token generation dominates the wall-clock time."
+ },
+ "blockers": [
+  "The published protocol uses 8xA100 GPUs and reports means over 3 independent training runs; a single laptop run is a weakened reproduction.",
+  "Evaluation is done via OpenCompass + lmdeploy, and lmdeploy is CUDA-serving oriented, so a CPU evaluator would have to be rebuilt around transformers/vLLM-CPU.",
+  "Gated model licenses (Meta Llama 3.2/3.1) require HF account approval even though weights are free.",
+  "The BAAI-2k subset selection (high-reward filtering + uniform category sampling) must be re-derived from Infinity-Instruct/Gen, which may not exactly match the paper's 2k.",
+  "No paired BASE model exists for some LLMs (acknowledged in Limitations), though it does exist for the chosen Llama-3.2-1B target."
+ ],
+ "suitable": true,
+ "id": "2505.12716",
+ "title": "Shadow-FT: Tuning Instruct Model via Training on Paired Base Model",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

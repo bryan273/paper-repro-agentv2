@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Type I error (k=0) and power (k=2,3,4) of the MDI global test at α=0.05 under dense shift contamination, balanced mix, block correlation, d=20 (first column of Table 1)",
+  "table_ref": "Table 1",
+  "dataset": "Synthetic Monte Carlo (Gaussian copula, mixed Normal/Skew-Normal/Poisson/Categorical features), n=150, d=20"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "No code released; the full MDI pipeline (moment maps, leave-one-out scores, graphical lasso with EBIC selection via R 'huge', 1000 MC replications) must be re-implemented from the paper text, but each replication is tiny (n=150, d=20) and runs on CPU."
+ },
+ "blockers": [
+  "No code or repository linked in the paper",
+  "Method must be re-implemented from the text (LOO moment scores, EBIC-tuned graphical lasso, calibration)",
+  "Exact reproduction of the 1000-replication MC cell requires matching unspecified details (EBIC grid, contamination construction)"
+ ],
+ "suitable": true,
+ "id": "2610.16285",
+ "title": "Moment-Based Anomaly Detection in High-Dimensional Mixed Data",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

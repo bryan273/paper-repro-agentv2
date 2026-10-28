@@ -1,0 +1,205 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper does not state whether the 45 ADBench datasets are scored in full or split into train/test partitions.",
+  "options": [
+   "Score the full dataset in unsupervised fashion",
+   "Use ADBench 70/30 train/test split",
+   "Use 5-fold cross-validation"
+  ],
+  "chosen": "Score the full dataset in unsupervised fashion, repeated 5 times, with no train/test split stated.",
+  "rationale": "The paper describes an unsupervised setting where labels are used only after predictions are made, which is consistent with full-data scoring.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "We focus on the unsupervised anomaly detection setting where X contains an unknown mixture of normal instances",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper does not specify feature scaling before Euclidean distance computations.",
+  "options": [
+   "Use raw features",
+   "Standardize features to zero mean and unit variance",
+   "Min-max scale features",
+   "Robust-scale features"
+  ],
+  "chosen": "Standardize features to zero mean and unit variance before Euclidean distance computations.",
+  "rationale": "ADBench-based distance methods conventionally standardize tabular features; the paper leaves preprocessing unstated.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The exact m value used for cardio in Table 4 is not reported, although m is grid-searched per dataset.",
+  "options": [
+   "Tune m per dataset by grid search maximizing AUC-ROC",
+   "Fix m=128 for all datasets",
+   "Fix m=256 for all datasets",
+   "Use m=min(128, n)"
+  ],
+  "chosen": "Tune m per dataset by grid search over {2^1, ..., 2^8} maximizing AUC-ROC; if tuning is not allowed, fall back to m=128.",
+  "rationale": "The paper states grid search over sample points but does not report the selected m for each dataset.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "For fair comparison, we conduct grid search for methods with tunable parameters.",
+  "page": 7
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper does not state the random seeds or repetition scheme used for the 5 runs.",
+  "options": [
+   "Fixed seeds 0-4",
+   "Fixed seeds 1-5",
+   "Unseeded random runs"
+  ],
+  "chosen": "Use fixed seeds 1-5 for the five repeated runs.",
+  "rationale": "The paper repeats experiments 5 times but gives no seed policy; fixed seeds are needed for reproducibility.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "we repeat experiments 5 times",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Tie-breaking in nearest-anchor assignment is not specified.",
+  "options": [
+   "Choose the lowest anchor index",
+   "Choose the first encountered anchor",
+   "Choose randomly among tied anchors"
+  ],
+  "chosen": "Choose the lowest anchor index on distance ties.",
+  "rationale": "Deterministic tie-breaking is standard and has negligible impact on continuous data.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Each point x ∈X is assigned to its nearest anchor",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Missing-value handling for ADBench datasets is not described.",
+  "options": [
+   "Use ADBench cleaned files without extra imputation",
+   "Mean-impute missing values",
+   "Drop rows with missing values"
+  ],
+  "chosen": "Use the ADBench cleaned dataset files without additional imputation.",
+  "rationale": "The paper relies on public ADBench benchmark data and does not mention any extra cleaning step.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "If all t partitions assign a point to a singleton cell, the skip rule leaves no score for that point.",
+  "options": [
+   "Assign score 0",
+   "Assign score 1",
+   "Resample anchors until a non-singleton cell exists",
+   "Use nearest non-singleton cell score"
+  ],
+  "chosen": "Assign score 0 if all partitions skip the point.",
+  "rationale": "The paper does not define this degenerate case, and a zero score preserves the high-score-means-anomalous orientation.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "we skip scoring for this point in this partition and rely on the other t −1 partitions in the ensemble average.",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The paper does not specify whether the main Table 4 results were computed on CPU or GPU.",
+  "options": [
+   "Use CPU for main benchmark scoring",
+   "Use GPU for main benchmark scoring",
+   "Run both and report CPU"
+  ],
+  "chosen": "Use CPU for the main benchmark scoring; GPU is used only for the scalability experiment.",
+  "rationale": "The scalability analysis explicitly reports CPU and GPU timings, while the main benchmark protocol does not mention GPU acceleration.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "requiring less than 3 seconds to process 500,000 instances on CPU.",
+  "page": 8
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The paper does not state whether AUC-ROC for cardio is computed on all 1831 samples or on a held-out subset.",
+  "options": [
+   "Use all 1831 samples",
+   "Use ADBench default test split",
+   "Use a random 30% test split"
+  ],
+  "chosen": "Use all 1831 cardio samples for scoring, matching the full-data unsupervised assumption.",
+  "rationale": "ADBench cardio has 1831 total samples; the paper never mentions a test split for anomaly scoring.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "the labels are used to compute the AUC-ROC and AUC-PR for each dataset only after the models have made predictions.",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether hyperparameter tuning for m uses labels or is unsupervised is not explicitly stated.",
+  "options": [
+   "Tune m using AUC-ROC on evaluation labels",
+   "Tune m using an internal unsupervised criterion",
+   "Use a fixed m without tuning"
+  ],
+  "chosen": "Tune m using AUC-ROC on evaluation labels, as implied by benchmark grid-search practice.",
+  "rationale": "The paper says it conducts grid search for tunable methods but does not describe the selection criterion.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "For fair comparison, we conduct grid search for methods with tunable parameters.",
+  "page": 7
+ },
+ {
+  "id": "A11",
+  "by": "implementer",
+  "gap": "The paper never states the feature scaling used for the 45 ADBench datasets nor the m selected for cardio.",
+  "chosen": "Use the official ADBench artifact adbench/datasets/Classical/6_cardio.npz unchanged (its features are already per-column standardised, col mean ~0, std ~0.9997) and select m by the paper's grid {2^1..2^8} maximising the mean AUC-ROC over the 5 repeats -> m=2.",
+  "rationale": "The ADBench npz is the benchmark artifact the paper's Table 3 numbers come from (1831x21, 176 anomalies, 9.61% matches exactly), and its pre-standardised scale means a global rescale cannot change Euclidean nearest-anchor assignments, so no scaling choice is needed. The grid search criterion is not stated; AUC-ROC is the metric of the match target.",
+  "risk": "medium",
+  "options": [
+   "standardise raw UCI CTG features ourselves",
+   "use ADBench artifact as-is (chosen)",
+   "select m by AUC-PR instead of AUC-ROC",
+   "fix m at 128"
+  ]
+ },
+ {
+  "id": "A12",
+  "by": "implementer",
+  "gap": "Equation (5) says the ensemble average is the arithmetic mean over the t partitions, while Section 4.2 says a point in a singleton cell is skipped in that partition; Algorithm 1 line 20 divides the accumulated sum by t, which differs whenever a point is skipped.",
+  "chosen": "Algorithm 1 line 20 is followed literally for the sum (divide by the number of partitions that actually scored the point), and the sensitivity check \"sum_over_t_skip_zero\" (divide by t) is also computed; excluded points are never counted, never scored 0.",
+  "rationale": "Section 4.2's wording implies the skipped partition does not contribute for that point. On cardio the two variants give bit-identical results (skipped fraction at the selected m=2 is 0), so this choice cannot explain or hide the target values; both are reported in metrics.json for transparency.",
+  "risk": "low",
+  "options": [
+   "divide by number of partitions that scored the point (chosen, 'rely on the remaining partitions')",
+   "divide by t (Algorithm 1 literal)",
+   "score skipped points 0"
+  ]
+ },
+ {
+  "id": "A13",
+  "by": "implementer",
+  "gap": "Neither Figure 5 nor Section 5.3 states the guardrails of the scalability run: m, t, whether the timing includes all t partitions, and how the 500,000 synthetic instances are generated.",
+  "chosen": "Report the measured single-run CPU wall clock at n=500,000, d=10 with the paper's fixed t=100 and m in {2 (grid-selected), 8, 32}, and mark C6 (GPU) as not reproducible on this GPU-less machine.",
+  "rationale": "The scalability section only fixes dimensionality 10 and the sample count; Section 5.1 fixes t=100. Measuring the whole pipeline at t=100 is the most conservative, comparable instantiation. The number is device-dependent, so it is reported as a measurement, not as a pass/fail verdict.",
+  "risk": "medium",
+  "options": [
+   "time the full pipeline at t=100 with the grid-selected m (chosen)",
+   "time only the distance computation",
+   "omit C5 entirely"
+  ]
+ }
+]

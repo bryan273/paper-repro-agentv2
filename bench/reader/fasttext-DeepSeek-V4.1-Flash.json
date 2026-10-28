@@ -1,0 +1,251 @@
+{
+ "title": "Bag of Tricks for Efficient Text Classification",
+ "summary": "The paper asks how far a very simple linear text classifier (bag of words/n-grams, low-rank factorization, fast loss) can go against deep neural networks while being orders of magnitude cheaper to train and evaluate. The proposed fastText model embeds and averages word and n-gram features into a hidden vector that is fed to a linear classifier trained with SGD and a linearly decaying learning rate, optionally with a Huffman-tree hierarchical softmax for large label spaces. Across eight sentiment datasets it matches char-CNN/char-CRNN and is close to VDCNN while training in seconds per epoch on CPU, and on the 312K-class YFCC100M tag-prediction task it reaches 46.1 prec@1 with bigrams versus 35.6 for Tagspace.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "fastText with 10 hidden units and bigram features reaches 92.5% test accuracy on AG News sentiment classification.",
+   "metric": "test accuracy",
+   "dataset": "AG News (Zhang et al., 2015 sentiment suite)",
+   "split": "test",
+   "value": 92.5,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'fastText, h = 10, bigram', column AG",
+   "config_for_value": "h = 10 hidden units, bigram features hashed into 10M bins, 5 epochs, learning rate chosen on a validation set from {0.05, 0.1, 0.25, 0.5}, same parameters for all 8 datasets, no pre-trained embeddings, CPU with 20 threads",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; ~1 s per training epoch on AG per Table 2 (minutes end-to-end including preprocessing)",
+   "quote": "fastText, h = 10, bigram 92.5 96.8 98.6 95.7 63.9 72.3 60.2 94.6",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "fastText with 10 hidden units and no bigrams reaches 91.5% test accuracy on AG News, i.e. 1.0 point below the bigram model.",
+   "metric": "test accuracy",
+   "dataset": "AG News (Zhang et al., 2015 sentiment suite)",
+   "split": "test",
+   "value": 91.5,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'fastText, h = 10', column AG",
+   "config_for_value": "h = 10 hidden units, no bigrams (unigram bag of words only), 5 epochs, learning rate selected on a validation set from {0.05, 0.1, 0.25, 0.5}",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; well under a minute per dataset",
+   "quote": "fastText, h = 10 91.5 93.9 98.1 93.8 60.4 72.0 55.8 91.2",
+   "page": 3
+  },
+  {
+   "id": "C3",
+   "statement": "Adding trigrams on top of bigrams raises fastText's Sogou News test accuracy to 97.1%.",
+   "metric": "test accuracy",
+   "dataset": "Sogou News (Zhang et al., 2015 sentiment suite)",
+   "split": "test",
+   "value": 97.1,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Section 3.1, Results (text sentence after Table 1 discussion)",
+   "config_for_value": "fastText, h = 10, n-grams up to trigrams (bigram setting gives 96.8 in Table 1)",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; ~7 s per epoch on Sogou per Table 2",
+   "quote": "Note that we can increase the accuracy slightly by using more n-grams, for example with trigrams, the performance on Sogou goes up to 97.1%.",
+   "page": 3
+  },
+  {
+   "id": "C4",
+   "statement": "fastText with 10 hidden units and bigrams reaches 95.7% test accuracy on Yelp Polarity, on par with the best deep baseline (VDCNN, 95.7%).",
+   "metric": "test accuracy",
+   "dataset": "Yelp P. (Zhang et al., 2015 sentiment suite)",
+   "split": "test",
+   "value": 95.7,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row 'fastText, h = 10, bigram', column Yelp P.",
+   "config_for_value": "h = 10 hidden units with bigram features, same hyper-parameters as for all other sentiment datasets",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; ~3 s per training epoch per Table 2",
+   "quote": "fastText, h = 10, bigram 92.5 96.8 98.6 95.7 63.9 72.3 60.2 94.6",
+   "page": 3
+  },
+  {
+   "id": "C5",
+   "statement": "fastText with 200 hidden units and bigrams achieves 46.1 precision@1 on YFCC100M tag prediction, more than 10 points above the Tagspace h=200 baseline (35.6).",
+   "metric": "prec@1",
+   "dataset": "YFCC100M tag prediction (title + caption only)",
+   "split": "test (543,424 examples)",
+   "value": 46.1,
+   "unit": "% prec@1",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row 'fastText, h = 200, bigram', column prec@1",
+   "config_for_value": "5 epochs, h = 200, bigrams, words/tags occurring < 100 times removed, 20 training threads",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; 13m38s training, 1m37s test (reported in Table 5)",
+   "quote": "fastText, h = 200, bigram 46.1 13m38 1m37",
+   "page": 4
+  },
+  {
+   "id": "C6",
+   "statement": "With a small hidden layer (h = 50) the addition of bigrams lifts fastText's YFCC100M prec@1 from 31.2 to 36.7.",
+   "metric": "prec@1",
+   "dataset": "YFCC100M tag prediction (title + caption only)",
+   "split": "test (543,424 examples)",
+   "value": 36.7,
+   "unit": "% prec@1",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row 'fastText, h = 50, bigram', column prec@1",
+   "config_for_value": "5 epochs, h = 50, bigram features, 20 training threads",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; 7m47s training, 50s test (reported in Table 5)",
+   "quote": "fastText, h = 50, bigram 36.7 7m47 50s",
+   "page": 4
+  },
+  {
+   "id": "C7",
+   "statement": "fastText reaches 64.2% test accuracy on Yelp'13 under the Tang et al. (2015) protocol, beating SVM+TF and CNN and slightly below LSTM-GRNN.",
+   "metric": "test accuracy",
+   "dataset": "Yelp'13 (Tang et al., 2015 review-style sentiment splits)",
+   "split": "test",
+   "value": 64.2,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row fastText, column Yelp'13",
+   "config_for_value": "hyper-parameters tuned on the validation set; n-grams up to 5 give the best performance on this task; no pre-trained word embeddings",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; minutes (dataset size far below YFCC100M)",
+   "quote": "fastText 64.2 66.2 66.6 45.2",
+   "page": 3
+  },
+  {
+   "id": "C8",
+   "statement": "Without bigrams, fastText with h = 50 obtains 31.2 prec@1 on YFCC100M, essentially matching Tagspace h = 50 (30.1) while being ~28x faster to train.",
+   "metric": "prec@1",
+   "dataset": "YFCC100M tag prediction (title + caption only)",
+   "split": "test (543,424 examples)",
+   "value": 31.2,
+   "unit": "% prec@1",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row 'fastText, h = 50', column prec@1",
+   "config_for_value": "5 epochs, h = 50, no bigrams, 20 training threads",
+   "reported_spread": null,
+   "est_compute": "CPU, 20 threads; 6m40s training, 48s test (reported in Table 5)",
+   "quote": "fastText, h = 50 31.2 6m40 48s",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "AG News with h = 10 and bigrams is the user-specified target and is the cheapest reproduction of the paper's central claim: a small 4-class dataset that Table 2 says trains in ~1 s per epoch on CPU with 20 threads, yet it exhibits the paper's headline effect (linear bag-of-ngrams model matching deep nets after adding bigrams)."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "Rule 2: the paper reports no std/CI for Table 1, and the value is an accuracy-like percentage on the Zhang et al. (2015) AG News test split of 7,600 examples (>= 2,000), so the band is 1.0 absolute point on the % scale."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The classifier must be the rank-constrained linear model of Figure 1: a word/n-gram lookup matrix A whose rows are averaged into the text representation, followed by a linear classifier B.",
+   "cite": "Section 2, Figure 1",
+   "quote": "The word representations are then averaged into a text representation, which is in turn fed to a linear classifier.",
+   "page": 1
+  },
+  {
+   "id": "R2",
+   "stmt": "The training objective is the negative log-likelihood over the softmax distribution of the class given the averaged feature vector.",
+   "cite": "Section 2, Eq. 1",
+   "quote": "We use the softmax function f to compute the probability distribution over the predefined classes.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Optimization must be asynchronous SGD over multiple CPU threads with a linearly decaying learning rate (not Adam, not batch gradient descent).",
+   "cite": "Section 2, last paragraph",
+   "quote": "This model is trained asynchronously on multiple CPUs using stochastic gradient descent and a linearly decaying learning rate.",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "A hierarchical softmax built on a Huffman coding tree must be available for large output spaces, dropping training cost from O(kh) to O(h log2 k).",
+   "cite": "Section 2.1",
+   "quote": "we use a hierarchical softmax (Goodman, 2001) based on the Huffman coding tree (Mikolov et al., 2013).",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Bigram/n-gram features must be added on top of bag of words to capture local word order; the bigram run is the target configuration.",
+   "cite": "Section 2.2",
+   "quote": "Instead, we use a bag of n-grams as additional features to capture some partial information about the local word order.",
+   "page": 2
+  },
+  {
+   "id": "R6",
+   "stmt": "N-gram features must be mapped with the hashing trick (Mikolov et al. 2011 hash) into 10M bins when only bigrams are used and 100M bins otherwise.",
+   "cite": "Section 2.2",
+   "quote": "We maintain a fast and memory efficient mapping of the n-grams by using the hashing trick",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "The sentiment experiments must use 10 hidden units, 5 epochs, and a learning rate chosen on a validation set from {0.05, 0.1, 0.25, 0.5}.",
+   "cite": "Section 3.1, Results",
+   "quote": "run fastText for 5 epochs with a learning rate selected on a validation set from {0.05, 0.1, 0.25, 0.5}",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "The exact same hyper-parameters must be used for all eight sentiment datasets (no per-dataset tuning of h, epochs or n-gram order in the main table).",
+   "cite": "Table 1 caption / Section 3.1",
+   "quote": "FastText has been run with the same parameters for all the datasets.",
+   "page": 3
+  },
+  {
+   "id": "R9",
+   "stmt": "Input to the classifier must be the normalized bag of features of the document (feature counts divided/averaged by the document representation), with A and B as the only weight matrices.",
+   "cite": "Section 2, Eq. 1",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R10",
+   "stmt": "No pre-trained word embeddings may be used; all embeddings are learned jointly with the classifier.",
+   "cite": "Section 3.1, Results (final paragraph)",
+   "quote": "Unlike Tang et al. (2015), fastText does not use pre-trained word embeddings",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "For the YFCC100M tag-prediction task, words and tags occurring fewer than 100 times must be removed and the train/validation/test split used as described (91,188,648 / 930,497 / 543,424 examples), with precision at 1 as the metric.",
+   "cite": "Section 3.2, Dataset and baselines",
+   "quote": "We remove the words and tags occurring less than 100 times and split the data into a train, validation and test set.",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Training must be run on CPU with 20 threads (the setting under which all reported training times were measured).",
+   "cite": "Section 3.1, Training time / Table 2",
+   "quote": "while our models are trained on a CPU using 20 threads",
+   "page": 3
+  }
+ ],
+ "data": [
+  {
+   "name": "AG News, Sogou News, DBPedia, Yelp P., Yelp F., Yahoo Answers, Amazon F., Amazon P. (Zhang et al., 2015 sentiment suite)",
+   "how_to_get": "Public release accompanying Zhang, Zhao & LeCun (2015), 'Character-level Convolutional Networks for Text Classification' (arXiv:1502.01710); the widely used download mirror cited by that repo is https://goo.gl/JyCnZq. The paper states only: 'We employ the same 8 datasets and evaluation protocol of Zhang et al. (2015).'"
+  },
+  {
+   "name": "YFCC100M (titles, captions, tags only - images unused)",
+   "how_to_get": "YFCC100M multimedia collection (Thomee et al., 2016). The paper gives no URL and only promises a preprocessing script: 'We will release a script that recreates this dataset so that our numbers could be reproduced.' Recreate the splits by removing words and tags with fewer than 100 occurrences, yielding the reported 91,188,648 train / 930,497 validation / 543,424 test examples, 297,141 words and 312,116 tags."
+  }
+ ],
+ "code_links": [
+  "https://github.com/facebookresearch/fastText"
+ ],
+ "stated_compute": "Both char-CNN and VDCNN are trained on a NVIDIA Tesla K40 GPU, while our models are trained on a CPU using 20 threads.",
+ "paper_meta": {
+  "source": "1607.01759",
+  "kind": "arxiv",
+  "arxiv_id": "1607.01759",
+  "url": "https://arxiv.org/abs/1607.01759",
+  "title": "Bag of Tricks for Efficient Text Classification",
+  "pages": 5
+ }
+}

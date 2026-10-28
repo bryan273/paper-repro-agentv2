@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "TPR/FPR/FDR of ILTFS-FDR on simulated IVFD (e.g., AR DGP, N=100, p=300, rho=0.10, Case I, gamma=3, q=0.05) — a single cell of the simulation results (Figures 1/2, Table 1)",
+  "table_ref": "Figures 1-2 / Table 1 (simulation study, Section 4)",
+  "dataset": "Synthetic IVFD generated per Section 4 DGPs (BM/AR/MA), N in {100,200,500}, p in {300,500}"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code released; the full pipeline (IFPCA via basis expansion, IMDP initialization, M random-start concentration steps, Sn refinement, BH) must be reimplemented from the paper, and each reported cell is a 100-replication Monte Carlo average over N up to 500 curves on p up to 500 grid points — CPU-only but nontrivial to code and run."
+ },
+ "blockers": [
+  "No code or supplementary material linked in the paper",
+  "IMDP initialization (Tian et al. 2026) and several algorithmic details (M, d, basis Mj, epsilon) are not fully specified, requiring guesswork",
+  "Target is a Monte Carlo average over 100 replications, so a single run does not reproduce the headline number"
+ ],
+ "suitable": true,
+ "id": "2608.01226",
+ "title": "Projection-Based Outlier Detection in Interval-Valued Functional Data",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

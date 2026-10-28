@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Estimation accuracy of I(X,k0,k1)* vs MLE covariance inverse for Gaussian data: average log Frobenius error at a given (n,p), e.g. n=1000, p=10 (Figure 2a point)",
+  "table_ref": "Figure 2(a)",
+  "dataset": "Synthetic Gaussian data (random covariance from Stiefel eigenvectors, Exponential(1) eigenvalues)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Synthetic data generation plus kNN-based DIM estimator and covariance inversion on small p (10-500), n up to 2000, 50 replicates; all CPU, but the method must be re-implemented from the paper since no code is released."
+ },
+ "blockers": [
+  "No code released; nnDIM estimator, bias correction and orthogonalisation must be re-implemented from equations",
+  "Exact random covariance generation (Stiefel sampling) and error metric details must be inferred"
+ ],
+ "suitable": true,
+ "id": "2608.25887",
+ "title": "Efficient Estimation of High Information Projections using Nearest Neighbours",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

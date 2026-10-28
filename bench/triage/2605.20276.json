@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "OmniISR improves mIoU over the output-layer-only baseline on the smallest semantic-segmentation benchmark (CamVid) in a single training mode, as reported in the main results table (e.g., the CL or FL mIoU cell for the DeepLabv3+/ResNet backbone).",
+  "table_ref": "Main experimental table (Section 4 / middle omitted pages; exact table number not visible in provided text)",
+  "dataset": "CamVid (smallest of Cityscapes/CamVid/SYNTHIA)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 60,
+  "ref_minutes": 900,
+  "gpu_speedup": 30,
+  "basis": "No code is released, so an agent must rebuild the full OmniISR loss (CE + MI supervision + NE regularizer at multiple layers), the DeepLabv3+ segmentation pipeline, and the FL simulation loop from scratch, then train to convergence on segmentation data; even the smallest dataset demands many GPU-hours and full CPU training is impractical."
+ },
+ "blockers": [
+  "No code, configs, or hyperparameters released (release: none)",
+  "Requires training deep semantic-segmentation models (DeepLabv3+/TopFormer/SeaFormer), plus a multi-client federated simulation, all built from scratch",
+  "Convergence on segmentation data is GPU-bound; a normal CPU laptop cannot finish a faithful re-run of the protocol in a few hours",
+  "Detailed experimental tables are in the omitted middle pages, so exact target cell values/configs are not readable"
+ ],
+ "suitable": false,
+ "id": "2605.20276",
+ "title": "OmniISR: A Unified Framework for Centralized and Federated Learning via Intermediate Supervision and Regularization",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,36 @@
+{
+ "route": "full_release",
+ "why": "The authors' public repository (Bonbhel/kabena-ml) is cloned and contains the exact validation script for the target table (validation/table1_real_datasets.py) plus shared helpers (_common.py) and the core library (kabena/core/*, numpy-only). All five datasets are scikit-learn bundled (load_breast_cancer etc.), so no downloads or pretrained weights are needed, and the code is pure Python 3.10+ (pyproject requires-python >=3.10, no Python 2 files, deps only numpy>=1.22,<3 and optional scikit-learn>=1.3). Nothing is missing: the run should work as released with at most a `pip install -e .[sklearn]` and a top-level import path fix.",
+ "repo": "https://github.com/Bonbhel/kabena-ml",
+ "entrypoints": [
+  "validation/table1_real_datasets.py",
+  "validation/run_all.py",
+  "validation/_common.py"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "about 5-10 minutes total: ~1-2 min install (numpy/scikit-learn already standard, pip install -e .), a few seconds per fit x 5 seeds x 6 model/dataset rows, plus the clean re-run",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "Table 1's target row is a full-batch logistic regression on the 569-sample Breast Cancer set run for 5 seeds (reported <1 min/seed on CPU); the whole table suite is stated to be under one CPU-hour, so install plus the target row plus a clean re-run fits comfortably in ~12 minutes on 8 CPU cores."
+ },
+ "repo_info": {
+  "url": "https://github.com/Bonbhel/kabena-ml",
+  "cloned": true,
+  "n_files": 55,
+  "n_python": 35,
+  "python2_style_files": 0
+ }
+}

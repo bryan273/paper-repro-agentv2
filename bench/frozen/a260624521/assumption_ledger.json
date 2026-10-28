@@ -1,0 +1,145 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The 'standard' algorithm is only named (attributed to Nordhausen et al., 2008); the paper never gives its formula, so the code must choose a joint-diagonalization procedure.",
+  "options": [
+   "two-step: whiten with S1^{-1/2} (symmetric or Cholesky), then eigen-decompose S2 computed on the whitened data (R ICS 'standard')",
+   "direct generalized eigenproblem solve of S2 v = lambda S1 v",
+   "form S1^{-1/2} S2 S1^{-1/2} and take its eigenvectors"
+  ],
+  "chosen": "two-step: whiten by S1 (symmetric inverse square root), recompute S2 on the whitened data, then eigen-decompose it",
+  "rationale": "This is the procedure of the R package ICS (Nordhausen et al., 2008) that the paper cites for both 'standard' and 'whiten'; 'whiten' differs by using a different whitening matrix.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The RANDU generator's parameters (sample size, seed, whether coordinates are the LCG state scaled to [0,1) or 3 consecutive states) are never stated.",
+  "options": [
+   "Marsaglia LCG x_{k+1} = 65539 x_k mod 2^31, consecutive triplets as 3-D points, n of order 1e3-1e4, arbitrary seed",
+   "use whatever n and seed the shipped generate_randu() defaults to",
+   "scale states to [0,1) vs keep integers"
+  ],
+  "chosen": "reuse the package default generate_randu(); if reimplementing, use x_{k+1} = 65539 x_k mod 2^31 with consecutive triplets as 3-D points and a few thousand points, fixed seed",
+  "rationale": "Marsaglia (1968) is the cited source and the whole point of RANDU is the LCG-induced lattice; the exact n/seed only affects point density, not the qualitative banding.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": "a well-known example where data points are trapped in parallel hyperplanes.",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper says the structure appears on the 'last' invariant component but never states whether components are sorted by increasing or decreasing generalized kurtosis, nor whether solver order is kept.",
+  "options": [
+   "sort ascending by generalized kurtosis so the extremal (largest) kurtosis is the last column",
+   "sort descending so the extremal component comes first",
+   "keep the raw eigen-solver ordering"
+  ],
+  "chosen": "sort ascending by generalized kurtosis, i.e. the last column carries the maximal generalized kurtosis",
+  "rationale": "The sentence 'the last invariant component' is only meaningful under a documented ordering; the R ICS convention orders by generalized kurtosis, and putting the extremal component last is what makes the figure read as described.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "reveals the underlying hyperplane structure on the last invariant component",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "tcovAxis (Tyler, 2009) is a fixed-point M-estimator of shape; the paper specifies neither its initialization, convergence tolerance, iteration cap, nor how it handles location for pairwise differences.",
+  "options": [
+   "fixed-point Tyler iteration on pairwise differences, location fixed at the sample mean, init = sample covariance rescaled to unit determinant, max_iter=100, tol=1e-6",
+   "same but location estimated jointly / init = identity matrix",
+   "single-step (one iteration) approximation"
+  ],
+  "chosen": "pairwise differences of all observation pairs, location fixed at the sample mean, initialization at the sample covariance scaled to unit determinant, max_iter=100, tol=1e-6 on the shape matrix",
+  "rationale": "Standard Tyler fixed-point scheme; with 3-D RANDU data it converges in a handful of iterations, so the exact cap is not decisive, but it must be fixed and reported.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The denominator convention of the 'cov' scatter (classical covariance) is not stated.",
+  "options": [
+   "1/n (maximum-likelihood, sklearn-style)",
+   "1/(n-1) (unbiased)"
+  ],
+  "chosen": "1/n",
+  "rationale": "Matches scikit-learn's covariance and is the usual scatter-matrix convention in the ICS literature; irrelevant asymptotically and harmless for the qualitative figure.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether the raw RANDU coordinates are centered/scaled before ICS, or fed in as generated.",
+  "options": [
+   "pass X = generate_randu() directly to fit_transform",
+   "standardize each column first",
+   "center only"
+  ],
+  "chosen": "pass the generated data directly, no standardization",
+  "rationale": "The example code is exactly X_ics = ics.fit_transform(X) on the generator output, and ICS is affine equivariant so pre-scaling only changes numerical conditioning.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Eigenvector signs are arbitrary, so the orientation of the plotted components is not reproducible from the paper.",
+  "options": [
+   "leave solver signs",
+   "flip sign so the component with largest |value| is positive",
+   "flip sign so each component's sum is positive"
+  ],
+  "chosen": "leave solver signs; judge the figure only up to axis reflection",
+  "rationale": "The claim is about banding appearing in a component, which is sign-invariant; fixing signs would be an invented convention.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "No numeric criterion is given for 'reveals the hyperplane structure'; the evidence in the paper is a scatter plot with no metric, threshold or statistic.",
+  "options": [
+   "visual inspection of the scatter plot of invariant components, compared side-by-side with PCA",
+   "quantitative proxy: number of well-separated parallel bands / within-band spacing regularity in the last component",
+   "any one-dimensional projection showing discrete clumping"
+  ],
+  "chosen": "visual side-by-side inspection (ICS panel vs PCA panel), documented with the rendered figure and an optional band-count description",
+  "rationale": "The paper's claim is purely visual; inventing a scoring statistic would exceed the source, so the check stays qualitative and reproducible via the saved plot.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "invariant components computed via ICSpyLab revealing the hyperplane alignments",
+  "page": 4
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Which pairs of components Figure 1 actually plots (all three, or the first two, or first vs last) is not specified in the caption or text.",
+  "options": [
+   "scatter of IC1 vs IC2",
+   "scatter of IC1 vs the last IC",
+   "a 3-panel / 3-D view of all components"
+  ],
+  "chosen": "plot the components pairwise as a small matrix (or at least IC1 vs last IC) so that the banding cannot be hidden by the panel choice",
+  "rationale": "Since the claim concerns the last component, the plotting choice must guarantee that component is visible; showing the pair matrix removes the ambiguity.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ }
+]

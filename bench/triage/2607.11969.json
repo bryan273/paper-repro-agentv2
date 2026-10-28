@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "At N=1 (single honest run), the fraction of UCR Anomaly Archive series on which a pure no-skill detector reaches ≥90% of the SOTA reference is 0.11 for affiliation-F1 (Table 2, row affiliation-F1, column rate @N=1).",
+  "table_ref": "Table 2, row 'affiliation-F1', column 'rate @N=1'",
+  "dataset": "UCR Anomaly Archive (250 univariate series, cropped to 40k points)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 180,
+  "basis": "Requires re-implementing the full pipeline (six real detectors, 41 no-skill attempts, affiliation metric, SOTA reference) from scratch since no code link is given; UCR data is public but large (250 series, up to 900k points, cropped to 40k), and affiliation computation over 250 series × 41 attempts × 15 thresholds is CPU-heavy but feasible in a few hours."
+ },
+ "blockers": [
+  "No code link in the PDF; harness is only 'provided with this submission as supplementary material', not publicly linked",
+  "Must re-implement six real detectors (Matrix Profile, Isolation Forest, LOF, PCA, kNN, AR) and the affiliation metric from authors' frozen commits",
+  "UCR Anomaly Archive download and preprocessing (cropping, deduplication) must be replicated"
+ ],
+ "suitable": false,
+ "id": "2607.11969",
+ "title": "Did We Actually Fix It? An Independent Adversarial Stress-Test of Post-Point-Adjustment Evaluation Metrics for Time-Series Anomaly Detection",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

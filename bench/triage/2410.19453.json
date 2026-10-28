@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "ShifCon improves low-resource language performance on XCOPA for XGLM564M from 52.7 (MSFT) to 55.8 (ShifCon), a +3.1 point gain.",
+  "table_ref": "Table 2, XGLM564M row, XCOPA Low column",
+  "dataset": "XCOPA (low-resource languages subset: Thai, Swahili, etc.)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 10,
+  "basis": "Training XGLM564M with ShifCon requires 4xA100 GPUs for ~8 hours per run (3 seeds), plus data preprocessing and evaluation; on a CPU-only laptop this is infeasible."
+ },
+ "blockers": [
+  "No code or model checkpoints released",
+  "Requires 4xA100 GPUs for training",
+  "Training involves multiple stages (MSFT then ShifCon) and 3 random seeds",
+  "Evaluation requires running inference on multiple multilingual benchmarks"
+ ],
+ "suitable": false,
+ "id": "2410.19453",
+ "title": "ShifCon: Enhancing Non-Dominant Language Capabilities with a Shift-based Multilingual Contrastive Framework",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

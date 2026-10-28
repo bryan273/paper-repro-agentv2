@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "SOC baseline achieves 67.5 J&F on Ref-Youtube-VOS validation set",
+  "table_ref": "Table 1, row 'SOC'",
+  "dataset": "Ref-Youtube-VOS validation set"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RobertLuo1/iccv2023",
+  "https://github.com/RobertLuo1/iccv2023_RVOS_Challenge"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 720,
+  "gpu_speedup": 20,
+  "basis": "Training SOC (Video Swin Transformer + RoBERTa) for 30 epochs on RefCOCO + Ref-Youtube-VOS and evaluating on 202 validation videos requires a GPU; on CPU-only laptop this is impractical, and even with a GPU it takes many hours."
+ },
+ "blockers": [
+  "Requires training SOC on RefCOCO and Ref-Youtube-VOS, which needs a GPU",
+  "Ref-Youtube-VOS dataset is large (tens of GB) and requires registration/download",
+  "No pretrained SOC checkpoint is linked in the paper; only challenge solution code is provided"
+ ],
+ "suitable": false,
+ "id": "2401.00663",
+ "title": "1st Place Solution for 5th LSVOS Challenge: Referring Video Object Segmentation",
+ "pages": 4,
+ "model": "DeepSeek-V4.1-Flash"
+}

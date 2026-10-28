@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "SONO score of nominal outlyingness for outliers on the Solar Flare dataset (or comparable UCI dataset), as reported in the paper's application section.",
+  "table_ref": "Figure 9 / Section 5.2 (UCI datasets)",
+  "dataset": "Solar Flare (UCI Machine Learning Repository)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/EfthymiosCosta/SONO_Sims",
+  "https://cran.r-project.org/package=SONO"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "The method is a combinatorial itemset search on small UCI datasets (hundreds of rows, <20 nominal variables); the R package SONO implements the algorithm, so a clean re-run on Solar Flare should take minutes on a laptop."
+ },
+ "blockers": [
+  "The linked GitHub repository only contains simulation code, not the UCI application scripts; the R package SONO (CRAN) may need to be used instead.",
+  "Exact reproduction of the reported scores may require matching hyperparameter choices (alpha, r) not fully specified in the paper."
+ ],
+ "suitable": true,
+ "id": "2408.07463",
+ "title": "A novel framework for quantifying nominal outlyingness",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

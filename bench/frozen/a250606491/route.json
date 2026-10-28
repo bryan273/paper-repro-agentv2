@@ -1,0 +1,37 @@
+{
+ "route": "full_release",
+ "why": "The repository contains the authors' R package plus example scripts for the normal-data simulations, including seeded n=500/n=5000/n=50000 cases. The target C1 needs only a simulated N(0,1) sample and the released Chauvenet fence implementation, so no missing data or weights must be rebuilt.",
+ "repo": "https://github.com/tiejuntong/ChauBoxplot",
+ "entrypoints": [
+  "Examples/Section5_n500.R",
+  "Examples/Section4_normal.R"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "R is not listed in the machine inventory; R and the ChauBoxplot package must be installed, but this is a small environment step, not a code-release blocker."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "A few minutes including installing R/package; the n=500 seeded simulation itself is sub-second.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.2,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "One seeded standard-normal simulation of length 500 with two contaminated points, then a count outside the released Chauvenet/Tukey fences; after R and the small package are installed, the experiment is sub-second."
+ },
+ "repo_info": {
+  "url": "https://github.com/tiejuntong/ChauBoxplot",
+  "cloned": true,
+  "n_files": 81,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

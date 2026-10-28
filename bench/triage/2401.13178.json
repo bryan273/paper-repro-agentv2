@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GPT-4 achieves a progress rate of 65.5 on the ALF (AlfWorld) task.",
+  "table_ref": "Table 3, row GPT-4, column ALF (progress rate)",
+  "dataset": "AlfWorld (ALF) subset of AgentBoard"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hkust-nlp/AgentBoard"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires installing the AgentBoard framework and AlfWorld environment, downloading the AlfWorld dataset, and running GPT-4 via API on the ALF subset; the main cost is API calls and environment setup, not local compute."
+ },
+ "blockers": [
+  "Requires OpenAI API key for GPT-4 (closed-source model)",
+  "Potential API costs for running GPT-4 on many episodes",
+  "AlfWorld environment setup may be complex (dependencies, text-based simulator)"
+ ],
+ "suitable": false,
+ "id": "2401.13178",
+ "title": "AgentBoard: An Analytical Evaluation Board of Multi-turn LLM Agents",
+ "pages": 38,
+ "model": "DeepSeek-V4.1-Flash"
+}

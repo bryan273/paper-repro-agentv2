@@ -1,0 +1,190 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The IBM CSV has blank TotalCharges values for new customers, but the paper does not state how to coerce or impute them before min-max scaling.",
+  "options": [
+   "coerce to numeric and impute 0 when tenure is 0",
+   "coerce and median-impute",
+   "drop rows with blank TotalCharges"
+  ],
+  "chosen": "coerce TotalCharges to numeric and impute blank/NaN as 0 before scaling",
+  "rationale": "Blank TotalCharges correspond to new customers with tenure 0, so 0 preserves the known billing relationship and retains all 7,043 records.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "No random seed is stated for the stratified split, SMOTE, Random Forest, or cross-validation.",
+  "options": [
+   "42",
+   "0",
+   "do not fix a seed"
+  ],
+  "chosen": "42 for all stochastic steps",
+  "rationale": "A fixed seed is needed for deterministic reproduction; the paper reports only point estimates and fold means.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper states min-max scaling but not whether the scaler is fit before or after the train-test split.",
+  "options": [
+   "fit on the training partition only and transform test",
+   "fit on the full dataset before splitting"
+  ],
+  "chosen": "split first, fit MinMaxScaler on the training partition only, and transform the test partition",
+  "rationale": "Avoids test-set leakage and follows standard leakage-safe reproduction practice, though min-max ranges may differ slightly from the paper.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Continuous features are min-max scaled to [0,1]. A stratified 80/20 train–test split preserves the class ratio",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper does not specify whether SMOTE is applied before or after min-max scaling.",
+  "options": [
+   "scale training data, then apply SMOTE",
+   "apply SMOTE, then scale",
+   "scale the full dataset, split, then apply SMOTE to training"
+  ],
+  "chosen": "split, fit scaler on training, transform train/test, then apply SMOTE to the training partition only",
+  "rationale": "Prevents synthetic points from influencing the scaler and keeps all test data untouched.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "SMOTE is applied exclusively to training data: synthetic minority instances are interpolated",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Only L2 regularisation is stated for Logistic Regression; solver, C, max_iter, and class_weight are unspecified.",
+  "options": [
+   "scikit-learn lbfgs, C=1.0, max_iter=1000, class_weight=None",
+   "liblinear, C=1.0",
+   "tune C via cross-validation"
+  ],
+  "chosen": "scikit-learn LogisticRegression(penalty='l2', C=1.0, solver='lbfgs', max_iter=1000, class_weight=None)",
+  "rationale": "Standard default L2 baseline; class_weight is unnecessary because SMOTE already balances the training partition.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Logistic Regression (l2 regularisation) serves as the interpretable linear baseline",
+  "page": 3
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The paper does not state whether one-hot encoding drops a reference level.",
+  "options": [
+   "keep all levels (drop_first=False)",
+   "drop the first level per categorical feature"
+  ],
+  "chosen": "keep all levels (drop_first=False)",
+  "rationale": "Only keeping all levels yields the paper's stated 40-dimensional feature space and matches LinearExplainer's use of the design matrix.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The mapping of yes/no and gender categories to 0/1 is not specified.",
+  "options": [
+   "Yes=1, No=0; Male=1, Female=0",
+   "Yes=0, No=1; Female=1, Male=0",
+   "use pandas category codes"
+  ],
+  "chosen": "Yes=1 and No=0; Male=1 and Female=0; use SeniorCitizen as provided",
+  "rationale": "Binary recoding flips coefficient signs but not predicted probabilities or AUC, so impact on C1 is low.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Gender and binary yes/no features (Partner, Dependents, PhoneService, PaperlessBilling) are label-encoded to {0,1}.",
+  "page": 2
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The paper reports precision, recall, and F1 but does not explicitly define which class is positive.",
+  "options": [
+   "churn=1 is positive",
+   "retained=1 is positive"
+  ],
+  "chosen": "churn=1 is positive for precision, recall, F1, and AUC",
+  "rationale": "Matches the churn-risk use case and the reported LR recall of 78.34%, which targets churners.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "The binary outcome variable indicates whether each customer churned",
+  "page": 2
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "No XGBoost or LightGBM hyperparameters are reported beyond using the official libraries.",
+  "options": [
+   "library defaults with fixed random_state",
+   "small grid search",
+   "fixed 300 trees, learning rate 0.05, depth 6"
+  ],
+  "chosen": "official library defaults with random_state=42 and the 0.5 threshold, no tuning",
+  "rationale": "The paper gives no search procedure; defaults are the only reproducible choice, but exact 78.42% and 0.8306 may not reproduce.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "the pipeline uses the official XGBoost and LightGBM libraries directly",
+  "page": 3
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The paper reports 5-fold stratified cross-validation with scaling and SMOTE refit inside each fold but not the fold seed or whether models share folds.",
+  "options": [
+   "shared StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+   "different seeds per model",
+   "no shuffle"
+  ],
+  "chosen": "shared shuffled stratified 5-fold with seed 42; refit scaler and SMOTE inside each training fold",
+  "rationale": "The paper explicitly refits inside each fold to avoid leakage; shared folds make model comparisons paired.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we ran 5-fold stratified cross-validation with feature scaling and SMOTE refit inside each fold to preclude leakage",
+  "page": 4
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The paper warns that SMOTE-trained probabilities are inflated relative to deployment prevalence but does not apply recalibration to the reported results.",
+  "options": [
+   "use raw SMOTE-trained probabilities for metrics and tiering",
+   "apply Platt/isotonic recalibration before tiering"
+  ],
+  "chosen": "use raw probabilities for reported AUC and tier distribution; do not recalibrate",
+  "rationale": "Matches the reported 0.8411 and tier percentages; calibration is presented only as a production recommendation.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "its output probabilities are inflated relative to the 26.5% deployment prevalence",
+  "page": 5
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The top-20% business-impact precision and recall appear to be computed on the full 7,043 cohort, not explicitly on the 1,409 held-out test set.",
+  "options": [
+   "treat as illustrative full-cohort projection",
+   "recompute on the held-out test set only",
+   "use cross-validated full-cohort predictions"
+  ],
+  "chosen": "treat the 937/1,408 calculation as an illustrative full-cohort projection, not a held-out test metric",
+  "rationale": "The paper says full cohort of 7,043 and calls the business figures illustrative, so this should not be targeted as a reproduction metric.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Targeting the top 20% of the subscriber base by predicted churn probability (approximately 1,408 customers from the full cohort of 7,043)",
+  "page": 5
+ }
+]

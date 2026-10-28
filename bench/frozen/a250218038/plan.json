@@ -1,0 +1,96 @@
+{
+ "approach": "Reproduce the matched target C1 only: the proposed full method on 1,000 no-outlier IID standard-normal series rescaled to mean 0 and sd 1/20, mean function μ1, n=50, horizon 11n=550. The implementation will be a thin wrapper around the authors' pure NumPy/SciPy code, calling experiments.sequential_test (the code's name for the full method) and data_generation.py for μ1 rather than rewriting the estimator. reproduce.py will seed all stochastic steps, parallelize over series, pool decisions on indices n+1..11n, compute 100*TN/(TN+FP), and write results/metrics.json checked against 98.3% ± 1.0 percentage point. Optional C2-C5 can reuse the same wrapper only if the C1 run finishes well inside budget; C6-C8 need external BOM data and are out of scope for the matched target.",
+ "files": [
+  {
+   "path": "c1_runner.py",
+   "purpose": "Thin per-series wrapper: imports the authors' data_generation.py and experiments.sequential_test; generates one μ1 IID N(0,1) no-outlier series rescaled to sd 1/20; returns rejection flags for test indices n+1..11n. Does not reimplement the local-linear/Jackknife/GEV method.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R8",
+    "R9",
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: imports c1_runner, sets deterministic seed(s), runs 1,000 series (or 5 with --smoke), aggregates pooled specificity, writes results/metrics.json with the C1 comparison to 98.3% ± 1.0.",
+   "requirement_ids": [
+    "R7",
+    "R10",
+    "R12",
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "target_claim": "C1",
+  "expected_paper_value": "98.3 % specificity (Table 1 Panel A, Ours full, μ1, n=50)",
+  "tolerance_abs": "1.0 percentage point (claim contract Rule 2)",
+  "repo": "https://github.com/FlorianHeinrichs/outlier_detection",
+  "python": "3.12",
+  "core_deps": "numpy, scipy, pandas, matplotlib, tueplots, tqdm; avoid rpy2/tensorflow/river unless only needed for unused competitor imports (route blockers)",
+  "method_name": "full method; call experiments.sequential_test per README/route; verify it is the all-observations-up-to-i full version (R13)",
+  "mean_function": "μ1 exactly as defined in authors' data_generation.py; do not reimplement (paper Sec 3.1)",
+  "n": "50 (C1; paper Table 1)",
+  "horizon": "11*n = 550 (paper Sec 3.1 and C1 config_for_value)",
+  "n_series": "1000 (R12)",
+  "outlier_fraction": "0 for C1; no outliers (C1; R1)",
+  "error_distribution": "IID N(0,1) rescaled to mean 0 and sd 1/20 (R14)",
+  "kernel": "one-sided quartic K(x)=15/8(1-x^2)^2 supported on [-1,0] (R8)",
+  "estimator": "one-sided local-linear smoother with Jackknife tilde_mu_n(t)=2*hat_mu_{h_n/sqrt(2)}(t)-hat_mu_{h_n}(t) (R2,R3)",
+  "include_current_observation": "yes, observations j<=i are allowed in the full estimator (A11,R13)",
+  "bandwidth_selection": "5-fold cross-validation minimizing MSE (R9)",
+  "cv_folds": "5 (R9)",
+  "cv_split": "contiguous time blocks, not random shuffle (A4)",
+  "bandwidth_grid_t_units": "use authors' default grid if present; otherwise [0.10,0.15,0.20,0.25,0.30,0.40,0.50] in t-units (A3; high-risk guess)",
+  "alpha": "0.01 joint level (R10)",
+  "alpha_schedule": "constant alpha_i = alpha = 0.01 for all tests (A10,R7)",
+  "gev_estimation": "maximum likelihood estimation via scipy.stats.genextreme.fit or authors' quantiles.py (A1,R5)",
+  "gev_shape_convention": "scipy c = -gamma relative to paper G(gamma,mu,sigma), or implement paper parametrization directly (A8)",
+  "gev_block_size": "r = floor(sqrt(n)) = 7 for n=50 (A2; Remark 4)",
+  "gev_block_maxima": "rolling block maxima of size r over the initial n residuals, then scale to block size n using Assumption 3/Remark 4 (A2)",
+  "initial_outlier_free_period": "first n=50 observations assumed outlier-free and used only for GEV calibration (R6,A6)",
+  "evaluation_indices": "i=n+1,...,11n, i.e. 500 test points per series for C1; exclude first n (A6)",
+  "decision_rule": "reject H(i)_0 if |X_i - tilde_mu_n(i/n)| > q_{1-alpha_i}(GEV(theta_n)) (R4)",
+  "aggregation": "pool all normal test observations across all 1000 series; specificity = 100*(1 - #rejections/#normal_test_points) (A5)",
+  "seed": "0 base seed; use SeedSequence(0).spawn(n_series) or seed+i per series (A9)",
+  "parallel_workers": "min(16, os.cpu_count()) for the full C1 run; efficiency assumption, not a paper value",
+  "metric_output": "results/metrics.json",
+  "smoke_n_series": "5",
+  "optional_extended_claims": "C2-C5 may reuse wrapper after C1 passes; C6-C8 require BOM data and are out of scope"
+ },
+ "steps": [
+  "Clone the authors' repository if it is not already present: git clone https://github.com/FlorianHeinrichs/outlier_detection.git and cd into it.",
+  "Install core dependencies with python -m pip: numpy scipy pandas matplotlib tueplots tqdm. Do not install or import competitor stacks for C1 unless required by an author import; if experiments.py imports alternative_methods and that fails on optional rpy2/tensorflow/river, add a minimal sys.modules/import shim in reproduce.py or c1_runner.py rather than editing author files.",
+  "Inspect experiments.py, data_generation.py, experiments_config.py, jackknife.py, and quantiles.py to read exact function signatures, the μ1 generator, default bandwidth grid, GEV fitting code, and whether sequential_test is the full method. Record the actual call signature in c1_runner.py.",
+  "Implement c1_runner.py: a function run_one_series(series_seed) that calls the authors' data generator for μ1 with IID N(0,1) errors rescaled to mean 0 and sd 1/20, no outliers, length 550; calls experiments.sequential_test with alpha=0.01, full estimator, quartic kernel, 5-fold CV bandwidth; returns a boolean rejection array for indices n+1..11n.",
+  "Implement reproduce.py: parse --smoke (5 series) versus default (1000 series); set base seed 0 and deterministic per-series seeds; parallelize over series with multiprocessing.Pool using an if __name__ == '__main__' guard; collect rejection counts.",
+  "Run a smoke test on 5 series before touching the full run: python reproduce.py --smoke. Confirm data shapes, finite residuals, finite GEV fits, a selected bandwidth inside the grid, and exactly 5*500=2500 test decisions.",
+  "Run the full C1 experiment with python reproduce.py. Use min(16, cpu_count) workers; save optional per-series rejection counts to results/c1_per_series.csv for audit.",
+  "Aggregate specificity by pooling all normal test decisions: specificity_percent = 100 * (1 - total_rejections / (n_series * (11*n - n))). For C1 the denominator is 1000*500 = 500,000 test points.",
+  "Write results/metrics.json with claim_id C1, metric specificity_percent, value, paper_value 98.3, tolerance_abs 1.0, unit %, n, horizon, n_series, test_points, alpha, seed, runtime, selected-bandwidth summary, and status reproduced/not_reproduced if abs(value-98.3)<=1.0.",
+  "Check the tolerance. If outside 1.0 point, run diagnostics only: verify full-vs-partial function choice, GEV shape sign, use of rolling vs disjoint maxima, exclusion of first n from the metric, bandwidth CV split, and seed handling. Do not tune undocumented choices to hit the paper value; document any unresolved discrepancy.",
+  "If C1 passes and more than 15 minutes remain, optionally run C2-C5 via the same wrapper with n=200 or contaminated settings using A7 for outlier heights. Otherwise stop; C6-C8 are out of scope because they require external BOM data."
+ ],
+ "smoke_test": "python reproduce.py --smoke. This runs 5 series, n=50, horizon=550, no outliers, and should finish in about 1-2 minutes on CPU. Success criteria: generated series are finite and length 550; GEV fit finite; selected bandwidth is within the configured grid; exactly 2500 rejection decisions are produced; results/metrics.json is written. The smoke specificity is not required to be within 1.0 of 98.3, only the data flow must be proven.",
+ "intermediate_checks": [
+  "After install, verify imports without competitor stacks: python -c \"import experiments, data_generation; print('ok')\" after any optional-import shim; if this fails, resolve import errors before writing the runner.",
+  "Confirm in experiments.py that sequential_test is the full all-observations-up-to-i method and partial_test is the partial method; the README wording is ambiguous, so check the code/docstring.",
+  "Generate one μ1 no-outlier series and check shape (550,), no NaNs/infs, empirical sd close to 0.05 after rescaling, and that μ1 is not constant.",
+  "Run one series through c1_runner.py and check rejection flags are boolean and have length 500 after excluding the first n=50 observations.",
+  "Inspect one GEV calibration: quantile finite, shape parameter not absurd, rolling maxima count equals n-r+1 for r=floor(sqrt(50))=7, and selected bandwidth h is one of the grid values.",
+  "Check the full-run denominator is 1000*(11*50-50)=500,000 test points for C1; expected non-rejections at 98.3% is about 491,500.",
+  "Run a sanity baseline on 10-20 series before the full run: no-outlier specificity should be high (roughly >95%); if it is near 0% or 100%, suspect reversed GEV shape sign, wrong quantile, including first n in the metric, or a broken bandwidth CV.",
+  "Check the distribution of CV-selected bandwidths across a small subset; if essentially all at the grid boundary, note it and use the authors' default grid if available rather than expanding the grid ad hoc.",
+  "Before the full run, time the smoke run and estimate full runtime as (n_series/smoke_n_series) times smoke per-series cost; adjust workers to keep within budget."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup (clone if needed, pip install, import shim inspection): ~5-8 minutes. Smoke run (5 series): ~2-3 minutes. Full C1 run (1000 series, n=50, horizon=550): ~15-25 minutes with 8-16 workers, or ~25-30 minutes single-process if multiprocessing is unstable. Aggregation and metrics.json: ~1 minute. Keep ~5 minutes buffer for import issues and tolerance diagnostics. Do not start optional C2-C5 until C1 has produced metrics.json inside tolerance and at least ~15 minutes remain; C6-C8 are explicitly skipped in this budget because they require external BOM data."
+}

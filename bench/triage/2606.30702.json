@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "TabPFN v2 achieves R2=0.383 on CRP prediction from accelerometry and lifestyle features (test set N=276).",
+  "table_ref": "Table 2, CRP row, TabPFN v2 column, R2",
+  "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381, derived from NHANES 2003-2006)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (N=1,381, 18 features); TabPFN v2 inference on CPU with 828 context examples; ridge and XGBoost also CPU; all code and derived dataset are public."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.30702",
+ "title": "Accelerometry-Derived Digital Biomarkers for Cardiometabolic Risk: A Population-Representative Tabular Benchmark with Uncertainty Quantification",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

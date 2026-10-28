@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "WAND achieves mean ROC-AUC 0.777 (best mean Friedman rank 5.64) across 47 ADBench tabular datasets, at parity with 16 unsupervised baselines",
+  "table_ref": "Table II",
+  "dataset": "ADBench (47 tabular tasks, public mirror)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Output-Sensitive/wand"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Paper reports full 47-dataset WAND scoring in ~1.7 min single-CPU; the cost is downloading ADBench (up to n=619k, d=1555) and running 16 PyOD baselines with 5-min budgets and 3 seeds, plus reimplementing/validating the method from the repo."
+ },
+ "blockers": [
+  "Repo may not contain exact configs/scripts for the 47-dataset table",
+  "16 PyOD baselines with per-method budgets and 3 seeds add wall-clock",
+  "Large ADBench rows (donors 619k, census 299k) need download and memory care"
+ ],
+ "suitable": true,
+ "id": "2609.03826",
+ "title": "Witnesses Explain Anomalies",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

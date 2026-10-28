@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "CoR-Math-7B achieves 66.7% zero-shot Pass@1 on the MATH benchmark.",
+  "table_ref": "Table 3",
+  "dataset": "MATH"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/microsoft/CoR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": 10,
+  "basis": "Reproducing the target requires training a 7B model on a 167k multi-paradigm dataset, which involves generating Lean proofs and Python code, and then evaluating on MATH; this is a multi-day effort on a single GPU and likely infeasible on a laptop."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Training requires significant GPU resources (e.g., 80GB VRAM)",
+  "Dataset construction requires proprietary LLM APIs (GPT-4o) and Lean prover",
+  "Evaluation requires running a 7B model on 5000 MATH problems"
+ ],
+ "suitable": false,
+ "id": "2501.11110",
+ "title": "Chain-of-Reasoning: Towards Unified Mathematical Reasoning in Large Language Models via a Multi-Paradigm Perspective",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

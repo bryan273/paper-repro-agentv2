@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Outlier detection on GeneticSequences: the two series with highest outlier scores (sum of distances based on total correlation and marginal probabilities) are identified as outliers, as shown in the boxplot.",
+  "table_ref": "Figure 7 (boxplot of outlier scores) and the preceding code block; no table number, but the result is the identification of two anomalous genetic sequences.",
+  "dataset": "GeneticSequences (32 DNA sequences, 4 categories)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://cran.r-project.org/package=ctsfeatures"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "The target is a simple R script using the ctsfeatures package on 32 short DNA sequences; all computations are trivial and run in seconds on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2304.12332",
+ "title": "Analyzing categorical time series with the R package ctsfeatures",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

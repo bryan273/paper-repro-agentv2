@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Outlier detection performance (e.g., TPR/FPR or precision) of the ssMRCD method on simulated data (Setup 1 or 2) at a fixed contamination level, as reported in the simulation tables/figures",
+  "table_ref": "Section 4.2 / Figure 5-9 (simulation outlier detection results)",
+  "dataset": "Simulated data (Setup 1: moving covariance grid, n=1681, p=5; Setup 2: Matérn random fields)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code is released; the ssMRCD algorithm (detMCD per neighborhood, C-steps, MRCD regularization, weighting matrix, outlier detection with adjusted boxplot) must be reimplemented from scratch, and the simulation study involves many repetitions (100 reps) across parameter grids, each run taking tens of seconds to minutes per Figure 4."
+ },
+ "blockers": [
+  "No code released; full reimplementation of ssMRCD, MRCD, detMCD, and outlier detection pipeline required",
+  "Simulation study involves many repetitions and parameter combinations, making a faithful reproduction of a headline number time-consuming",
+  "Relies on R packages (rrcov/MRCD, robustbase) that must be identified and installed"
+ ],
+ "suitable": false,
+ "id": "2305.05371",
+ "title": "Spatially smoothed robust covariance estimation for local outlier detection",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

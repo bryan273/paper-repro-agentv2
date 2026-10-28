@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Number of incorrectly classified observations by the proposed AET method (0 misclassifications) on a single Gaussian sample of size n=800, p=4, with mean shift a1",
+  "table_ref": "Table 1, row AET, column a1",
+  "dataset": "Synthetic multivariate Gaussian sample (n=800, p=4), generated per Section 3.2 with covariance (25) and mean shift a1 (26)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Synthetic data generated from given covariance/mean vectors; only needs R with robmed (covHuber) and standard threshold formulas, all tiny (n=800, p=4), so a few minutes of compute plus install."
+ },
+ "blockers": [
+  "No code released; must reimplement Huber covariance estimator (covHuber from robmed) and all four threshold formulas from the paper",
+  "Exact reproduction of the single-realization count (0) depends on the random seed, which is not specified"
+ ],
+ "suitable": true,
+ "id": "2607.15637",
+ "title": "Asymptotically exact threshold for detecting anomalies in multivariate Gaussian data with application to time series",
+ "pages": 35,
+ "model": "DeepSeek-V4.1-Flash"
+}

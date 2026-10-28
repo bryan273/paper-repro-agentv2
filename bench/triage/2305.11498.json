@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "ProCE (Gau Regularization) achieves 76.80 F1 on ACE 2005 Event Detection, compared to 70.87 F1 for DMBERT.",
+  "table_ref": "Table 1, row '+Regularization', column 'ED F1'",
+  "dataset": "ACE 2005 English subset"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 300,
+  "gpu_speedup": 5,
+  "basis": "Estimate assumes reimplementing the full ProCE framework (BERT-base fine-tuning with Gaussian bias, recoupling, and Wasserstein regularization) from scratch on ACE 2005, which requires a GPU for reasonable training time and access to the LDC-licensed dataset."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "ACE 2005 dataset requires LDC license and is not freely downloadable",
+  "Requires reimplementing complex probabilistic bias, recoupling, and Wasserstein regularization from scratch",
+  "Training BERT-base on ACE 2005 is slow on CPU; GPU strongly recommended"
+ ],
+ "suitable": false,
+ "id": "2305.11498",
+ "title": "Recouple Event Field via Probabilistic Bias for Event Extraction",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

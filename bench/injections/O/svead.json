@@ -1,0 +1,9 @@
+[
+ {
+  "at": "reader->router",
+  "type": "omission",
+  "path": "requirements.4",
+  "marker": "INJ-O1",
+  "what": "requirement R5 (skip points whose cell holds only the anchor) removed"
+ }
+]

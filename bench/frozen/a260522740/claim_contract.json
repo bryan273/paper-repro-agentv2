@@ -1,0 +1,253 @@
+{
+ "title": "Ternary Decision Trees with Locally-Adaptive Uncertainty Zones",
+ "summary": "Standard CART commits every instance to one child with identical confidence whether it sits far from the split threshold or directly on it, so near-boundary instances are classified as if the learned threshold were certain. The paper augments each split node with an uncertainty zone of half-width δ derived locally from statistics already computed during CART split finding (five estimators: quality-plateau, class-overlap, gain-ratio, node-bootstrap, margin), and at prediction time instances inside the zone are flagged boundary-uncertain and receive a distance-weighted blend of both child subtrees under probabilistic routing. Across 71 of the 72 OpenML-CC18 datasets all five methods with probabilistic routing beat CART on decided accuracy (p ≤ 0.001), with the margin method recommended as the default for its efficiency η = 0.104 at a 16.7% boundary-uncertain rate, although on credit-g margin is the one documented case where decided accuracy (0.6808) falls below the CART baseline (0.7130).",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Mean decided accuracy of the margin δ method with probabilistic routing across the 71 evaluated OpenML-CC18 datasets (5-fold CV mean).",
+   "metric": "Decided accuracy (mean over datasets)",
+   "dataset": "OpenML-CC18 (71 of 72 tasks; task 167124 excluded)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.7397,
+   "unit": "% accuracy as fraction (0.7397 = 73.97% decided accuracy)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'Margin prob.', column 'Dec.Acc ± std'",
+   "config_for_value": "max_depth=4, probabilistic routing, δ from the margin method (Eq. 10), StandardScaler fitted per training fold, sklearn CART baseline, mean over per-dataset 5-fold CV decided accuracies",
+   "reported_spread": "±0.193 (std across the 71 datasets, not across repeated runs)",
+   "est_compute": "CPU (8-core AMD Ryzen 7 9700X, 32 GB RAM); authors report ~4h42m for the whole 11-combination CC18 sweep, so margin alone ≈30-60 min",
+   "quote": "Although class-overlap and gain-ratio achieve nominally higher decided accuracy (0.762 and 0.758 respectively) than margin (0.740)",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "Decided accuracy of the margin δ method with probabilistic routing on the credit-g (German credit) dataset, together with its boundary-uncertain rate.",
+   "metric": "Decided accuracy (and boundary-uncertain rate)",
+   "dataset": "OpenML-CC18 credit-g (German credit, N = 1,000, d = 20)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.6808,
+   "unit": "% accuracy as fraction (0.6808 = 68.08% decided accuracy; Undec% = 48.1%)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, dataset credit-g, row Margin, column Dec.Acc (also Table 5 credit-g row; Table 8 credit-g Margin prob. row)",
+   "config_for_value": "max_depth=4, probabilistic routing, δ from margin method (Eq. 10, distance from θ* to nearest cross-class example, clamped to ≤25% of feature range), features standardised within each fold, overall accuracy reported as 0.7130 with F1-Dec 0.584",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (N = 1,000, depth 4, 5 folds; margin δ is O(n) per node)",
+   "quote": "Margin is the only method and the only dataset in our experiments where decided accuracy falls below the CART baseline (0.681 vs. 0.713).",
+   "page": 17
+  },
+  {
+   "id": "C3",
+   "statement": "Efficiency ratio η = (Dec-Acc − CART-Acc)/Undec% of the margin method under probabilistic routing, the best of all 11 method/routing combinations on CC18.",
+   "metric": "Efficiency ratio η (accuracy gain per unit boundary-uncertain rate)",
+   "dataset": "OpenML-CC18 (71 tasks)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.104,
+   "unit": "accuracy gain per unit uncertainty rate (dimensionless)",
+   "higher_is_better": true,
+   "table_ref": "Section 6.1 text and Figure 3 (margin red circle); abstract",
+   "config_for_value": "Margin prob. with Dec.Acc 0.7397, CART 0.7217, Undec% 16.7; η computed from the per-dataset 5-fold means",
+   "reported_spread": null,
+   "est_compute": "Derived from the same runs as C1 and C4; no extra compute",
+   "quote": "The margin method achieves the best efficiency (0.104 accuracy gain per unit of boundary-uncertain flagging rate), wins on 42 of 72 datasets",
+   "page": 1
+  },
+  {
+   "id": "C4",
+   "statement": "Mean overall accuracy of the sklearn CART baseline (max_depth=4) across the 71 evaluated OpenML-CC18 datasets, used as the reference for all decided-accuracy comparisons.",
+   "metric": "Accuracy (all instances; baseline has Undec% = 0 so Acc = Dec-Acc)",
+   "dataset": "OpenML-CC18 (71 tasks)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.7217,
+   "unit": "% accuracy as fraction (0.7217 = 72.17%)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row 'CART (baseline) ref.', column 'Dec.Acc ± std'",
+   "config_for_value": "sklearn DecisionTreeClassifier(max_depth=4), StandardScaler fitted on training folds only, default impurity/other hyperparameters, mean over per-dataset 5-fold CV accuracies",
+   "reported_spread": "±0.194 (std across datasets)",
+   "est_compute": "CPU, a few minutes for 71 datasets × 5 folds at depth 4",
+   "quote": "We compare against sklearn CART (DecisionTreeClassifier, max_depth = 4) as the baseline.",
+   "page": 13
+  },
+  {
+   "id": "C5",
+   "statement": "Node-bootstrap δ method with probabilistic routing on the severely imbalanced mammography dataset: decided accuracy 0.9915 while flagging 10.8% of cases as boundary-uncertain (+0.71 points over the 0.9844 CART baseline).",
+   "metric": "Decided accuracy (with boundary-uncertain rate)",
+   "dataset": "Mammography (OpenML, N = 11,183, d = 6, 2.3% positive)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.9915,
+   "unit": "% accuracy as fraction (0.9915 = 99.15% decided accuracy; Undec% = 10.8%)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, dataset mammography, row Node-Bootstrap (Table 8 lists the same as prob. 0.9915 / 0.108)",
+   "config_for_value": "max_depth=4, probabilistic routing, δ_NB = std of the optimal threshold over B bootstrap resamples (B scaled with node size: 20 for n<2000, 15 for n<10000, 10 otherwise), features standardised per fold",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1-3 min (N = 11,183, depth 4, up to 20 bootstrap refits per node)",
+   "quote": "on mammography, node-bootstrap achieves +0.71% decided accuracy by flagging 10.8% of screening cases as boundary-uncertain.",
+   "page": 1
+  },
+  {
+   "id": "C6",
+   "statement": "Margin method on the twonorm Breiman benchmark: decided accuracy 0.7774 with an Undecided/Bayes ratio of 0.42 (Bayes error 2.3%), i.e. near-CART behaviour on geometrically clean synthetic data.",
+   "metric": "Decided accuracy and U/B ratio",
+   "dataset": "twonorm (N = 7,400, d = 20, Bayes error ≈2.3%)",
+   "split": "5-fold cross-validation (as all other experiments)",
+   "value": 0.7774,
+   "unit": "% accuracy as fraction (0.7774 = 77.74%); U/B ratio = 0.42",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row Margin, column twonorm (also Table 7)",
+   "config_for_value": "max_depth=4, probabilistic routing, δ from margin method, U/B = Undec%/Bayes error",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min (N = 7,400, depth 4); the authors report 346 s for all Breiman runs",
+   "quote": "The margin method produces U/B ratios of 0.09, 0.42, and 0.39 on the three datasets, all well below 1.0.",
+   "page": 15
+  },
+  {
+   "id": "C7",
+   "statement": "Node-bootstrap probabilistic routing on the Pima diabetes dataset: decided accuracy 0.8363 at a 63.4% boundary-uncertain rate, i.e. +9.8 points over the 0.7382 CART baseline.",
+   "metric": "Decided accuracy (with boundary-uncertain rate)",
+   "dataset": "diabetes (Pima, OpenML, N = 768, d = 8)",
+   "split": "5-fold stratified cross-validation",
+   "value": 0.8363,
+   "unit": "% accuracy as fraction (0.8363 = 83.63% decided accuracy; Undec% = 63.4%)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, dataset diabetes, row Node-Bootstrap (Table 8: prob. 0.8363 / 0.634)",
+   "config_for_value": "max_depth=4, probabilistic routing, δ_NB bootstrap std of θ*, B = 20 for nodes with n < 2000",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (N = 768, depth 4)",
+   "quote": "Node-bootstrap achieves +9.8% decided accuracy over the 0.738 baseline but flags 63.4% of patients as boundary-uncertain.",
+   "page": 17
+  }
+ ],
+ "match_target": {
+  "claim_id": "C2",
+  "why": "The user's hint pins the target to the margin method on credit-g (0.6808 decided accuracy at a 48.1% boundary-uncertain rate), which is the cheapest faithful reproduction in the paper: one N = 1,000 / d = 20 dataset, depth-4 trees, 5 folds, a zero-hyperparameter δ_M computed in O(n) per node, i.e. well under a minute on CPU. Reproducing it exercises the whole pipeline the paper's central result depends on (margin zone, probabilistic blending, decided/undecided accounting, per-fold standardisation), and it is the paper's documented failure case (margin falls below the 0.7130 CART baseline), so it also checks that the implementation reproduces the negative result rather than only the wins. The headline improvement itself is C1/C3 (margin mean decided accuracy 0.7397 and η = 0.104 over 71 CC18 datasets), which should be checked next if budget allows."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: decided accuracy is a bounded score and the paper prints it as a fraction in [0, 1] (0.6808), and the evaluation set is small — credit-g has N = 1,000, so a 5-fold test fold holds ~200 examples of which only ~52% are decided (~104 instances). Rule 1 does not apply: Table 2's ±0.193 is a standard deviation across datasets, not across repeated runs of this value, and Table 5 reports no per-dataset spread. Rule 2 does not apply because the test set is far below 2,000 examples. Band: 0.6808 ± 0.02 (i.e. 66.1%-70.1% decided accuracy); the boundary-uncertain rate should also land near 0.481 ± 0.02-0.05 since fold composition shifts which instances fall in the margin zone."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Each split node carries a ternary zone of half-width δ around the optimal threshold θ: decisive left if x_f ≤ θ − δ, decisive right if x_f > θ + δ, and Undec in between; δ = 0 must recover standard CART.",
+   "cite": "Section 3.2, Equation 1",
+   "quote": "Around the optimal threshold θ, we define an uncertainty zone of half-width δ",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "δ must be computed per node, at fit time, from quantities already produced by the standard CART split search (feature column, labels, weights, θ*, candidate-threshold quality scores) — no extra data passes and no external noise model.",
+   "cite": "Section 1 (Contributions) and Section 3.4 preamble",
+   "quote": "We derive δ locally at each node from quantities already computed during standard CART split finding, requiring no additional data and no external noise model.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "The margin estimator sets δ_M to the distance from θ* to the nearest training example of the opposite dominant class on either side (Eq. 10), using the dominant class of the left and right partitions as c_L and c_R.",
+   "cite": "Section 3.4, Margin (δ_M), Equation 10",
+   "quote": "Distance to nearest cross-class example Geometric lower bound on support of pe",
+   "page": 7
+  },
+  {
+   "id": "R4",
+   "stmt": "If the split is perfectly clean (no cross-class examples on either side), δ_M must fall back to the physical gap between the two adjacent data points straddling θ* rather than becoming 0 or infinite.",
+   "cite": "Section 3.4, Margin (δ_M), after Equation 10",
+   "quote": "When the split is perfectly clean (no cross-class examples), we fall back to the physical gap between the two adjacent data points straddling θ∗.",
+   "page": 9
+  },
+  {
+   "id": "R5",
+   "stmt": "Every δ must be non-negative and clamped to at most 25% of the (node) feature range to avoid degenerate zones.",
+   "cite": "Section 3.4 preamble",
+   "quote": "Each method returns a non-negative scalar δ, clamped to at most 25% of the feature range to prevent degenerate cases.",
+   "page": 8
+  },
+  {
+   "id": "R6",
+   "stmt": "Training is plain CART: all training examples are routed hard left (≤ θ*) or right (> θ*) during fitting; δ is only stored and used at prediction time.",
+   "cite": "Section 3.5, 'Probabilistic routing (binary tree structure)'",
+   "quote": "The tree is trained identically to standard CART, with all examples routed left (≤θ∗) or right (>θ∗) during fitting.",
+   "page": 9
+  },
+  {
+   "id": "R7",
+   "stmt": "At prediction, an instance inside a node's zone must be propagated to BOTH children with distance weights w_L = (θ + δ − x_f)/(2δ) and w_R = 1 − w_L, and the returned probability vector must be the weighted combination p̂ = w_L p̂_L + w_R p̂_R (recursively).",
+   "cite": "Section 3.5, probabilistic routing; Appendix G",
+   "quote": "Instances whose feature value falls within this range receive a prediction formed by distance-weighted blending of both child subtree outputs",
+   "page": 22
+  },
+  {
+   "id": "R8",
+   "stmt": "An instance is flagged boundary-uncertain (verdict Undec) if it entered a weighted combination at ANY node along its path; the verdict is a qualifier, never an abstention.",
+   "cite": "Section 3.5 and Section 3.6, Equation 11",
+   "quote": "The instance is flagged as boundary-uncertain if it enters the weighted combination at any node.",
+   "page": 9
+  },
+  {
+   "id": "R9",
+   "stmt": "Every instance, including Undec ones, must still receive a class prediction equal to the argmax of the (possibly blended) leaf probability vector.",
+   "cite": "Section 3.6",
+   "quote": "A standard class prediction is always produced by taking the argmax of the (possibly blended) leaf probability vector.",
+   "page": 9
+  },
+  {
+   "id": "R10",
+   "stmt": "Report Decided Accuracy as accuracy restricted to verdict-True instances and Boundary-Uncertain Rate as the fraction of instances with verdict Undec; also report overall accuracy on all instances.",
+   "cite": "Section 3.6 / Section 5.2 metrics paragraph",
+   "quote": "Decided Accuracy (accuracy restricted to decided instances) and Boundary-Uncertain Rate (fraction of instances receiving verdict Undec)",
+   "page": 10
+  },
+  {
+   "id": "R11",
+   "stmt": "Evaluation protocol: 5-fold stratified CV, StandardScaler fitted on the training part of each fold only and applied to the test fold, all trees at max_depth = 4.",
+   "cite": "Section 5.2, Experimental Protocol",
+   "quote": "All experiments use 5-fold stratified cross-validation. Features are standardised within each fold (StandardScaler fitted on training data only).",
+   "page": 13
+  },
+  {
+   "id": "R12",
+   "stmt": "The CART baseline must be sklearn DecisionTreeClassifier with max_depth = 4, evaluated on the identical folds and identical standardised features, so that Dec-Acc, Undec% and Acc.All are directly comparable.",
+   "cite": "Section 5.2, Experimental Protocol",
+   "quote": "We compare against sklearn CART (DecisionTreeClassifier, max_depth = 4) as the baseline.",
+   "page": 13
+  },
+  {
+   "id": "R13",
+   "stmt": "Seeds must be fixed at 42, and the software stack should match (Python 3.12, scikit-learn 1.3, numpy 1.24, scipy 1.10, openml 0.14).",
+   "cite": "Appendix E, Reproducibility",
+   "quote": "All experiments were implemented in Python 3.12 using scikit-learn 1.3 [17], numpy 1.24, scipy 1.10, and openml 0.14 [19].",
+   "page": 21
+  },
+  {
+   "id": "R14",
+   "stmt": "The efficiency metric, if reported, must be computed as η = (Dec-Acc − Acc_CART)/Undec% (reported in percent units), and should equal Dec-Acc − Accu.",
+   "cite": "Section 4.3, Proposition 3 and Section 6.1",
+   "quote": "We define the efficiency ratio η = (Dec-Acc −AccCART)/u as the decided accuracy gain per unit of boundary-uncertain rate.",
+   "page": 11
+  }
+ ],
+ "data": [
+  {
+   "name": "OpenML-CC18 benchmark suite (71 evaluated tasks incl. credit-g)",
+   "how_to_get": "OpenML Python package (openml 0.14): the OpenML-CC18 suite is retrievable via openml.study.get_suite(99); credit-g / German credit is OpenML dataset id 31 with 5-fold task id 31. Task 167124 (raw pixel image data, d = 3,072) is excluded."
+  },
+  {
+   "name": "Breiman synthetic benchmarks: waveform-5000, twonorm, ringnorm",
+   "how_to_get": "Available from OpenML by name (the paper states these are 'from OpenML'); search with openml.datasets.list_datasets(output_format='dataframe') and fetch by name."
+  },
+  {
+   "name": "Medical/financial datasets: diabetes (Pima), heart-c (Cleveland), mammography",
+   "how_to_get": "OpenML datasets named 'diabetes', 'heart-c' and 'mammography'; fetch with openml.datasets.get_dataset(<id>) after resolving ids by name via openml.datasets.list_datasets."
+  }
+ ],
+ "code_links": [
+  "https://github.com/smitswil/ternary_tree"
+ ],
+ "stated_compute": "Experiments were run on AMD Ryzen 7 9700X 8-Core Processor, 32GB RAM. Total benchmark runtime for the CC18 collection was approximately CC18: 16933s ( 4h 42m) Breiman: 346s ( 0h 5m) Medical: 29s.",
+ "paper_meta": {
+  "source": "2605.22740",
+  "kind": "arxiv",
+  "arxiv_id": "2605.22740",
+  "url": "https://arxiv.org/abs/2605.22740",
+  "title": "Ternary Decision Trees with Locally-Adaptive Uncertainty Zones",
+  "pages": 26
+ }
+}

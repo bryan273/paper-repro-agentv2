@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "S&S-RB method achieves F1-score of 93.25 on the australian dataset (vs 91.81 CV(F1) and 92.74 CV(Hinge)), with run time 0.71 s",
+  "table_ref": "Table 2",
+  "dataset": "australian (UCI/KeeL, 690 samples, 14 features, 2 classes)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "No code released; the S&S pipeline (kernel approximation via RKS/Tensor Sketch, S&S computation, lookup-table C selection, single SVM fit) plus the 5-fold CV grid-search baseline must be reimplemented from the paper text, then run on a small 690-sample dataset — CPU-only, minutes of actual compute but substantial reimplementation risk."
+ },
+ "blockers": [
+  "No code or configs released; S&S computation and kernel-approximation details (RKS/Tensor Sketch settings, kernel grid, C grid) must be reverse-engineered from text",
+  "Exact F1 depends on unspecified train/test split and kernel-parameter grid, so matching 93.25 exactly is unlikely",
+  "Table 1 S&S values appear internally inconsistent (e.g., balance/banana rows), complicating validation of the S&S computation"
+ ],
+ "suitable": true,
+ "id": "2305.10219",
+ "title": "Separability and Scatteredness (S&S) Ratio-Based Efficient SVM Regularization Parameter, Kernel, and Kernel Parameter Selection",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

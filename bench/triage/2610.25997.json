@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Sequential BiFLICKER attains overall ARI of 0.94 on the LastFM user-artist network (federated by country), close to centralized spectral clustering.",
+  "table_ref": "Section 6 (real data application, LastFM ARI = 0.94)",
+  "dataset": "LastFM user-artist bipartite network (Celma 2010), partitioned by country"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "basis": "No code is released and the exact LastFM preprocessing, country partitioning, and target-selection details are not specified, so the whole federated pipeline (local SVD calibration, sequential projected FLICKER, k-means, ARI) must be reimplemented from scratch; the matrix itself is small enough for CPU."
+ },
+ "blockers": [
+  "No code or configs released",
+  "LastFM dataset provenance/preprocessing and country partition not specified",
+  "Exact target singular-value selection and step-size choices must be reverse-engineered"
+ ],
+ "suitable": false,
+ "id": "2610.25997",
+ "title": "Federated Community Detection in Bipartite Networks",
+ "pages": 47,
+ "model": "DeepSeek-V4.1-Flash"
+}

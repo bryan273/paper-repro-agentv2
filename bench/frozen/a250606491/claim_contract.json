@@ -1,0 +1,205 @@
+{
+ "title": "When Tukey meets Chauvenet: a new boxplot criterion for outlier detection",
+ "summary": "The paper addresses the fact that Tukey’s boxplot uses one-size-fits-all fences while Chauvenet’s criterion is not robust to contaminated data. It fuses the two by expressing Tukey’s quartile fences through robust mean/SD estimates and setting the sample-size-adjusted coefficient k_n^Chau = Φ^{-1}(1-0.25/n)/1.35 - 0.5. In normal-data simulations with two contaminated points, the Chauvenet-type boxplot labels 2 total suspected outliers at n=500 (vs 3 for Tukey) and many fewer false positives at larger n, and it detects the 3 junior civil-service pay freezes in the real Hong Kong data.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "For standard-normal data with n=500 and two contaminated points 5 and 6, the Chauvenet-type boxplot labels 2 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=500 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 2,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 498 observations from N(0,1), append 5 and 6; use Chauvenet-type fences with k^Chau_n = qnorm(1-0.25/500)/1.35 - 0.5; count observations outside LF/UF.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "it labels a total of 2, 2, 2 and 3 suspected outliers for the simulated data with 4 different sample sizes, respectively.",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "For the same n=500 normal simulation, Tukey’s boxplot labels 3 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=500 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 3,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 498 observations from N(0,1), append 5 and 6; Tukey boxplot with k=1.5; count observations beyond inner fences.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+   "page": 13
+  },
+  {
+   "id": "C3",
+   "statement": "For the n=5000 normal simulation with two contaminated points, the Chauvenet-type boxplot labels 2 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=5000 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 2,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 4998 observations from N(0,1), append 5 and 6; use Chauvenet-type fences with k^Chau_n = qnorm(1-0.25/5000)/1.35 - 0.5; count observations outside LF/UF.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "it labels a total of 2, 2, 2 and 3 suspected outliers for the simulated data with 4 different sample sizes, respectively.",
+   "page": 14
+  },
+  {
+   "id": "C4",
+   "statement": "For the n=5000 normal simulation, Tukey’s boxplot labels 48 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=5000 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 48,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 4998 observations from N(0,1), append 5 and 6; Tukey boxplot with k=1.5; count observations beyond inner fences.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+   "page": 13
+  },
+  {
+   "id": "C5",
+   "statement": "For the n=50000 normal simulation with two contaminated points, the Chauvenet-type boxplot labels 3 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=50000 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 3,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 49998 observations from N(0,1), append 5 and 6; use Chauvenet-type fences with k^Chau_n = qnorm(1-0.25/50000)/1.35 - 0.5; count observations outside LF/UF.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "it labels a total of 2, 2, 2 and 3 suspected outliers for the simulated data with 4 different sample sizes, respectively.",
+   "page": 14
+  },
+  {
+   "id": "C6",
+   "statement": "For the n=50000 normal simulation, Tukey’s boxplot labels 357 total suspected outliers.",
+   "metric": "number of suspected outliers",
+   "dataset": "Simulated N(0,1) n=50000 with two contaminated points 5 and 6",
+   "split": "full simulated sample; set.seed(1863)",
+   "value": 357,
+   "unit": "suspected outliers (count)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1; Figure 2 caption",
+   "config_for_value": "R set.seed(1863); draw first 49998 observations from N(0,1), append 5 and 6; Tukey boxplot with k=1.5; count observations beyond inner fences.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s in R",
+   "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+   "page": 13
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the cheapest central demonstration: one sub-second R simulation at n=500 directly tests the new Chauvenet-type coefficient against Tukey’s baseline, matching the user’s target hint without needing larger-n or real-data work."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: no std is reported for the target count, and it is not an accuracy/F1/AUC bounded score; 10% relative on value 2 gives 1.8–2.2, which admits only the integer 2."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Compute the normal-data fence coefficient as k_n^Chau = qnorm(1 - 0.25/n)/1.35 - 0.5.",
+   "cite": "Section 3.2, Eq. (9)",
+   "quote": "This leads to 1.35kn + 0.675 = Φ−1(1 −0.25/n), or equivalently, kn = Φ−1(1 −0.25/n)/1.35 −0.5.",
+   "page": 10
+  },
+  {
+   "id": "R2",
+   "stmt": "Form the normal-data Chauvenet-type lower and upper fences as Q1 - k*IQR and Q3 + k*IQR.",
+   "cite": "Section 3.2, Eq. (8); Section 2, Eq. (1)",
+   "quote": "By formula (1), recall that the lower and upper fences in Tukey’s boxplot are LFn = Q1−kn×IQR and UFn = Q3 + kn×IQR.",
+   "page": 10
+  },
+  {
+   "id": "R3",
+   "stmt": "Use IQR = Q3 - Q1 from the sample quartiles.",
+   "cite": "Section 1; Section 2",
+   "quote": "by letting IQR = Q3 −Q1 be the interquartile range of the data",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "Use Tukey’s baseline inner fences with k = 1.5.",
+   "cite": "Section 1",
+   "quote": "Tukey (1977) further referred to the fences with k = 1.5 as the “inner fences”, and with k = 3 as the “outer fences”.",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Label an observation as a suspected outlier when it lies strictly outside either fence.",
+   "cite": "Section 2, text below Eq. (2)",
+   "quote": "if an observation X is either smaller than LFn or larger than UFn, then it will be labeled as an α-outlier in the boxplot.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "For the normal simulation, draw the first n-2 observations from the standard normal distribution.",
+   "cite": "Section 4.1",
+   "quote": "we generate the first n −2 observations as a random sample from the standard normal distribution",
+   "page": 13
+  },
+  {
+   "id": "R7",
+   "stmt": "Append the two contaminated points X_{n-1}=5 and X_n=6.",
+   "cite": "Section 4.1",
+   "quote": "designate the last two observations as contaminated data with Xn−1 = 5 and Xn = 6.",
+   "page": 13
+  },
+  {
+   "id": "R8",
+   "stmt": "Use set.seed(1863) before generating the normal sample.",
+   "cite": "Section 4.1; Figure 2 caption",
+   "quote": "with set.seed(1863) in R, Tukey’s boxplot will label a total of 3, 48 and 357 suspected outliers",
+   "page": 13
+  },
+  {
+   "id": "R9",
+   "stmt": "Report the total number of suspected outliers, not only false positives after removing the two known contaminated points.",
+   "cite": "Section 4.1",
+   "quote": "it labels a total of 2, 2, 2 and 3 suspected outliers for the simulated data with 4 different sample sizes, respectively.",
+   "page": 14
+  },
+  {
+   "id": "R10",
+   "stmt": "Compute Q1 and Q3 as the sample first and third quartiles.",
+   "cite": "Section 2",
+   "quote": "Let also Q1 and Q3 be the first and third quartiles of the data, respectively.",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "Simulated standard normal with two contaminated points",
+   "how_to_get": "In R: set.seed(1863); x <- c(rnorm(498, 0, 1), 5, 6); n <- length(x) = 500. This is the normal-data simulation in Section 4.1."
+  },
+  {
+   "name": "Hong Kong civil service pay adjustment data",
+   "how_to_get": "Download annual pay-adjustment tables from https://www.csb.gov.hk/english/admin/pay/55.html; Table 1 lists the 18 years since 2007 used for junior and senior groups."
+  }
+ ],
+ "code_links": [
+  "https://github.com/tiejuntong/ChauBoxplot"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2506.06491",
+  "kind": "arxiv",
+  "arxiv_id": "2506.06491",
+  "url": "https://arxiv.org/abs/2506.06491",
+  "title": "When Tukey meets Chauvenet: a new boxplot criterion for outlier detection",
+  "pages": 30
+ }
+}

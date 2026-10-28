@@ -1,0 +1,163 @@
+{
+ "approach": "Because the author repository is 404, this is a paper-only reimplementation. I will first try to recover the original 100-station CSV via Wayback/GitHub archive; if unavailable, I will reconstruct a real 100-station Istanbul EV charging set from OSM Overpass with an OpenChargeMap fallback, save it, and use a local equirectangular km projection. The primary C1 run follows the paper protocol exactly: custom random-init K-means (k=5, max 10 iterations), GA TSP inside each cluster, cluster-order GA (mutation 0.10, 100 iterations, population 100), open-route concatenation, seed 42. I will also compute the C2/C4 sequential baseline, C3 distance-derived duration, C5 Eq. 3 improvement, seed-stability diagnostics, and an interactive map. All deviations and the paper's C5 inconsistency (417.53->308.49 is 26.1%, not 35%) will be written to results/metrics.json.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pinned Python dependencies: numpy, pandas, requests, tqdm, matplotlib, folium, gmplot.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/paper_tables.py",
+   "purpose": "Fetch arxiv HTML/PDF and parse Table 3 configurations if available; otherwise return the fully specified target configuration as the only runnable config.",
+   "requirement_ids": [
+    "R9"
+   ]
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for all hyperparameters, paths, seeds, Table 3 configs, and documented assumptions.",
+   "requirement_ids": [
+    "R9"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Recover the original 100-station CSV from archive if possible, else fetch real Istanbul EV charging stations from OSM Overpass/OpenChargeMap, deduplicate, select exactly 100, validate, and write data/stations.csv.",
+   "requirement_ids": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "path": "src/geo.py",
+   "purpose": "Project lat/lon to local equirectangular km coordinates, build the 100x100 symmetric distance matrix, and compute dataset-order sequential route distance.",
+   "requirement_ids": [
+    "R2",
+    "R4",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/kmeans_custom.py",
+   "purpose": "Custom K-means with random distinct-point initialization, nearest-centroid Euclidean assignment, mean updates, convergence/iteration limit, and empty-cluster reseeding.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R5",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/ga.py",
+   "purpose": "Permutation genetic algorithm with tournament selection, order crossover, swap mutation, elitism; used both for intra-cluster TSP-style routing and cluster-order optimization.",
+   "requirement_ids": [
+    "R6",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/route.py",
+   "purpose": "Assemble intra-cluster routes, optimize cluster order, concatenate into the final open route, compute total distance/duration/improvement, and expose diagnostics including orientation-minimized variant.",
+   "requirement_ids": [
+    "R6",
+    "R7",
+    "R10",
+    "R11",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/visualize.py",
+   "purpose": "Render cluster-colored stations and final route lines to results/route_map.html using gmplot if an API key exists, else folium/OSM as a documented deviation.",
+   "requirement_ids": [
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: orchestrates data acquisition, K-means, intra-cluster GA, cluster-order GA, baselines, stability runs, visualization, and writes results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "n_stations": "100 (paper R1/C1)",
+  "city_bbox_lon_lat": "28.0,40.8,29.6,41.5 (OSM Istanbul fallback; A6)",
+  "data_order": "archive CSV order if recovered; otherwise deterministic sort by (name, lat, lon) of selected OSM records (A6)",
+  "kmeans_clusters": "5 (paper C1/Table 3)",
+  "kmeans_max_iterations": "10 (paper C1)",
+  "kmeans_init": "random distinct data points with fixed seed (paper R3; A1)",
+  "kmeans_convergence_tol_km": "1e-6 (A10)",
+  "distance_projection": "local equirectangular to km using mean latitude; R=6371.0088 km (A5)",
+  "ga_population": "100 (A4)",
+  "ga_iterations": "100 (paper C1)",
+  "ga_mutation_rate": "0.10 (paper C1)",
+  "ga_selection": "tournament size 3 (A3)",
+  "ga_crossover": "order crossover OX (A3)",
+  "ga_mutation_operator": "swap mutation (A3)",
+  "ga_elitism": "2 (A4)",
+  "random_seed": "42 (A1)",
+  "stability_seeds": "[123, 7, 2024] (A1 diagnostic only, not primary)",
+  "intra_cluster_solver": "GA TSP per cluster with pop=100, iters=100, mutation=0.10, elitism=2, followed by 2-opt polish (A2)",
+  "route_return_to_start": "False (A8)",
+  "primary_orientation_policy": "append each cluster route as returned (A11); also compute an orientation-minimized diagnostic without changing intra-cluster order",
+  "duration_speed_kmph": "35.48 (derived from paper C2/C4: 417.53 km / 706.22 min * 60; A9)",
+  "table3_configs": "parsed from arxiv HTML/PDF via src/paper_tables.py; fallback [target config] (R9)",
+  "map_backend": "gmplot if GOOGLE_MAPS_API_KEY is set, else folium OpenStreetMap HTML (R12/R13; documented deviation)",
+  "output_dir": "results/",
+  "data_file": "data/stations.csv",
+  "metrics_file": "results/metrics.json",
+  "smoke_subset": "12 stations, k=2, kmeans_iter=2, GA pop=10, GA iter=5 (smoke only)"
+ },
+ "steps": [
+  "Create directories data/, data/raw/, results/ and install dependencies with `pip install -r requirements.txt`.",
+  "Run src/paper_tables.py to extract Table 3 configurations from the arxiv HTML/PDF; if extraction fails, record that only the fully specified target configuration is runnable.",
+  "Acquire the station table: try Wayback/GitHub-archive recovery of oyenigun/RouteOptimization CSV; if that fails, query OSM Overpass for amenity=charging_station in the Istanbul bbox, expand the bbox in documented steps if fewer than 100 unique EV stations are found, and fall back to OpenChargeMap if needed.",
+  "Extract id, name, latitude, longitude; deduplicate by rounded coordinates; sort deterministically by (name, lat, lon); keep exactly 100 rows; validate names, coordinates, and Istanbul bbox; write data/stations.csv.",
+  "Load stations and build local equirectangular km coordinates: x = R*cos(lat0)*radians(lon-lon0), y = R*radians(lat-lat0), with lat0/lon0 the mean coordinates.",
+  "Build the 100x100 Euclidean distance matrix and compute the sequential reference distance C2 as the sum of distances between consecutive rows in data/stations.csv order.",
+  "Compute C4 duration proxy as C2 distance divided by 35.48 km/h times 60, and record that the paper gives no duration formula.",
+  "Run the primary K-means configuration: k=5, random distinct-point initialization with seed 42, nearest-centroid assignment, mean updates, stop at convergence or 10 iterations; record labels, centroids, iteration count, and cluster sizes.",
+  "For each K-means cluster, run the intra-cluster GA TSP on the cluster's distance submatrix with open paths (no return), seed 42+cluster_id, population 100, 100 iterations, mutation 0.10, elitism 2, followed by 2-opt polish; record each cluster route and length.",
+  "Run the cluster-order GA over the 5 cluster labels with population 100, 100 iterations, mutation 0.10, tournament size 3, order crossover, swap mutation, elitism 2, seed 42; fitness is the total concatenated route distance including inter-cluster gaps.",
+  "As a check, enumerate all 5! = 120 cluster orders and verify the GA result equals the enumerated best order or record the gap.",
+  "Build the primary final route by concatenating each cluster's intra-cluster route in the GA-best cluster order without reversing cluster paths (A11), and compute C1 total distance. Also build an orientation-minimized diagnostic that may reverse each cluster path to reduce inter-cluster gaps, keeping it separate from the primary.",
+  "Compute C3 duration proxy as C1 distance divided by 35.48 km/h times 60, and compute C5 improvement with Eq. 3: 100*(C2-C1)/C2; also record the paper-table-implied improvement 100*(417.53-308.49)/417.53 = 26.1% and flag the paper's 35% claim as inconsistent.",
+  "Run stability diagnostics with seeds 123, 7, 2024, and if Table 3 has other configs, run the generic sweep; report mean/std/min/max but keep seed 42 as the primary C1.",
+  "Generate results/route_map.html with cluster colors and the final route polyline using gmplot if GOOGLE_MAPS_API_KEY exists, else folium/OSM; also save a static PNG if matplotlib is available.",
+  "Write results/metrics.json with C1-C5 values, targets, relative errors, tolerance flags, the exact run configuration, data provenance, and all documented deviations/assumptions."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke` using the first 12 stations, k=2, kmeans iterations=2, GA population=10, GA iterations=5, mutation=0.10, seed=42; assert that every selected station appears exactly once in the final route, all distances are finite, C2/C1/C5 are computed, and results/smoke_metrics.json is written. The smoke run should finish in under 10 seconds.",
+ "intermediate_checks": [
+  "Data check: exactly 100 stations, unique rounded coordinates, non-empty names, all lat/lon inside the Istanbul bbox, and no missing values.",
+  "Distance check: matrix is symmetric, diagonal is zero, maximum pairwise distance is plausible for Istanbul, and sequential C2 is finite; compare to the paper's 417.53 km and flag data-order dependence.",
+  "K-means check: all 5 clusters are non-empty, labels sum to 100, centroids remain inside the bbox, inertia decreases or stays flat, and iterations used <= 10.",
+  "Intra-cluster route check: every station appears exactly once across all cluster routes; each cluster route length is <= the dataset-order path through the same cluster (sanity that optimization is not worse).",
+  "Cluster-order GA check: GA-best fitness <= the label-order concatenation; enumerate all 120 permutations and confirm the GA best is globally optimal or record the suboptimality gap.",
+  "Final route check: recompute C1 manually from the ordered station coordinates, confirm it equals the reported sum of intra-cluster plus inter-cluster distances, and confirm the route is open (no return leg).",
+  "Duration check: C4 proxy uses C2 and C3 proxy uses C1 at 35.48 km/h; compare both to 706.22 and 568.15 minutes and document that these are distance-derived, not Google road durations.",
+  "Improvement check: computed C5 is 100*(C2-C1)/C2; if C2 and C1 are near paper values, confirm it is ~26.1%, not 35%, and flag the paper's inconsistency.",
+  "Seed-stability check: run seeds 42, 123, 7, 2024 and report C1 spread; the primary remains seed 42, but a wide spread should be reported as seed sensitivity.",
+  "Tolerance check: C1 relative error band is 10%, i.e. [277.64, 339.34] km; if outside, inspect the orientation-minimized diagnostic and data-source deviations rather than tuning to the target."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~25 minutes: 4 min setup/pip/Table 3 parse; 7 min archive/OSM data fetch, selection, validation, and distance matrix; 2 min smoke test; 5 min primary run plus 5! order enumeration and 3-seed stability; 4 min visualization and intermediate checks; 3 min writing results/metrics.json and documenting deviations."
+}

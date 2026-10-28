@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "MMPAD average VUS-PR of 0.4399 on the univariate TSB-AD evaluation track (top of leaderboard)",
+  "table_ref": "Table 2 (Univariate, MMPAD row)",
+  "dataset": "TSB-AD univariate evaluation split (350 series)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/mcyeh/mmpad_tsb",
+  "https://github.com/TheDatumOrg/TSB-AD",
+  "https://github.com/TheDatumOrg/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": 3,
+  "basis": "Requires downloading the full TSB-AD univariate benchmark (350 series, some very long), running the exclusion-zone-aware kNN matrix-profile self-join on every series with the tuned k=5 and autocorrelation-inferred m, then computing VUS-PR with the benchmark metric code; matrix-profile self-joins are O(n^2) per series and dominate runtime on CPU."
+ },
+ "blockers": [
+  "Full 350-series univariate evaluation is heavy for a laptop within a few hours",
+  "Hyperparameter m is inferred via autocorrelation estimator that must be matched to benchmark code",
+  "VUS-PR metric implementation must be taken from TSB-AD repo and matched exactly",
+  "Code release is a submission repo; exact configs/scripts for reproducing the aggregate number may be incomplete"
+ ],
+ "suitable": false,
+ "id": "2604.02445",
+ "title": "Matrix Profile for Time-Series Anomaly Detection: A Reproducible Open-Source Benchmark on TSB-AD",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

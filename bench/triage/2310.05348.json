@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "CIL (L2) achieves 71.29% OOD accuracy on the Alipay Auto-scaling dataset, outperforming ERM (57.38%) and IRMv1 (66.20%).",
+  "table_ref": "Table 3, row 'CIL (L2)', column 'Alipay Auto-scaling OOD'",
+  "dataset": "Alipay Auto-scaling (proprietary production data from Alipay cloud)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The target dataset is proprietary production data from Alipay, and no code or data is released, making reproduction impossible."
+ },
+ "blockers": [
+  "Proprietary Alipay production data not publicly available",
+  "No code repository linked in the paper"
+ ],
+ "suitable": false,
+ "id": "2310.05348",
+ "title": "Continuous Invariance Learning",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

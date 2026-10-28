@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Spearman rank correlation between GLYCEMIC CONTROL and COG-FUNC in the Ohio Longitudinal Cognitive Dataset: rho_s = 0.208, p = 5.29e-5 (n=373), surviving Holm correction",
+  "table_ref": "Table 2 (H2 row); also Section 5.3",
+  "dataset": "Ohio Longitudinal Cognitive Dataset (OASIS, n=373)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "A single Spearman correlation on a 373-row public table is trivial compute; the cost is downloading OASIS, guessing the paper's 'GLYCEMIC CONTROL'/'COG-FUNC' composite definitions, and re-deriving them since no code is released."
+ },
+ "blockers": [
+  "No code or notebook released despite 'full reproducibility' claim",
+  "Composite variables GLYCEMIC CONTROL and COG-FUNC are not defined operationally, so exact rho=0.208 is unlikely to be reproduced",
+  "OASIS longitudinal data requires free registration/DUA acceptance"
+ ],
+ "suitable": true,
+ "id": "2605.13464",
+ "title": "A Unified Three-Stage Machine Learning Framework for Diabetes Detection, Subtype Discrimination, and Cognitive-Metabolic Hypothesis Testing",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

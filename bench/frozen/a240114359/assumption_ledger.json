@@ -1,0 +1,190 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "No random seed or RNG is specified for projection directions or bootstrap resampling.",
+  "options": [
+   "fixed single seed",
+   "seed sweep over several seeds",
+   "no seed"
+  ],
+  "chosen": "Use a fixed seed for one reproducible run and check stability with a small seed sweep when possible.",
+  "rationale": "The paper reports single instability paths, but exact reproduction requires controlling Monte Carlo randomness.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The exact construction of bootstrapped samples is not explicitly defined.",
+  "options": [
+   "n row draws with replacement",
+   "subsample n without replacement",
+   "parametric bootstrap"
+  ],
+  "chosen": "Draw n rows with replacement from the original data, the standard nonparametric bootstrap.",
+  "rationale": "The paper calls them bootstrapped samples and uses B independent bootstrap pairs.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "How to detect that H has stabilized in the concentration loop, and how to handle ties or max iterations.",
+  "options": [
+   "stop when H is unchanged",
+   "stop when determinant improvement is below tolerance",
+   "cap at a fixed maximum number of iterations"
+  ],
+  "chosen": "Stop when H is identical for a full C-step, cap at 1000 iterations, and break ties deterministically by row index.",
+  "rationale": "The paper says only 'until H stabilizes'; an explicit implementation rule is needed.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Update H using concentration steps (1), (2), and (3) until H stabilizes.",
+  "page": 8
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The beta-calibration step requires a standard deviation over the h grid, but the paper does not state whether population or sample standard deviation is used.",
+  "options": [
+   "population standard deviation ddof=0",
+   "sample standard deviation ddof=1"
+  ],
+  "chosen": "Use sample standard deviation ddof=1 over the search grid and solve for beta in (0,1).",
+  "rationale": "This is the common convention when estimating a standard deviation from grid values.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The scaled clustering metric is undefined when c = 0, which occurs at h = n or h = 0.",
+  "options": [
+   "exclude h = n from the grid",
+   "define instability as zero at h = n",
+   "add a small epsilon"
+  ],
+  "chosen": "Exclude h = n; the paper explicitly does this for StarsCYG and no other grid includes h = n.",
+  "rationale": "The instability measure is undefined for full data.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The value h = 47 is excluded because our instability measure is undefined for full data.",
+  "page": 19
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "How to convert the selected h into the reported number of outliers for the Star data.",
+  "options": [
+   "outliers are the n-h complement of the selected best subset",
+   "outliers are points exceeding a chi-square Mahalanobis cutoff",
+   "use reweighting"
+  ],
+  "chosen": "Use the n-h complement of the selected h-subset, so h=40 gives 7 outliers.",
+  "rationale": "The paper frames outliers as n-h and omits reweighting in the best-subset algorithm.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The integrated instability metric selects h = 40, leading us to conclude that there are 7 outliers in total.",
+  "page": 19
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "For data-driven projection directions, the paper does not specify whether random observation pairs are sampled with or without replacement or how zero-difference pairs are handled.",
+  "options": [
+   "sample distinct pairs without replacement",
+   "sample iid pairs with replacement",
+   "resample until a nonzero direction is found"
+  ],
+  "chosen": "Sample iid pairs with replacement, skipping zero-difference pairs and redrawing.",
+  "rationale": "This is a simple implementation consistent with the cited data-driven construction.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The MAD scale factor is not defined beyond the raw median absolute deviation formula.",
+  "options": [
+   "raw MAD as defined",
+   "1.4826-consistency-scaled MAD"
+  ],
+  "chosen": "Use raw MAD exactly as defined, without the 1.4826 normal-consistency factor.",
+  "rationale": "The paper's projection-depth formula uses MAD(V) = med(|V - med(V)|), so the raw definition is the faithful choice.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether projection depths are recomputed for each candidate h or reused across the grid.",
+  "options": [
+   "recompute depths for each h",
+   "reuse the same depths for all h"
+  ],
+  "chosen": "Reuse the same original-sample depths for all h and all bootstrap samples.",
+  "rationale": "The paper explicitly states that the same projection depths apply for all values of h.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The same projection depths also apply for all values of h.",
+  "page": 10
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Step 4 of Algorithm 2 says to compute Mahalanobis distances for i in [n], but it does not explicitly say whether these are original observations or bootstrap-sample observations.",
+  "options": [
+   "evaluate on original data X",
+   "evaluate on each bootstrap sample"
+  ],
+  "chosen": "Evaluate Mahalanobis distances on the original data X using each bootstrap subset's estimates.",
+  "rationale": "This matches the need to compare outlier maps on a common set of original observations.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The StarsCYG data values and log transformations are not printed in the paper.",
+  "options": [
+   "use the packaged StarsCYG dataset",
+   "reconstruct from the original source",
+   "use values from the GitHub repository"
+  ],
+  "chosen": "Use the packaged StarsCYG dataset or the repository values as-is, with the two columns interpreted as log temperature and log light.",
+  "rationale": "The paper describes the dataset as already logarithmic and links a reproducibility repository.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": "contains 47 logarithmic measurements of light intensity and temperature",
+  "page": 19
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "If multiple h values attain the same minimum integrated instability, the paper does not specify tie-breaking.",
+  "options": [
+   "choose the smallest h",
+   "choose the largest h",
+   "average tied h values"
+  ],
+  "chosen": "Choose the smallest h among tied minima, while reporting tied values if they occur.",
+  "rationale": "A deterministic tie-break is needed for reproducibility; smallest h is a conservative convention.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ }
+]

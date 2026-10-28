@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "OmniVerifier 7B (Decoupled) achieves 0.668 overall accuracy on ViVerBench, compared to 0.650 for the base OmniVerifier 7B and 0.661 for joint training.",
+  "table_ref": "Table 2, row 'OmniVerifier 7B(Decoupled)', column 'Overall'",
+  "dataset": "ViVerBench"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/Cominclip/OmniVerifier"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 256,
+  "disk_gb": 500,
+  "ref_minutes": 1440,
+  "gpu_speedup": null,
+  "basis": "Training a 7B multimodal verifier with DAPO RL on 16 A800-80G GPUs for 80 steps, plus data construction using GPT-5 and SAM 2.1, is far beyond a laptop's capability."
+ },
+ "blockers": [
+  "No code release (GitHub link likely placeholder)",
+  "Requires 16 NVIDIA A800-80G GPUs for training",
+  "Training data construction uses GPT-5 and SAM 2.1, not publicly available",
+  "ViVerBench dataset may not be publicly downloadable",
+  "Requires large-scale RL training infrastructure"
+ ],
+ "suitable": false,
+ "id": "2605.28805",
+ "title": "OmniVerifier-M1: Multimodal Meta-Verifier with Explicit Structured Recalibration",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

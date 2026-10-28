@@ -1,0 +1,91 @@
+{
+ "approach": "Full-release route: keep the authors' implementation untouched and only wrap it. Since cloning may already be done, the first step is to locate/verify the ExIFFI repo (git remote check, fallback `git clone https://github.com/alessioarcudi/ExIFFI`), then build a Python-3.12 pip environment from the pip section of `exiffi_env.yml` (dropping conda-only or version-pinned numba pins that break on 3.12), and probe the real author API (EIF class in `model_reboot/EIF_reboot.py`, dataset loader in `utils_reboot/datasets.py`, AP helper in `utils_reboot/experiments.py`, and the actual invocation used by `experiments/launch_metrics_exp.sh`→`experiments/test_metrics.py`). A thin adapter (`exiffi_api.py`) resolves the class/method/argument names with fallbacks but never re-implements splitting, scoring, or feature importance, so `reproduce.py` calls author code as-is. `reproduce.py` then loads the bundled `data/syn/bisect.csv`, fits EIF+ (plus=True, eta=1.0) and plain EIF (Lesouple uniform-intercept correction) on the 1,000 inliers only, scores all 1,100 points, and averages sklearn `average_precision_score` over 40 seeds, writing `results/metrics.json` with per-seed and mean AP for both models plus the ±0.02 verdict against 1.00 (C1) and 0.99 (C2). If the authors' own `experiments/test_metrics.py` can be invoked for bisect in Scenario II within budget, its pickled output is recorded as a cross-check alongside the adapter path, but the adapter path is authoritative because it uses the identical author classes.",
+ "files": [
+  {
+   "path": "env_setup.py",
+   "purpose": "Locate/verify the cloned ExIFFI repo (git remote or `git clone`), parse the pip section of `exiffi_env.yml`, and `pip install` a Py3.12-compatible minimal set (numpy, pandas, scipy, scikit-learn, matplotlib, tqdm, plus any repo import that is genuinely needed). Imports every repo module in a subprocess and fails loudly with the missing symbol, so conda-pinned numba/sklearn conflicts are caught before any science runs.",
+   "requirement_ids": []
+  },
+  {
+   "path": "probe_repo.py",
+   "purpose": "Read-only introspection that writes results/probe.txt: `grep -n 'class \\|def '` over model_reboot/EIF_reboot.py, utils_reboot/datasets.py, utils_reboot/experiments.py, experiments/test_metrics.py; the contents of experiments/launch_metrics_exp.sh; the header/shape/dtypes of data/syn/bisect.csv; and the constructor signature of the EIF class (ntrees, sample_size, extension_level, plus, eta, random_state/seed). This fixes the exact call pattern before writing the adapter.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R5"
+   ]
+  },
+  {
+   "path": "exiffi_api.py",
+   "purpose": "Thin adapter over author code only: `repo_root()` (cwd / ./ExIFFI / clone), `load_bisect()` (author loader if available, else pandas read of data/syn/bisect.csv with label column detection), `make_model(kind, cfg)` where kind in {'eif','eifplus'} maps to the author EIF class with plus/eta flags, `anomaly_scores(model, X)` trying predict / compute_anomaly_score / decision_function in that order, and `fit_ap(model, X_fit, X_all, y_all)` = fit on inliers, sklearn average_precision_score on all points. Contains no splitting/score math of its own.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint. Seeds everything, builds EIF+ and EIF per seed, fits on X[y==0], scores all 1,100 Bisect points, averages AP over the configured seeds (40 full, fewer in smoke), writes results/metrics.json with {eifplus: {mean,std,per_seed}, eif: {...}, claims: {C1:{target 1.00, tol 0.02, verdict}, C2:{target 0.99, tol 0.02, verdict}}, config, seeds, timings}. Also shells out to experiments/test_metrics.py for bisect if a usable CLI can be discovered, storing its pickled AP under `authors_script_crosscheck` (non-fatal). CLI flags: --seeds, --ntrees, --eta, --out, --skip-authors.",
+   "requirement_ids": [
+    "R6",
+    "R7",
+    "R1",
+    "R2"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/alessioarcudi/ExIFFI (route repo)",
+  "repo_dir": "./ExIFFI (verified via `git remote -v`; clone if missing)",
+  "dataset": "data/syn/bisect.csv, bundled in repo (1,100 x 6; 1,000 inliers + 100 outliers)",
+  "scenario": "Scenario II: fit on X[y==0] only, no holdout, AP on all 1,100 points (R6, A8)",
+  "ntrees": "100 (A2)",
+  "sample_size": "256 (A3); repo default wins if it stores its own value",
+  "extension_level": "d-1 = 5 for 6-D Bisect (EIF convention; do not override if the author class sets it)",
+  "max_depth": "author default (A4 says ceil(log2(256))=8); do not override author tree-growth rule",
+  "eifplus_eta": "1.0 (A1; Bisect AP insensitive over 0.5-5 per Appendix A.4)",
+  "eif_intercept": "uniform in [min{x.v}, max{x.v}] via author class, plus=False (R2)",
+  "eifplus_intercept": "N(E[A], eta*sigma(A)) via author class, plus=True (R1)",
+  "subsample_with_replacement": "author default (A3)",
+  "seeds": "0..39, 40 runs (A5); smoke uses seeds=1",
+  "scaling": "none (A6)",
+  "metric": "sklearn.metrics.average_precision_score(y_all, anomaly_scores), higher score = more anomalous (A10, R7)",
+  "epsilon": "1e-12 (A11; only relevant if the author GFI code is exercised - it is not needed for C1/C2)",
+  "expected_eifplus_ap": "1.00 (C1)",
+  "expected_eif_ap": "0.99 (C2)",
+  "tolerance": "0.02 absolute (contract tolerance)"
+ },
+ "steps": [
+  "1. Verify the repo: `git -C ./ExIFFI remote -v` (or search cwd for model_reboot/EIF_reboot.py); if absent run `git clone https://github.com/alessioarcudi/ExIFFI` via Python/git. Record the commit hash in results/metrics.json.",
+  "2. Run env_setup.py: parse the pip block of exiffi_env.yml, pip-install a Py3.12-safe subset (numpy, pandas, scipy, scikit-learn, matplotlib, tqdm, and any import the repo actually needs), then subprocess-import model_reboot.EIF_reboot, utils_reboot.datasets, utils_reboot.experiments, model_reboot.interpretability_module. Fix breakages (typically a pinned numba or an old sklearn symbol) by installing the newest release of that one package; never edit author source.",
+  "3. Run probe_repo.py and read results/probe.txt: capture the EIF constructor signature (does it take plus=, eta=, extension_level=, ntrees=, sample_size=, random_state=?), the score method name, the dataset loader, the author AP helper, and the exact argv that experiments/launch_metrics_exp.sh passes to experiments/test_metrics.py.",
+  "4. Snapshot bisect.csv: shape must be (1100, 6 features + 1 label), labels {0,1} with 1000/100 (contamination 0.0909), no NaNs, all numeric. Confirm the label column name against data/data_feature_names.json.",
+  "5. Write exiffi_api.py against the discovered API (no re-implementation), then smoke-test it with ntrees=10, seeds=1: assert model fits, scores are length 1100, finite, and higher for the known outliers (mean score over y==1 > mean over y==0).",
+  "6. Sanity baseline before the full run: sklearn IsolationForest (or a scalar score such as |x0+x1| toward the Bisect bisector) on raw Bisect should give AP >= ~0.95, confirming the data/label orientation is not flipped.",
+  "7. Smoke run reproduce.py --seeds 1 --ntrees 10 --out results/metrics_smoke.json; confirm EIF+ AP and EIF AP are both >= 0.90 on this tiny run (loose gate - the point is to prove the data flow, not the number).",
+  "8. Full run: python reproduce.py (40 seeds, 100 trees, eta=1.0). Time the first fit; if a single fit exceeds ~20 s, reduce seeds to 10 and record the reduction in metrics.json.",
+  "9. Cross-check (non-fatal): if the discovered CLI allows a bisect/S2-only invocation of experiments/test_metrics.py, run it once and stash the author-produced AP values under `authors_script_crosscheck` in metrics.json; never edit the script to add a dataset list.",
+  "10. Write results/metrics.json and print a summary line: EIF+ mean AP vs 1.00 (±0.02) and EIF mean AP vs 0.99 (±0.02), with pass/fail per claim and the std over seeds."
+ ],
+ "smoke_test": "python reproduce.py --seeds 1 --ntrees 10 --out results/metrics_smoke.json  ->  one EIF+ fit and one EIF fit on the 1,000 Bisect inliers, AP on all 1,100 points for each, printed and written to results/metrics_smoke.json; must complete in a few seconds and produce finite APs in [0,1] with EIF+ score ranking above a random baseline.",
+ "intermediate_checks": [
+  "Repo present at the right commit (git remote/commit hash logged); no author file modified (`git status --porcelain` empty apart from new files we add).",
+  "exiffi_env.yml pip block parsed; Python 3.12 import of every repo module succeeds (record exact versions of numpy/pandas/scipy/scikit-learn in metrics.json).",
+  "Bisect shape == (1100, 7) with 6 numeric features + label; class counts 1000/100; no NaN/inf; label orientation confirmed (y==1 are the 100 anomalies).",
+  "EIF constructor signature captured: confirm plus/eta flags exist and that plus=True actually routes to the normal intercept draw (grep the parameter name in EIF_reboot.py, e.g. 'eta', 'np.random.normal', 'plus').",
+  "One fit: score vector length 1100, all finite, in the class's documented range; mean score over y==1 strictly greater than mean over y==0.",
+  "Sanity baseline AP with sklearn IsolationForest on raw Bisect >= 0.95 (guards against an inverted label or a broken loader).",
+  "Model-size check: number of trees == ntrees, per-tree node count > 1 and depth <= max_depth/ceil(log2(sample_size)); EIF+ with a wide eta is allowed to create empty branches and none must be pruned (R8).",
+  "Smoke EIF+ AP and EIF AP both >= 0.90 at ntrees=10/1 seed before committing to the 40-seed run."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~18 min reference. Setup 5-6 min (git verify/clone, pip install, module-import fixes). Probe + data checks 2-3 min. Adapter write + smoke 3 min. Full run 6-8 min for 2 models x 40 seeds on 1,100 x 6 (each fit is sub-second to a few seconds); if the first timed fit is slow, fall back to 10 seeds and note it. Cross-check of the authors' test_metrics.py for bisect is capped at 2 min and skipped if the CLI cannot be scoped to one dataset. Reserve ~1 min for writing/validating metrics.json; total stays under the reference budget."
+}
