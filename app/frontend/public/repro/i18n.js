@@ -538,6 +538,7 @@
     "CLAIM CONTRACT": "结论合约", "Metric": "指标", "AUC, higher is better": "AUC，越高越好", "Fixed before any run": "运行之前就已固定",
     "Results deleted": "结果已删除", "Everything re-run from scratch": "所有步骤从头重跑", "Searched for copied numbers: none": "检查有无抄入的数字：没有",
     "paper 0.85 · tolerance ±0.085": "论文 0.85 · 容差 ±0.085",
+    "Drop a paper. Watch an agent": "上传论文，看智能体把它", "reproduce it.": "复现出来。",
     "Reproduce": "复现", "Papers": "论文", "Runs": "运行", "New": "新", "More tools": "更多工具", "Reproduce a paper": "复现一篇论文",
     "Repro Lite": "Repro Lite", "Check one claim in your browser": "在浏览器里核验一个结论",
     "Read arXiv papers with cited answers": "阅读 arXiv 论文，答案带引用", "Honest leaderboards with ties": "如实呈现并列的排行榜",
