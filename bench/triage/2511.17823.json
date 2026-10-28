@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Proposed k-means (WCD+ICD) overall accuracy 0.8420 on Iris, averaged over 100 iterations, vs traditional k-means 0.7751",
+  "table_ref": "Table 5.5",
+  "dataset": "UCI Iris"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Tiny 150x4 dataset; the algorithm is a simple k-means variant that must be reimplemented from pseudocode, and 100 iterations run in seconds on CPU."
+ },
+ "blockers": [
+  "No code released; algorithm must be reimplemented from pseudocode",
+  "Exact random seed / initialization scheme and relative-cost optimization details are underspecified, so exact 0.8420 average may not be reproducible"
+ ],
+ "suitable": true,
+ "id": "2511.17823",
+ "title": "A novel k-means clustering approach using two distance measures for Gaussian data",
+ "pages": 36,
+ "model": "DeepSeek-V4.1-Flash"
+}

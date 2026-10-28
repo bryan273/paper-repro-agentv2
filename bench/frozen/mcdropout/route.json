@@ -1,0 +1,35 @@
+{
+ "route": "partial_release",
+ "why": "The authors' repo is cloned and contains the entire experimental apparatus: experiment.py, net/net.py, and all UCI_Datasets directories with data.txt, the exact 20 train/test index splits, dropout_rates.txt, tau_values.txt, n_epochs/n_hidden configs, plus the authors' published result files (test_MC_rmse_100_xepochs_1_hidden_layers.txt etc.) for direct comparison. Nothing data- or weight-wise is missing (models are trained from scratch). What is broken is the runtime: the code targets Keras 2.2.0 on Theano 0.8.2 (README), Theano is unmaintained and not installable on Python 3.12, TF1.x/Keras 2.2 wheels do not exist for Python 3.12, and 9 of 11 Python files are Python-2 style. So we keep the authors' logic (architecture, dropout rates, epochs, tau/grid-search protocol, per-split train/val selection) but port the training/evaluation core to a modern framework and run the same splits.",
+ "repo": "https://github.com/yaringal/DropoutUncertaintyExps",
+ "entrypoints": [
+  "experiment.py (--dir <UCI dataset dir> --epochx <epoch multiplier> --hidden <n hidden layers>)",
+  "net/net.py (imported model/utility module used by experiment.py)",
+  "UCI_Datasets/bostonHousing/data/split_data_train_test.py (sanity check / regenerating splits)"
+ ],
+ "missing_artifacts": [
+  "no requirements.txt / environment lockfile pinning a working Theano 0.8.2 + Keras 2.2.0 stack (README states the versions only)",
+  "no installed or installable backend for the released code on Python 3.12 (Theano 0.8.2, Keras 2.2.0/TF 1.x)"
+ ],
+ "blockers_seen": [
+  "code targets Theano 0.8.2 + Keras 2.2.0; Theano is dead and cannot be installed on Python 3.12",
+  "Keras 2.2.0 / TensorFlow 1.x have no wheels for Python 3.12 (and Keras 3 API differs: layer-level train-time dropout loops, .compile/.fit behaviour, model saving)",
+  "9 of 11 python files are Python-2 style (print statements, old import style) and need 2to3-style edits even before framework porting",
+  "no GPU on this machine; README launch command assumes device=gpu + float32 (not fatal: the UCI nets are tiny and the paper reports CPU-class runtimes, e.g. naval 276 s/split incl. BO)",
+  "protocol requires a per-split train/val split + grid search over dropout rate and tau before the final train, so per-split cost is much larger than a single 400-epoch fit"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Port work: ~20-30 min (rewrite net/net.py + experiment.py training/MC-dropout loop in a modern framework, keep split loading and grid-search logic). Runs (Boston Housing, 1x50 net, 400 epochs, batch 32, per-split grid over the repo's dropout_rates/tau_values, T MC forward passes): ~10-15 s per model fit on 22 CPU cores, so ~2-4 min per split with grid search. Full 20-split C1 protocol is ~40-80 min of compute, i.e. borderline-to-over the ~60 min total budget once the port is included.",
+  "fits_budget": true,
+  "scale_down_plan": "Keep the exact released protocol but shrink along the split axis, not the model axis: evaluate the first 5 of the 20 released Boston Housing splits (index_train_*/index_test_*), same 1-hidden-layer/50-unit net, same dropout rates, same l=1e-2, same per-split train/val grid over tau, same 10x epochs (400), batch 32, Adam, T MC forward passes. Report mean test RMSE with standard error over 5 splits and state the split count explicitly. Secondary cheap confirmation on Yacht Hydrodynamics (N=308, <1 min/split) if time permits. Expected effect on the number: the point estimate should land near the released 2.83-2.97 range within a much wider error bar (SE roughly sqrt(20/5)~2x larger, i.e. +/-0.3-0.4 instead of +/-0.19); the qualitative claim (MC dropout beats VI, comparable-to-better than PBP 3.01) remains testable, but the printed +/-0.19 cannot be matched with 5 splits. If the port finishes fast, extend toward 10-20 splits; do not cut epochs or MC samples first, since those change the estimator itself."
+ },
+ "verdict_ceiling": "partially_reproduced",
+ "repo_info": {
+  "url": "https://github.com/yaringal/DropoutUncertaintyExps",
+  "cloned": true,
+  "n_files": 487,
+  "n_python": 11,
+  "python2_style_files": 9
+ }
+}

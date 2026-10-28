@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Average classification accuracy of CF-JEPA on the UCR 126 benchmark (0.819 ± 0.001) using adaptive average pooling and linear SVM.",
+  "table_ref": "Table 3",
+  "dataset": "UCR Time Series Classification Archive (126 datasets)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/WDSLab/CF-JEPA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 600,
+  "gpu_speedup": 2.0,
+  "basis": "Pretraining on 126 UCR datasets for 100 epochs each with 3 seeds, plus SVM evaluation with 5-fold CV, is estimated to take ~10 hours on 8 CPU cores; no GPU required but would speed up training."
+ },
+ "blockers": [
+  "No code available (repository not yet public)",
+  "Requires reimplementing the full CF-JEPA method from paper description",
+  "Large number of datasets (126) and seeds (3) increase runtime"
+ ],
+ "suitable": false,
+ "id": "2606.07031",
+ "title": "CF-JEPA: Mask-free forward prediction with asymmetric encoder utilization for time-series representation learning",
+ "pages": 46,
+ "model": "DeepSeek-V4.1-Flash"
+}

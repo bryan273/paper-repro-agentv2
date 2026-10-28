@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "OKMeans2 (Algorithm 1b) achieves Cost Best = 5.768e4 on SKIN-5 (best among all methods), with Cost Mean 6.410e4 and Recall 0.746",
+  "table_ref": "Table 2 (SKIN-5 block)",
+  "dataset": "SKIN-5 (SKIN dataset, 245,057 x 3, k=10, 1% synthetic outliers from [-5,5]^d)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/MasterZhou1/Robust-Clustering"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 45,
+  "basis": "SKIN is a small public UCI dataset (~245k x 3); the method is KNN scoring on a 24k coreset plus k-means, all CPU-friendly, but the repo must be checked/adapted and the exact outlier-injection seed and coreset sampling are not fully specified, so a few runs to match the reported best/mean cost are needed."
+ },
+ "blockers": [
+  "Exact synthetic outlier generation seed/order and coreset sampling procedure not fully specified, so exact reproduction of the reported best cost may differ slightly",
+  "Repo completeness (configs for SKIN-5, baseline reimplementations) unverified"
+ ],
+ "suitable": true,
+ "id": "2605.07130",
+ "title": "Simple KNN-Based Outlier Detection Achieves Robust Clustering",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

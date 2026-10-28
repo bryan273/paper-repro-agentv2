@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "CR@50 for UniBi-O(2) on WN18 (completion ratio after 50 mining steps)",
+  "table_ref": "Table 2, row UniBi-O(2), column CR@50, WN18",
+  "dataset": "WN18"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/hyleepp/Continue-KGC"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 300,
+  "gpu_speedup": 2.0,
+  "basis": "Estimate based on training a small KGE model (UniBi) on WN18 (106k triples) for up to 100 epochs plus 50 mining steps; CPU-only feasible but slower than GPU."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated; no explicit data download links in paper.",
+  "Hyperparameter search may be needed to match reported numbers."
+ ],
+ "suitable": true,
+ "id": "2404.09897",
+ "title": "Progressive Knowledge Graph Completion",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

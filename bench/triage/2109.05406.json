@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "Our method achieves Bleu-3 = 0.0644 on the Reddit conversation dataset (Table 2, 'Ours' row).",
+  "table_ref": "Table 2",
+  "dataset": "Reddit conversation dataset (Zhou et al., 2018b)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/thunlp/ConceptFlow",
+  "https://github.com/DSTC-MSR-NLP/DSTC7-End-to-End-Conversation-Modeling",
+  "https://huggingface.co/microsoft/DialoGPT-medium"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 1080,
+  "gpu_speedup": 20,
+  "basis": "Training on 3.38M Reddit pairs with 8 V100 GPUs takes ~1.5h/epoch; on a CPU-only laptop this is infeasible, and the paper's own code is not released."
+ },
+ "blockers": [
+  "No code release for the proposed method (only baseline ConceptFlow code is linked)",
+  "Requires training on 3.38M dialogue pairs, which is infeasible on a CPU-only laptop",
+  "Requires rebuilding the enhanced graph (GIZA++ alignment, ConceptNet merge) from scratch",
+  "Data access for the preprocessed Reddit dataset is not directly linked and may require manual reconstruction"
+ ],
+ "suitable": false,
+ "id": "2109.05406",
+ "title": "Guiding Topic Flows in the Generative Chatbot by Enhancing the ConceptNet with the Conversation Corpora",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

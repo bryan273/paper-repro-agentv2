@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Average execution time for a rank-1 update of a 1287x1287 moment matrix using the ISM method (0.007743145 seconds)",
+  "table_ref": "Table 3, row k=1, column ISM",
+  "dataset": "Synthetic random dataset of 2000 samples in R^1287 (generated from d=8, n=5)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/fgrivet/cost-trade-offs-matrix-inversion-update"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "The target is a single timing measurement from a small synthetic experiment (2000 samples, 1287x1287 matrix) that runs in seconds on a CPU; the paper provides full code and data generation instructions."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2603.16697",
+ "title": "Cost Trade-offs in Matrix Inversion Updates for Streaming Outlier Detection",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

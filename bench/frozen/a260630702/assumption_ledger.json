@@ -1,0 +1,195 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper does not state which variable(s) define the stratification in the 60/20/20 split.",
+  "options": [
+   "race/ethnicity",
+   "sex and race/ethnicity",
+   "binned outcome values",
+   "no stratification beyond random seed"
+  ],
+  "chosen": "race/ethnicity",
+  "rationale": "Preserves the demographic subgroup sizes needed for Figure 1 and matches the fairness/oversampling emphasis; exact row membership remains unverifiable.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "using stratified random splitting (seed=42)",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Log base, zero/negative handling, and whether the transform is natural log are unspecified.",
+  "options": [
+   "natural log",
+   "log10",
+   "log1p"
+  ],
+  "chosen": "natural log after verifying all three outcomes are positive; no shift",
+  "rationale": "The outcomes are positive biomarkers, and natural log is the common convention for right-skewed laboratory values.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "All outcomes were log-transformed prior to modelling",
+  "page": 2
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper filters on non-missing outcomes but does not say how missing covariate values are handled.",
+  "options": [
+   "complete-case deletion",
+   "median/mode imputation fit on training set",
+   "multiple imputation"
+  ],
+  "chosen": "median/mode imputation fit on training set to preserve N=1,381",
+  "rationale": "Keeps the analytic sample and test size consistent with the reported N; complete-case deletion could reduce N below the benchmark target.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "non-missing HbA1c, triglycerides, and CRP",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether label encoders are fit on full data or training data and how unseen categories are handled is unspecified.",
+  "options": [
+   "fit on training only; unseen -> -1",
+   "fit on full dataset",
+   "one-hot encode"
+  ],
+  "chosen": "fit on training only; unseen -> -1",
+  "rationale": "Avoids test leakage and is standard for label encoding in a train/test pipeline.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Categorical features (sex, race/ethnicity, smoking) were label-encoded.",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The calibration set is used for XGBoost early stopping and then for split-conformal residual calibration, which can leak calibration information.",
+  "options": [
+   "reuse same calibration set as written",
+   "carve separate early-stopping subset",
+   "use fixed 500 trees without early stopping"
+  ],
+  "chosen": "reuse same calibration set as written",
+  "rationale": "Follows the paper literally even though it creates a possible optimistic calibration bias.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "early stopping on the calibration set",
+  "page": 2
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Number of XGBoost early-stopping rounds and evaluation metric are not reported.",
+  "options": [
+   "RMSE, 50 rounds",
+   "RMSE, 10 rounds",
+   "default/no early stopping"
+  ],
+  "chosen": "RMSE, 50 rounds",
+  "rationale": "RMSE is the natural regression metric and 50 rounds is a common early-stopping patience.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "early stopping on the calibration set",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The printed conformal quantile expression is ambiguous/incorrect as a quantile level; the exact finite-sample index must be chosen.",
+  "options": [
+   "k-th smallest residual with k=ceil((ncal+1)(1-alpha))",
+   "np.quantile(residuals, 0.90)",
+   "literal ceil((1-alpha)(1+1/ncal)) quantile"
+  ],
+  "chosen": "k-th smallest residual with k=ceil((ncal+1)(1-alpha))",
+  "rationale": "This is the standard split-conformal finite-sample quantile from Angelopoulos & Bates (2023), which the paper cites.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "where ˆq is the ⌈(1 −α)(1 + 1/ncal)⌉quantile of calibration residuals.",
+  "page": 3
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Table 1 lists four race groups plus Other, while Section 3.4 names five including Other Hispanic; exact NHANES variable coding is not given.",
+  "options": [
+   "RIDRETH1 five categories",
+   "collapse Other Hispanic into Other",
+   "use Table 1 four categories"
+  ],
+  "chosen": "RIDRETH1 five categories",
+  "rationale": "Matches the subgroup names in Section 3.4 and preserves the NHANES oversampling structure.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Mexican American, Other Hispanic, Non-Hispanic White, Non-Hispanic Black, Other",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Survey weights are highlighted as a benchmark property but are not used in the model-fitting or metric descriptions.",
+  "options": [
+   "unweighted fitting and metrics",
+   "weighted fitting",
+   "weighted evaluation only"
+  ],
+  "chosen": "unweighted fitting and metrics, consistent with reported N and split",
+  "rationale": "The reported split and metrics appear to be unweighted; weighting would need an explicit survey-design procedure not described in the methods.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "survey design weights, demographic oversampling of minority groups",
+  "page": 1
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Exact Troiano cutpoints and treatment of non-wear minutes are not specified; the paper notes sedentary time includes non-wear.",
+  "options": [
+   "Troiano 2008 uniaxial cutpoints; no non-wear removal",
+   "Freedson cutpoints; remove non-wear",
+   "study-specific cutpoints"
+  ],
+  "chosen": "Troiano 2008 uniaxial cutpoints: sedentary <100, light 100–2019, MVPA ≥2020 counts/min; no non-wear removal beyond day validity",
+  "rationale": "Follows the cited Troiano 2008 standard and the paper's limitation that sedentary time includes non-wear periods.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": "using standard cutpoints (Troiano et al., 2008)",
+  "page": 2
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "How minute-level activity is aggregated across valid days (mean/day vs total) is not stated.",
+  "options": [
+   "mean per valid wear day",
+   "sum across valid days",
+   "median across days"
+  ],
+  "chosen": "mean per valid wear day",
+  "rationale": "The reported units are per day (counts/day, min/day), so a per-valid-day mean is the natural aggregation.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "computed from minute-level accelerometry using standard cutpoints",
+  "page": 2
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Only the split seed is given; model-level random seeds are not reported.",
+  "options": [
+   "seed=42 for all",
+   "seed=0 for all",
+   "no fixed model seed"
+  ],
+  "chosen": "seed=42 for all",
+  "rationale": "Uses the one seed the paper reports consistently across the pipeline.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "stratified random splitting (seed=42)",
+  "page": 2
+ }
+]

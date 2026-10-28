@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Average k-means loss for Smartigan on Fisher Iris with k=3 (79.23), compared to Hartigan (78.85) and Lloyd (96.88), averaged over 500 runs.",
+  "table_ref": "Table 1, row Smartigan, column k=3",
+  "dataset": "Fisher Iris (150 points, 4 dimensions)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Iris is tiny (150x4); implementing Hartigan/Smartigan from the pseudocode and running 500 random-initialized trials is a few minutes of CPU time; no code is released, so the agent must write the algorithm itself."
+ },
+ "blockers": [
+  "No code released for the paper's own experiments (only a link to a different paper's repo for Table 4)",
+  "Must implement Hartigan and Smartigan from pseudocode; exact random initialization scheme not fully specified"
+ ],
+ "suitable": true,
+ "id": "2604.21798",
+ "title": "An effective variant of the Hartigan $k$-means algorithm",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

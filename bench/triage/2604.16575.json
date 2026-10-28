@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "KMeans-Structural achieves F1 = 0.999 on CICDDoS2019",
+  "table_ref": "Table 2, Dataset: CICDDoS2019, row KMeans-Str., column F1",
+  "dataset": "CICDDoS2019"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "CICDDoS2019 is public; pipeline is standard sklearn (PCA + KMeans) on ~240k x 80 float32, easily fits in RAM; no code released so the agent must reimplement preprocessing, feature engineering, and evaluation from the paper text."
+ },
+ "blockers": [
+  "No code or configs released; full pipeline must be reimplemented from prose",
+  "CICDDoS2019 download is large (~several GB) and requires selecting the correct CSVs and stratified sampling",
+  "Exact stratified sampling of 30,000 flows per file and label handling must be inferred"
+ ],
+ "suitable": true,
+ "id": "2604.16575",
+ "title": "Evaluating Temporal and Structural Anomaly Detection Paradigms for DDoS Traffic",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

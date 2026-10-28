@@ -1,0 +1,195 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Size of the subsampling set |Y| and whether it is fixed per tree.",
+  "options": [
+   "256 (original IF default)",
+   "128",
+   "100",
+   "full training set"
+  ],
+  "chosen": "256, fixed across trees",
+  "rationale": "The paper specifies 100 estimators and a subsampling set Y but never states its size; 256 is the standard Isolation Forest/ADBench convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "a leaf node contains only a single point in a subsampling set Y ⊆X",
+  "page": 1
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Maximum tree depth / stopping rule beyond singleton leaves.",
+  "options": [
+   "no extra max depth (grow until singleton or no split)",
+   "ceil(log2(|Y|))",
+   "ADBench/sklearn default"
+  ],
+  "chosen": "no extra max depth; stop on singleton or no splittable feature",
+  "rationale": "The paper mentions a maximal depth but gives no value.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "each tree is grown randomly until either a leaf node contains only a single point",
+  "page": 1
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Concrete bounding volume V(Y).",
+  "options": [
+   "axis-aligned bounding box of Y",
+   "box expanded by a small margin",
+   "unit cube after min-max scaling"
+  ],
+  "chosen": "axis-aligned bounding box of Y",
+  "rationale": "Minimal volume satisfying the paper's requirement that V(Y) contains all points in Y; it is constant per tree/forest and mostly affects score scale.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "V (Y) denotes some bounding volume that contains all points in Y but whose total size is a hyperparameter of the algorithm.",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Handling zero-width leaf dimensions or test points outside the fitted feature range when computing V(L).",
+  "options": [
+   "epsilon-pad zero-width dimensions; allow outside-range leaves",
+   "clip leaves to V(Y)",
+   "skip zero-volume leaves"
+  ],
+  "chosen": "epsilon-pad zero-width dimensions by 1e-12 of the feature range; do not clip test points",
+  "rationale": "Volume must be positive; the paper does not discuss degeneracies.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Preprocessing and categorical encoding.",
+  "options": [
+   "ADBench preprocessing as provided",
+   "standardize all features",
+   "one-hot encode categoricals"
+  ],
+  "chosen": "ADBench-provided preprocessing and encodings",
+  "rationale": "The paper explicitly delegates data handling to ADBench code.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "We ran the experiments on 34 datasets, using the code provided in [3]",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Train/test split used for AUCROC.",
+  "options": [
+   "ADBench default split",
+   "60/40 random split",
+   "stratified 70/30"
+  ],
+  "chosen": "ADBench default split",
+  "rationale": "The paper reports ADBench values and says it uses ADBench code; no split is otherwise described.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "using the code provided in [3]",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Random seed and repeated runs per dataset.",
+  "options": [
+   "single run, fixed seed 42",
+   "5 runs averaged",
+   "100 runs averaged"
+  ],
+  "chosen": "single run with fixed seed 42 for cheap reproduction, noting stochastic variance may exceed tolerance",
+  "rationale": "The paper gives no seed or number of repetitions for ADBench experiments.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "For the isolation forest and its variants, we used 100 estimators",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Numerical limits of fα at α=1 and α=∞.",
+  "options": [
+   "geometric mean at α=1 and min(x) at α=∞ from the displayed power-mean formula",
+   "direct formula with epsilon near 1",
+   "force h∞=max(x) as stated in property 2"
+  ],
+  "chosen": "use analytic limits from the displayed fα formula: geometric mean at α=1 and min(x) at α=∞ (so h∞=2^{-min(x)})",
+  "rationale": "This follows the formula as printed; the paper's property 'h∞(x)=max(x)' appears to use a different normalization/notation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "and fβ = limα→β fα for β ∈{1, ∞}.",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How to select a single reported score per dataset.",
+  "options": [
+   "sweep α grid and report best on test AUCROC",
+   "fix α=0.5 for all",
+   "tune α on training data"
+  ],
+  "chosen": "sweep grid and report best on test AUCROC, as Table I does",
+  "rationale": "Table I reports 'best α' per dataset, implying test-set selection.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The best value of α and best SOTA algorithm are given in parentheses behind the AUCROC value.",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "AUCROC direction and label convention.",
+  "options": [
+   "higher aggregated anomaly score = anomaly, labels from ADBench",
+   "lower score = anomaly",
+   "threshold at 0.5"
+  ],
+  "chosen": "higher score = anomaly; use ADBench labels",
+  "rationale": "The paper states higher anomaly score corresponds to anomalies and uses ADBench AUCROC.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "anomalies correspond to points with higher anomaly score",
+  "page": 1
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether to scale features before fitting trees.",
+  "options": [
+   "no extra scaling beyond ADBench preprocessing",
+   "standardize to zero mean/unit variance",
+   "min-max scale"
+  ],
+  "chosen": "no extra scaling beyond ADBench preprocessing",
+  "rationale": "Random split ranges depend on feature scales; the paper does not mention extra scaling.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Definition of the leaf count |L(x)|.",
+  "options": [
+   "number of subsampling-set points in leaf",
+   "number of all training points in leaf",
+   "smoothed count"
+  ],
+  "chosen": "number of subsampling-set points Y in the leaf",
+  "rationale": "Equation (1) explicitly uses |Y|; no smoothing unless count is zero.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the number of points of the subsampling set Y that are contained in L(i) j",
+  "page": 4
+ }
+]

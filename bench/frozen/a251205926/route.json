@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "No author repository or usable BalLOT implementation was provided. The only code link is an external MATLAB Hungarian-algorithm package, so the target claim must be reimplemented from the paper: synthetic balanced stochastic-ball generation, diameter initialization, exact k=2 balanced assignment, and one-step recovery checks.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Official BalLOT implementation",
+  "Synthetic balanced stochastic-ball experiment driver for C1",
+  "Diameter-initialization and one-step recovery evaluation script",
+  "Scripts/notebooks to reproduce the paper's reported recovery-rate plots"
+ ],
+ "blockers_seen": [
+  "No repository was found or given; only an external MATLAB Hungarian-algorithm link is listed.",
+  "C1 is an asymptotic theoretical guarantee, so numerical reproduction can only verify finite-n recovery behavior around Δ=2√2 rather than prove probability 1−e^{−Ω(n)}.",
+  "The MATLAB assignment code is not directly needed for k=2, where exact balanced assignment can be implemented by sorting the centroid-distance differences.",
+  "No GPU is available, but the target C1 experiment is CPU-only and small."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 5–10 minutes of command time after implementing a short Python simulator; n≈2000, k=2 trials are very fast because exact balanced assignment reduces to an O(n log n) sort.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 0.5,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Synthetic k=2 stochastic-ball data at n≈2000 with many trials and an O(n log n) exact balanced assignment per trial; no external data or heavy training is involved."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

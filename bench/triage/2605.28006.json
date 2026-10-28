@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "TPP (Token-Pool Precision, |P∩D|/|P|) for Qwen-7B on the GSM8K math domain = 0.77",
+  "table_ref": "Table 1, row Qwen-7B, column TPP, Math domain",
+  "dataset": "GSM8K (200 problems, math domain)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/LeonardoMatthew/IAR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 40,
+  "ref_minutes": 600,
+  "gpu_speedup": 3,
+  "basis": "Requires downloading Qwen-7B (~15GB), generating 200 GSM8K traces with greedy decoding, computing HSIC-based MI over 512-dim hidden states and DTR via layer-wise JSD, then Tukey IQR peak detection; feasible on CPU but slow (hours), and the exact TPP value depends on undocumented implementation details (HSIC subsample, RMSNorm placement, settling threshold)."
+ },
+ "blockers": [
+  "Code repo may not include exact configs/scripts for the Qwen-7B math TPP cell",
+  "HSIC bandwidth calibration and 512-dim subsample details are only partially specified",
+  "DTR settling threshold τ=0.5 and α=0.85 are given but per-architecture JSD scale differences may affect reproduction",
+  "No GPU means 7B model inference on CPU is slow but possible"
+ ],
+ "suitable": true,
+ "id": "2605.28006",
+ "title": "Integrated and Cross-Architecture Interpretation of LLM Reasoning",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

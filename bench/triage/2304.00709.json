@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MSS-PAE achieves the best average AUROC of 0.889 across 32 OD datasets (41% relative improvement over best baseline DIP)",
+  "table_ref": "Table (average AUROC summary, Section 4)",
+  "dataset": "32 real-world OD datasets (e.g., Cardiotocography, etc.)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 600,
+  "gpu_speedup": 2,
+  "basis": "No code released; must reimplement PAE (dual-output AE with NLL/WNLL loss), MSS scoring, and the full 32-dataset benchmark protocol including 13 baselines, with per-dataset hyperparameter tuning of alpha and k."
+ },
+ "blockers": [
+  "No code or configs released (empty code_links)",
+  "Requires reimplementing PAE, WNLL, MSS and the full 32-dataset evaluation pipeline from scratch",
+  "32 datasets with per-dataset hyperparameter search (alpha, k, m) makes the full protocol long",
+  "Baseline comparison (DIP and 12 others) needed to verify the 41% relative improvement claim"
+ ],
+ "suitable": false,
+ "id": "2304.00709",
+ "title": "MSS-PAE: Saving Autoencoder-based Outlier Detection from Unexpected Reconstruction",
+ "pages": 31,
+ "model": "DeepSeek-V4.1-Flash"
+}

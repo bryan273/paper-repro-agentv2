@@ -1,0 +1,149 @@
+{
+ "approach": "Reimplement only the C1 pipeline, because the inspected repository is the Emoji Sarcasm Dataset release, not the paper's analysis code. Clone and load the ESD Twitter partition, apply the 85% ASCII English filter, canonicalize emojis, take the first emoji as primary, build the >=15-occurrence 62-emoji panel, and encode emoji-free lowercased text with all-MiniLM-L6-v2. For each panel emoji, sample up to 100 within-emoji tweets and 500 background tweets, compute delta = W_e - B_e, join to emosent-py, and run the 59-emoji Spearman with 10,000 permutations, percentile and BCa bootstrap CIs, Holm correction over the four Kralj Novak tests, and partial Spearman controlling for emoji frequency. The final `python reproduce.py` writes `results/metrics.json`; C3 descriptive delta checks are logged as sanity evidence, while C4-C6 classifier claims and their R11-R13 requirements are out of scope for this CPU C1 reproduction.",
+ "files": [
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for paths, seeds, filter thresholds, emoji normalization, MiniLM model settings, sampling sizes, variance definition, permutation/bootstrap counts, Holm family, and output paths.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/prepare_data.py",
+   "purpose": "Clone/read the ESD Twitter CSV, apply the 85% ASCII alphabetic English filter on raw tweet text, strip emojis from clean_text, canonicalize emoji variants, extract the first canonical emoji as primary_emoji, drop no-emoji tweets, and build the 62-emoji panel at >=15 occurrences.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3"
+   ]
+  },
+  {
+   "path": "src/embed_text.py",
+   "purpose": "Load SentenceTransformer('all-MiniLM-L6-v2') on CPU and encode emoji-free lowercased clean_text with L2-normalized 384-D embeddings, saved in row-aligned order.",
+   "requirement_ids": [
+    "R2",
+    "R4"
+   ]
+  },
+  {
+   "path": "src/stability_delta.py",
+   "purpose": "For every panel emoji, draw up to 100 within-emoji tweets and 500 background tweets from the complement, compute within-class mean off-diagonal cosine, between-class mean cross-pair cosine, and delta = W_e - B_e; also log C3 mean/range/positive-count checks.",
+   "requirement_ids": [
+    "R5",
+    "R6"
+   ]
+  },
+  {
+   "path": "src/kralj_novak.py",
+   "purpose": "Load emosent-py's Kralj Novak per-emoji fields, match the 62-emoji panel by canonical codepoints, extract p_neg/p_neu/p_pos and sentiment score, compute population variance of the three probabilities, and report the expected 59 matched emojis.",
+   "requirement_ids": [
+    "R7"
+   ]
+  },
+  {
+   "path": "src/stats_battery.py",
+   "purpose": "Run Spearman rho, 10,000-permutation p-value, percentile and BCa bootstrap CIs, jackknife leave-one-emoji-out range, Holm correction over the four Kralj Novak tests, and partial Spearman controlling for emoji frequency.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Orchestrate setup, data preparation, embedding, delta computation, Kralj Novak matching, statistical battery, validation checks, and results/metrics.json writing; supports a --smoke small-run mode.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  }
+ ],
+ "config": {
+  "target_claim": "C1",
+  "data_repo_url": "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji (paper data source, C1)",
+  "twitter_csv": "Data/Final_Dataset_Twitter.csv",
+  "twitter_labels_csv": "Data/Final_Dataset_Twitter_Labels.csv",
+  "raw_tweet_count_expected": "16859 (R1)",
+  "english_filter_ascii_alpha_ratio": "0.85 (R1, paper Sec 4.1)",
+  "english_filter_formula": "sum(ASCII alphabetic chars) / sum(non-whitespace chars) >= 0.85 on raw text; if not matching 272 removals, inspect all-chars denominator and record choice (R1; A7)",
+  "english_filter_expected_removed": "272, leaving 16587 (R1)",
+  "cleaning_regex": "lowercase; remove URLs, @mentions, '#' symbol; collapse whitespace; keep punctuation; strip all emoji before downstream NLP (R2; A7)",
+  "emoji_normalization": "strip U+1F3FB-U+1F3FF and U+FE0F, then use canonical codepoint string (A5)",
+  "primary_emoji": "first canonical emoji in raw tweet order (A1)",
+  "drop_no_emoji_tweets": "yes; expected final corpus 16575 (R3; A1)",
+  "min_occurrences": "15 (R3)",
+  "expected_panel": "62 emojis covering 15569 tweets (R3)",
+  "sentence_model": "all-MiniLM-L6-v2 (R4)",
+  "embedding_dim": "384 (R4)",
+  "embedding_normalize": "L2, True (R4)",
+  "embedding_batch_size": "64 (CPU assumption; model default style)",
+  "embedding_max_seq_length": "256 (SentenceTransformer model default; paper does not specify)",
+  "within_sample_max": "100 (R5)",
+  "between_sample_size": "500 (R5)",
+  "background_sampling": "per emoji, sample 500 tweets whose primary_emoji != e, without replacement (R5; A2)",
+  "random_seed": "42 for sampling, permutation, and bootstrap (A2)",
+  "within_similarity": "mean off-diagonal dot product over ordered pairs i != j (R6)",
+  "between_similarity": "mean dot product over all n_e x 500 cross pairs (R6)",
+  "delta": "W_e - B_e (R6)",
+  "kralj_novak_source": "emosent-py package fields, using its sentiment score and p_neg/p_neu/p_pos directly (R7; A4)",
+  "kralj_novak_variance": "population variance ddof=0 over (p_neg, p_neu, p_pos) (A3)",
+  "kralj_novak_match": "strip emoji presentation variants then exact codepoint match; expected n=59 (A5)",
+  "spearman_method": "scipy.stats.spearmanr default (R8)",
+  "permutations": "10000 (R8)",
+  "permutation_p_rule": "two-sided empirical p = (1 + count(|rho_perm| >= |rho_obs|)) / 10001 (R8; A8)",
+  "bootstrap_resamples": "10000 (R8)",
+  "bootstrap_methods": "percentile and BCa, paired resampling, random_state=42 (R8; A8)",
+  "holm_family": "four Kralj Novak tests: variance (primary), sentiment_score, p_pos, p_neg; if only primary is computed, use conservative factor 4 and flag it (R9)",
+  "partial_spearman": "control emoji frequency using rank residuals; target about +0.370 (R10)",
+  "jackknife": "leave-one-emoji-out Spearman range (C1 reported spread)",
+  "c3_sanity": "mean delta about 0.0766, range about +0.237 to -0.003, 61/62 positive (C3)",
+  "target_rho": "0.361 (C1)",
+  "tolerance_abs": "0.02 (claim contract)",
+  "output_metrics": "results/metrics.json",
+  "output_intermediate": "results/preprocess_counts.json, results/deltas.csv, results/kralj_novak.csv, results/embeddings.npy, results/tweets.parquet"
+ },
+ "steps": [
+  "Create working directories and install CPU dependencies with pip: sentence-transformers, emoji, emosent-py, and nltk if supplementary checks are enabled; verify imports of numpy, scipy, pandas, sentence_transformers, emoji, and emosent.",
+  "If data is absent, git clone --depth 1 https://github.com/jsubram/Sarcasm-Detection-Using-Emoji into data/raw/esd; confirm Data/Final_Dataset_Twitter.csv exists and load it with pandas, preserving tweet order.",
+  "Run src/prepare_data.py: apply the 85% ASCII English filter to raw text, assert the exact count 16587 (or log and diagnose if off by a few), detect all emojis with the emoji library, strip U+1F3FB-U+1F3FF and U+FE0F, take the first canonical emoji as primary_emoji, build emoji-free lowercased clean_text, drop no-emoji tweets, and assert 16575 final corpus rows.",
+  "Build the analytical panel: count primary_emoji occurrences, retain emojis with count >= 15, and assert 62 emojis covering 15569 tweets; save data/processed/tweets.parquet and results/preprocess_counts.json.",
+  "Run src/embed_text.py: load SentenceTransformer('all-MiniLM-L6-v2') on CPU, encode clean_text with batch_size=64, normalize_embeddings=True, save float32 embeddings.npy aligned to the processed tweet index.",
+  "Run src/stability_delta.py with RNG seed 42: for each panel emoji in sorted codepoint order, sample up to 100 within tweets and 500 background tweets from primary_emoji != e, compute W_e as mean off-diagonal dot product, B_e as mean cross-pair dot product, delta = W_e - B_e, and save results/deltas.csv; also compute C3 sanity statistics.",
+  "Run src/kralj_novak.py: import emosent-py, inspect available per-emoji fields if names differ, canonicalize lexicon keys, match the panel, compute variance ddof=0 over (p_neg,p_neu,p_pos), and save results/kralj_novak.csv; assert n=59 matched emojis or print the unmatched list.",
+  "Run src/stats_battery.py: merge deltas and Kralj Novak variance, compute Spearman rho and asymptotic p, 10000 two-sided permutation p-values, 10000 percentile and BCa paired bootstrap CIs, leave-one-out jackknife range, Holm-adjusted p across the four declared Kralj Novak tests, and partial Spearman controlling for emoji frequency.",
+  "Have reproduce.py write results/metrics.json with the primary rho, n, permutation p, Holm p, bootstrap CIs, jackknife range, partial rho, delta descriptive checks, preprocessing counts, matched-emoji count, and the exact config snapshot; print a concise summary.",
+  "Compare the primary rho against the claim tolerance of 0.02 around +0.361; if outside [0.341, 0.381], inspect first-emoji definition, background sampling, clean_text emoji stripping, emosent probability field selection, and the 59-emoji matched set before accepting the run."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`: take the first 800 English-filtered ESD tweets, set min_occurrences=3, within_sample_max=20, between_sample_size=50, permutations=200, bootstrap_resamples=200, encode with the same MiniLM model, compute deltas for the first 3 qualifying emojis, match emosent-py, run Spearman/permutation/bootstrap, and require a finite rho, n>=3, and a written results/smoke_metrics.json. This proves CSV loading, filtering, emoji extraction, embedding, delta sampling, lexicon matching, and stats flow end-to-end without touching the full 16k corpus.",
+ "intermediate_checks": [
+  "Dependency check: sentence-transformers, emoji, emosent-py, scipy, pandas, numpy import successfully; if emosent-py import name differs, inspect the installed package and record the callable/fields.",
+  "Dataset size check: raw DataFrame has 16859 Twitter rows; after the 85% ASCII English filter it has 16587 rows; after emoji normalization and primary-emoji extraction it has 16575 rows; after >=15-occurrence filtering it has 62 emojis covering 15569 tweets.",
+  "Label/order check if labels are loaded later: label CSV row count matches the Twitter CSV row count and no rows are silently reordered; this is not required for C1 but guards supplementary metrics.",
+  "Emoji normalization check: no panel emoji contains U+1F3FB-U+1F3FF or U+FE0F; each row has exactly one primary_emoji; emoji-only tweets are retained with an empty clean_text if present (A6).",
+  "Embedding check: embeddings.npy shape is (16575, 384), dtype float32, and row-wise L2 norms are approximately 1.0; no NaNs.",
+  "Delta sanity check: mean delta across the 62 emojis is near 0.0766, max near +0.237, min near -0.003, and 61 of 62 deltas are positive; large deviations indicate wrong primary-emoji choice, cleaning, or background sampling.",
+  "Lexicon match check: Kralj Novak matching returns exactly 59 emojis; variance values are finite, non-negative, and computed from probability triples rather than the scalar sentiment score.",
+  "Primary correlation check: Spearman rho over 59 emojis is near +0.361, permutation p is near 0.005, Holm-adjusted p is significant and near 0.015, bootstrap CI is roughly [+0.10, +0.59], and jackknife range is roughly [+0.333, +0.412].",
+  "Sanity baseline: permuting the Kralj Novak variance labels should produce rho centered near 0 with no significant p, confirming the permutation code is not leaking the pairing."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "CPU-only budget of about 15 minutes: 4 minutes for pip installs, repo clone, and MiniLM weight download; 1 minute for the smoke test; 8-12 minutes for full preprocessing, embedding ~16.6k short tweets with all-MiniLM-L6-v2, computing 62 deltas, and running 10k permutations plus 10k percentile/BCa bootstrap resamples on 59 points. No classifier training is performed; C4-C6 are out of scope. Reserve ~3 minutes for diagnostics if the primary rho falls outside the +/-0.02 tolerance."
+}

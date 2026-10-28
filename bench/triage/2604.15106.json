@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Out-of-fold weighted MSE of dense CRTB on clean liver toxicity data (5-fold CV), reported as 0.037",
+  "table_ref": "Figure 5",
+  "dataset": "Liver toxicity data (Bushel et al. 2007), available via mixOmics R package"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "basis": "No code is released (only a promise of future release 0.5 of the twoblock package), so the full CRTB algorithm (IRLS loop, SPADIMO cellwise diagnostics, dual-reference weighting, sparse soft-thresholding) must be reimplemented from the paper text; the dataset is small (64x100 and 64x10) and CPU-only, but implementation and debugging of the complex algorithm plus 5-fold CV grid search dominate the time."
+ },
+ "blockers": [
+  "No code released; must implement CRTB from scratch based on paper description",
+  "SPADIMO cellwise contribution method is referenced but not fully specified in the paper",
+  "Hyperparameter grid for CV is not fully specified (only sparsity values 0.3,0.5,0.7 mentioned for simulation, not for this example)"
+ ],
+ "suitable": false,
+ "id": "2604.15106",
+ "title": "Cellwise Robust Twoblock Dimension Reduction",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

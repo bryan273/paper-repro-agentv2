@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MEOW achieves forget quality (F.Q.) of 0.99 on ToFU-1% with Llama2-7B-Chat, compared to 0.00 for the origin model and 1.00 for the retain model.",
+  "table_ref": "Table 1, row 'MEOW (ours)', column 'ToFU-1% Llama 2 F.Q.'",
+  "dataset": "ToFU-1%"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Carol-gutianle/MEOW.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "Fine-tuning Llama2-7B-Chat on ToFU-1% requires a GPU with sufficient VRAM (e.g., A100 80GB as used in the paper); on a CPU-only laptop, training would be impractically slow or impossible."
+ },
+ "blockers": [
+  "Requires fine-tuning a 7B parameter model, which is not feasible on a CPU-only laptop within a few hours.",
+  "The paper uses 2 NVIDIA A100-SXM4-80GB GPUs for training, indicating high VRAM requirements.",
+  "Generating inverted facts requires an offline LLM (e.g., GPT-4), which may involve API costs or access restrictions."
+ ],
+ "suitable": false,
+ "id": "2409.11844",
+ "title": "MEOW: MEMOry Supervised LLM Unlearning Via Inverted Facts",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

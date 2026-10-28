@@ -1,0 +1,276 @@
+{
+ "title": "NEVER A DULL MOMENT: DISTRIBUTIONAL PROPERTIES AS A BASELINE FOR TIME-SERIES CLASSIFICATION",
+ "summary": "The paper asks whether extremely simple distributional features can provide a strong baseline for time-series classification, in contrast to complex dynamical or deep models. It fits a linear SVM on two features that ignore temporal ordering, the mean and standard deviation (FTM), and compares it with catch22 + FTM across the 128 UEA/UCR problems and a schizophrenia rs-fMRI case study. FTM beats chance on 69 of 128 problems, reaches 100% accuracy on GunPointOldVersusYoung and InsectEPGRegularTrain, and achieves 67.5% balanced accuracy on the neuroimaging task versus 63.6% for catch22 + FTM.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The FTM (mean and standard deviation) linear SVM classifier achieves 100% accuracy on GunPointOldVersusYoung.",
+   "metric": "classification accuracy",
+   "dataset": "UEA/UCR GunPointOldVersusYoung",
+   "split": "designated train/test split plus 29 seeded resamples (30 resamples total)",
+   "value": 100,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Sec. 3.1 / Fig. 1, GunPointOldVersusYoung",
+   "config_for_value": "FTM features (mean, standard deviation) extracted from raw series; features z-scored using train-set statistics; linear SVM fit on each train split; mean accuracy across 30 train-test resamples preserving class proportions.",
+   "reported_spread": null,
+   "est_compute": "CPU, <5 min",
+   "quote": "Indeed, this simple classifier achieves 100% accuracy on two problems: InsectEPGRegularTrain and GunPointOldVersusYoung.",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "The FTM linear SVM classifier achieves 100% accuracy on InsectEPGRegularTrain.",
+   "metric": "classification accuracy",
+   "dataset": "UEA/UCR InsectEPGRegularTrain",
+   "split": "designated train/test split plus 29 seeded resamples (30 resamples total)",
+   "value": 100,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Sec. 3.1 / Fig. 1, InsectEPGRegularTrain",
+   "config_for_value": "FTM features (mean, standard deviation) extracted from raw series; features z-scored using train-set statistics; linear SVM fit on each train split; mean accuracy across 30 train-test resamples preserving class proportions.",
+   "reported_spread": null,
+   "est_compute": "CPU, <5 min",
+   "quote": "Indeed, this simple classifier achieves 100% accuracy on two problems: InsectEPGRegularTrain and GunPointOldVersusYoung.",
+   "page": 3
+  },
+  {
+   "id": "C3",
+   "statement": "The FTM-based classifier statistically outperforms chance at p < 0.05 on 69 of the 128 UEA/UCR problems (53.9%).",
+   "metric": "number of problems with FTM > chance (p < 0.05)",
+   "dataset": "UEA/UCR Repository (128 problems)",
+   "split": "30 resamples per problem",
+   "value": 69,
+   "unit": "problems (of 128)",
+   "higher_is_better": true,
+   "table_ref": "Sec. 3.1, chance comparison across 128 problems",
+   "config_for_value": "FTM (mean, standard deviation) linear SVM; 30 resampled train-test splits per problem; empirical p-value against chance distribution for each problem; significance threshold p < 0.05.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 day for 128 datasets",
+   "quote": "the FTM-based classifier statistically outperformed chance (p < 0.05) on 69 of the 128 problems (i.e., on 53.9% of problems).",
+   "page": 3
+  },
+  {
+   "id": "C4",
+   "statement": "Adding catch22 features to FTM yields an average absolute improvement in classification accuracy of 33.7% across the 124 problems where catch22 could be computed.",
+   "metric": "mean absolute improvement in classification accuracy",
+   "dataset": "UEA/UCR Repository (124 problems with catch22 computed)",
+   "split": "30 resamples per problem",
+   "value": 33.7,
+   "unit": "percentage points absolute accuracy improvement",
+   "higher_is_better": true,
+   "table_ref": "Sec. 3.1, FTM vs catch22 + FTM across 124 problems",
+   "config_for_value": "Compare FTM (2 features) with catch22 + FTM (24 features); 30 resamples; four problems excluded because of missing values.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1-2 days for 124 datasets (catch22 extraction)",
+   "quote": "Adding catch22 features resulted in an average absolute improvement in classification accuracy of 33.7% across the 124 problems",
+   "page": 5
+  },
+  {
+   "id": "C5",
+   "statement": "There is no statistically significant difference between FTM and catch22 + FTM on 45 of the 124 problems (36.4%).",
+   "metric": "percentage of problems with no significant FTM vs catch22 + FTM difference",
+   "dataset": "UEA/UCR Repository (124 problems with catch22 computed)",
+   "split": "30 resamples per problem",
+   "value": 36.4,
+   "unit": "% of 124 problems",
+   "higher_is_better": true,
+   "table_ref": "Sec. 3.1, pairwise corrected test",
+   "config_for_value": "Pairwise corrected resampled t-test comparing FTM and catch22 + FTM across 124 problems; non-significant at p >= 0.05.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes after feature extraction",
+   "quote": "there was no statistical difference between FTM and catch22 + FTM on 45 of the 124 (or 36.4% of) problems.",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "The FTM model achieves a mean balanced accuracy of 67.5% in classifying schizophrenia versus controls from rs-fMRI.",
+   "metric": "balanced accuracy",
+   "dataset": "UCLA Consortium for Neuropsychiatric Phenomics LA5c Study rs-fMRI",
+   "split": "10-fold cross-validation with 10 repeats",
+   "value": 67.5,
+   "unit": "% balanced accuracy",
+   "higher_is_better": true,
+   "table_ref": "Fig. 3 / Sec. 3.2, FTM",
+   "config_for_value": "82 brain regions; FTM per region concatenated into 164 SVM inputs; linear SVM with C = 1, shrinking disabled, balanced class weights; z-score within each fold; 10-fold CV x 10 repeats; mean balanced accuracy across repeats.",
+   "reported_spread": "±2.2% SD across 10 repeats",
+   "est_compute": "CPU, ~1-3 hours",
+   "quote": "the model based on FTM features displayed a high balanced accuracy (67.5±2.2%)",
+   "page": 5
+  },
+  {
+   "id": "C7",
+   "statement": "Adding catch22 features to FTM reduces schizophrenia-vs-control balanced accuracy to 63.6%.",
+   "metric": "balanced accuracy",
+   "dataset": "UCLA Consortium for Neuropsychiatric Phenomics LA5c Study rs-fMRI",
+   "split": "10-fold cross-validation with 10 repeats",
+   "value": 63.6,
+   "unit": "% balanced accuracy",
+   "higher_is_better": true,
+   "table_ref": "Fig. 3 / Sec. 3.2, catch22 + FTM",
+   "config_for_value": "82 brain regions; 24 FTM + catch22 features per region concatenated into 1968 SVM inputs; same linear SVM and CV settings as FTM.",
+   "reported_spread": "±1.0% SD across 10 repeats",
+   "est_compute": "CPU, ~2-6 hours",
+   "quote": "Adding catch22 features to the model decreased its performance to 63.6 ± 1.0% (corrected resampled T-statistic = 3.63, p = 0.003).",
+   "page": 5
+  },
+  {
+   "id": "C8",
+   "statement": "The schizophrenia case-study difference between FTM and catch22 + FTM is statistically significant with corrected resampled t-test p = 0.003.",
+   "metric": "corrected resampled t-test p-value",
+   "dataset": "UCLA Consortium for Neuropsychiatric Phenomics LA5c Study rs-fMRI",
+   "split": "10-fold cross-validation with 10 repeats",
+   "value": 0.003,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Sec. 3.2, corrected resampled T-statistic",
+   "config_for_value": "Corrected resampled t-test comparing FTM and catch22 + FTM balanced accuracies across the same resampled 10-fold CV sets.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes after model fits",
+   "quote": "Adding catch22 features to the model decreased its performance to 63.6 ± 1.0% (corrected resampled T-statistic = 3.63, p = 0.003).",
+   "page": 5
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the user's hinted result and the cheapest direct demonstration of the paper's central claim: two distributional features plus a linear SVM perfectly separate a UCR class, using a small dataset and no catch22 or neuroimaging pipeline."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 2.0,
+  "why": "Rule 3: bounded accuracy on a small UEA/UCR test split (<2,000 examples); the paper gives no numeric SD for this 100% value, so use the fixed 2.0 absolute-point band (98-100%)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Compute only two FTM features: the mean and standard deviation.",
+   "cite": "Sec. 2.1",
+   "quote": "we computed the FTM feature set containing two features: the mean (μ) and standard deviation (σ).",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Do not z-normalize individual time series before FTM extraction; preserve raw measurement scale.",
+   "cite": "Sec. 4 / Discussion",
+   "quote": "If all time series were individually z-score transformed, there would be no class differences in mean or standard deviation for any problem",
+   "page": 6
+  },
+  {
+   "id": "R3",
+   "stmt": "Fit a linear SVM classifier.",
+   "cite": "Sec. 2.1",
+   "quote": "A linear SVM was fit on the train set and used to generate predictions for the test set.",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "Z-score features using train-set mean and standard deviation, then apply the same scaling to test data.",
+   "cite": "Sec. 2.1",
+   "quote": "features were normalized as a z-score by computing the mean and standard deviation of each feature in the train set",
+   "page": 2
+  },
+  {
+   "id": "R5",
+   "stmt": "Generate 30 train-test resamples: the designated split plus 29 seeded resamples preserving class proportions.",
+   "cite": "Sec. 2.1",
+   "quote": "we generated 29 additional (seeded) resamples of the data that preserve the class proportions of the designated split",
+   "page": 2
+  },
+  {
+   "id": "R6",
+   "stmt": "Use classification accuracy as the UEA/UCR performance metric.",
+   "cite": "Sec. 2.1",
+   "quote": "Classification accuracy was used as the performance metric, following prior work.",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Test chance performance with a p-value from the distribution of 30 resampled FTM accuracies.",
+   "cite": "Sec. 3.1",
+   "quote": "we calculated a p-value of the chance probability against the distribution of 30 resampled FTM accuracy values for each problem.",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "For the comparison model, use the catch22 set of 22 time-series features plus FTM.",
+   "cite": "Sec. 2.1",
+   "quote": "we used the catch22 set of 22 time-series features [17]",
+   "page": 2
+  },
+  {
+   "id": "R9",
+   "stmt": "Exclude problems with fewer than 10 real values before all-or-mostly-missing values from catch22 comparisons.",
+   "cite": "Sec. 2.1",
+   "quote": "due to presence of time series that had < 10 real values before containing all or mostly missing values",
+   "page": 2
+  },
+  {
+   "id": "R10",
+   "stmt": "For the case study, evaluate balanced accuracy with 10-fold cross-validation and 10 repeats.",
+   "cite": "Sec. 2.2",
+   "quote": "Model performance was evaluated as balanced accuracy using 10-fold cross-validation (CV) with 10 repeats",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "For the case-study SVM, set C = 1, disable shrinking, and use balanced class weights.",
+   "cite": "Sec. 2.2",
+   "quote": "setting the regularization parameter C = 1, disabling the shrinking heuristic, and using balanced class weights.",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "Use 82 brain regions: 68 cortical and 14 subcortical regions per participant.",
+   "cite": "Sec. 2.2",
+   "quote": "extracted for each of 68 cortical [22] and 14 subcortical [23] regions per participant.",
+   "page": 3
+  },
+  {
+   "id": "R13",
+   "stmt": "The FTM case-study model has 164 SVM input features (2 x 82).",
+   "cite": "Sec. 2.2",
+   "quote": "the FTM-only model had a total of 2 × 82 = 164 SVM input features",
+   "page": 3
+  },
+  {
+   "id": "R14",
+   "stmt": "The catch22 + FTM case-study model has 1968 SVM input features (24 x 82).",
+   "cite": "Sec. 2.2",
+   "quote": "the FTM + catch22 model had a total of 24 × 82 = 1968 features.",
+   "page": 3
+  },
+  {
+   "id": "R15",
+   "stmt": "Use a corrected resampled t-test for comparing FTM and catch22 + FTM.",
+   "cite": "Sec. 2.1",
+   "quote": "we implemented a correlated test statistic [18] that corrects the traditional T-statistic to account for the violation of the assumption of independence",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "UEA/UCR Time-Series Classification Repository",
+   "how_to_get": "Download from https://www.timeseriesclassification.com/; the paper used a snapshot downloaded on 9 Feb 2023."
+  },
+  {
+   "name": "GunPointOldVersusYoung",
+   "how_to_get": "Available as a UEA/UCR dataset from the repository; use the designated train/test split and do not z-normalize series before FTM extraction."
+  },
+  {
+   "name": "UCLA Consortium for Neuropsychiatric Phenomics LA5c Study",
+   "how_to_get": "Public rs-fMRI dataset described by Poldrack et al. [20] (OpenNeuro ds000030); the paper used ICA-AROMA + 2P + GMR preprocessed derivatives from [21]/[32]."
+  }
+ ],
+ "code_links": [
+  "https://github.com/hendersontrent/mean-var-ts-classify"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2303.17809",
+  "kind": "arxiv",
+  "arxiv_id": "2303.17809",
+  "url": "https://arxiv.org/abs/2303.17809",
+  "title": "NEVER A DULL MOMENT: DISTRIBUTIONAL PROPERTIES AS A BASELINE FOR TIME-SERIES CLASSIFICATION",
+  "pages": 8
+ }
+}

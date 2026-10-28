@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Annual median (x̃) tropospheric NO2 column for Guayaquil canton in 2020, reported as 1.41 ×10⁻⁵ (Table 1, Guayaquil row, x̃ column, 2020).",
+  "table_ref": "Table 1",
+  "dataset": "Sentinel-5P/TROPOMI Level-3 OFFLINE tropospheric NO2 column, Guayas Province, Ecuador, 2020–2025, accessed via Google Earth Engine"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://hvelesaca.github.io/sentinel-5P-clustering/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target is a single canton-year median from a public GEE collection; the main cost is re-implementing the GEE export/reduction pipeline (the linked GitHub page is a project page, not a runnable config) and downloading/processing one year of TROPOMI NO2 over Guayas, which is small enough for a laptop CPU."
+ },
+ "blockers": [
+  "No runnable code/configs linked (only a project webpage), so the GEE pipeline must be re-implemented from the paper text",
+  "Exact GEE collection ID, QA masking, monthly outlier-removal details, and canton boundary handling are underspecified",
+  "Requires a Google Earth Engine account and internet access to GEE"
+ ],
+ "suitable": true,
+ "id": "2606.02592",
+ "title": "Tracking Urban Atmospheric Pollutants using Sentinel-5P Satellite Data",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

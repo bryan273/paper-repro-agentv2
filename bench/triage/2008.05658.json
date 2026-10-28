@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "CoQAN achieves 0.924 accuracy on the self-media online article quality classification test set",
+  "table_ref": "Table 2",
+  "dataset": "Self-media online article quality dataset (WeChat)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://drive.google.com/drive/folders/1VRNm5I-ZahfDlSH7gbfkhXcPJ69vhGDy"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Training hi-BERT (BERT fine-tuning) on 36k articles with max 32 sentences of 128 tokens each requires GPU; CPU-only would take days, and the dataset link may be dead."
+ },
+ "blockers": [
+  "No official code repository; only a Google Drive link for data, which may be inaccessible or outdated",
+  "Requires fine-tuning BERT, which is impractical on CPU within a few hours",
+  "Dataset contains Chinese articles and images; preprocessing (layout extraction, feature engineering) is complex and not fully specified"
+ ],
+ "suitable": false,
+ "id": "2008.05658",
+ "title": "Cognitive Representation Learning of Self-Media Online Article Quality",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

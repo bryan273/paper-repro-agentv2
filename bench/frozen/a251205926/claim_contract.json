@@ -1,0 +1,191 @@
+{
+ "title": "BalLOT: Balanced k-means clustering with optimal transport",
+ "summary": "The paper formulates balanced k-means as alternating minimization over an optimal-transport coupling, yielding BalLOT, which replaces Lloyd assignment with a rectangular transportation problem. It proves integrality, average-landscape optimality, and one-step planted-cluster recovery guarantees under balanced mixture/stochastic ball models, including a k=2 diameter-initialization threshold Δ>2√2. Numerical experiments compare exact BalLOT, entropic BalLOT, Lloyd, replicated-centroid matching, and an SDP on synthetic data.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "BalLOT with diameter initialization achieves one-step recovery on the balanced stochastic ball model when k=2 and the planted separation satisfies Δ>2√2 (≈2.8284), with probability 1−e^{−Ω_Δ(n)}.",
+   "metric": "minimum separation threshold Δ for guaranteed one-step recovery",
+   "dataset": "balanced stochastic ball model (synthetic)",
+   "split": "k=2, n/k points per cluster, n large",
+   "value": 2.828427,
+   "unit": "separation Δ",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row BalLOT, column Separation (k = 2), citing Corollary 11; also Theorem 10(a)",
+   "config_for_value": "balanced stochastic ball model, k=2, diameter initialization, one BalLOT assignment step; guarantee holds for Δ>2√2",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes for n≈2000 and many trials in d=2",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C2",
+   "statement": "For k=2 under the balanced stochastic ball model, any initialization with Δcosθ≥2 achieves one-step recovery almost surely; Δcosθ=2 is the threshold.",
+   "metric": "Δcosθ one-step recovery threshold",
+   "dataset": "balanced stochastic ball model (synthetic)",
+   "split": "k=2, d≥2",
+   "value": 2.0,
+   "unit": "Δcosθ threshold",
+   "higher_is_better": false,
+   "table_ref": "Theorem 8(a)",
+   "config_for_value": "k=2, d≥2, balanced stochastic ball model, distinct initial centroids, one BalLOT assignment step",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes",
+   "quote": "If ∆cos θ ≥2, then almost surely, BalLOT achieves one-step recovery.",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "In the m-coupon-collecting initialization experiment with d=2, n=1200, k=3, Δ=3, and ε=0.4, 93.9% of trials satisfy r≤1/2=Δ/2−1, the sufficient condition for one-step recovery from Theorem 7.",
+   "metric": "% trials with r ≤ 1/2",
+   "dataset": "balanced stochastic ball model (synthetic)",
+   "split": "d=2, n=1200, k=3, Δ=3, ε=0.4, 1500 trials",
+   "value": 93.9,
+   "unit": "% trials",
+   "higher_is_better": true,
+   "table_ref": "Figure 8 right, point (0.5, 0.061); Experiment 23",
+   "config_for_value": "d=2, n=1200, k=3, equilateral centers side Δ=3, ε=0.4, m=9, noise ||g||∼(Unif[0,1])^α with second-moment condition tight, 1500 trials",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 1500 trials at n=1200, k=3",
+   "quote": "In 93.9% of the trials, r ≤1/2 = ∆/2 −1, in which case Theorem 7 guarantees one-step recovery.",
+   "page": 21
+  },
+  {
+   "id": "C4",
+   "statement": "Appendix B gives a Δ=2 deterministic counterexample where the unique diameter pair makes a swap favorable: the swapped assignment cost is 4.42 while the planted assignment cost is 4.64.",
+   "metric": "squared-distance assignment cost for the swap",
+   "dataset": "deterministic ball counterexample (synthetic)",
+   "split": "k=2, five points per cluster, Δ=2",
+   "value": 4.42,
+   "unit": "squared-distance cost",
+   "higher_is_better": false,
+   "table_ref": "Appendix B, Figure 9",
+   "config_for_value": "two five-point clusters in unit balls centered at (-1,0) and (1,0); unique diameter pair (-1,-0.95),(1,0.95); points x1=(-0.4,0.45), x2=(0.4,-0.45)",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "The cost of swapping these two points relative to the planted assignment is ∥x1 −μ0 2∥2 + ∥x2 −μ0 1∥2 = 4.42",
+   "page": 24
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the user's hinted central result and is cheaper than SDP/full convergence experiments: it needs only synthetic k=2 data, a diameter-initialized exact transportation assignment, and a one-step partition check."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the paper reports no repeated-run std for the Δ threshold and separation is an unbounded value, so use 10% relative tolerance around 2√2."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Represent the assignment by a coupling F on the transportation polytope U_{n,k}, with nonnegative entries, row sums 1/n, and column sums 1/k.",
+   "cite": "Section 1.2, definition of U_{n,k}",
+   "quote": "The row constraints distribute the mass 1/n of each data point among the cluster labels",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Use squared Euclidean distances C_ij=||x_i−μ_j||^2 as the assignment cost; do not use unsquared distances.",
+   "cite": "Section 1.2, equation (4) and Kantorovich cost discussion",
+   "quote": "In our setting, a = 1 n1n, b = 1 k1k, and Cij = ∥xi −μj∥2.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "After each assignment, update centroids by μ^{t+1}=k X F^{t+1}.",
+   "cite": "Equation (5)",
+   "quote": "Differentiating with respect to the centroids gives that the unique minimizer is μ = kXF",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "For full BalLOT runs, stop when the Frobenius norm ||μ^{t+1}−μ^t||_F is below the chosen tolerance.",
+   "cite": "Equation (5), stopping rule",
+   "quote": "We terminate once ∥μt+1−μt∥F is below a prescribed tolerance.",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "For the target k=2 experiment, initialize with a diameter pair (x_a,x_b) maximizing pairwise distance among data points.",
+   "cite": "Section 2.4, diameter initialization",
+   "quote": "In the case where k = 2, we consider the diameter initialization, which initializes BalLOT at any pair (xa, xb) such that",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Generate balanced data with exactly n/k points per cluster and unit-ball noise around centers whose minimum separation is Δ.",
+   "cite": "Section 1.3 and Definition 3, balanced stochastic ball model",
+   "quote": "n/k points are drawn at random from each of k unit balls, where the minimum separation between ball centers is denoted by ∆.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Evaluate one-step recovery as equality of the first induced partition to the planted partition, up to a permutation of cluster labels.",
+   "cite": "Definition 5, one-step recovery",
+   "quote": "if F 1 is the integral coupling induced by the planted clustering, up to a permutation of the cluster labels.",
+   "page": 5
+  },
+  {
+   "id": "R8",
+   "stmt": "Use an exact linear-programming/transportation solver for exact BalLOT so that the assignment vertex is integral whenever k divides n.",
+   "cite": "Appendix A, Fact 1",
+   "quote": "When k divides n, the extreme points of Un,k are precisely the integral couplings.",
+   "page": 24
+  },
+  {
+   "id": "R9",
+   "stmt": "For the central k=2 guarantee, test separations at and above the theoretical threshold Δ=2√2 and expect near-certain one-step recovery for large n.",
+   "cite": "Theorem 10(a); Corollary 11; Table 1",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R10",
+   "stmt": "For the coupon-collecting experiment, draw m column vectors uniformly without replacement, use m=ceil(k log(2k/ε)), and declare two sampled points adjacent when their distance is at most min{Δ−2,2}.",
+   "cite": "Section 2.4, m-coupon-collecting initialization; Theorem 10(b)",
+   "quote": "the m-coupon-collecting initialization, which first draws m column vectors from X uniformly without replacement.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "For synthetic stochastic-ball experiments, report the fraction of independent trials in which the planted clustering is exactly recovered.",
+   "cite": "Experiment 16 description",
+   "quote": "For each value of ∆and each dimension, run 500 trials and record the fraction of trials in which each algorithm exactly recovers the planted clustering.",
+   "page": 18
+  },
+  {
+   "id": "R12",
+   "stmt": "The stochastic ball model noise must be rotationally invariant and supported in the unit Euclidean ball.",
+   "cite": "Definition 3, balanced stochastic ball model",
+   "quote": "g has a rotationally invariant distribution supported in the unit Euclidean ball.",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic balanced stochastic ball model for the k=2 diameter-initialization target",
+   "how_to_get": "Generate n/k points per cluster as center plus i.i.d. rotational-invariant unit-ball noise; choose centers separated by Δ≈2√2 or larger; no external data needed."
+  },
+  {
+   "name": "Synthetic deterministic ball counterexample in Appendix B",
+   "how_to_get": "Use the two five-point clusters listed in Appendix B with centers (-1,0),(1,0), unique diameter pair (-1,-0.95),(1,0.95), and points x1=(-0.4,0.45), x2=(0.4,-0.45)."
+  },
+  {
+   "name": "Synthetic m-coupon-collecting experiment data",
+   "how_to_get": "Generate d=2, n=1200, k=3, Δ=3 equilateral-center balanced stochastic ball data with ||g||∼(Unif[0,1])^α chosen so the Theorem 10(b) second-moment condition is tight."
+  }
+ ],
+ "code_links": [
+  "https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems-v2-3"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2512.05926",
+  "kind": "arxiv",
+  "arxiv_id": "2512.05926",
+  "url": "https://arxiv.org/abs/2512.05926",
+  "title": "BalLOT: Balanced k-means clustering with optimal transport",
+  "pages": 27
+ }
+}

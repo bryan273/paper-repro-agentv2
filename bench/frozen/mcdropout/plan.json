@@ -1,0 +1,129 @@
+{
+ "approach": "This is a partial_release reproduction: we keep the authors' released data and the exact 20 per-split train/test index files from https://github.com/yaringal/DropoutUncertaintyExps (bostonHousing/data/data.txt, index_train_i.txt, index_test_i.txt, dropout_rates.txt, tau_values.txt, n_epochs.txt, n_hidden.txt) and their grid-search-over-dropout-rate-and-tau protocol, but re-implement the 1-hidden-layer/50-unit dropout network plus the MC-dropout training/evaluation loop in PyTorch (CPU) because the original Keras 2.2.0 + Theano 0.8.2 stack and its Python-2 source cannot run on Python 3.12 (this is the single documented deviation from R13). For each of the first 5 of the 20 released Boston Housing splits we carve an 80/20 train/validation split from the training indices, grid-search dropout rate and tau by validation log-likelihood, set the L2 weight decay from the searched tau and l=1e-2 via the eq.(7) relation exactly as coded in net/net.py, train the final model for the fixed epoch budget (10x the base schedule, ~400 epochs, no early stopping) with Adam/batch-32, and evaluate test RMSE (inverse-transformed to original target units) and predictive log-likelihood with T=1000 MC-dropout stochastic forward passes. reproduce.py aggregates mean±standard-error over the 5 splits, writes results/metrics.json, and prints the authors' released per-split result files for direct comparison. The expected point estimate is ~2.83-2.97 (inside the 0.19 tolerance around C1=2.97) but with a roughly 2x wider standard error (5 of 20 splits), so the honest verdict is partially_reproduced.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Single place for every hyperparameter and path: architecture (1x50, ReLU, Xavier init), dropout probabilities, l=1e-2, tau/dropout grid read from the repo data dir, final epoch budget, batch size 32, Adam lr, T=1000, standardization/inverse-transform flags, no-early-stopping flag, seed, and the scale-down split list. Each value annotated with the paper value or assumption id.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R5",
+    "R6",
+    "R7",
+    "R10"
+   ]
+  },
+  {
+   "path": "data_utils.py",
+   "purpose": "Load UCI_Datasets/bostonHousing/data/data.txt, select feature/target columns from index_features.txt and index_target.txt, load index_train_i.txt / index_test_i.txt for split i, standardize inputs AND targets on the training statistics, carve a seeded 80/20 train/validation split from the training indices, and expose an inverse_transform for targets so RMSE is reported in original units. Also reads/parses dropout_rates.txt, tau_values.txt, n_epochs.txt, n_hidden.txt, n_splits.txt.",
+   "requirement_ids": [
+    "R11",
+    "R10",
+    "R7"
+   ]
+  },
+  {
+   "path": "model.py",
+   "purpose": "PyTorch nn.Module for the Table-1 regression net: Linear(Q,50) -> Dropout(p_input) -> ReLU -> Linear(50,1) -> Dropout(p_output), Glorot/Xavier-uniform initialization. Dropout is applied BEFORE every weight layer and is switchable ON at test time (model.train() dropout semantics) for MC sampling; exposes a flag to run without dropout for the deterministic sanity baseline.",
+   "requirement_ids": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "path": "mc_dropout.py",
+   "purpose": "Core ported logic: compute per-layer L2 weight decay lambda from tau, l=1e-2 and N exactly as in the authors' net/net.py (paper eq. 7); train with Adam/batch-32 for a fixed number of epochs and no early stopping; run a grid search over (dropout_rate, tau) scored by validation predictive log-likelihood (eq. 8); retrain the final model and evaluate test RMSE (eq. 6, inverse-transformed) and test predictive log-likelihood with T=1000 MC dropout forward passes.",
+   "requirement_ids": [
+    "R3",
+    "R5",
+    "R6",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: loops over the configured Boston Housing splits (default 0-4 of the released 20), calls mc_dropout per split, collects per-split test RMSE and LL, computes mean and standard error (std/sqrt(n)), checks tolerance against C1=2.97 +/-0.19, and writes results/metrics.json. Supports --smoke for a tiny data-flow run and --dataset/--split-count flags.",
+   "requirement_ids": [
+    "R4",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "compare_with_released.py",
+   "purpose": "Reads the authors' released result files in UCI_Datasets/bostonHousing/results/ (test_MC_rmse_100_xepochs_1_hidden_layers.txt, test_ll_..., test_tau_...) and prints them next to our per-split numbers, to document fidelity and flag protocol drift.",
+   "requirement_ids": []
+  }
+ ],
+ "config": {
+  "dataset": "bostonHousing (UCI, N=506, Q=13 from index_features.txt) (R11)",
+  "repo_path": "DropoutUncertaintyExps (paper GitHub clone) (R11)",
+  "n_hidden_layers": "1 (R1, data/n_hidden.txt)",
+  "n_hidden_units": "50 (R1, Sec 5.3)",
+  "activation": "ReLU (A1, medium risk)",
+  "dropout_rate_input_to_hidden": "0.05 (R2, A2)",
+  "dropout_rate_hidden_to_output": "0.005 (R2, A2)",
+  "dropout_rates_grid": "read verbatim from data/dropout_rates.txt (repo grid-search protocol supersedes the paper's 40-iter BO, R4)",
+  "tau_values_grid": "read verbatim from data/tau_values.txt (R4)",
+  "prior_length_scale_l": "1e-2 (R7)",
+  "weight_decay_lambda": "computed from searched tau, l=1e-2 and N exactly as in net/net.py (paper eq. 7, R3); A7 records lambda = l^2/(2*N*tau^2) as the reader's candidate, but the released source is authoritative - agent must read net/net.py and use its expression",
+  "n_epochs_base": "read from data/n_epochs.txt",
+  "epoch_multiplier_final": "10x base / the multiplier that generated the released *_100_xepochs_* files; final budget should be ~400 epochs, fixed, NO early stopping (R5, R12, A10)",
+  "batch_size": "32 (R6)",
+  "optimizer": "Adam (R6)",
+  "adam_lr": "1e-3 (A6, medium risk)",
+  "n_mc_samples_T": "1000 (A5/A14, low risk)",
+  "val_fraction_of_train": "0.20 (A3, high risk)",
+  "standardize_inputs": "True, fit on train only (A4)",
+  "standardize_targets": "True, fit on train only (A4)",
+  "rmse_units": "original target units via inverse_transform (A13)",
+  "predictive_ll": "regression MC approximation, eq. (8), using tau as observation precision (R9)",
+  "shuffle_batches": "True (A11)",
+  "weight_init": "Glorot/Xavier uniform (A9)",
+  "early_stopping": "False (R12)",
+  "seed": "fixed, e.g. 0 (A12)",
+  "n_splits_default": "5 of 20 released splits (scale-down; R10 says 20, budget forces 5 - state explicitly in output)",
+  "full_split_list": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "smoke_overrides": "split 0, 2 epochs, T=10, single grid point, 64 train samples"
+ },
+ "steps": [
+  "1. Environment: verify python>=3.12, numpy/scipy/pandas/scikit-learn present, then `pip install torch --index-url https://download.pytorch.org/whl/cpu` (CPU wheel) and `python -c \"import torch;print(torch.__version__)\"`. Do NOT attempt to install Theano/Keras 2.2/TF1 - they are uninstallable on 3.12 (documented blocker; deviation from R13).",
+  "2. Repo check: confirm DropoutUncertaintyExps/ is present; assert existence of UCI_Datasets/bostonHousing/data/{data.txt, index_features.txt, index_target.txt, dropout_rates.txt, tau_values.txt, n_epochs.txt, n_hidden.txt, n_splits.txt} and index_train_0..19.txt / index_test_0..19.txt, plus results/ releasing test_MC_rmse_100_xepochs_1_hidden_layers.txt.",
+  "3. Read experiment.py and net/net.py end-to-end; write down (in a notes file or docstring) the exact protocol: how the 80/20 train-val split is formed, how (dropout_rate, tau) are grid-searched and scored, how weight decay lambda is derived from tau/l/N, the exact epoch count and multiplier, and how RMSE and eq.(8) log-likelihood are computed. This dictation of the authors' logic is what the PyTorch port must mirror.",
+  "4. Parse the bostonHousing data dir config files and print them (dropout rates, tau values, n_epochs, n_hidden, n_splits, index_features, index_target) so the counts drive the grid size.",
+  "5. Write config.py with the values above (paper/assumption tags inline).",
+  "6. Write data_utils.py: load_data(split) -> (X_train, y_train, X_val, y_val, X_test, y_test, scaler_y); standardize X and y on train statistics; verbose shapes. No torch import needed here.",
+  "7. Write model.py: DropoutRegressor(Q, hidden=50, p_in, p_out) with dropout before each weight layer; keep_dropout_at_eval flag.",
+  "8. Write mc_dropout.py: compute_lambda(tau,l,N) reading net/net.py's formula; train_model(...) (Adam lr=1e-3, batch 32, fixed epochs, shuffled); mc_predict(model, X, T=1000) -> mean, variance; rmse_inverse(y, yhat_mean, scaler_y); predictive_log_likelihood(...) per eq.(8)/net.py; grid_search(...) scoring by validation LL.",
+  "9. Write reproduce.py: iterate config.full_split_list, run grid search then final train then MC test eval, store per-split results, compute mean and SE = std/sqrt(n), set within_tolerance = |mean - 2.97| <= 0.19, dump results/metrics.json including split count, config snapshot, and the authors' released values.",
+  "10. Write compare_with_released.py to read the authors' results/*_100_xepochs_1_hidden_layers.txt files and print alongside ours.",
+  "11. Run the intermediate checks (see intermediate_checks) and fix any that fail before the full run.",
+  "12. Smoke test: `python reproduce.py --smoke` (split 0, 2 epochs, T=10, 1 grid point, 64 samples) - assert finite RMSE/LL, correct tensor shapes, <60 s.",
+  "13. Full run: `python reproduce.py --dataset bostonHousing --split-count 5` -> 5 splits x (grid search + 10x-epoch final train + T=1000 MC eval).",
+  "14. Inspect results/metrics.json: mean RMSE vs 2.97 with tolerance 0.19; compare to the authors' released 2.83/2.90; confirm the printed SE is ~2x the paper's because only 5 of 20 splits are used.",
+  "15. If budget remains after the 5-split Boston run, add a cheap secondary confirmation on Yacht Hydrodynamics (N=308), same protocol, and append it to metrics.json.",
+  "16. Write a short summary block into results/metrics.json stating the deviation (5/20 splits, grid-search instead of BO, PyTorch instead of Keras/Theano) and the resulting verdict (partially_reproduced)."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` runs only split 0 on the first 64 training rows for 2 epochs with T=10 MC forward passes and a single (dropout,tau) grid point; it asserts the data loader returns correctly shaped train/val/test arrays, the net has 751 parameters, training losses are finite and decreasing, MC predictions have shape (n_test,) with non-negative variance, and RMSE/log-likelihood are finite scalars. It writes results/smoke_metrics.json and must finish in under ~60 s, proving the full data->train->MC-eval->JSON flow before the expensive run.",
+ "intermediate_checks": [
+  "Data integrity: data.txt has 506 rows and Q columns equal to index_features.txt; index_train_i.txt and index_test_i.txt are disjoint and their union is all 506 indices; every index is in range.",
+  "Split hygiene: the 80/20 validation set is drawn only from training indices, disjoint from the test indices, and reproducible from the fixed seed (A3/A8).",
+  "Grid files parse: dropout_rates.txt and tau_values.txt yield the expected number of values (print them); grid size = len(rates)*len(taus).",
+  "Parameter count: 13*50+50 + 50*1+1 = 751 parameters; print and assert this matches the instantiated model.",
+  "Weight-decay sanity: print lambda for the searched tau values and N=train size; assert lambda > 0 and varies monotonically with tau as eq.(7)/net.py implies; verify lambda matches net/net.py's formula on a hand-computed example.",
+  "Target scaling: after standardization the train target has mean~0, std~1; inverse_transform(standardize(y))==y within 1e-8.",
+  "Sanity baseline: fit a plain (dropout-off at eval, or a least-squares linear) model on split 0 and confirm test RMSE is in a plausible Boston range (~3-6), i.e. the pipeline is not degenerate before the dropout run.",
+  "Authors' anchor: read UCI_Datasets/bostonHousing/results/test_MC_rmse_100_xepochs_1_hidden_layers.txt and record the released per-split RMSEs (expect point estimate ~2.83-2.97) so our numbers can be compared immediately after the full run."
+ ],
+ "entrypoint": "python reproduce.py --dataset bostonHousing --split-count 5",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~60 min. Setup + reading experiment.py/net.py + writing the PyTorch port: ~15-20 min. Intermediate checks: ~5 min. Smoke test: ~1-2 min. Full 5-split Boston Housing run (grid search + 400-epoch final train + T=1000 MC eval, ~2-4 min/split on the CPU cores): ~10-20 min. Aggregation, comparison to released files, and writing results/metrics.json: ~5 min. Remaining ~5-10 min reserved as buffer; if the port finished fast and the buffer is intact, extend the split list toward 10 before considering any reduction of epochs or T (the route forbids shrinking the estimator)."
+}

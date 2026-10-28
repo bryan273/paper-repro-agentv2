@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "RIFormer-S12 with identity mapping and soft distillation without labels achieves 74.05% top-1 accuracy on ImageNet-1K (120 epochs).",
+  "table_ref": "Table 2, row 5",
+  "dataset": "ImageNet-1K"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Training a 12M-parameter model for 120 epochs on ImageNet-1K requires GPU acceleration; on CPU it would take days, so the target is not feasible on a normal laptop within a few hours."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires training on ImageNet-1K (1.2M images) for 120 epochs",
+  "Needs a pre-trained teacher model (GFNet-H-B) for distillation",
+  "Requires GPU for reasonable training time"
+ ],
+ "suitable": false,
+ "id": "2304.05659",
+ "title": "RIFormer: Keep Your Vision Backbone Effective While Removing Token Mixer",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

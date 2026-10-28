@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "UVCOM achieves R1@0.7 = 36.64 on Charades-STA test split (moment retrieval), outperforming UniVTG (35.65) and QD-DETR (32.55)",
+  "table_ref": "Table 2",
+  "dataset": "Charades-STA"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/EasonXiao-888/UVCOM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 30,
+  "ref_minutes": 720,
+  "gpu_speedup": 4,
+  "basis": "Training UVCOM from scratch for 200 epochs on Charades-STA with pre-extracted SlowFast+CLIP features is feasible on CPU but slow (est. 8-12 h); pre-extracted features must be downloaded or regenerated, and the repo may not include exact configs."
+ },
+ "blockers": [
+  "Pre-extracted SlowFast/CLIP features for Charades-STA may not be directly downloadable from the repo",
+  "Training 200 epochs on CPU is slow; GPU strongly recommended for reasonable turnaround",
+  "Exact hyperparameters (lr drop, batch size) are in the paper but code/configs may be incomplete"
+ ],
+ "suitable": true,
+ "id": "2311.16464",
+ "title": "Bridging the Gap: A Unified Video Comprehension Framework for Moment Retrieval and Highlight Detection",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

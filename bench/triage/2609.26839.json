@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "GATED-LWCal mean ECE = 0.122 (and NLL = 0.396) over 432 noisy random-forest cells, vs raw RF ECE 0.188",
+  "table_ref": "Table III",
+  "dataset": "Nine local scikit-learn/synthetic binary tabular tasks (Breast Cancer, Wine 0/2, Digits High/Even, Iris, 3 synthetic)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/ZemingL/lwcal"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Paper reports the full 432-cell RF study runs in ~6 min on a 96-thread host using only local sklearn datasets and 160-tree forests; on 8 cores expect ~20-40 min, all CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2609.26839",
+ "title": "LWCal: Loss-Weighted Calibration for Tabular Classifiers with Noisy Calibration Labels",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

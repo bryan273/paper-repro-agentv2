@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Mean classification accuracy of the B-PILD classifier on Setup 1 (bivariate normal distributions) over 100 simulations.",
+  "table_ref": "Table 1, row 'Setup 1', column 'B-PILD'",
+  "dataset": "Simulated bivariate normal data (Setup 1) with 600 points per simulation, 100 replications."
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code provided; must implement β-ILD, PILD, and classifiers from scratch. 100 simulations with 600 points each, spatial depth computations O(n^2) per point, but manageable on CPU. Estimated 2 hours for coding and running."
+ },
+ "blockers": [
+  "No code or data links provided; must implement all methods from scratch.",
+  "Requires implementing spatial depth, β-neighborhoods, PILD matrix, and classifiers.",
+  "Cross-validation for B-PILD parameter adds complexity."
+ ],
+ "suitable": true,
+ "id": "2506.14108",
+ "title": "$β$-integrated local depth and corresponding partitioned local depth representation",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

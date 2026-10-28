@@ -1,0 +1,240 @@
+{
+ "title": "Extended Isolation Forest with feature sensitivities",
+ "summary": "The paper addresses the lack of controllable feature sensitivity in isolation-based anomaly detection. It proposes the Anisotropic Isolation Forest (AIF), an EIF variant whose split hyperplanes have normals drawn from anisotropic Gaussian or Gaussian-mixture distributions, plus directional sensitivity measures. On the Diabetes dataset, AIF(A3) with increased Age/DPF sensitivity finds anomalies with significantly higher Age and DPF values than EIF (Table I p=0.01 and 0.05).",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "On the Diabetes dataset, an independent-samples t-test comparing Age of anomalies detected by EIF versus AIF(A3) gives p = 0.01; AIF(A3) anomalies have higher Age.",
+   "metric": "two-sample t-test p-value for mean Age in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.01,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row Age, column AIF(A3)",
+   "config_for_value": "EIF and AIF(A3); A3 = 1/1000 diag(1000,1000,1,...,1) with Age and DPF as first two features; 500 trees per forest; subsample 128; top 10% anomalies; independent-samples t-test on Age.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": "For age and DPF, the t-test yields p-values below 0.05, indicating that AIF(A3) finds anomalies with significantly higher values of these features",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "On the Diabetes dataset, an independent-samples t-test comparing DiabetesPedigreeFunction of anomalies detected by EIF versus AIF(A3) gives p = 0.05; AIF(A3) anomalies have higher DPF.",
+   "metric": "two-sample t-test p-value for mean DiabetesPedigreeFunction in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.05,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row DiabetesPedigreeFunction, column AIF(A3)",
+   "config_for_value": "EIF and AIF(A3); A3 = 1/1000 diag(1000,1000,1,...,1) with Age and DPF as first two features; 500 trees per forest; subsample 128; top 10% anomalies; independent-samples t-test on DPF.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": "For age and DPF, the t-test yields p-values below 0.05, indicating that AIF(A3) finds anomalies with significantly higher values of these features",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for BloodPressure between EIF and AIF(A3) anomalies gives p = 0.01.",
+   "metric": "two-sample t-test p-value for mean BloodPressure in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.01,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row BloodPressure, column AIF(A3)",
+   "config_for_value": "EIF and AIF(A3); A3 = 1/1000 diag(1000,1000,1,...,1); 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on BloodPressure.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C4",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for Age between EIF and AIF(A4) anomalies gives p = 0.01.",
+   "metric": "two-sample t-test p-value for mean Age in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.01,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row Age, column AIF(A4)",
+   "config_for_value": "EIF and AIF(A4); A4 = diag(0.001,0.001,1,...,1) with Age and DPF as first two features; 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on Age.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": "Feature AIF(A3) AIF(A4) AIF(A5) Age 0.01 0.01 0.05",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for DiabetesPedigreeFunction between EIF and AIF(A4) anomalies gives p = 0.01.",
+   "metric": "two-sample t-test p-value for mean DiabetesPedigreeFunction in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.01,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row DiabetesPedigreeFunction, column AIF(A4)",
+   "config_for_value": "EIF and AIF(A4); A4 = diag(0.001,0.001,1,...,1); 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on DPF.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C6",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for Age between EIF and AIF(A5) anomalies gives p = 0.05.",
+   "metric": "two-sample t-test p-value for mean Age in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.05,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row Age, column AIF(A5)",
+   "config_for_value": "EIF and AIF(A5); A5 = 1/100 diag(0.01,100,1,...,1) with Age low and DPF high; 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on Age.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": "Feature AIF(A3) AIF(A4) AIF(A5) Age 0.01 0.01 0.05",
+   "page": 8
+  },
+  {
+   "id": "C7",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for DiabetesPedigreeFunction between EIF and AIF(A5) anomalies gives p = 0.01.",
+   "metric": "two-sample t-test p-value for mean DiabetesPedigreeFunction in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.01,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row DiabetesPedigreeFunction, column AIF(A5)",
+   "config_for_value": "EIF and AIF(A5); A5 = 1/100 diag(0.01,100,1,...,1); 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on DPF.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C8",
+   "statement": "On the Diabetes dataset, the independent-samples t-test for BloodPressure between EIF and AIF(A5) anomalies gives p = 0.95.",
+   "metric": "two-sample t-test p-value for mean BloodPressure in detected anomalies",
+   "dataset": "Diabetes dataset (Kaggle Pima Indians Diabetes)",
+   "split": "all 768 observations; anomalies = top 10% anomaly scores per model",
+   "value": 0.95,
+   "unit": "p-value",
+   "higher_is_better": false,
+   "table_ref": "Table I, row BloodPressure, column AIF(A5)",
+   "config_for_value": "EIF and AIF(A5); A5 = 1/100 diag(0.01,100,1,...,1); 500 trees; subsample 128; top 10% anomalies; independent-samples t-test on BloodPressure.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min per 500-tree forest; table ~10 min",
+   "quote": null,
+   "page": null
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user target hint names exactly this value; it is also the cheapest direct reproduction of the paper's central Diabetes sensitivity result: one EIF and one AIF(A3) forest plus a t-test on Age."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: the p-value is bounded in [0,1] and the anomaly sets are smaller than 2,000 examples; the paper prints p-values as fractions to two decimals, so the bounded-score band is 0.02."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Sample split normal vectors from N(0,A) (or a Gaussian mixture) for AIF; do not use isotropic N(0,I) for the AIF model.",
+   "cite": "Section II-A, paragraph defining AIF(A)",
+   "quote": "we consider the EIF constructed using hyperplanes whose normal vectors are sampled from anisotropic multivariate Gaussian distributions N(0, A)",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Use the EIF baseline with A=I, i.e. normal vectors from N(0,I).",
+   "cite": "Section II-C, Example 1",
+   "quote": "Then AIF(I) reduces to the standard EIF and exhibits constant unit sensitivity in all directions",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Build 500 trees per forest, each trained on a random subsample of 128 points.",
+   "cite": "Section III-B, Diabetes experiment",
+   "quote": "each consisting of 500 search trees, with each tree trained on a subsample of 128 randomly selected data points.",
+   "page": 7
+  },
+  {
+   "id": "R4",
+   "stmt": "Label the top 10% anomaly scores within each model as anomalies and compare these sets.",
+   "cite": "Section III-B, Diabetes experiment",
+   "quote": "For each model, we mark as anomalies the data points whose anomaly scores fall within the top 10% of all scores produced by that model.",
+   "page": 7
+  },
+  {
+   "id": "R5",
+   "stmt": "For AIF(A3), set A3 = 1/1000 diag(1000,1000,1,...,1), mapping the first two diagonal entries to Age and DPF.",
+   "cite": "Section III-B, Diabetes experiment",
+   "quote": "so that the features age and DPF are assigned greater sensitivity, while all other features retain standard sensitivity",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Compute anomaly scores with s(x)=2^{-E(h(x))/c(n)}, c(n)=2H(n-1)-2(n-1)/n, and H(n)=ln(n)+0.5772156649.",
+   "cite": "Section II-A, Equations (2)-(3)",
+   "quote": "where E(h(x)) denotes the average path length of x across all trees, and c(n) is a normalization constant",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Traverse trees using stored split normal and intercept, sending (x-p)'ω <= 0 left and > 0 right.",
+   "cite": "Algorithm 3",
+   "quote": "During the scoring phase, a candidate observation is passed down each search tree in the forest.",
+   "page": 2
+  },
+  {
+   "id": "R8",
+   "stmt": "Compare EIF versus AIF anomaly sets per feature with an independent-samples t-test on feature means; the target is Age.",
+   "cite": "Section III-B, Table I",
+   "quote": "We compare the mean values of the features of the anomalies identified by the EIF and AIF(A3) using a t-test for independent samples.",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Use Table I feature ordering Age, DPF, Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI when mapping A's coordinates.",
+   "cite": "Table I, Feature column",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R10",
+   "stmt": "For AIF(A4), set A4 = diag(0.001,0.001,1,...,1) with Age and DPF as the first two entries.",
+   "cite": "Section III-B, reduced-sensitivity scenario",
+   "quote": "so that the features age and DPF are assigned lower sensitivity, while all other features retain standard sensitivity",
+   "page": 8
+  },
+  {
+   "id": "R11",
+   "stmt": "For AIF(A5), set A5 = 1/100 diag(0.01,100,1,...,1): Age low, DPF high.",
+   "cite": "Section III-B, mixed-sensitivity scenario",
+   "quote": "the feature age is assigned a lower sensitivity, while the feature DPF is assigned a higher sensitivity",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "Diabetes dataset (Pima Indians Diabetes)",
+   "how_to_get": "https://www.kaggle.com/datasets/mathchi/diabetes-data-set"
+  }
+ ],
+ "code_links": [
+  "https://github.com/elliot1776/AIF/tree/main"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2602.09704",
+  "kind": "arxiv",
+  "arxiv_id": "2602.09704",
+  "url": "https://arxiv.org/abs/2602.09704",
+  "title": "Extended Isolation Forest with feature sensitivities",
+  "pages": 9
+ }
+}

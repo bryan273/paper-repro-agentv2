@@ -1,0 +1,198 @@
+{
+ "approach": "The route is full_release against the authors' R package (github.com/seanq31/BagWhiskerPlot), but the sandbox can only execute python/pip/git, so the plan first probes for Rscript and, when (as expected) it is absent, performs a line-by-line Python port of the toy-example path (depth median + bag -> MCD covariance -> chi-square p-values -> Holm/BH/PFER -> lambda_stat, lambda_data, lambda=max). The R sources stay the ground truth: an inspection script greps R/calc_bag_whisker.R and scripts/toy_example/*.R and dumps the exact formulas (especially lambda_stat and lambda_data) into results/r_source_snippets.txt, and the port mirrors them. The port is validated against the paper's own published intermediates (d^2 vector, p-value vector, bag membership), which is a stronger check than a black-box script run. The authors' reported covariance diag(53/3, 17) is exactly recovered by the raw (unscaled) minimum-determinant h=7 subset covariance about the depth median (7,5), i.e. all points except z8, so the toy numbers are fully deterministic; this is documented as a deviation from assumption A5 (consistency scaling), verified numerically against C4/C5. The target C1 (lambda=8) is additionally robust because lambda is dominated by the purely geometric lambda_data=8, which comes from z7 lying exactly 8 bag-radii from the depth median.",
+ "files": [
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for every hyperparameter: toy data constant, FWER q=0.1, FDR q=0.1, PFER q=0.5, fixed comparison factor 3, MCD subset size h=7, chi-square df=2, seeds, tolerance tables. Each entry annotated with paper section or assumption id (A1-A13).",
+   "requirement_ids": [
+    "R7",
+    "R8",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Hardcoded toy dataset Z = {(7,5),(7,7),(9,4),(5,4),(14,9),(0,9),(7,-3),(19,20)} with labels z1..z8 exactly as in Section 4, plus a helper returning the n=8 matrix.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/depth.py",
+   "purpose": "Exact bivariate halfspace depth via all pairwise directions (2*C(n,2) directions, O(n^3), trivial for n=8; documented deviation A2 from the aplpack direction approximation), depth median as center of gravity of the deepest points (A1), and bag construction as the convex hull of the deepest floor(n/2)=4 points (R3, A3).",
+   "requirement_ids": [
+    "R1",
+    "R3"
+   ]
+  },
+  {
+   "path": "src/mcd.py",
+   "purpose": "Minimum Covariance Determinant. For n<=12 exhaustively enumerate all h-subsets (h from config, default n-1=7) and pick the minimum-determinant one, returning the raw covariance about the subset mean with denominator h-1 (reproduces the paper's diag(53/3, 17) exactly). A sklearn.covariance.MinCovDet FAST-MCD path (support_fraction=h/n, random_state=0, optional consistency scaling) is kept for larger n and cross-checking, gated by a flag recording which variant produced the numbers (A4/A5).",
+   "requirement_ids": [
+    "R2",
+    "R4",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/testing.py",
+   "purpose": "Squared Mahalanobis distances d_i^2=(z_i-mu)^T Sigma^-1 (z_i-mu) (R4), chi-square_2 upper-tail p-values p_i=P(chi2_2 >= d_i^2) (R5), Holm-Bonferroni FWER at q=0.1 (R7/A7), Benjamini-Hochberg FDR at q=0.1, PFER with t_adj=q/n=0.0625 (A8), rejection rule p_i <= t_adj (R15/A9), conversion of the adjusted threshold back to d2_adj=-2*log(t_adj) (R8), and lambda_stat = d2_adj/median(d^2) (R9) with the exact expression ported from the R source substituted when it differs (both variants logged).",
+   "requirement_ids": [
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R15"
+   ]
+  },
+  {
+   "path": "src/fence.py",
+   "purpose": "Radial magnification of the bag polygon from mu by a factor lambda (A10), lambda_data = max over non-rejected z_i of ||z_i-mu||/||b_i-mu|| where b_i is the bag-boundary intersection along the ray through z_i (R10, A11 for the empty/degenerate case), final lambda=max(lambda_stat,lambda_data) (R11), inside/outside classification against the drawn fence (R12), and the per-point whisker geometry from bag boundary to each outer point with the transparency gradient spec (R13, A12). Also the fixed-factor-3 comparison for C6.",
+   "requirement_ids": [
+    "R10",
+    "R11",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "src/theory.py",
+   "purpose": "Closed-form checks that need no simulation: C6's count of toy points excluded by the conventional factor 3 (resolve each point's radial ratio against the bag hull) and C7's 0.195% bivariate-normal flag rate computed as 100*P(chi2_2 > 9*median(chi2_2)) = 100*exp(-9*1.3863/2).",
+   "requirement_ids": []
+  },
+  {
+   "path": "scripts/inspect_r_source.py",
+   "purpose": "Pure-Python (no R execution) reader that locates and prints the relevant excerpts of R/calc_bag_whisker.R, R/multiple_testing.R and scripts/toy_example/toy_example_calculation.R: the depth-median rule, the MCD/cov.mcd call, the chi-square p-value, the Holm/BH/PFER branches, the lambda_stat expression and the lambda_data magnification loop, writing them to results/r_source_snippets.txt so the Python port mirrors the authors' code verbatim.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R6",
+    "R9",
+    "R10",
+    "R14"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint. Checks for Rscript (runs the authors' scripts/toy_example/toy_example_calculation.R via subprocess if present, capturing stdout), otherwise runs the validated Python port for FWER/FDR/PFER, computes the C6/C7 theory values, optionally renders the bag-and-whisker figure, compares every claim value to the paper within tolerance (relative 10% for lambda), prints a table, and writes results/metrics.json plus results/summary.md.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "repo": "https://github.com/seanq31/BagWhiskerPlot (route, cloned)",
+  "author_entrypoints": [
+   "scripts/toy_example/toy_example.R",
+   "scripts/toy_example/toy_example_calculation.R"
+  ],
+  "toy_data_Z": "[[7,5],[7,7],[9,4],[5,4],[14,9],[0,9],[7,-3],[19,20]] (paper, Sec 4)",
+  "location_estimator": "halfspace depth median = center of gravity of deepest points (R1, A1)",
+  "depth_algorithm": "exact halfspace depth over all pairwise directions (A2 deviation: paper uses aplpack finite-direction approximation)",
+  "bag_fraction": "0.5 -> floor(n/2)=4 deepest points, convex hull (R3, A3)",
+  "covariance_estimator": "raw minimum-determinant h-subset covariance about the subset mean, denominator h-1 (R2, R14)",
+  "mcd_h": "h = n-1 = 7 (validated: reproduces paper's diag(53/3, 17); A4 default would be h=5)",
+  "mcd_consistency_scaling": "off for the toy example - raw MCD matches C4/C5 exactly; scaled variant computed only as a cross-check (A5 deviation, documented)",
+  "mcd_seed": "0 (A13, only used by the sklearn FAST-MCD fallback)",
+  "p_value": "p_i = chi2.sf(d2_i, df=2) (R5, A6: asymptotic chi-square default)",
+  "fwer": "Holm-Bonferroni, q=0.1 (R7, A7)",
+  "fdr": "Benjamini-Hochberg, q=0.1 (R7, A7)",
+  "pfer": "reject if p_i <= q/n with q=0.5 -> t_adj=0.0625 (R7, A8)",
+  "rejection_rule": "p_i <= t_adj (R15, A9)",
+  "d2_adj": "-2*log(t_adj) for the chi2_2 tail (R8)",
+  "lambda_stat": "d2_adj / median(d2) (R9); exact expression from R/calc_bag_whisker.R substituted if it differs, both values logged",
+  "lambda_data": "max over non-rejected z_i of ||z_i-mu|| / ||b_i-mu||, b_i = bag-boundary intersection of the ray mu->z_i (R10, A10)",
+  "lambda": "max(lambda_stat, lambda_data) (R11)",
+  "fixed_comparison_factor": "3 (C6, Rousseeuw et al. bagplot)",
+  "c7_formula": "100*P(chi2_2 > 9*median(chi2_2)) = 100*exp(-9*1.3862944/2)",
+  "tolerances": {
+   "lambda": "relative 0.1 (contract Rule 4)",
+   "d2_z8": "relative 0.1",
+   "p_z8": "relative 0.1",
+   "counts": "exact"
+  },
+  "expected_paper_values": {
+   "mu": [
+    7,
+    5
+   ],
+   "Sigma": [
+    [
+     17.666666666666668,
+     0.0
+    ],
+    [
+     0.0,
+     17.0
+    ]
+   ],
+   "d2": [
+    0.0,
+    0.2353,
+    0.2854,
+    0.2854,
+    3.7148,
+    3.7148,
+    3.7647,
+    21.3856
+   ],
+   "p": [
+    1.0,
+    0.889,
+    0.867,
+    0.867,
+    0.156,
+    0.156,
+    0.152,
+    2.264e-05
+   ],
+   "lambda_fwer_fdr": 8,
+   "lambda_pfer": 8,
+   "rejected": [
+    "z8"
+   ],
+   "excluded_at_factor_3": 4,
+   "c7_percent": 0.195
+  }
+ },
+ "steps": [
+  "Setup: python -m pip install numpy scipy pandas scikit-learn matplotlib (already present, verify versions); confirm the cloned repo is on disk (git clone https://github.com/seanq31/BagWhiskerPlot if missing) and record the git SHA in results/metrics.json.",
+  "Probe the runtime: python -c \"import shutil;print(shutil.which('Rscript'), shutil.which('R'))\". If Rscript exists, run `Rscript scripts/toy_example/toy_example_calculation.R` from the repo root, tee stdout to results/author_run.log, and check whether it prints lambda/d2/p; if it matches the paper, use it as the primary number and keep the Python port as an independent cross-check. If (expected) Rscript is absent, log the blocker verbatim and continue with the port.",
+  "Run scripts/inspect_r_source.py to dump the authors' exact formulas (depth median, cov.mcd call and arguments, chi-square p-value, Holm/BH/PFER branches, lambda_stat expression, lambda_data magnification loop) to results/r_source_snippets.txt; read that file before writing src/testing.py and src/fence.py so those functions mirror the R code.",
+  "Implement src/config.py, src/data.py, src/depth.py; run the depth stage alone and print depths for z1..z8, the depth median, and the bag point labels. Assert depth median == (7,5) and bag == {z1,z2,z3,z4} (hull vertices (5,4),(9,4),(7,7)).",
+  "Implement src/mcd.py; run with h=7 exhaustive mode and assert Sigma == diag(53/3, 17) to 1e-9 (also print, as a diagnostic only, the h=5 and consistency-scaled variants so the A4/A5 deviation is documented with numbers).",
+  "Implement src/testing.py; compute d2 and p for all 8 points and assert they match the paper's vectors to within 1e-3 relative (d2[7]=21.386, p[7]=2.264e-5). Then compute Holm FWER (q=0.1), BH FDR (q=0.1) and PFER (q=0.5, t_adj=0.0625) rejection sets; assert all three equal {z8}. Record d2_adj and lambda_stat for each procedure (paper: 3.27 FWER, 1.67 PFER; the R-ported expression is authoritative).",
+  "Implement src/fence.py; compute lambda_data by intersecting each ray mu->z_i with the bag hull for the non-rejected points, assert the maximizer is z7 with ratio exactly 8.0 (z5,z6 give 7.25, z8 gives 16.5), then lambda=max(lambda_stat, lambda_data) for all three procedures.",
+  "Implement src/theory.py; compute the fixed-factor-3 outside count (assert 4: z5,z6,z7,z8) and the bivariate-normal flag rate 100*exp(-9*median(chi2_2)/2) (assert 0.1954%).",
+  "Write reproduce.py to orchestrate all stages, apply the relative-10% tolerance checks, print a claim-by-claim PASS/FAIL table for C1-C7, and emit results/metrics.json (keys listed in metric_output) and results/summary.md. Optionally render results/toy_bagwhisker.png with the gradient whiskers (cosmetic, never gating).",
+  "Full run: `python reproduce.py`; inspect results/metrics.json, confirm claim C1 lambda=8 (target), C2 lambda=8, C3 rejected=[z8], C4 d2=21.386, C5 p=2.264e-5, C6 excluded=4, C7=0.195%, and record any deviation (notably lambda_stat FWER 4.38 vs paper 3.27 if the R formula cannot be ported verbatim) as an explicit note in summary.md since it does not change max(lambda_stat, lambda_data)=8."
+ ],
+ "smoke_test": "python reproduce.py --smoke (also reachable as a 20-line inline script): load the 8 toy points, compute depth/median/bag, the h=7 MCD covariance, the 8 d^2 values, the 8 p-values, the three rejection sets and lambda; print one line per item. Expected within the 10% band: mu=(7,5), Sigma=diag(17.667,17), d2[-1]=21.386, p[-1]=2.264e-5, rejected={z8} for FWER/FDR/PFER, lambda_data=8.0, lambda=8. Runtime < 1 s; it exercises the entire data flow (depth -> MCD -> chi-square -> multiple testing -> fence -> lambda) before the full run.",
+ "intermediate_checks": [
+  "Halfspace depth vector for the toy data: z1 must be the unique deepest point (depth 4) and the depth median must be exactly (7,5).",
+  "Bag membership: exactly 4 points (z1,z2,z3,z4) at the 50% depth level; hull vertices (5,4),(9,4),(7,7); (7,5) strictly inside.",
+  "Mean of the 7 non-outlier points equals (7,5) and their sum-of-squares/6 equals (53/3, 17) - the identity that pins down h=7 and the raw (unscaled) covariance.",
+  "Determinant of the chosen h=7 subset covariance (300.33) must be the minimum over all 8 candidate 7-subsets, otherwise the MCD objective disagrees with the paper.",
+  "d^2 vector must equal {0, 0.235, 0.285, 0.285, 3.715, 3.715, 3.765, 21.386} and p vector {1.00, 0.889, 0.867, 0.867, 0.156, 0.156, 0.152, 2.264e-5}; both are printed and diffed against the paper values before any lambda computation.",
+  "Median of d^2 equals exactly 2.0 (average of the 4th and 5th order statistics) - verify the median convention matches the R code, since it is the denominator of lambda_stat.",
+  "Sanity baseline: an unadjusted chi-square test at 0.1 would flag nothing and at 0.5 nothing either; only the multiplicity-adjusted thresholds reject z8 - confirm the multiple-testing code path is actually exercised (t_adj differs from q).",
+  "lambda_data maximizer must be z7 with ratio exactly 8.0; z5 and z6 give 7.25 and z8 gives 16.5 - verify the ray/hull intersection routine against these three hand-computed values.",
+  "Verify max(lambda_stat, lambda_data) is decided by lambda_data for all three procedures (lambda_stat values 1.7-4.4 << 8), so the target claim cannot be broken by small lambda_stat differences."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~25 min of agent time on CPU: 5 min environment/repo/R-probe and R-source inspection (results/r_source_snippets.txt); 3 min writing config/data/depth/MCD and running the depth+MCD smoke checks (these must match to 1e-9 before continuing); 4 min writing testing/fence/theory and the smoke test (<1 s runtime); 2 min for the full run of reproduce.py; 8 min for verification, tolerance table, generated figure and the README/summary write-up; 3 min slack for installing any missing package or for the case where Rscript unexpectedly exists (then a single <1 s R run replaces the port as the primary number, with the port kept as cross-check). The full computation itself is under 1 second; essentially the entire budget is code porting and verification."
+}

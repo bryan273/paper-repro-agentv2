@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "BIC of the proposed S-CG-MoLE model fitted to the (uncontaminated) tone perception data, K=2, reported as -342.8331 (Table 5, S-CG-MoLE column, BIC row)",
+  "table_ref": "Table 5",
+  "dataset": "tone perception data (Cohen 1984), n=150, available in R package mixtools"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "basis": "Data is tiny (n=150) and CPU-only, but no code is released: the S-CG-MoLE ECM algorithm (local-linear kernel gating, contaminated-Gaussian experts, Newton-Raphson, bandwidth CV, EDF-based BIC) must be re-implemented from the paper's equations and debugged to match the reported BIC."
+ },
+ "blockers": [
+  "No code or supplementary material released; all six models' fitting routines (CGMLRs, CG-MoLE, S-GMoLE, S-CG-MoLE) must be written from scratch",
+  "Bandwidth selection via cross-validation and EDF-based degrees of freedom are only loosely specified, so exact BIC reproduction is uncertain",
+  "Reported BIC values are sensitive to initialization and convergence details not documented"
+ ],
+ "suitable": true,
+ "id": "2601.12425",
+ "title": "Robust semi-parametric mixtures of linear experts using the contaminated Gaussian distribution",
+ "pages": 31,
+ "model": "DeepSeek-V4.1-Flash"
+}

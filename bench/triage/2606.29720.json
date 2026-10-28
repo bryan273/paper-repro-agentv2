@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ECE for the SMOTE condition on the pima dataset (mean over both models and ten seeds) = 0.123",
+  "table_ref": "Table IV, row pima, column SMOTE",
+  "dataset": "pima (OpenML ID 37)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Small tabular dataset (768 rows, 8 features) with scikit-learn RF/HGB and SMOTE; 10 seeds x 5-fold CV is a few minutes of CPU, but the exact protocol (calibration split, ECE binning, model hyperparameters) must be re-implemented from the text since no code is linked."
+ },
+ "blockers": [
+  "No code repository linked in the PDF despite the paper claiming a release",
+  "Exact calibration-split fraction and ECE binning details must be inferred from prose"
+ ],
+ "suitable": true,
+ "id": "2606.29720",
+ "title": "The Hidden Cost of Resampling: How Imbalance Correction Degrades Probability Calibration in Tree Ensembles",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

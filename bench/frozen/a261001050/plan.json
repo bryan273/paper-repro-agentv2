@@ -1,0 +1,63 @@
+{
+ "approach": "We will use the authors' GGDPC and DPC implementations from the cloned repository without modifying them. A thin wrapper, reproduce.py, will generate the two-component Gaussian-mixture data at n=500 for 300 replications with a fixed seed, run GGDPC and DPC with center_z=4, disable density screening and optional dendrogram/graph-distance computation, compute ARI against the known labels, and aggregate mean ARI and runtime. Results are written to results/metrics.json and compared to the reported C1 (ARI 0.916) and C5 (ARI 0.898) with a ±0.02 tolerance. This exercises the core density-gradient 1NN graph construction, center selection, and label assignment pipeline (R1-R7, R14) under the paper's Table 1 configuration.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin the Python dependencies (numpy, scipy, scikit-learn, pandas, matplotlib, tqdm) needed by the authors' code and our wrapper.",
+   "requirement_ids": []
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: import GGDPC and DPC from the authors' GGDPC.py, generate the Gaussian-mixture data, run 300 replications at n=500, compute ARI and runtime for both methods, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "n_samples": "500 (paper, Table 1)",
+  "n_replications": "300 (route scale-down; paper uses 1000)",
+  "center_z": "4 (paper, R6)",
+  "seed": "42 (convention, A9)",
+  "mu_lst": "[[0,0],[1,0]] (paper, C1)",
+  "sigma_lst": "[0.09, 0.09] (paper, C1; variance, i.e. 0.3^2)",
+  "bandwidth": "Scott's rule (A1)",
+  "eta": "1.0 (A2)",
+  "den_thres": "None (A7)",
+  "graph_dist": "False (paper runtime excludes dendrogram, C3)",
+  "dendro": "False (paper runtime excludes dendrogram, C3)",
+  "tie_break": "index order (A4)",
+  "gradient_estimator": "analytic gradient of Gaussian KDE (A5)",
+  "cluster_count": "not forced (A6); use center_z threshold"
+ },
+ "steps": [
+  "Clone https://github.com/zhangyk8/GGDPC into the sandbox working directory (if not already present) and cd into it.",
+  "Create and activate a Python 3.12 virtual environment (optional) and run `pip install -r requirements.txt` to install numpy, scipy, scikit-learn, pandas, matplotlib, and tqdm.",
+  "Inspect GGDPC.py and utils.py to confirm the exact parameter names and defaults for bandwidth (h_den/h_grad), gradient step size (eta), density screening (den_thres), and optional outputs (graph_dist, dendro). If the default bandwidth is not Scott's rule, compute Scott's rule from the data and pass it explicitly. If the gradient step size parameter is not present or defaults to something other than 1.0, set it to 1.0. Ensure density screening is disabled by passing den_thres=None.",
+  "Write reproduce.py as described: import GGDPC, DPC, sample_gaussian_mixture; loop over 300 replications with seeds 42..341; for each, generate n=500 data from the two-component Gaussian mixture with mu=[[0,0],[1,0]] and variance=0.09; run GGDPC and DPC with center_z=4, graph_dist=False, dendro=False, den_thres=None; compute ARI with sklearn.metrics.adjusted_rand_score; record runtime; aggregate mean and std; write results/metrics.json with keys for C1 (GGDPC ARI mean/std), C3 (GGDPC runtime mean/std), C5 (DPC ARI mean/std), C6 (DPC runtime mean/std), and metadata.",
+  "Run smoke_test: execute reproduce.py with a small configuration (e.g., N_REPS=2, n_samples=100) by temporarily editing the config or using environment variables. Verify that results/metrics.json is created, ARI values are in [0,1], runtimes are >0, and no exceptions occur.",
+  "Run the full reproduce.py with N_REPS=300 and n_samples=500. This should take about 5-10 minutes on CPU.",
+  "Validate the output: check that mean GGDPC ARI is within 0.02 of 0.916 (target C1), mean DPC ARI is within 0.02 of 0.898 (target C5), and mean runtimes are roughly 0.02-0.05 s per replication for GGDPC and 0.03-0.06 s for DPC, allowing for CPU overhead. If the ARI is off by more than 0.02, investigate parameter settings (bandwidth, eta, center_z) and consider increasing replications to 1000 if time permits.",
+  "Optionally, if the full run finishes quickly and time remains, increase N_REPS to 1000 and re-run to match the paper's Monte Carlo design exactly, then update results/metrics.json."
+ ],
+ "smoke_test": "Temporarily set N_REPS=2 and n_samples=100 in reproduce.py, run it, and confirm results/metrics.json contains finite ARI values (e.g., between 0.5 and 1.0) for both GGDPC and DPC, runtimes around 0.01-0.05 s, and no errors.",
+ "intermediate_checks": [
+  "Confirm the repository files GGDPC.py, dpc_helpers.py, and utils.py are present and importable.",
+  "Check the generated data: n=500 points, approximately 250 from each component, and true labels are 0/1.",
+  "Run a single GGDPC fit on one dataset and verify it returns labels in {-1, 0, 1} with at most 3 unique values and typically 2 clusters.",
+  "Compute ARI for a single replication; it should be >0.8 for GGDPC and >0.8 for DPC.",
+  "Verify that the number of selected centers (from details['cluster_centers']) is typically 2, and that the threshold center_z=4 yields a reasonable number of centers.",
+  "Check that runtime per replication is in the expected range (0.01-0.1 s) and that disabling graph_dist and dendro does not break the function.",
+  "Ensure no ground-truth labels are used inside GGDPC or DPC (R14)."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup (clone, pip install, inspect code): 5 min. Smoke test: 2 min. Full run (300 reps, n=500, both methods): 5-10 min. Validation and aggregation: 2 min. Buffer: 5 min. Total ~20-25 min, within the 30 min reference. If time remains, increase to 1000 replications for a more precise estimate."
+}

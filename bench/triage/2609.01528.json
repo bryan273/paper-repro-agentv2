@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Median Spearman correlation with W2 of 0.879 for dSK (and 0.924 for WΓ) over 12 scientific collections / 227 persistence diagrams",
+  "table_ref": "Abstract / Sec. 5 (correlation table)",
+  "dataset": "12 scientific collections of persistence diagrams (227 diagrams), e.g. Isabel, Earthquake, Ionization 2D/3D, Cloud Processes, Asteroid, Sea Surface Height, Starting Vortex"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/sebastien-tchitchek/SK-Wasserstein-Reproducibility",
+  "https://github.com/sebastien-tchitchek/SK-Wasserstein-"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The metric itself is O(N log N) sorting on small diagrams, but reproducing the headline correlation requires the 12 scientific diagram collections (likely TTK-derived from simulation ensembles) plus the W2 reference matrices; if data are not bundled, diagrams must be regenerated with TTK, which is the main cost."
+ },
+ "blockers": [
+  "Diagram collections and W2 reference matrices may not be included in the repo",
+  "Regenerating diagrams requires TTK and the original simulation datasets",
+  "Repo state/version not verifiable from the paper text"
+ ],
+ "suitable": true,
+ "id": "2609.01528",
+ "title": "Sierpiński--Knopp Wasserstein Distance for Persistence Diagrams and Applications to 2-Wasserstein Approximation",
+ "pages": 49,
+ "model": "DeepSeek-V4.1-Flash"
+}

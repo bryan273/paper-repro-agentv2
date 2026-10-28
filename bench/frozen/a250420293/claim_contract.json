@@ -1,0 +1,252 @@
+{
+ "title": "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results",
+ "summary": "The paper addresses k-means' need to specify k in advance and its poor recovery of non-convex clusters by adding a geometric post-processing step. After standard k-means with an intentionally high k, it assigns each center a radius to its farthest assigned point and merges clusters whose center distance is within the sum of radii, using connected components; it also sketches tiled recursive partitioning. On FCPS benchmarks, radius-guided merging reports median clustering success of 98–100% across overestimated k values, including 1.0 on FCPS Atom with k=20.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Radius-based post-processing after k-means with k=20 recovers FCPS Atom with median clustering success 1.0.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Atom",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Atom, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=20 on FCPS Atom, then radius-based post-processing; each experiment repeated 100 times and best of five runs kept.",
+   "reported_spread": "IQR 0.0 (not std)",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Atom\n15 ≤k ≤20, k = 20\n1.0\n0.0",
+   "page": 6
+  },
+  {
+   "id": "C2",
+   "statement": "Radius-based post-processing after k-means with k=16 recovers FCPS Chainlink with median clustering success 1.0.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Chainlink",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Chainlink, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=16 on FCPS Chainlink, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.177",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Chainlink\n15 ≤k ≤20, k = 16\n1.0\n0.177",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "Radius-based post-processing after k-means with k=20 recovers FCPS Hepta with median clustering success 1.0.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Hepta",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Hepta, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=20 on FCPS Hepta, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.0",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Hepta\n10 ≤k ≤20, k = 20\n1.0\n0.0",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "Radius-based post-processing after k-means with k=20 recovers FCPS Lsun with median clustering success 1.0.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Lsun",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Lsun, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=20 on FCPS Lsun, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.075",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Lsun\n15 ≤k ≤20, k = 20\n1.0\n0.075",
+   "page": 6
+  },
+  {
+   "id": "C5",
+   "statement": "Radius-based post-processing after k-means with k=17 gives FCPS Target median clustering success 0.9143.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Target",
+   "split": "full FCPS dataset",
+   "value": 0.9143,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Target, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=17 on FCPS Target, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.2172",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Target\n15 ≤k ≤40, k = 17\n0.9143\n0.2172",
+   "page": 6
+  },
+  {
+   "id": "C6",
+   "statement": "Radius-based post-processing after k-means with k=4 on FCPS Tetra gives median clustering success 1.0, neither helping nor hurting baseline.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Tetra",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Tetra, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with k=4 on FCPS Tetra, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.0",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 3-D dataset",
+   "quote": "FCPS Tetra\nk = 4\n1.0\n0.0",
+   "page": 6
+  },
+  {
+   "id": "C7",
+   "statement": "Radius-based post-processing after k-means with k=10 recovers FCPS TwoDiamonds with median clustering success 1.0.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS TwoDiamonds",
+   "split": "full FCPS dataset",
+   "value": 1.0,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS TwoDiamonds, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=10 on FCPS TwoDiamonds, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.0",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS TwoDiamonds\n10 ≤k ≤20, k = 10\n1.0\n0.0",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "Radius-based post-processing after k-means with k=70 gives FCPS Wingnut median clustering success 0.9823.",
+   "metric": "median clustering success (fraction)",
+   "dataset": "FCPS Wingnut",
+   "split": "full FCPS dataset",
+   "value": 0.9823,
+   "unit": "fraction (clustering success)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row FCPS Wingnut, column Post-Merge Median Success",
+   "config_for_value": "Standard k-means with intentionally overestimated k=70 on FCPS Wingnut, then radius-based post-processing; repeated runs as described.",
+   "reported_spread": "IQR 0.4870",
+   "est_compute": "CPU, seconds to a few minutes for 100 runs on a small 2-D dataset",
+   "quote": "FCPS Wingnut\n65 ≤k ≤75, k = 70\n0.9823\n0.4870",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest claim that still shows the paper's central post-processing result: a small FCPS Atom 2-D run with k=20 directly matches the user's target and demonstrates radius-based recovery after over-segmentation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: clustering success is a bounded score printed in [0,1] on FCPS Atom (<2,000 points), and the paper reports only IQR 0.0 rather than std, so use 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Run standard k-means on FCPS Atom with intentionally overestimated k=20 before post-processing.",
+   "cite": "Section 3.3; Table 2",
+   "quote": "After running standard k-means (with an intentionally large k)",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Compute each cluster radius as the maximum Euclidean distance from its centroid to any assigned point.",
+   "cite": "Section 3.2, radius definition",
+   "quote": "we compute a radius for each cluster Ci as the maximum distance from its centroid ci to any of its assigned points:",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Merge clusters when the center distance is at most the sum of their radii.",
+   "cite": "Section 3.2, merge condition",
+   "quote": "two clusters are merged if their radius-based boundaries would overlap",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "Implement merging through a connectivity graph and connected components rather than iterative pairwise merging.",
+   "cite": "Section 3.3",
+   "quote": "Clusters belonging to the same connected component in this graph are merged",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Propagate merged-component labels back to every point in the component.",
+   "cite": "Section 3.3",
+   "quote": "Clusters belonging to the same connected component in this graph are merged, and the new labels are propagated accordingly.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Use only standard k-means outputs, namely cluster centers and point assignments, for post-processing.",
+   "cite": "Section 3.3",
+   "quote": "relies only on standard outputs of k-means: cluster centers and point assignments",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Repeat each experiment 100 times and keep the best of five runs as stated for the reported medians.",
+   "cite": "Section 5.1",
+   "quote": "Each experiment was repeated 100 times, and the best of five runs was kept.",
+   "page": 5
+  },
+  {
+   "id": "R8",
+   "stmt": "Report median clustering success and interquartile range across runs.",
+   "cite": "Section 5.1; Tables 1-2",
+   "quote": "reporting median clustering success and interquartile range across runs",
+   "page": 5
+  },
+  {
+   "id": "R9",
+   "stmt": "Evaluate against ground-truth labels using clustering success/overlap, not only the unsupervised k-means objective.",
+   "cite": "Section 5; Table 4 caption",
+   "quote": "Values represent the median clustering success in recovering ground-truth labels",
+   "page": 8
+  },
+  {
+   "id": "R10",
+   "stmt": "Exclude FCPS Engytime from the full FCPS-suite evaluation.",
+   "cite": "Section 5.1",
+   "quote": "One dataset, FCPS Engytime, was excluded from evaluation",
+   "page": 5
+  },
+  {
+   "id": "R11",
+   "stmt": "Build the method atop scikit-learn's k-means implementation.",
+   "cite": "Abstract; Section 3.3",
+   "quote": "Implemented as a lightweight post-processing step atop scikit-learn’s k-means",
+   "page": 1
+  },
+  {
+   "id": "R12",
+   "stmt": "For the tiled extension, split the feature space into four quadrants and use local k as a percentage of each tile's points before global radius merging.",
+   "cite": "Section 5.2; Table 3",
+   "quote": "Each dataset was split into four quadrants by partitioning the feature space in half along the first two dimensions.",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "FCPS Atom",
+   "how_to_get": "Use FCPS Atom from the Fundamental Clustering Problem Suite (Gagolewski et al., ref [5]); take the published ground-truth class labels."
+  },
+  {
+   "name": "FCPS full suite",
+   "how_to_get": "Use the FCPS datasets from the Gagolewski clustering benchmark suite cited as [5], excluding Engytime for the main table."
+  }
+ ],
+ "code_links": [
+  "https://github.com/stefankober/",
+  "https://github.com/stefankober/radius-guided-kmeans"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2504.20293",
+  "kind": "arxiv",
+  "arxiv_id": "2504.20293",
+  "url": "https://arxiv.org/abs/2504.20293",
+  "title": "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results",
+  "pages": 9
+ }
+}

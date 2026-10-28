@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Mean Adjusted Rand Index for the object partition (ARI_U) on the small-size, low-noise simulation scenario (I=40, J=30, K=20, P=4, Q=3, R=2, sigma=0.1), reported as 0.984",
+  "table_ref": "Table 1, column 'Small / Low', row 'Mean ARI_U'",
+  "dataset": "Synthetic three-way array generated per Section 4 (core G ~ N(0,1), noise N(0,sigma^2))"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Data is trivially synthesizable and the array is tiny (40x30x20), but no code is released, so the full ALS algorithm, 5-fold CV over a 12-point lambda grid, and the Hungarian label-matching must be reimplemented from the paper; runtime itself is seconds per fit (paper reports 0.02 s), so the estimate is dominated by implementation and validation."
+ },
+ "blockers": [
+  "No code released (available only 'upon reasonable request' from authors)",
+  "Exact simulation protocol details (nsim, initialization seeds, CV fold construction) not fully specified, so exact 0.984 value may not be bit-reproducible"
+ ],
+ "suitable": true,
+ "id": "2609.21538",
+ "title": "Fuzzy entropic triple k-means",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

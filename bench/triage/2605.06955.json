@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean AUC-PR of K-DSM on the ADBench semi-supervised benchmark (57 datasets, 5 seeds) = 0.627",
+  "table_ref": "Table 12 (overall row) / Figure 4a",
+  "dataset": "ADBench (57 tabular datasets)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/vicliv/K-DSM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": 3,
+  "basis": "Requires downloading ADBench (57 datasets, some large like cover/celeba), training an MLP DSM per dataset for 5 seeds, and averaging; CPU-feasible but many runs, so several hours of command time."
+ },
+ "blockers": [
+  "57 datasets must be downloaded and preprocessed (ADBench pipeline)",
+  "5 seeds x 57 datasets = 285 training runs",
+  "Code repo may not include exact configs/splits; reproduction may need reimplementation"
+ ],
+ "suitable": true,
+ "id": "2605.06955",
+ "title": "Kurtosis-Guided Denoising Score Matching for Tabular Anomaly Detection",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

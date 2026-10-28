@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Ensemble stacking model achieves 0.96 cross-validation accuracy on multi-protocol (MQTT/WiFi) anomaly detection",
+  "table_ref": "Model Accuracy and Evaluation Summary (Section 5.4 text)",
+  "dataset": "CICIoMT2024 (multi-protocol subset)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement preprocessing, Autoencoder/IsolationForest/One-Class SVM/KNN base models and stacking meta-learner from scratch, plus download and clean the multi-protocol CICIoMT2024 subset; all models are small enough for CPU."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Paper gives only vague hyperparameters and no exact train/test split, so exact 0.96 may not be reproducible",
+  "Dataset download and preprocessing (missing values, scaling, windowing) must be reconstructed"
+ ],
+ "suitable": true,
+ "id": "2502.11854",
+ "title": "Enhanced Anomaly Detection in IoMT Networks using Ensemble AI Models on the CICIoMT2024 Dataset",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

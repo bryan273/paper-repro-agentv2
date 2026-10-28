@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "sSFFS (y=100) achieves MultinomNB holdout accuracy 0.867 at subset size d=100 on Reuters-21578 Apté split, using the multinomial Bhattacharyya filter criterion.",
+  "table_ref": "Table (Reuters-21578 results, row 'sSFFS y=100', column 'd = 100', sub-column 'acc')",
+  "dataset": "Reuters-21578, Distribution 1.0, Apté split (10,105 term features, 8,941 documents, 33 categories)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The paper reports the full Reuters run costs ~2 minutes of single-core evaluation work, but an AI agent must first implement sSFFS (softmax sampling, exploration floor, online z-standardized contrast statistics, warm-up, floating schedule) and the multinomial Bhattacharyya filter from the paper text, then download and parse the Reuters-21578 Apté split; the 2-minute figure excludes implementation and data preparation, which dominate the agent's command time."
+ },
+ "blockers": [
+  "No code links are present in the PDF; the promised standalone implementation and configuration files are not accessible from the paper text, so the method must be re-implemented from the description.",
+  "Reuters-21578 must be downloaded and converted to the Apté split (ModApte) with the 33-category multinomial setup; the paper does not provide a ready-made preprocessed version.",
+  "The exact random split protocol (RR(1,50,40) per seed) and the seed-1 split are not fully specified, so exact reproduction of the reported 0.867 may require reverse-engineering the split."
+ ],
+ "suitable": true,
+ "id": "2608.01502",
+ "title": "Stochastic Sequential Search in Very-High-Dimensional Feature Selection",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

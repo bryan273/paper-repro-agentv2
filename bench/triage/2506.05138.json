@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "AUC-ROC of 0.9996 and AUC-PR of 0.9728 for PFLiForest at point E (max_depth=6, num_trees=25, training_data=200) with ~153 kB training memory",
+  "table_ref": "Fig. 3 / Section III-C-1 (point E)",
+  "dataset": "Synthetic temperature dataset (real-world sensor temperature values + Gaussian noise, 10% injected anomalies, 10000 test values)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code or data released; the PFLiForest algorithm (Algorithms 1-4) and the PTB-FLA federated framework would have to be reimplemented from scratch, then 40 repetitions x 5 forest sizes x 5 depths x 4 data sizes of federated tree building run on tiny data (<=200 training points, 10000 test points) — all CPU-only and small, but the reimplementation and debugging dominate."
+ },
+ "blockers": [
+  "No code repository linked in the paper",
+  "Training temperature data not provided (only described as real-world sensor readings)",
+  "Requires reimplementing the PTB-FLA federated learning testbed and the FLiForest layer-by-layer aggregation protocol from the paper's pseudocode",
+  "Exact synthetic test-data generation (noise level, anomaly injection) not fully specified, so exact numbers may not match"
+ ],
+ "suitable": false,
+ "id": "2506.05138",
+ "title": "Federated Isolation Forest for Efficient Anomaly Detection on Edge IoT Systems",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

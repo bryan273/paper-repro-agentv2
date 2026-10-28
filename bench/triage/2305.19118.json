@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GPT-3.5-Turbo + MAD achieves 37.0% accuracy on Counter-Intuitive AR",
+  "table_ref": "Table 3",
+  "dataset": "Counter-Intuitive AR (200 questions)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Skytliang/Multi-Agents-Debate"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires API calls to GPT-3.5-Turbo for 200 questions with multi-agent debate (multiple rounds), costing ~$5-10 and taking ~1-2 hours; dataset may not be publicly available."
+ },
+ "blockers": [
+  "Requires OpenAI API key and budget for GPT-3.5-Turbo calls",
+  "Counter-Intuitive AR dataset may not be publicly released",
+  "Code may not include exact prompts or evaluation scripts"
+ ],
+ "suitable": false,
+ "id": "2305.19118",
+ "title": "Encouraging Divergent Thinking in Large Language Models through Multi-Agent Debate",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

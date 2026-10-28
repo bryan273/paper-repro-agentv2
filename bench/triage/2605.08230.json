@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "XGBoost model predicting county-level overdose SMR achieves R2 = 0.457 (±0.049) under 5-fold CV (best of four models)",
+  "table_ref": "Table 2",
+  "dataset": "Merged 2022 county-level data: CDC WONDER (975 non-suppressed counties), CDC SVI, CDC PLACES, HRSA AHRF"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "All four federal datasets are public but must be manually downloaded and merged by FIPS; the SMR outcome must be reconstructed from WONDER counts/population, and the exact 25-feature set, median imputation, and XGBoost hyperparameters are not specified, so an agent must rebuild the pipeline from scratch; the model itself is tiny (975 rows) and trains in seconds on CPU."
+ },
+ "blockers": [
+  "No code or configs released; feature construction and hyperparameters must be reverse-engineered",
+  "CDC WONDER suppression handling and SMR reference rate must be re-derived",
+  "AHRF/PLACES/SVI files require manual download and FIPS harmonization",
+  "Exact R2 (±0.049) unlikely to match without the authors' precise preprocessing"
+ ],
+ "suitable": true,
+ "id": "2605.08230",
+ "title": "Social Determinants of Health and Fentanyl Overdose Mortality Across US Counties: An XGBoost and SHAP Analysis Identifying Silent Risk Counties and Treatment Deserts",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

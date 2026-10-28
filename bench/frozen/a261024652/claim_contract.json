@@ -1,0 +1,263 @@
+{
+ "title": "Lightweight Machine Learning for Classifying Disaster-Related Social Media Posts",
+ "summary": "The paper asks whether lightweight TF-IDF classifiers can handle short, semantically overlapping, and strongly imbalanced disaster-related social-media posts in CrisisBench v1.0 English humanitarian classification. It compares TF-IDF representations and linear/naive Bayes classifiers on predefined Train/Development splits, locks a balanced LinearSVC with unigram–bigram TF-IDF and C=0.5, refits on Train+Development, and evaluates once on Test, adding per-label, margin, resource and tropical-cyclone analyses. The locked model reaches Accuracy 0.8282, Macro-F1 0.6578 and Weighted-F1 0.8315 on Test, with lower decision margins associated with errors and a small in-domain benefit but much lower resource use for a cyclone specialist.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The locked balanced LinearSVC with word unigram–bigram TF-IDF and C=0.5 achieves its held-out Test Macro-F1.",
+   "metric": "Macro-F1",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Test (17,356 records, held out)",
+   "value": 0.6578,
+   "unit": "fraction (Macro-F1)",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row Macro-F1, column Test; also Section IV-B",
+   "config_for_value": "LinearSVC with word TF-IDF unigram–bigram (1,2), C=0.5, class_weight='balanced'; vectorizer re-fitted on combined Train+Development (70,099 records) after locking; evaluated once on Test.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); sparse TF-IDF vectorisation ~2.2 s and LinearSVC fitting ~1.9 s for the general model in Table 7; full pipeline under minutes.",
+   "quote": "The locked model achieved an Accuracy of 0.8282, a Macro-F1 of 0.6578 and a Weighted-F1 of 0.8315 on the CrisisBench Test split.",
+   "page": 5
+  },
+  {
+   "id": "C2",
+   "statement": "The locked balanced LinearSVC with word unigram–bigram TF-IDF and C=0.5 achieves its held-out Test Accuracy.",
+   "metric": "Accuracy",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Test (17,356 records, held out)",
+   "value": 0.8282,
+   "unit": "fraction (Accuracy)",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row Accuracy, column Test; also Section IV-B",
+   "config_for_value": "LinearSVC with word TF-IDF unigram–bigram (1,2), C=0.5, class_weight='balanced'; vectorizer re-fitted on combined Train+Development (70,099 records) after locking; evaluated once on Test.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); sparse TF-IDF vectorisation ~2.2 s and LinearSVC fitting ~1.9 s for the general model in Table 7; full pipeline under minutes.",
+   "quote": "The locked model achieved an Accuracy of 0.8282, a Macro-F1 of 0.6578 and a Weighted-F1 of 0.8315 on the CrisisBench Test split.",
+   "page": 5
+  },
+  {
+   "id": "C3",
+   "statement": "The locked balanced LinearSVC with word unigram–bigram TF-IDF and C=0.5 achieves its held-out Test Weighted-F1.",
+   "metric": "Weighted-F1",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Test (17,356 records, held out)",
+   "value": 0.8315,
+   "unit": "fraction (Weighted-F1)",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row Weighted-F1, column Test; also Section IV-B",
+   "config_for_value": "LinearSVC with word TF-IDF unigram–bigram (1,2), C=0.5, class_weight='balanced'; vectorizer re-fitted on combined Train+Development (70,099 records) after locking; evaluated once on Test.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); sparse TF-IDF vectorisation ~2.2 s and LinearSVC fitting ~1.9 s for the general model in Table 7; full pipeline under minutes.",
+   "quote": "The locked model achieved an Accuracy of 0.8282, a Macro-F1 of 0.6578 and a Weighted-F1 of 0.8315 on the CrisisBench Test split.",
+   "page": 5
+  },
+  {
+   "id": "C4",
+   "statement": "The selected balanced LinearSVC with word unigram–bigram TF-IDF and C=0.5 achieves its Development-stage Macro-F1.",
+   "metric": "Macro-F1",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Development (8,935 records, model selection)",
+   "value": 0.6413,
+   "unit": "fraction (Macro-F1)",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row LinearSVC (1, 2), C=0.5, Balanced, column Macro-F1; also Table 6 Development column",
+   "config_for_value": "LinearSVC with word TF-IDF unigram–bigram (1,2), C=0.5, class_weight='balanced'; vectorizer fitted on Train only (61,164 records), applied unchanged to Development; Test excluded.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); sparse TF-IDF plus LinearSVC on ~61k records; under ~5 s for vectorisation and fitting, full experiment under minutes.",
+   "quote": "achieved an Accuracy of 0.8245, a Macro-F1 of 0.6413 and a Weighted-F1 of 0.8272.",
+   "page": 5
+  },
+  {
+   "id": "C5",
+   "statement": "The selected balanced LinearSVC with word unigram–bigram TF-IDF and C=0.5 achieves its Development-stage Accuracy.",
+   "metric": "Accuracy",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Development (8,935 records, model selection)",
+   "value": 0.8245,
+   "unit": "fraction (Accuracy)",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row LinearSVC (1, 2), C=0.5, Balanced, column Accuracy; also Table 6 Development column",
+   "config_for_value": "LinearSVC with word TF-IDF unigram–bigram (1,2), C=0.5, class_weight='balanced'; vectorizer fitted on Train only (61,164 records), applied unchanged to Development; Test excluded.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); sparse TF-IDF plus LinearSVC on ~61k records; under ~5 s for vectorisation and fitting, full experiment under minutes.",
+   "quote": "achieved an Accuracy of 0.8245, a Macro-F1 of 0.6413 and a Weighted-F1 of 0.8272.",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "The tropical-cyclone specialist model achieves its broad-subset Test Macro-F1.",
+   "metric": "Macro-F1",
+   "dataset": "CrisisBench v1.0 English humanitarian classification, broad tropical-cyclone subset",
+   "split": "Broad tropical-cyclone Test subset (4,358 records)",
+   "value": 0.5455,
+   "unit": "fraction (Macro-F1)",
+   "higher_is_better": true,
+   "table_ref": "Figure 6 and Section IV-D text",
+   "config_for_value": "Same locked word TF-IDF unigram–bigram LinearSVC settings (C=0.5, class_weight='balanced'), but fitted only on broad tropical-cyclone Train+Development records (17,586); evaluated on the broad cyclone Test subset.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); vectorisation ~0.508 s and model fitting ~0.231 s for the specialist in Table 7.",
+   "quote": "Accuracy increased from 0.7852 to 0.7933, Macro-F1 from 0.5276 to 0.5455 and Weighted-F1 from 0.7911 to 0.7955.",
+   "page": 6
+  },
+  {
+   "id": "C7",
+   "statement": "The general locked model achieves its Macro-F1 on the same broad tropical-cyclone Test subset.",
+   "metric": "Macro-F1",
+   "dataset": "CrisisBench v1.0 English humanitarian classification, broad tropical-cyclone subset",
+   "split": "Broad tropical-cyclone Test subset (4,358 records)",
+   "value": 0.5276,
+   "unit": "fraction (Macro-F1)",
+   "higher_is_better": true,
+   "table_ref": "Figure 6 and Section IV-D text",
+   "config_for_value": "General locked word TF-IDF unigram–bigram LinearSVC configured with C=0.5 and class_weight='balanced'; fitted on full combined Train+Development (70,099); Test predictions filtered to the broad cyclone subset.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); general model vectorisation ~2.205 s and fitting ~1.876 s in Table 7.",
+   "quote": "Accuracy increased from 0.7852 to 0.7933, Macro-F1 from 0.5276 to 0.5455 and Weighted-F1 from 0.7911 to 0.7955.",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "The general locked model uses a much larger TF-IDF feature space than the cyclone specialist.",
+   "metric": "TF-IDF feature count",
+   "dataset": "CrisisBench v1.0 English humanitarian classification",
+   "split": "Train+Development fitting data (70,099 records)",
+   "value": 110414,
+   "unit": "TF-IDF features",
+   "higher_is_better": false,
+   "table_ref": "Table 7, row General, column TF-IDF features; also Section IV-E text",
+   "config_for_value": "General locked word TF-IDF unigram–bigram (1,2) vectorizer fitted on combined full Train+Development; LinearSVC C=0.5, class_weight='balanced'.",
+   "reported_spread": null,
+   "est_compute": "CPU laptop (AMD Ryzen 9 7940HX); vectorisation 2.205 s, model training 1.876 s, training matrix 11.62 MB (Table 7).",
+   "quote": "The specialist used 17,586 training records and 30,168 TF-IDF features, compared with 70,099 records and 110,414 features for the general model.",
+   "page": 8
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It is the exact user hint and the paper's central held-out result; one locked fit on Train+Development plus one Test evaluation yields it, and C2/C3 come from the same predictions, so C1 is the cheapest faithful central target."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.01,
+  "why": "Rule 2: no repeated-run std is reported; the target is a bounded classification score on the 17,356-example Test split, printed as a fraction in [0,1], so the band is 0.01 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the CrisisBench v1.0 English humanitarian task with 87,455 records and 11 labels as a single-label multi-class problem.",
+   "cite": "Section III-A, Dataset and Task",
+   "quote": "The selected task contains 87,455 English-language social-media records and is defined as a supervised single-label multi-class classification task.",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Use only text_clean as model input and exclude event, source, id, lang and lang_conf from features.",
+   "cite": "Section III-A",
+   "quote": "Only text_clean was used as predictive input; event and source were retained for descriptive and supplementary analyses and excluded from model features.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Apply the stated conservative preprocessing, including URL/mention replacement with url/user and hashtag-character removal while keeping hashtag text.",
+   "cite": "Section III-B, Preprocessing and Feature Representation",
+   "quote": "URLs and user mentions were replaced with url and user; # characters were removed while retaining hashtag text",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Do not apply stop-word filtering, stemming, lemmatisation or a separate custom tokenisation step.",
+   "cite": "Section III-B",
+   "quote": "No stop-word filtering, stemming, lemmatisation or separate custom tokenisation step was applied.",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Build word-level TF-IDF features with min_df=2, max_df=0.95, sublinear term frequency, L2 normalisation and float32 sparse output.",
+   "cite": "Section III-B",
+   "quote": "The vectoriser used min_df=2, max_df=0.95, sublinear term frequency, L2 normalisation and float32 sparse features.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "During Development-stage model selection, fit each vectoriser only on Train and apply it unchanged to Development.",
+   "cite": "Section III-B and III-C",
+   "quote": "During Development-stage experiments, each vectoriser was fitted only on Train and applied unchanged to Development.",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "After configuration locking, combine Train and Development into 70,099 fitting records and fit a new vectoriser and classifier.",
+   "cite": "Section III-C",
+   "quote": "After configuration locking, Train and Development were combined, producing 70,099 fitting records.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Lock a LinearSVC with word unigram–bigram TF-IDF, C=0.5 and balanced class weighting.",
+   "cite": "Table 2 and Section III-C",
+   "quote": "LinearSVC with word unigram–bigram TF-IDF, C=0.5 and balanced class weighting.",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Use Macro-F1 as the primary model-selection metric and keep the Test split excluded from all selection decisions.",
+   "cite": "Section III-C and III-D",
+   "quote": "Test was excluded from all model-selection decisions.",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Implement the TF-IDF and classification pipelines with scikit-learn.",
+   "cite": "Section III-C",
+   "quote": "The experimental TF-IDF and classification pipelines were implemented using scikit-learn",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "Report Accuracy, Macro-F1 and Weighted-F1, with per-label Precision, Recall and F1 as supporting evaluation.",
+   "cite": "Section III-D, Evaluation Methods",
+   "quote": "Model evaluation used Accuracy, Macro-F1 and Weighted-F1, supported by per-label Precision, Recall and F1",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "For the final LinearSVC, compute the decision margin as the highest decision score minus the second-highest decision score.",
+   "cite": "Section III-D",
+   "quote": "the decision margin was calculated as the difference between the highest and second-highest decision scores.",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "For the tropical-cyclone specialist, use the same locked TF-IDF and LinearSVC settings but fit only on broad tropical-cyclone Train and Development records.",
+   "cite": "Section III-E",
+   "quote": "The specialist model used the same locked TF-IDF and LinearSVC settings but was fitted only on broad tropical-cyclone Train and Development records.",
+   "page": 4
+  },
+  {
+   "id": "R14",
+   "stmt": "Retain all 11 CrisisBench humanitarian labels without merging any labels.",
+   "cite": "Section III-A",
+   "quote": "All 11 labels were retained without merging.",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "CrisisBench v1.0 English humanitarian classification files",
+   "how_to_get": "Download the CrisisBench v1.0 release described by Alam et al. (2021) and use the consolidated English humanitarian files with the predefined Train, Development and Test splits; the paper gives no direct URL or checksum."
+  },
+  {
+   "name": "NOAA Historical Hurricane Tracks",
+   "how_to_get": "Public NOAA Digital Coast service at https://coast.noaa.gov/hurricanes/ for cross-checking the named tropical-cyclone events; not needed for fitting the main classifier."
+  }
+ ],
+ "code_links": [],
+ "stated_compute": "run locally on a Windows 11 laptop with an AMD Ryzen 9 7940HX CPU.",
+ "paper_meta": {
+  "source": "2610.24652",
+  "kind": "arxiv",
+  "arxiv_id": "2610.24652",
+  "url": "https://arxiv.org/abs/2610.24652",
+  "title": "Lightweight Machine Learning for Classifying Disaster-Related Social Media Posts",
+  "pages": 10
+ }
+}

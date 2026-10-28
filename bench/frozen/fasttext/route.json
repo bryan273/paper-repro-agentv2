@@ -1,0 +1,36 @@
+{
+ "route": "full_release",
+ "why": "The authors' complete implementation of the exact system claimed is public and cloned: src/ is the C++ fastText whose supervised mode ('./fasttext supervised -dim 10 -wordNgrams 2 -epoch 5 -lr ...') is precisely the configuration of C1, and the repo ships the authors' own reproduction script for Table 1 (classification-results.sh), which downloads the Zhang et al. 8-dataset release (incl. AG News 120k train / 7.6k test) and trains/evaluates every row. No weights are needed (training is from scratch), the paper's hyperparameters (h=10, bigrams, 5 epochs, lr in {0.05,0.1,0.25,0.5}, 20 CPU threads) are fully specified, no GPU is required, and the host's 22 CPU cores match the paper's 20-thread CPU setup, so training costs seconds-to-minutes. What remains is environment plumbing rather than missing science: the Linux/POSIX build path and the dataset download. Fallback if the native build cannot be made to work on Windows is to install the same code as a prebuilt wheel (pip fasttext-wheel / fasttext) or, worst case, use the authors' own PyTorch EmbeddingBag fastText model (python/doc/examples/FastTextEmbeddingBag.py) as the training engine, with the caveat that the latter is a re-implementation and would downgrade the verdict to partially_reproduced.",
+ "repo": "https://github.com/facebookresearch/fastText",
+ "entrypoints": [
+  "classification-results.sh  (authors' script reproducing Table 1 rows, incl. AG News: downloads data, trains fastText, prints test accuracy)",
+  "make && ./fasttext supervised -input data/ag_news.train -output model -dim 10 -wordNgrams 2 -epoch 5 -lr <lr>  (then ./fasttext test model.bin data/ag_news.test)",
+  "pip install . && python/doc/examples/train_supervised.py (Python API equivalent of the same supervised training)"
+ ],
+ "missing_artifacts": [
+  "AG News dataset in fastText/Zhang-et-al. format (ag_news.train / ag_news.test) - not vendored in the repo; must be fetched via classification-results.sh's download URLs or from the Zhang et al. (2015) release / HuggingFace fancyzhx/ag_news (identical 120k/7.6k split), then converted to __label__N lines",
+  "The validation split used to select lr from {0.05,0.1,0.25,0.5} - the Zhang release has only train/test, so a held-out slice of the 120k train set must be reconstructed for the 4-point lr search",
+  "No prebuilt fasttext binary or wheels are shipped in the repo; the C++ toolchain/pybind11 build must be provided by the environment"
+ ],
+ "blockers_seen": [
+  "Host is Windows 11: classification-results.sh is a bash script and the Makefile/`make` path assumes a POSIX shell plus g++/clang++ - neither is guaranteed present; needs MinGW/MSYS2, WSL or CMake+MSVC",
+  "setup.py hard-codes '-O3 -funroll-loops -pthread -march=native' extra compile args, which MSVC rejects, so 'pip install .' from source on Windows needs MinGW or a prebuilt wheel (fasttext-wheel) instead",
+  "'make' uses -march=native -std=c++17; fine on modern gcc/clang, irrelevant if a wheel is used",
+  "No GPU on the host - not a blocker: the paper's fastText rows are CPU-only (20 threads) and AG News trains in ~1 s/epoch",
+  "Network access to the dataset download URLs cannot be assumed; a mirror (HF ag_news) plus a short format converter covers this"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~10-20 min total: toolchain/wheel setup 2-5 min (skipped if a prebuilt wheel is used), AG News download + format conversion 1-3 min, 4 lr runs x 5 epochs (~1-2 s/epoch on 20 of 22 cores) + test prediction on 7.6k examples (~seconds each) = ~2-5 min, final model retrain + test <1 min",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "repo_info": {
+  "url": "https://github.com/facebookresearch/fastText",
+  "cloned": true,
+  "n_files": 520,
+  "n_python": 24,
+  "python2_style_files": 0
+ }
+}

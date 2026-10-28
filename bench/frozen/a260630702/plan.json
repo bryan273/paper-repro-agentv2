@@ -1,0 +1,215 @@
+{
+ "approach": "The route is partial_release: the repository already ships the derived analytic CSV and the authors' analysis notebook, so the plan uses `data/nhanes_analytic.csv` and does not rebuild NHANES from raw files or modify the R/notebook sources. The notebook cells will be ported into small Python modules that preserve the reported 60/20/20 stratified split, training-only preprocessing, ridge/XGBoost/TabPFN v2 settings, and split-conformal logic. `reproduce.py` will run the full Table 2 pipeline and write `results/metrics.json`, with a hard check for the target C1 CRP TabPFN R2=0.383 ±0.02. TabPFN v2 is the only external access dependency: the script will require `TABPFN_TOKEN` or a cached token, and if missing it will record an environment blocker rather than silently substituting another model.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Install CPU dependencies for the ported analysis, including pandas/scikit-learn/xgboost and the official `tabpfn` package for TabPFN v2.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/__init__.py",
+   "purpose": "Make `src` an importable package for the ported modules.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Centralize all paths, column names, split sizes, model hyperparameters, conformal settings, subgroup definitions, and claim tolerances with paper/assumption citations.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Load and validate `data/nhanes_analytic.csv`, verify N=1,381 and required columns, natural-log transform outcomes, create the exact stratified 60/20/20 split, and fit/apply training-only imputation, scaling, and label encoding.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "src/models.py",
+   "purpose": "Fit ridge with alpha=1.0, XGBoost with the paper settings and calibration-set early stopping, and TabPFN v2 in-context on CPU without subsampling when Ntrain=828.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/conformal.py",
+   "purpose": "Implement split conformal with absolute calibration residuals, finite-sample qhat, coverage, and subgroup coverage by sex and race/ethnicity.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "src/run_experiment.py",
+   "purpose": "Orchestrate all model-outcome combinations, compute R2/MAE on the log scale and conformal coverage, assemble Table 2-style results, evaluate C1-C7, and write `results/metrics.json`.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that checks the TabPFN token, calls the ported experiment, supports a smoke mode, and writes `results/metrics.json`; exits with a clear blocker status if TabPFN access is unavailable.",
+   "requirement_ids": [
+    "R10",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "route": "partial_release",
+  "repo_csv": "data/nhanes_analytic.csv (released analytic dataset; satisfies R1-R4 via R/01_build_analytic_sample.R without re-running R)",
+  "n_target": "1381 (R2; paper Sec 2.2)",
+  "outcomes": {
+   "HbA1c": "LBXGH (R7)",
+   "Triglycerides": "LBXTR (R7)",
+   "CRP": "LBXCRP (R7)"
+  },
+  "log_transform": "natural log after verifying all outcomes are strictly positive; no shift (R7; A2)",
+  "activity_features": [
+   "TAC",
+   "TLAC",
+   "ST",
+   "MVPA",
+   "LIPA",
+   "WC"
+  ],
+  "wear_time_note": "The repo README names `WC`; treat it as wear time/WT for R3.",
+  "numeric_covariates": [
+   "RIDAGEYR",
+   "BMXBMI",
+   "INDFMPIR",
+   "BPXSY1",
+   "DR1TKCAL",
+   "DR1TCARB",
+   "DR1TTFAT",
+   "DR1TPROT",
+   "DR1TFIBE"
+  ],
+  "categorical_covariates": [
+   "RIAGENDR",
+   "RIDRETH1",
+   "SMQ020"
+  ],
+  "feature_count": "18 total = 6 activity + 9 numeric covariates + 3 categorical covariates (R3/R4)",
+  "split": {
+   "method": "two-stage stratified train_test_split using RIDRETH1 as stratify variable, exact sizes where possible",
+   "train_n": "828 (R5; paper Sec 3.1)",
+   "calibration_n": "277 (remaining rows after 828 train and 276 test)",
+   "test_n": "276 (R5; paper Sec 3.1)",
+   "seed": "42 (R5; A12)",
+   "stratify": "RIDRETH1 race/ethnicity (A1)"
+  },
+  "imputation": "median for numeric and mode for categorical, fit on training set only (A3)",
+  "scaling": "StandardScaler on numeric features, fit on training set only (R6)",
+  "label_encoding": "fit on training set only; unseen category -> -1 (R6; A4)",
+  "ridge": {
+   "alpha": "1.0 (R8; paper Sec 3.2)"
+  },
+  "xgboost": {
+   "n_estimators": "500 (R9)",
+   "learning_rate": "0.05 (R9)",
+   "max_depth": "6 (R9)",
+   "early_stopping_rounds": "50 (A6)",
+   "eval_metric": "rmse (A6)",
+   "early_stopping_set": "calibration set, as written (R9; A5)"
+  },
+  "tabpfn": {
+   "model": "TabPFNRegressor, TabPFN v2 checkpoint (R10)",
+   "device": "cpu (R10; stated compute)",
+   "training_mode": "in-context examples only; no task-specific gradient training (R10)",
+   "n_train_in_context": "828 (R10)",
+   "subsample_threshold": "1000; no subsampling because Ntrain=828 < 1000 (R10)",
+   "seed": "42 (A12)",
+   "token_env": "TABPFN_TOKEN or cached token required for Prior Labs/TabPFN v2 access"
+  },
+  "conformal": {
+   "alpha": "0.10 (R11)",
+   "score": "absolute calibration residual |y_i - yhat_i| (R11)",
+   "quantile": "k-th smallest residual with k=ceil((ncal+1)*(1-alpha)), clipped to ncal (A7)",
+   "interval": "yhat_test ± qhat (R11)",
+   "coverage": "fraction of test points with |y_test - yhat_test| <= qhat (R11/R12)"
+  },
+  "subgroups": {
+   "race": "RIDRETH1 five categories: Mexican American, Other Hispanic, Non-Hispanic White, Non-Hispanic Black, Other (R13; A8)",
+   "sex": "RIAGENDR: male, female (R13)"
+  },
+  "survey_weights": "unweighted fitting and metrics, consistent with reported N and split (A9)",
+  "accelerometry_construction": "inherited from released CSV; Troiano 2008 cutpoints already applied there (R3; A10/A11)",
+  "metrics": "R2 and MAE on the log scale plus empirical conformal coverage for every model-outcome pair (R12)",
+  "target_claim": {
+   "id": "C1",
+   "description": "TabPFN v2 CRP test R2",
+   "reported_value": "0.383 (C1; Table 2)",
+   "tolerance": "0.02 absolute (claim contract tolerance)",
+   "higher_is_better": true
+  },
+  "all_claims_to_report": [
+   "C1",
+   "C2",
+   "C3",
+   "C4",
+   "C5",
+   "C6",
+   "C7"
+  ]
+ },
+ "steps": [
+  "Confirm the repository is present or clone `https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark`; verify `data/nhanes_analytic.csv`, `R/01_build_analytic_sample.R`, and the two notebooks exist. Do not modify author files.",
+  "Use Python's `json` module to read `nhanes_accel_SD4H_workshop_ICML_2026_orig.ipynb` and locate the cells implementing data loading, train/calibration/test splitting, preprocessing, ridge, XGBoost, TabPFN, conformal prediction, and subgroup coverage. Port that logic into `src/config.py`, `src/data.py`, `src/models.py`, and `src/conformal.py`, preserving the paper hyperparameters.",
+  "Create `requirements.txt` with numpy, pandas, scikit-learn, xgboost, tabpfn, torch, matplotlib, requests, and tqdm; run `pip install -r requirements.txt`. Allow extra time for the TabPFN package/weight download.",
+  "In `src/data.py`, load `data/nhanes_analytic.csv`, validate N=1,381 and the exact activity, numeric covariate, categorical covariate, and outcome columns. Abort with a clear message if columns are missing.",
+  "Verify the three outcomes are strictly positive, then apply natural log. Create the described two-stage stratified split with RIDRETH1, target sizes train=828, calibration=277, test=276, and seed=42. If exact stratified sizes fail because a race cell is too small, fall back to a deterministic stratified assignment by race and largest remainder, and record the actual sizes.",
+  "Fit median/mode imputers, the StandardScaler, and label encoders on the training split only; apply them to calibration and test. Build the 18-feature matrix in a fixed column order and save the feature names in the metrics metadata.",
+  "In `src/models.py`, implement ridge with alpha=1.0. Implement XGBoost with 500 estimators, learning rate 0.05, max depth 6, RMSE early stopping with 50-round patience on the calibration set. Implement TabPFN v2 with CPU inference and no subsampling because Ntrain=828; require `TABPFN_TOKEN` or a cached token and fail clearly if unavailable.",
+  "In `src/conformal.py`, compute calibration residuals for each fitted model/outcome, compute qhat as the k-th smallest residual with k=ceil((ncal+1)*(1-alpha)) clipped to ncal, form yhat ± qhat intervals, and compute overall and subgroup empirical coverage.",
+  "Implement `src/run_experiment.py` to loop over the three outcomes and the three models, fit on train, predict calibration and test, compute R2/MAE on the log scale, compute conformal coverage, and assemble a Table 2-style dictionary plus claim-level checks. For C1, set `pass = abs(reproduced_r2 - 0.383) <= 0.02`. For C2-C7, report reproduced values and absolute differences without inventing a tolerance.",
+  "Write `reproduce.py` as the single entrypoint. Default `python reproduce.py` runs the full experiment and writes `results/metrics.json`. If TabPFN token access is missing, still run ridge and XGBoost baselines, write a `status: blocked_missing_tabpfn_token` record with the exact error, and exit code 2 so the environment blocker is visible.",
+  "Run the smoke test first: `python reproduce.py --smoke --outcome CRP --models ridge,tabpfn --max-rows 240`. Verify finite predictions, finite qhat, and written `results/smoke_metrics.json`.",
+  "Run the full experiment: `python reproduce.py`. Confirm the test split has N=276, the feature matrix has 18 columns, and `results/metrics.json` contains all model-outcome rows and C1-C7 values.",
+  "Compare C1 to 0.383. If outside ±0.02, inspect split row membership, preprocessing leakage, TabPFN package/checkpoint version, and token status; do not tune on the test set. If TabPFN is blocked, report the scientific result as unverified rather than substituting another model."
+ ],
+ "smoke_test": "`python reproduce.py --smoke --outcome CRP --models ridge,tabpfn --max-rows 240` uses a deterministic 240-row subset with the same 60/20/20 split logic, one outcome, and the same preprocessing. It prints finite R2, MAE, qhat, and coverage and writes `results/smoke_metrics.json`. If `TABPFN_TOKEN` is absent, run `python reproduce.py --smoke --outcome CRP --models ridge --max-rows 240` to prove the data flow and assert that the TabPFN path emits a clear blocked-token message.",
+ "intermediate_checks": [
+  "CSV shape: expect 1,381 rows and all required columns (`TAC`, `TLAC`, `ST`, `MVPA`, `LIPA`, `WC`, nine numeric covariates, three categorical covariates, and `LBXGH`/`LBXTR`/`LBXCRP`).",
+  "Outcome positivity: all HbA1c, triglycerides, and CRP values are >0 before natural-log transformation; log values are finite.",
+  "Split sizes: test N=276; train≈828; calibration=1381-train-test. Record exact per-race counts in train/calibration/test and confirm every race group is represented in all three splits.",
+  "Preprocessing leakage check: imputers, scaler, and label encoders are fit only on the training rows; transformed calibration/test matrices contain no NaN and have exactly 18 feature columns.",
+  "Ridge sanity baseline: mean-predictor R2 is 0 by construction; ridge CRP test R2 should be positive and roughly in the reported 0.2-0.4 range, not negative or near zero.",
+  "XGBoost sanity check: early stopping completes and `best_iteration` is finite; CRP test R2 should be plausible relative to ridge, and triglycerides should remain near zero.",
+  "TabPFN access check: `TABPFN_TOKEN` or a cached token is present; `TabPFNRegressor` imports from the installed `tabpfn` package; device is CPU; no subsampling occurs because Ntrain=828 < 1000.",
+  "Conformal sanity check: qhat is finite and positive for every model-outcome pair; empirical coverage lies in [0,1]; C1 coverage should be close to the reported 0.939 if the point model reproduces.",
+  "Subgroup sanity check: Mexican American test rows exist for C6; report subgroup N alongside each subgroup coverage so a small-N coverage is not overinterpreted.",
+  "Claim check: C1 passes only if `abs(reproduced_CRP_TabPFN_R2 - 0.383) <= 0.02`; C2-C7 are reported descriptively with reproduced values and absolute differences."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup and notebook port: 5-8 min. Dependency install and TabPFN package/weight download: 5-10 min. Smoke test: 1-2 min. Full CPU run: 8-15 min if TabPFN access is already available, dominated by TabPFN import/inference and XGBoost fits. Total target ~20-30 min, disk ~2 GB, no GPU. If `TABPFN_TOKEN` is absent, the full TabPFN path cannot run; the plan then spends the budget on validating the released data, split, ridge/XGBoost baselines, and writing an explicit blocker in `results/metrics.json`."
+}

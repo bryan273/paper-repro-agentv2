@@ -1,0 +1,122 @@
+{
+ "approach": "This is a partial_release reproduction of claim C1: TokenCore's token-level AUROC on the Grammar benchmark (0.6371, tolerance ±0.02 absolute). We clone the authors' repo, keep TokenCore.py/align.py/json_to_npy.py verbatim, and rebuild only the missing driver that Demo.ipynb used to hide: read the released grammar annotations (data/grammar_correction_labeled.json and data/grammar.npy), build the 300-document corpus (270 normal / 30 anomalous, R10), take 50% of the normal documents as the memory-bank training set (R6, A8), run BERT-base-uncased over the remaining normal + anomalous documents, max-pool subword embeddings into word units aligned with the gold word-level token labels (Eq. 1, R2/R9, A3/A4), fit the authors' TextCore memory bank on normal-training token embeddings only (R3, A2), score every test token by Euclidean nearest-neighbour distance (Eq. 2, R4, A1/A9), and compute pooled token-level AUROC/AUPRC plus the mean-aggregated document-level scores (Eq. 3, R5, A5). The paper value is a single split-free number, so the only real drift risk is split randomness on 300 short documents; we therefore report a primary seeded run plus a small multi-seed spread so the ±0.02 band can be interpreted. Only the Grammar dataset is needed for C1, but the same driver is written so that running it on restaurant_review / sms_spam later costs nothing extra.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin the dependency file the README references but the repo does not ship: torch (CPU wheel), transformers, numpy, scikit-learn, tqdm, requests. Keeps the environment deterministic on Python 3.12.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/inspect_data.py",
+   "purpose": "One-off reconnaissance: print dtype/shape/keys of data/grammar.npy and the JSON schema of data/grammar_correction_labeled.json (per-document word list, token labels, doc label), and print the public signatures of TokenCore.py (class name / fit / decision_function) and align.py. Decides whether the .npy holds precomputed embeddings (unlikely: 43 KB cannot hold 768-d BERT vectors) or only token/label arrays.",
+   "requirement_ids": [
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/data_grammar.py",
+   "purpose": "Load the released Grammar benchmark into a canonical structure: documents = [{doc_id, words (gold word tokens), token_labels (0/1 per word), doc_label}]. Assert 300 documents / 30 anomalous / 270 normal (R10) and doc_label = 1 iff any token_label = 1 (R11). Implement the 50%-of-normal training split with a fixed seed and return (train_docs, test_docs) plus the list of test token labels.",
+   "requirement_ids": [
+    "R6",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/embed_bert.py",
+   "purpose": "BERT-base-uncased front-end extracted from Demo.ipynb: batched forward pass with output_hidden_states, take the last hidden state, drop [CLS]/[SEP]/[PAD], group WordPiece subwords back to word units using word_ids(), element-wise max-pool each word's subword vectors (Eq. 1), and align the resulting word units with the gold word-level tokens/labels (reusing align.py where applicable). Returns per-word embedding matrices with a parallel array of (doc_id, token_label).",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/detector.py",
+   "purpose": "Thin adapter over the authors' unmodified TokenCore.py: instantiate the memory-bank detector exactly as in the README quick start, fit it on the normal-training token embedding matrix X_train (R3, full bank, no coreset), and call its scoring function on X_test to obtain one nearest-neighbour distance per test token (R4). Raises if the authors' API differs from the README snippet so the adapter is fixed, never the author file.",
+   "requirement_ids": [
+    "R3",
+    "R4"
+   ]
+  },
+  {
+   "path": "src/evaluate.py",
+   "purpose": "Metric layer: pooled token-level AUROC/AUPRC over all test tokens of all test documents (micro, A5), plus document-level scores by mean-aggregating each document's token scores (Eq. 3, R5) and their AUROC/AUPRC, plus a random-score control run. Writes results/metrics.json.",
+   "requirement_ids": [
+    "R5",
+    "R7"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that chains data_grammar -> embed_bert -> detector -> evaluate for the Grammar dataset and writes results/metrics.json with the C1/C2 numbers (and Grammar document-level as a by-product). Flags: --seed (default 0), --smoke (tiny subset), --datasets grammar (extensible).",
+   "requirement_ids": [
+    "R1",
+    "R5",
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "results/metrics.json",
+   "purpose": "Machine-readable outcome: token_auroc_grammar, token_auprc_grammar, doc_auroc_grammar, n_train_docs/n_test_docs, n_bank_tokens, n_test_tokens, n_positive_tokens, per-seed values and mean/std, plus the claim target 0.6371 and pass/fail under the ±0.02 band.",
+   "requirement_ids": [
+    "R7"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "grammar (paper Sec 4 / R10; shipped at data/grammar_correction_labeled.json, mirror data/grammar.npy)",
+  "backbone": "bert-base-uncased (paper, Sec 6.1 / R1)",
+  "hidden_layer": "last hidden state (A3, convention)",
+  "subword_to_word_pooling": "element-wise max over subword vectors of the word (paper Eq. 1 / R2)",
+  "special_tokens": "exclude [CLS]/[SEP]/[PAD] from bank and scoring (A4)",
+  "word_unit_policy": "one unit per gold-aligned word; punctuation kept as its own unit if the released labels mark it (A4)",
+  "embedding_normalization": "none, raw BERT hidden states (A9)",
+  "distance_metric": "Euclidean / L2 (paper Eq. 2 example / A1)",
+  "memory_bank": "full bank = every word-level embedding of every token in the normal training documents, no coreset, no subsampling (R3 / A2)",
+  "train_split": "50% of the normal documents used as training data, remainder normal + all anomalous as test (paper Sec 6.1 / R6)",
+  "split_seed": "0 primary, also run 1 and 2 for spread (A8)",
+  "token_positive_definition": "gold token_label == 1 from the released annotation (R9)",
+  "doc_label_rule": "document anomalous iff at least one token is anomalous (R11)",
+  "token_level_auroc_pooling": "micro: pool all test tokens of all test documents into one ranking (A5, high risk)",
+  "doc_level_aggregation": "arithmetic mean of token scores within a document (paper Eq. 3 / R5)",
+  "max_length": 128,
+  "batch_size": 32,
+  "torch_num_threads": 8,
+  "smoke_subset": "10 documents (8 normal, 2 anomalous)",
+  "target_value": "0.6371 token AUROC (C1)",
+  "tolerance": "0.02 absolute (contract tolerance)"
+ },
+ "steps": [
+  "Clone https://github.com/charles-cao/TokenCore.git into ./TokenCore and record the commit hash; do not modify TokenCore.py, align.py or tokens_labels/json_to_npy.py.",
+  "Create a venv/conda env on Python 3.12 and pip install torch (CPU wheel from the default index), transformers, numpy, scikit-learn, tqdm, requests; write the resolved versions into requirements.txt (the file the README references but the repo lacks).",
+  "Run src/inspect_data.py: dump shapes/dtypes/keys of data/grammar.npy and the JSON schema of data/grammar_correction_labeled.json, and print the actual class/function signatures of TokenCore.py and align.py. Decide the exact field names for words, token labels and document labels, and confirm the .npy is a token/label array rather than precomputed embeddings (43 KB is far too small for 300x768 floats).",
+  "Implement src/data_grammar.py against the inspected schema; load all 300 Grammar documents and hard-assert 300 documents / 270 normal / 30 anomalous (10% rate, R10) and consistency of the document labels with the token labels (R11).",
+  "Implement the split: with seed 0, shuffle the 270 normal documents, take the first 135 as the memory-bank training set; the test set is the other 135 normal documents plus all 30 anomalous documents (165 docs). Export the token-level gold labels for every test token.",
+  "Implement src/embed_bert.py: tokenize with BertTokenizerFast(return_offsets_mapping / word_ids), run BertModel in eval() with torch.no_grad() in batches of 32, max_length 128, take last_hidden_state, drop special tokens, and element-wise max-pool subwords per word unit. Assert a 1:1 map between produced word units and the gold word tokens in the annotated JSON; if align.py exposes an alignment helper, call it instead of re-implementing.",
+  "Implement src/detector.py: import the authors' TokenCore (use the real class name found by inspect_data.py, README shows both TokenCore and TextCore) and its fit / decision_function, fit on the normal-training token embedding matrix (no anomalous tokens, R3) and score the test token embeddings (R4).",
+  "Implement src/evaluate.py: token-level AUROC/AUPRC pooled over all test tokens (micro), document-level scores as the per-document mean of token scores (R5) and their AUROC/AUPRC, plus a random-score control (expected AUROC ~0.5) to validate the metric plumbing.",
+  "Wire reproduce.py to run the whole chain end-to-end; run the smoke configuration first (see smoke_test) and confirm all assertions on counts and shapes pass.",
+  "Run the intermediate checks (see intermediate_checks) before the full run.",
+  "Full run: python reproduce.py --datasets grammar --seed 0 (CPU-only BERT inference over 300 short sentences, seconds for the memory bank and brute-force L2 nearest-neighbour search). Write results/metrics.json.",
+  "If |token_auroc_grammar - 0.6371| > 0.02, re-run with seeds 1 and 2 and inspect sensitivity: report the per-seed values and mean/std, and check the highest-risk choices first (A5 micro vs per-document AUROC, A1/A9 Euclidean on unnormalized embeddings, A4 whether punctuation units are scored).",
+  "Write the final results/metrics.json containing the primary value, the multi-seed spread, the target, the tolerance band and an explicit pass/fail flag."
+ ],
+ "smoke_test": "python reproduce.py --datasets grammar --smoke --seed 0 -> loads the released grammar annotations, keeps only the first 8 normal + first 2 anomalous documents (forcing the split so both sides are non-empty), runs one BERT-base forward pass over those 10 documents, max-pools subwords, builds a ~100-200 entry memory bank, scores the test tokens, and prints token_auroc/token_auprc plus every shape (n_docs, n_word_units, n_bank_tokens, n_test_tokens, n_positive_tokens). Success = no exception, finite scores, 1:1 alignment between word units and gold tokens, and AUROC in [0,1]. This exercises every stage of the data flow in under a minute.",
+ "intermediate_checks": [
+  "Dataset size and label rate: exactly 300 documents, 270 normal (token_labels all 0) and 30 anomalous (>=1 token_label = 1) = 10% anomaly rate (R10); stop if the released file deviates.",
+  "Document/token label consistency: every document with at least one 1 token has doc_label 1 and vice versa (R11).",
+  "Token-level class balance: report total tokens, total anomalous tokens and their fraction across all 300 docs, and across the 165 test docs; sanity expectation is a few percent (the contract quotes token AUPRC ~0.04 for Grammar, which is roughly the positive rate) and only a handful of positives, so AUROC variance across seeds will be large - this justifies the ±0.02 band.",
+  "Alignment coverage: fraction of gold word tokens that receive a BERT word unit (target 1.0); log any word that tokenizes to zero subwords or overflows max_length=128.",
+  "Split sizes: 135 normal training docs and 135 normal + 30 anomalous test docs with seed 0; training set contains zero anomalous tokens (R3).",
+  "Memory bank size: n_bank_tokens should equal the total number of word units in the 135 normal training documents (report it; expect a few thousand) - a much smaller number means documents were dropped silently.",
+  "Parameter/embedding check: assert the token embedding width is 768 and that the pooling really is element-wise max (a max-pooled vector must equal the coordinate-wise max of its subword vectors on a hand-checked example).",
+  "Sanity baseline: random token scores give AUROC ~0.5 and AUPRC ~positive rate; TokenCore scores on the training tokens themselves (excluding self-matches) give near-zero distances, confirming the nearest-neighbour direction (higher distance = more anomalous, R4).",
+  "Metric parity: verify the AUROC/AUPRC implementation against sklearn.roc_auc_score / average_precision_score on synthetic labels, so the 0.6371 comparison cannot fail for plumbing reasons."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~30-35 min on 22 CPU cores / 15.4 GB RAM. Setup 10 min: clone the repo (<1 min) and pip install the CPU torch wheel plus transformers/scikit-learn (~8-9 min, ~5 GB, the dominant cost). Reconnaissance 3 min: inspect_data.py plus reading TokenCore.py/align.py and the JSON schema. Implementation 8 min: data_grammar.py, embed_bert.py, detector.py, evaluate.py, reproduce.py, requirements.txt. Smoke 2 min: 10-document subset end-to-end. Intermediate checks 2 min: counts, rates, alignment coverage, bank size, metric parity. Full run 3-4 min: one BERT-base forward pass over 300 short Grammar sentences on CPU (1-3 min) plus seconds of max-pooling and brute-force L2 nearest-neighbour scoring. Verification 3 min: compare against 0.6371 with the ±0.02 band, and if out of band spend up to 5 more minutes on seeds 1 and 2 and on the highest-risk assumptions (A5, A1/A9, A4). Keep ~3 min slack; only the Grammar dataset is run, so no SMS_Spam/Review time is spent."
+}

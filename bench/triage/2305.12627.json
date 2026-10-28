@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "MVP achieves F1 score of 51.04 on ASQP Rest15",
+  "table_ref": "Table 2",
+  "dataset": "ASQP Rest15"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/ZubinGou/multi-view-prompting"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 240,
+  "gpu_speedup": 5,
+  "basis": "Fine-tuning T5-base on ~800 examples for 20 epochs with 15 views; inference on 537 test examples with 15 views; feasible on CPU but slow."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2305.12627",
+ "title": "MvP: Multi-view Prompting Improves Aspect Sentiment Tuple Prediction",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

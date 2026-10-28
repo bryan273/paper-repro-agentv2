@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Clustering accuracy of i-IF-Lap on the SRBCT gene microarray dataset (K=4, n=63, p=2308), reported as 0.984 in Table 1.",
+  "table_ref": "Table 1, row SRBCT, column i-IF-Lap",
+  "dataset": "SRBCT (gene microarray, 63 samples, 2308 genes, 4 clusters)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/mc25800852/i_if_learn"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The paper reports all experiments on a 2-core CPU with 8 GB RAM; the target is a single small dataset (63x2308) with an iterative PCA/Laplacian-eigenmap + k-means pipeline, so a few minutes of compute plus install/download time is realistic."
+ },
+ "blockers": [
+  "Code repository may not include exact preprocessing scripts or the SRBCT data file; data must be downloaded from Mendeley and preprocessed per Appendix D.2.",
+  "Exact reproduction of 0.984 may require matching random seeds and the full iterative stopping rule; the paper does not specify all seeds."
+ ],
+ "suitable": true,
+ "id": "2603.24025",
+ "title": "i-IF-Learn: Iterative Feature Selection and Unsupervised Learning for High-Dimensional Complex Data",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

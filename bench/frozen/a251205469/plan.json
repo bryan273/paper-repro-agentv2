@@ -1,0 +1,122 @@
+{
+ "approach": "Use the full_release route: clone the authors' repository with `--no-checkout`, restore only safe text/Python/CSV/notebook files while excluding the Windows-illegal `|` PNG, inspect the restored scripts, and run the authors' Breast Cancer RBF-SVM path for claim C1. The runner uses `sklearn.datasets.load_breast_cancer` (A1), the paper's five seeds, stratified 5-fold CV, `StandardScaler`, `SVC(kernel='rbf', probability=True)`, and a compact GridSearchCV selected by F1. A thin `reproduce.py` orchestrates repository restoration, smoke test, full five-seed run, aggregation, and writes `results/metrics.json` with per-seed/fold values and provenance. If the authors' code does not expose an isolatable C1 entrypoint, a clearly labeled minimal fallback implements exactly the paper configuration without modifying author files.",
+ "files": [
+  {
+   "path": "bootstrap_repo.py",
+   "purpose": "Clone the authors' repo with `git clone --no-checkout`, list HEAD files, filter out any path containing `|`, and restore safe source/data files with `git checkout HEAD -- <safe paths>`.",
+   "requirement_ids": [
+    "R14"
+   ]
+  },
+  {
+   "path": "author_c1_runner.py",
+   "purpose": "Load Breast Cancer (A1), map malignant=1, prefer importing/calling the authors' RBF-SVM/scaler/GridSearchCV path, and use a labeled minimal sklearn fallback only if the author C1 path cannot be isolated.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R6",
+    "R8",
+    "R14"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint that restores the repo, runs smoke or full C1, aggregates five-seed results, validates tolerance, and writes `results/metrics.json` plus raw per-fold CSV.",
+   "requirement_ids": [
+    "R3",
+    "R6",
+    "R8",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "target_claim": "C1",
+  "dataset": "Breast Cancer Wisconsin (Diagnostic); sklearn.datasets.load_breast_cancer (A1)",
+  "positive_class": "malignant=1 (A11)",
+  "n_samples": 569,
+  "n_features": 30,
+  "seeds": [
+   42,
+   123,
+   456,
+   789,
+   1011
+  ],
+  "cv_folds": 5,
+  "cv": "StratifiedKFold(n_splits=5, shuffle=True, random_state=seed) (R3, A10, A13)",
+  "repeats": "one stratified 5-fold CV per seed; 5 seeds (R3)",
+  "pipeline": [
+   "StandardScaler (R2)",
+   "SVC(kernel='rbf', probability=True, random_state=seed, class_weight=None) (R6, A9, A14)"
+  ],
+  "svm_C_grid": [
+   0.1,
+   1.0,
+   10.0
+  ],
+  "svm_gamma_grid": [
+   "scale",
+   0.01,
+   0.1
+  ],
+  "grid_search": "GridSearchCV over compact grid; scoring='f1'; inner StratifiedKFold(5, shuffle=True, random_state=seed); refit=True; n_jobs=-1; nested inside each outer training fold for fallback (R8, A7, A8)",
+  "model_selection_metric": "binary F1 with positive=malignant (A11)",
+  "reported_metric": "test accuracy",
+  "aggregation": "accuracy per outer fold -> mean per seed -> mean/std across 5 seed means (A6, A15)",
+  "std_ddof": 1,
+  "target_value": 0.972,
+  "reported_seed_std": 0.008,
+  "tolerance": {
+   "type": "absolute",
+   "value": 0.024,
+   "why": "3 * reported seed std 0.008; compares [0.948, 0.996]"
+  },
+  "smoke": {
+   "seeds": [
+    42
+   ],
+   "folds": 1,
+   "grid": {
+    "C": [
+     1.0
+    ],
+    "gamma": [
+     "scale"
+    ]
+   }
+  },
+  "n_jobs": -1,
+  "random_state_policy": "set random_state=seed on CV splitter and stochastic estimators (A10)"
+ },
+ "steps": [
+  "Create workspace and install minimal dependencies: `python -m pip install -U pip` then `python -m pip install -U scikit-learn pandas numpy scipy`. If `repo/requirements.txt` exists after restore, install only missing imports needed by the C1 path; do not install GPU-only packages.",
+  "Run `python bootstrap_repo.py`: clone `https://github.com/zubair0831/ensemble-generalization-gap` into `repo/` with `--no-checkout` if absent; use `git -C repo ls-tree -r --name-only HEAD`; filter out any path containing `|`; select `.py`, `.ipynb`, `.md`, `.txt`, `.csv`, `.json`, `.yml`, `.yaml`, `.toml`, `.cfg`, `.ini`; checkout safe paths in batches. Confirm no restored filename contains `|`.",
+  "Inspect restored files: run `git -C repo rev-parse HEAD`, list `.py` files, and grep for `load_breast_cancer`, `SVC`, `GridSearchCV`, `breast`, `main`, and `argparse`. Record the author C1 entrypoint or importable function names before running anything. Install any additional imports needed by the author module.",
+  "Implement `author_c1_runner.py`: load `sklearn.datasets.load_breast_cancer(as_frame=True)`, set target `malignant=1`, and prefer importing the authors' module and calling their RBF-SVM pipeline / tuning path for Breast Cancer. If the author code is monolithic and requires unavailable Kaggle datasets, invoke a minimal fallback pipeline matching the config and label provenance as `fallback`.",
+  "For the fallback path, build `Pipeline([('scaler', StandardScaler()), ('svm', SVC(kernel='rbf', probability=True, random_state=seed, class_weight=None))])`; use `GridSearchCV(param_grid={'svm__C':[0.1,1.0,10.0], 'svm__gamma':['scale',0.01,0.1]}, scoring='f1', cv=StratifiedKFold(5, shuffle=True, random_state=seed), n_jobs=-1, refit=True)` inside each outer training fold.",
+  "Run outer repeated CV: for each seed in `[42,123,456,789,1011]`, create `StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)`, fit on the training fold only, predict the held-out fold, and record test accuracy, binary F1, train accuracy, overfitting gap (train-test), selected params, seed, and fold.",
+  "Run smoke test first: `python reproduce.py --smoke`. It uses seed 42, the first outer fold only, and grid `{C:[1.0], gamma:['scale']}`. Print data shape, class counts, train/test sizes, selected params, and smoke test accuracy; write `results/smoke_metrics.json`. Stop if shape is not `(569, 30)`, classes are missing, or smoke accuracy is outside `[0.90, 1.00]`.",
+  "Run full C1: `python reproduce.py --full` or simply `python reproduce.py`. Execute all 5 seeds x 5 folds, save raw rows to `results/c1_fold_metrics.csv`, and retain selected hyperparameters per outer fold.",
+  "Aggregate exactly per A6/A15: compute each seed's mean over its 5 outer folds, then compute the final mean and sample standard deviation (`ddof=1`) across the 5 seed means. Compare the final mean to 0.972 with absolute tolerance 0.024 and set `within_tolerance`.",
+  "Write `results/metrics.json` containing `claim_id='C1'`, `metric='test accuracy'`, `value`, `std`, `per_seed`, `per_fold`, `target=0.972`, `tolerance`, `within_tolerance`, `provenance` (`author_script` or `fallback`), `git_commit`, `command`, `environment`, `config_snapshot`, and selected-parameter summaries. Print a concise summary.",
+  "Validate final outputs: parse `results/metrics.json`, check all expected keys and finite numbers, confirm `git -C repo status --short` shows no modifications to author source files, and confirm the run used the intended positive class and aggregation."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`: restore the repo if needed, load Breast Cancer via sklearn (569x30, 212 malignant/357 benign), fit `StandardScaler + SVC(kernel='rbf', probability=True, random_state=42)` with fixed `C=1.0, gamma='scale'` on the first seed/first outer training fold, evaluate on the held-out fold, and write `results/smoke_metrics.json`. Expected smoke accuracy is roughly 0.90-1.00; this proves data loading, positive-label mapping, pipeline fitting, prediction, and metric writing before the full nested-CV run.",
+ "intermediate_checks": [
+  "Repository restored: `repo/.git` exists, `git -C repo rev-parse HEAD` returns a commit, at least one `.py` file is restored, and no restored path contains `|`.",
+  "Breast Cancer loader check: `data.shape == (569, 30)`, target classes are `{0,1}`, counts are approximately 357 benign / 212 malignant, and positive class is malignant=1.",
+  "Dependency/import check: `sklearn`, `numpy`, `scipy`, and `pandas` import under Python 3.12; the selected author module imports without requiring Kaggle data or GPU packages.",
+  "Pipeline check: one outer training fold fits successfully, `predict` returns the same length as the test fold, probabilities are available, and no NaN/inf appears in metrics.",
+  "Smoke baseline check: fixed `C=1.0, gamma='scale'` single-fold accuracy is in `[0.90, 1.00]`; a majority-class DummyClassifier baseline is about 0.63, so the SVM is clearly learning signal.",
+  "Leakage check: scaler and GridSearchCV are fitted only inside the outer training fold; inner CV folds each contain both classes.",
+  "Full-run shape check: exactly 5 seeds x 5 outer folds = 25 C1 evaluation rows, with no missing seed/fold pairs.",
+  "Aggregation check: per-seed means are computed over 5 folds, final std uses the 5 per-seed means with ddof=1, and final mean/std are finite.",
+  "Tolerance check: final mean falls in `[0.948, 0.996]` to match 0.972 ± 0.024; if outside, report the deviation and provenance instead of silently changing the claim.",
+  "Output check: `results/metrics.json` parses and includes claim id, value, std, per-seed values, tolerance, provenance, git commit, command, and config snapshot."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total budget about 10-15 minutes on CPU. Setup: 2-4 minutes for pip installs, clone --no-checkout, safe path-restricted checkout, and script inspection. Smoke test: under 1 minute for one seed/fold and one fixed SVM fit. Full C1: about 3-6 minutes for 25 outer folds with compact nested GridSearchCV on 569x30 data (~a few hundred sub-second SVM fits), plus JSON/CSV writing. Keep 2 minutes buffer for Windows filename handling and import troubleshooting; no Kaggle download or GPU work is needed for C1."
+}

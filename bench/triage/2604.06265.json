@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AUROC of SMT-AD on the Wine dataset (98.4 ± 0.1)",
+  "table_ref": "Table II, row Wine, column SMT-AD AUROC",
+  "dataset": "Wine (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/SUTD-MDQS/SMT-AD",
+  "https://github.com/sutd-mdqs/smt-ad"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": 2,
+  "basis": "Wine is tiny (59 training samples, 13 features); the model has only a few hundred parameters and trains in seconds per run, so 20 realizations plus a small grid over M and P should finish in well under an hour on CPU."
+ },
+ "blockers": [
+  "Code repository may be incomplete or not match the paper's exact hyperparameter grid and random splits",
+  "Exact reproduction of the 20-realization mean requires the same random seeds and data splits, which may not be documented"
+ ],
+ "suitable": true,
+ "id": "2604.06265",
+ "title": "SMT-AD: a scalable quantum-inspired anomaly detection approach",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

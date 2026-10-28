@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Reconstruction MSE of 0.0148 for the proposed Meta-Auxiliary Network on CelebA-HQ (image reconstruction, Table 1)",
+  "table_ref": "Table 1",
+  "dataset": "CelebA-HQ (test), FFHQ (train)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Requires training a ResNet-101-based hypernetwork with MAML over FFHQ using a pre-trained EG3D generator (tri-plane volume rendering), which is a multi-day GPU training run; no code is released so the entire pipeline must be rebuilt."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires training an auxiliary hypernetwork with meta-learning on FFHQ",
+  "Requires pre-trained EG3D generator and volume rendering pipeline",
+  "Training is GPU-intensive (multi-day on a single GPU)"
+ ],
+ "suitable": false,
+ "id": "2305.10884",
+ "title": "Meta-Auxiliary Network for 3D GAN Inversion",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

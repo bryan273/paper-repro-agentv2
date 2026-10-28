@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Global Centroid Deviation (GCD) of Algorithm 1 with alpha=1 on the isotropic synthetic dataset D_iso (k=3, d=2, n=10 nodes, p=0.7) at a given local sample size m_i, averaged over 10 runs — i.e., one point on the top-left panel of Fig. 1.",
+  "table_ref": "Fig. 1 (GCD, D_iso panel), alpha=1 curve",
+  "dataset": "Synthetic scikit-learn blobs (D_iso, D_var, D_aniso), generated in-code"
+ },
+ "release": "partial",
+ "code_links": [
+  "GitLab link mentioned in Sec. IV-A ('Source code of our experiments is available at Gitlab') but no URL is given in the PDF text"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "All data are tiny 2-D synthetic blobs generated with scikit-learn; the method is a few hundred iterations of Lloyd-style updates over 10 nodes and 10 runs, trivially CPU-bound; the main cost is re-implementing Algorithm 1 (E1-E3, M) and the distributed k-means baseline from the paper since no code URL is resolvable."
+ },
+ "blockers": [
+  "No resolvable code URL in the PDF (only 'available at Gitlab' with no link), so Algorithm 1 and the distributed k-means baseline must be re-implemented from the equations",
+  "Exact numeric values are only shown as log-scale plots, so matching a specific number requires digitizing figures or accepting qualitative agreement",
+  "Baseline [18] distributed k-means details (eta=2, primal-dual scheme) are only partially specified"
+ ],
+ "suitable": true,
+ "id": "2510.09718",
+ "title": "Federated k-Means over Networks",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

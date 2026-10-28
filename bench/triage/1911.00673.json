@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "DA-IQA achieves SROCC of 0.977 on the LIVE dataset (cross-validation), outperforming all compared NR-IQA methods.",
+  "table_ref": "Table I, row 'DA-IQA', column 'LIVE SROCC'",
+  "dataset": "LIVE"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Requires training a VAE-GAN restoration network on 94,880 Waterloo Exploration images (GTX 1080Ti, batch 32) plus a regression network on LIVE, with no released code; on a CPU-only laptop this is infeasible within hours."
+ },
+ "blockers": [
+  "No code or pretrained models released",
+  "Requires GPU training of a GAN/VAE restoration network on ~95k images",
+  "Full pipeline (DA-Restore pretraining + quality regression) is complex and not reproducible from paper alone in a few hours"
+ ],
+ "suitable": false,
+ "id": "1911.00673",
+ "title": "Domain Fingerprints for No-reference Image Quality Assessment",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

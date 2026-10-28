@@ -1,0 +1,162 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper says the scan order may be arbitrary; the code must pick one.",
+  "options": [
+   "input order x1..xn",
+   "sorted by chip id",
+   "random order"
+  ],
+  "chosen": "input order x1..xn",
+  "rationale": "Algorithm 1 and Table 2 are written for the given scan order; no sorting is specified.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "BCE fixes an arbitrary order x1, . . . , xn of the chips and scans it once.",
+  "page": 4
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Whether a restart with p=⊥ or a backtrack counts as a test.",
+  "options": [
+   "count only Test(p,xi) calls",
+   "count every loop iteration",
+   "count tests plus stack operations"
+  ],
+  "chosen": "count only Test(p,xi) calls",
+  "rationale": "Theorem 7 says each iteration performs at most one test, namely Test(p, xi), and O(1) stack operations; restarts perform no test.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Each iteration i = 2, . . . , n performs at most one test, namely Test(p, xi), and O(1) stack operations.",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "How to simulate 'arbitrary adversarial' bad-chip answers, especially for exhaustive verification.",
+  "options": [
+   "sample random bad answers",
+   "enumerate every Table-1-allowed verdict pair and every adaptive branch",
+   "assume bad chips always lie"
+  ],
+  "chosen": "enumerate every Table-1-allowed verdict pair and every adaptive branch",
+  "rationale": "The model allows an adaptive adversary; a single random or always-lie run does not prove the n−1/correctness claim.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "A bad chip’s verdict is arbitrary and may be chosen by an adaptive adversary that knows all types, the algorithm, and the history of tests.",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether to enable Proposition 10 early termination in the base reproduction.",
+  "options": [
+   "disabled (Algorithm 1 as printed)",
+   "enabled whenever h≥r and h≥1",
+   "enabled only for all-good inputs"
+  ],
+  "chosen": "disabled",
+  "rationale": "Algorithm 1 and the GGBBBGG trace run to the end; early termination is an optional optimization.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "In particular, BCE may stop and return p.",
+  "page": 6
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether to apply the parity/even-n optimization that drops one chip at the start.",
+  "options": [
+   "not applied",
+   "drop one chip when n is even",
+   "drop one chip only if n even and g≥b+2"
+  ],
+  "chosen": "not applied",
+  "rationale": "Algorithm 1 starts with p=x1 and does not discard a chip before the scan; the saving is optional.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Independently, when n is even, the promise gives g ≥b + 2, so one chip may be dropped at the start.",
+  "page": 6
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Stack discipline and candidate storage: whether the candidate remains in R or is separate.",
+  "options": [
+   "separate p plus stack R",
+   "candidate at top of stack",
+   "candidate at bottom of stack"
+  ],
+  "chosen": "separate p plus stack R",
+  "rationale": "Paper defines C={p}∪R and pushes xi without removing p; pop supplies new p after discarding old p.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We call C = {p}∪R (or ∅if p = ⊥) the retained set.",
+  "page": 4
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "What to do for n=1 or if p=⊥ at termination on a valid input.",
+  "options": [
+   "return x1 for n=1; raise error if p=⊥",
+   "return ⊥",
+   "restart from unread chip"
+  ],
+  "chosen": "return x1 for n=1; raise error if p=⊥",
+  "rationale": "Under g>b, p cannot be ⊥; the paper says p=⊥ certifies a broken promise.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "If BCE ends with p = ⊥, the proof of Theorem 5 shows that the promise g > b was violated.",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "How large an exhaustive simulation to run for the general n−1 bound.",
+  "options": [
+   "all n≤6",
+   "all n≤8",
+   "all n≤10"
+  ],
+  "chosen": "all n≤8",
+  "rationale": "Small enough for complete adversarial branching, but already covers multiple restarts, backtracks, and bad candidates.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "BCE performs at most n −1 tests and runs in O(n) time.",
+  "page": 6
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether (B,B) should be treated as a consistent same-type outcome because two bad chips can both say B.",
+  "options": [
+   "treat only (G,G) as consistent",
+   "treat (B,B) as consistent too",
+   "treat same verdicts as consistent"
+  ],
+  "chosen": "treat only (G,G) as consistent",
+  "rationale": "The paper defines consistency by the outcome (G,G); (B,B) is explicitly listed among possible (B,B)-type outcomes and the algorithm routes it to Case 3.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We say a test is consistent if it returns (G, G) and inconsistent otherwise.",
+  "page": 3
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether to include the Section 6.3 one-directional variant in the base code.",
+  "options": [
+   "base two-sided only",
+   "include directed variant separately",
+   "replace base model"
+  ],
+  "chosen": "base two-sided only",
+  "rationale": "The paper's main algorithm and target claims are two-sided; the directed scan is an extension.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We also give a variant for the weaker model in which a test yields only one chip’s verdict on the other.",
+  "page": 2
+ }
+]

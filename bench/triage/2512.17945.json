@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean AUC Price of Monotonicity (%) for German Credit (Statlog) across the three libraries (reported as 0.3% in Table 6)",
+  "table_ref": "Table 6 (Dataset-level summary of PoM, AUC, German Credit row)",
+  "dataset": "German Credit (Statlog), UCI"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/petrkokl/price-of-monotonicity"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": 1.5,
+  "basis": "German Credit is tiny (700/300 rows, 20 features) but the protocol requires 3 libraries x 2 regimes x 625-combination grid search with 3-fold CV plus 1,000 paired bootstrap replicates; the grid search dominates and is CPU-bound, so a few hours on 8 cores is realistic if the repo's configs run as-is."
+ },
+ "blockers": [
+  "Repo may not contain exact grid definitions/constraint lists matching Appendix A (partial release)",
+  "Grid search of 625 configs x 3 folds x 3 libraries x 2 regimes is the main cost; exact reproduction of the 0.3% mean requires matching hyperparameter grids and seeds",
+  "Small dataset means PoM values are noisy; matching the reported mean to 0.1% may be sensitive to library versions"
+ ],
+ "suitable": true,
+ "id": "2512.17945",
+ "title": "What's the Price of Monotonicity? A Multi-Dataset Benchmark of Monotone-Constrained Gradient Boosting for Credit PD",
+ "pages": 56,
+ "model": "DeepSeek-V4.1-Flash"
+}

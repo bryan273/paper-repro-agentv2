@@ -1,0 +1,138 @@
+{
+ "approach": "Rebuild Study A from §3 because no author code or repository was released. Download the exact Kaggle credit-card CSV from a public mirror, validate the expected 284,807 rows and 492 positives, then run a leakage-free 5-fold outer stratified CV: each outer training set is split 80/20, StandardScaler is fit only on the inner training set, and a 100-tree, max_depth-16 Random Forest with class_weight=None is fit on the scaled inner training set. For C1, predict on the held-out outer test fold and cut at exactly 0.5, compute binary F1 for the fraud class, and report the mean ± sample standard deviation over the five folds. The same loop can record a tuned-threshold paired contrast as a cheap secondary diagnostic, but C1 uses only the plain arm.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin or install numpy, pandas, scikit-learn, scipy and requests; optionally imbalanced-learn only for the secondary SMOTE diagnostic.",
+   "requirement_ids": []
+  },
+  {
+   "path": "config.py",
+   "purpose": "Single source of truth for data URLs, expected shape/class counts, seeds, fold settings, RF hyperparameters, threshold settings and output paths.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "data.py",
+   "purpose": "Download creditcard.csv with requests streaming, fall back to Kaggle API/manual placement, load it with pandas, validate rows/columns/class balance, and create a stratified smoke-test subset.",
+   "requirement_ids": [
+    "R1",
+    "R11"
+   ]
+  },
+  {
+   "path": "pipeline.py",
+   "purpose": "Implement the nested-CV Study A pipeline: outer folds, inner 80/20 split, scaler fit only on inner training data, Random Forest fitting, plain 0.5 threshold prediction, per-fold F1, and optional paired tuned-threshold diagnostic.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R8",
+    "R9",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "checks.py",
+   "purpose": "Run preflight and leakage checks: data shape, fold positive counts, disjoint indices, scaler fit scope, RF hyperparameters, and one-fold sanity F1.",
+   "requirement_ids": [
+    "R8",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "CLI entrypoint that runs checks and the plain Study A pipeline, aggregates the five fold F1 scores, compares them with the C1 target/tolerance, and writes results/metrics.json plus per-fold CSV.",
+   "requirement_ids": [
+    "R10"
+   ]
+  }
+ ],
+ "config": {
+  "target_claim": "C1",
+  "target_value": 0.861,
+  "tolerance_abs": 0.063,
+  "data_url": "https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv (public mirror of Kaggle creditcard.csv)",
+  "kaggle_dataset": "mlg-ulb/creditcardfraud (fallback via kagglehub or ~/.kaggle/kaggle.json)",
+  "data_path": "data/creditcard.csv",
+  "expected_rows": 284807,
+  "expected_positives": 492,
+  "expected_negatives": 284315,
+  "expected_features": 30,
+  "target_column": "Class",
+  "expected_shape": "[284807, 31]",
+  "min_data_bytes": 140000000,
+  "positive_label": "1 (A1)",
+  "f1_average": "binary (A1)",
+  "outer_folds": "5 (paper, R1)",
+  "outer_shuffle": "True (A4)",
+  "random_state": "42 (A3)",
+  "inner_test_size": "0.20 (R2)",
+  "inner_stratify": "True (R2)",
+  "scaler": "StandardScaler fitted on inner training set only, applied to inner validation and outer test folds (R3, A5)",
+  "scale_all_features": "True (A5)",
+  "rf_n_estimators": "100 (R5)",
+  "rf_max_depth": "16 (R5)",
+  "rf_criterion": "gini (A7)",
+  "rf_max_features": "sqrt (A7)",
+  "rf_bootstrap": "True (A7)",
+  "rf_class_weight": "None (A6)",
+  "rf_n_jobs": "-1",
+  "plain_threshold": "0.5 (R4)",
+  "threshold_grid": "0.01, 0.02, ..., 0.99 (R6; secondary diagnostic only)",
+  "threshold_tie_break": "first/lowest threshold via np.argmax over ascending grid (A10)",
+  "smote": "optional secondary diagnostic only; fit on scaled inner training set only (R7)",
+  "std_ddof": "1 (A2)",
+  "smoke_rows": "20000 stratified rows",
+  "smoke_folds": "3",
+  "smoke_trees": "10",
+  "smoke_max_depth": "8",
+  "output_metrics": "results/metrics.json",
+  "output_per_fold": "results/per_fold_metrics.csv"
+ },
+ "steps": [
+  "Create the project directories and run `python -m pip install -r requirements.txt`; install imbalanced-learn only if the optional SMOTE diagnostic is enabled.",
+  "Write config.py with the URLs, expected data shape/class counts, seed 42, 5 outer folds, 80/20 inner split, RF 100 trees / max_depth 16, plain threshold 0.5, and output paths.",
+  "Write data.py: stream-download from the public Google Storage mirror to data/creditcard.csv using requests; if that fails, try kagglehub.dataset_download('mlg-ulb/creditcardfraud') or use a manually placed file; verify file size is at least 140 MB.",
+  "In data.py, load the CSV with pandas, assert the shape is 284807 x 31, assert Class counts are 492 positives and 284315 negatives, assert no missing values in the target, and log a SHA256 checksum.",
+  "Write pipeline.py: use StratifiedKFold(n_splits=5, shuffle=True, random_state=42) on the full target vector; for each fold split the outer training indices with train_test_split(test_size=0.20, stratify=y[outer_train_idx], random_state=42).",
+  "In pipeline.py, fit StandardScaler on X[inner_train_idx] only, transform inner_train, inner_val and outer_test, fit RandomForestClassifier(n_estimators=100, max_depth=16, class_weight=None, criterion='gini', max_features='sqrt', bootstrap=True, random_state=42, n_jobs=-1) on the scaled inner training set.",
+  "For C1, predict fraud probabilities on the outer test fold, set y_pred = (prob >= 0.5), and compute sklearn f1_score(y_test, y_pred, pos_label=1, average='binary'); also record precision, recall, ROC-AUC and AUPRC for diagnostics.",
+  "Optionally record the C2 paired contrast: choose the threshold on the inner validation fold as argmax F1 over the 0.01..0.99 grid, then evaluate that same fitted model on the outer test fold and store ΔF1 = F1(t*) - F1(0.5). This is not used for the C1 number.",
+  "Write checks.py: assert no outer test index appears in the inner training or inner validation indices, assert the scaler's mean_ is computed from inner training rows only, assert each inner validation fold contains positives, and assert the RF has exactly the configured hyperparameters.",
+  "Write reproduce.py with a CLI supporting `--data-dir`, `--out`, `--smoke`, `--folds`, `--trees`, `--max-depth`, `--limit-rows`, and `--with-tuned`; default behavior runs the full 5-fold plain Study A pipeline.",
+  "Run `python reproduce.py --smoke` to execute a 20,000-row stratified subset with 3 folds, 10 trees and max_depth 8; confirm per-fold F1 values are finite and in [0,1].",
+  "Run one full-data outer fold with the real 100-tree / max_depth-16 RF and verify F1 is in a plausible 0.75-0.95 range before launching the full five folds.",
+  "Run `python reproduce.py --out results/metrics.json`; aggregate the five plain F1 values as mean and sample std (ddof=1), write results/per_fold_metrics.csv, and write results/metrics.json with the value, spread, per-fold values, target, tolerance and within_tolerance flag.",
+  "Inspect metrics.json: C1 is reproduced if |mean_f1 - 0.861| <= 0.063; record the exact value and do not tune folds or hyperparameters to force agreement."
+ ],
+ "smoke_test": "`python reproduce.py --smoke --out results/smoke_metrics.json` uses a stratified 20,000-row subset of creditcard.csv (about 34 positives), 3 outer folds, 10 trees and max_depth 8. It must write per-fold F1 values, complete in under a minute, and leave the full-data results untouched.",
+ "intermediate_checks": [
+  "Data file exists, is at least 140 MB, loads with pandas, and has shape 284807 x 31 with columns Time, V1-V28, Amount, Class.",
+  "Class counts are exactly 492 positives and 284315 negatives; no NaN in Class.",
+  "For each of the 5 outer folds, the held-out test fold has approximately 98 positives and the inner validation fold has approximately 79 positives; all counts are > 0.",
+  "Index audit: outer_test_idx is disjoint from inner_train_idx and inner_val_idx for every fold.",
+  "Scaler audit: StandardScaler.mean_ equals the mean of X[inner_train_idx] only, not the full dataset or outer training set.",
+  "RF audit: n_estimators=100, max_depth=16, class_weight=None, criterion='gini', max_features='sqrt', bootstrap=True, random_state=42.",
+  "One-fold sanity run on the full data with the real RF produces F1 in the plausible 0.75-0.95 range.",
+  "Plain-threshold audit: the C1 code path contains no threshold search and evaluates exactly prob >= 0.5.",
+  "Output schema audit: metrics.json contains claim_id C1, mean_f1, std_f1, n_folds=5, per_fold_f1, target 0.861 and tolerance 0.063."
+ ],
+ "entrypoint": "python reproduce.py --out results/metrics.json",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 15 minutes total: 0-2 min environment setup and pip installs; 2-6 min to download and validate the 144 MB creditcard.csv; 1-2 min for the smoke test; 5-8 min for the full five-fold Random Forest run; 1-2 min for checks and writing metrics.json. If the file is already cached, the full run should finish comfortably within the remaining budget.",
+ "type": "json_object"
+}

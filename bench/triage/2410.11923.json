@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ATBTSGM achieves 100% precision, recall, and F1-score on Dataset B (2 hp) of the CWRU bearing dataset.",
+  "table_ref": "Table 2, Dataset B row",
+  "dataset": "CWRU Bearing Dataset (2 hp subset, Dataset B)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "basis": "No code is provided; the method requires implementing entropy-based segmentation, DTW graph construction, GAT+LSTM model, and K-fold cross-validation from scratch, plus downloading and preprocessing CWRU data; training on ~120k samples is feasible on CPU but time-consuming."
+ },
+ "blockers": [
+  "No code or implementation details released",
+  "Data availability statement says 'upon reasonable request' though CWRU is publicly available",
+  "Exact preprocessing (segmentation, window size, threshold) not fully specified",
+  "Graph construction with DTW over many segments may be computationally heavy"
+ ],
+ "suitable": false,
+ "id": "2410.11923",
+ "title": "Spatial-Temporal Bearing Fault Detection Using Graph Attention Networks and LSTM",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

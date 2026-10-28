@@ -1,0 +1,129 @@
+{
+ "approach": "This is a pure theory paper with no released code, dataset, or weights, so the plan is to implement Algorithm 1 (BCE) directly from the prose and exercise it on the two contract claims. The implementation keeps a separate candidate p and a LIFO stack R, uses two-sided Test(p, xi) returning ordered verdict pairs, retains xi on (G,G), and on any other pair discards both p and xi and backtracks to the most recently retained chip or sets p = bottom. C1 is reproduced by a deterministic GGBBBGG trace with a fixed arbitrary bad-chip policy that still forces every test to be inconsistent; C2 is checked by exhaustive DFS for n <= 8 over all strict-majority type strings and every Table-1-allowed adaptive verdict branch. Optional early termination and the directed variant are disabled/omitted for the target runs per assumptions A4 and A10.",
+ "files": [
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker so reproduce.py can import the implementation modules consistently.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/chips.py",
+   "purpose": "Define G/B chip types, parse and validate the strict-majority promise g > b, define the two-sided Test semantics, enumerate every Table-1-allowed ordered verdict pair for a candidate/incoming type pair, and provide the deterministic C1 bad-chip policy.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3"
+   ]
+  },
+  {
+   "path": "src/bce.py",
+   "purpose": "Implement Algorithm 1 as a state machine with candidate p, stack R, one Test(p, xi) per loop iteration when p is not bottom, retain/push on (G,G), discard/backtrack on inconsistency, restart without testing when p is bottom, test counting, incoming-chip counting, and optional invariant checks; include the disabled-by-default Proposition 10 early-termination flag.",
+   "requirement_ids": [
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/run_trace.py",
+   "purpose": "Hard-code the seven-chip instance G,G,B,B,B,G,G, run BCE with the fixed bad-chip policy, assert the exact Table 2 flow and final result x7 after exactly 4 Test calls, and return a structured trace record for metrics.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/exhaustive_check.py",
+   "purpose": "Exhaustively DFS over every length-n strict-majority G/B string for n=1..8 and every allowed adaptive verdict branch, checking that BCE returns a good chip, performs at most n-1 tests, never uses a chip as incoming more than once, and maintains the retained-set and discarded-pair invariants.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that runs the C1 trace and C2 exhaustive checker, validates the expected values, creates results/, and writes results/metrics.json with all counts, branch totals, and pass/fail flags.",
+   "requirement_ids": [
+    "R9",
+    "R10"
+   ]
+  }
+ ],
+ "config": {
+  "trace_types": [
+   "G",
+   "G",
+   "B",
+   "B",
+   "B",
+   "G",
+   "G"
+  ],
+  "trace_expected_output": "x7",
+  "trace_expected_tests": 4,
+  "trace_bad_answer_policy": "bad chips always report B (one arbitrary policy; every C1 test is inconsistent under any bad answer)",
+  "scan_order": "input order x1..xn (A1)",
+  "test_count_rule": "count only Test(p,xi) calls (A2)",
+  "consistent_pair": [
+   "G",
+   "G"
+  ],
+  "inconsistent_pairs": "all ordered pairs other than (G,G) (R3)",
+  "early_termination": false,
+  "even_n_drop_chip": false,
+  "stack_model": "separate candidate p plus stack R (A6)",
+  "p_bottom_rule": "n=1 returns x1; p=None at termination on valid n>1 raises an error (A7)",
+  "exhaustive_n_max": 8,
+  "exhaustive_domain": "all length-n G/B strings with g>b for n=1..8 (A8)",
+  "adversary_model": "branch over every Table-1 allowed verdict pair at each test, including adaptive choices (A3)",
+  "max_incoming_expected": 1,
+  "directed_variant": false,
+  "output_metrics": "results/metrics.json",
+  "random_seed": 0
+ },
+ "steps": [
+  "Create the directory structure and use only the Python standard library; no pip installs are required because the task is a pure simulation.",
+  "Implement src/chips.py: constants G/B, parse_types, strict_majority_promise, allowed_verdict_pairs(candidate_type, incoming_type), and a deterministic bad-chip policy for the C1 trace.",
+  "Implement src/bce.py: initialize p=x1 and R=[], scan i=2..n once, call Test(p,xi) only when p is not bottom, push on (G,G), discard both and pop R on inconsistency, restart with xi when p is bottom, return p, and record tests plus per-chip incoming counts. Include optional invariant checks and a disabled early_termination flag.",
+  "Implement src/run_trace.py: run the GGBBBGG instance with the fixed policy, record candidate/stack/test outcome per iteration, and assert output x7 and tests == 4.",
+  "Implement src/exhaustive_check.py: for n=1..8 enumerate all G/B strings with g>b, then DFS over all allowed verdict pairs at each actual test, validating final candidate is good, tests <= n-1, incoming count <= 1 per chip, no bottom candidate at termination, and the two proof invariants.",
+  "Implement reproduce.py: call the trace and exhaustive checker, collect structured metrics, create results/, and write results/metrics.json.",
+  "Run the smoke test on the trace plus n<=4 exhaustive subset; confirm C1 tests=4/output=x7 and the C2 branch enumeration returns pass.",
+  "Run the full command python reproduce.py; verify metrics show C1 pass, C2 max_incoming_tests=1, all branches return a good chip, and max tests per instance <= n-1.",
+  "Inspect results/metrics.json and compare against the contract: C1 exact integer identity and test count; C2 upper bound and exhaustive branch coverage."
+ ],
+ "smoke_test": "python reproduce.py --smoke runs only the GGBBBGG trace and an exhaustive check for n<=4, printing JSON with C1_tests=4, C1_output=\"x7\", and C2_smoke_pass=true; this proves the Test semantics, retain/backtrack path, and metrics serialization before the full n<=8 run.",
+ "intermediate_checks": [
+  "Strict-majority string counts for n=1..8 should be [1,1,4,5,16,22,64,93], totaling 206; assert these before exhaustive DFS.",
+  "C1 trace length is 7; expected stack/candidate events: i=2 push x2; i=3 pop x2 to candidate; i=4 discard to p=None; i=5 set p=x5 without test; i=6 discard to p=None; i=7 set p=x7 without test; final tests=4 and output=x7.",
+  "Allowed verdict-pair cardinalities are 1 for (G,G), 2 for (G,B), 2 for (B,G), and 4 for (B,B); validate Test semantics with unit checks.",
+  "C2 DFS must visit every valid string and all allowed adaptive branches; assert every terminal state has p != None, chip p is good, tests <= n-1, and max incoming tests per chip <= 1.",
+  "Check proof invariants after each step: all retained chips in {p} union R have the same type, and every discarded pair contains at least one bad chip.",
+  "Confirm early termination, even-n chip dropping, and the one-directional variant are not active in the target runs (A4, A5, A10)."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total reference budget ~8 minutes: 1 minute setup and directory creation (no installs), 2 minutes writing/unit-checking the small modules, 1 minute smoke test, 1 minute full n<=8 exhaustive run, and 3 minutes validation/buffer. The actual full computation is seconds because it simulates at most 7 tests per branch over 206 strict-majority strings with small adaptive branching."
+}

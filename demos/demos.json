@@ -1,0 +1,35 @@
+[
+ {
+  "id": "fasttext",
+  "route": "full_release",
+  "title": "Bag of Tricks for Efficient Text Classification (fastText)",
+  "paper": "1607.01759",
+  "repo": "https://github.com/facebookresearch/fastText",
+  "target_hint": "Table 1, AG News test accuracy, fastText h=10 with bigrams",
+  "scenario": "Authors' code, script and data are public. The agent should run the authors' tool with the paper's settings, not rewrite it. On Windows the shell script needs a Python port and the pip package is fasttext-wheel.",
+  "replay": "fasttext-demo-fasttext-3.jsonl",
+  "pdf": "fasttext-demo-fasttext-3.pdf"
+ },
+ {
+  "id": "mc-dropout",
+  "route": "partial_release",
+  "title": "Dropout as a Bayesian Approximation (MC dropout)",
+  "paper": "1506.02142",
+  "repo": "https://github.com/yaringal/DropoutUncertaintyExps",
+  "target_hint": "Table 1, Boston Housing, MC dropout test RMSE (the 40-epoch x10 setting, 20 splits)",
+  "scenario": "Code, data and the 20 split indices are released, but the code needs Theano and Keras 1, which no longer install. The agent must port the experiment to a current framework and keep the protocol.",
+  "replay": "mc-dropout-demo-mcdropout-3.jsonl",
+  "pdf": "mc-dropout-demo-mcdropout-3.pdf"
+ },
+ {
+  "id": "isolation-forest",
+  "route": "paper_only",
+  "title": "Isolation Forest",
+  "paper": "https://cs.nju.edu.cn/zhouzh/zhouzh.files/publication/icdm08b.pdf",
+  "repo": null,
+  "target_hint": "Table 3, iForest AUC on Ionosphere",
+  "scenario": "The paper links no code and ships no experiment scripts (the first author released a generic R package a year later). The agent must implement iTrees, path length and the anomaly score from the paper.",
+  "replay": "isolation-forest-20260930-131649-58916d.jsonl",
+  "pdf": "isolation-forest-20260930-131649-58916d.pdf"
+ }
+]

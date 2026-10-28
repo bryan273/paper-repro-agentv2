@@ -1,0 +1,226 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper says FNV but does not pin down FNV-1 versus FNV-1a or the hash width.",
+  "options": [
+   "FNV-1a 64-bit",
+   "FNV-1 64-bit",
+   "FNV-1a 32-bit"
+  ],
+  "chosen": "FNV-1a 64-bit",
+  "rationale": "Common C default; exact variant may shift bucket occupancy for synthetic uniform keys.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "using FNV (no resize)",
+  "page": 4
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The uniform key generator's PRNG algorithm, alphabet, and string length are not specified.",
+  "options": [
+   "fixed-length alphanumeric strings",
+   "variable-length alphanumeric strings",
+   "byte strings from PRNG"
+  ],
+  "chosen": "Seeded PRNG alphanumeric strings of fixed length 16 over ASCII [a-z0-9]",
+  "rationale": "Follows the paper's 'PRNG alphanumeric strings' description while fixing an otherwise open detail.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "PRNG alphanumeric strings",
+  "page": 11
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The BBBB:seq:suffix key format leaves zero-padding, suffix length, sequence formatting, and hot-bucket ID range open.",
+  "options": [
+   "0000-0007 zero-padded BBBB, decimal seq, fixed suffix",
+   "0-7 unpadded BBBB, decimal seq, PRNG suffix",
+   "random BBBB from eight IDs"
+  ],
+  "chosen": "BBBB is 0000-0007 zero-padded, seq is decimal, suffix is a fixed 8-character seeded-PRNG token",
+  "rationale": "Preserves the stated bucket-id routing while making key generation reproducible.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Forced-bucket stress keys have the form BBBB:seq:suffix; the bucket hash returns BBBB",
+  "page": 12
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "RB-tree node layout, comparator, parent pointers, and duplicate-key handling are not specified.",
+  "options": [
+   "CLRS-style RB tree with parent pointers",
+   "left-leaning RB tree",
+   "other balanced BST"
+  ],
+  "chosen": "CLRS-style RB tree with parent pointers, strcmp key ordering, and duplicate keys rejected",
+  "rationale": "The paper cites CLRS and requires an ordered RB tree.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "each non-empty bucket holds an RB tree ordered by key [10]",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The comparison-count definition does not say whether the final equality strcmp is counted or how failed lookups are treated.",
+  "options": [
+   "count all strcmp calls in successful lookup including final equality",
+   "count only non-equal comparisons",
+   "count hash comparisons too"
+  ],
+  "chosen": "Count each strcmp call during successful bucket traversal including final equality; divide by number of successful lookups",
+  "rationale": "Matches the stated 'strcmp calls during chained-hash lookup' definition and the successful-lookup denominator.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Number of strcmp calls during chained-hash lookup (chain ht)",
+  "page": 12
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The selection procedure for the 64 random earlier keys in mid-load probes is not fully specified.",
+  "options": [
+   "uniform with replacement among inserted keys",
+   "uniform without replacement",
+   "fixed stride sampling"
+  ],
+  "chosen": "Use the seeded PRNG to sample uniformly with replacement among keys inserted so far",
+  "rationale": "Reproducible and close to the stated random earlier-key probes.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "probes during insertion (every 10,000 inserts, 64 random earlier keys)",
+  "page": 5
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Heap-byte accounting does not state whether malloc metadata, capacity slack, or allocator overhead is included.",
+  "options": [
+   "requested allocation bytes only",
+   "resident allocator bytes including metadata",
+   "capacity-inclusive bytes"
+  ],
+  "chosen": "Requested bytes for bucket array, list cells or RB nodes, and key-string copies; exclude allocator metadata and unused capacity",
+  "rationale": "Matches the stated components counted by chain_ht heap bytes.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "heap bytes counts bucket arrays, list cells or RB nodes, and stored key strings via chain ht heap bytes().",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Always-tree initialization timing is not specified: allocate trees for all buckets up front or lazily after first insert.",
+  "options": [
+   "lazy per-bucket tree root on first insert",
+   "preallocate roots for every bucket",
+   "global pool"
+  ],
+  "chosen": "Allocate each bucket's RB root lazily on first insert",
+  "rationale": "The paper notes legacy drivers attach an RB tree once a bucket becomes non-empty.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether bucket structures store key pointers or copied key strings is not explicit.",
+  "options": [
+   "copy key strings into nodes/cells",
+   "store caller-owned pointers",
+   "intern keys globally"
+  ],
+  "chosen": "Copy key strings into each node or list cell so heap bytes includes stored key strings",
+  "rationale": "The heap metric explicitly counts stored key strings.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "stored key strings via chain ht heap bytes()",
+  "page": 6
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The final lookup phase's key order is only described as looking up every key.",
+  "options": [
+   "insertion order",
+   "random order",
+   "reverse insertion order"
+  ],
+  "chosen": "Lookup every inserted key in insertion order for final lookup; mid-load probes use random earlier keys",
+  "rationale": "Most literal reading of the appendix phase description.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "If wall-clock is reproduced, the paper treats long-list timings as noisy and secondary.",
+  "options": [
+   "report only comparisons/memory",
+   "report wall-clock as primary",
+   "average many wall-clock runs"
+  ],
+  "chosen": "Use comparisons and heap as primary; report wall-clock only as secondary context",
+  "rationale": "The paper explicitly headlines comparisons and memory.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we therefore headline comparisons and memory",
+  "page": 1
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The exact conversion trigger for k is whether a bin converts at length k or only after exceeding k.",
+  "options": [
+   "convert at length == k",
+   "convert after length > k",
+   "convert at k+1"
+  ],
+  "chosen": "Convert on the insertion that makes chain length equal k, matching 'as soon as ... reaches k'",
+  "rationale": "The incremental bullet says conversion occurs as soon as the chain reaches k.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "a bin converts to an RB tree as soon as its chain reaches k during insert",
+  "page": 4
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "The replay's exact selection of hottest lists and synthetic key generation per list are not fully specified.",
+  "options": [
+   "256 longest trigram lists",
+   "2048 longest lists",
+   "random posting lists"
+  ],
+  "chosen": "Use the 256 longest trigram posting lists; one forced bucket per list; insert L synthetic keys for length L",
+  "rationale": "Matches the reported Table 12 replay size and one-bucket-per-posting construction.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "replay the hottest 256 posting lengths as synthetic bucket chains",
+  "page": 8
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Whether any resizing occurs during the controlled microbenchmark is a key implementation choice.",
+  "options": [
+   "disable resize for fixed-m runs",
+   "resize when alpha exceeds threshold",
+   "resize at fixed intervals"
+  ],
+  "chosen": "Disable resize for fixed-m microbenchmarks and forced-bucket stress",
+  "rationale": "The paper explicitly uses fixed m and no resize for the controlled α≈122 run.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "fixed table of 4096 buckets using FNV (no resize)",
+  "page": 4
+ }
+]

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Accuracy of XGB on the adversarial holdout set for IoT-23 binary classification (regular training), reported as 68.35%",
+  "table_ref": "Fig. 2 (Accuracy on IoT-23 binary classification)",
+  "dataset": "IoT-23"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/vitorinojoao/a2pm"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Only the A2PM attack library is released; the full pipeline (preprocessing, grid search, adversarial training, evasion loop) must be reimplemented, and IoT-23 must be downloaded and preprocessed, but all models are CPU tree ensembles on ~1M samples."
+ },
+ "blockers": [
+  "No end-to-end code/configs released for the paper's pipeline (only the A2PM library)",
+  "Exact preprocessing (feature selection, one-hot encoding, low-frequency category aggregation) and grid-search ranges are only partially specified",
+  "A2PM evasion loop with up to 30 attempts per malicious sample can be slow on CPU"
+ ],
+ "suitable": true,
+ "id": "2301.13122",
+ "title": "Towards Adversarial Realism and Robust Learning for IoT Intrusion Detection and Classification",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

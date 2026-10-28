@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "A.S.E contains 120 repository-level vulnerability instances, comprising 40 seed repositories and 80 mutated variants.",
+  "table_ref": "Figure 3 (Benchmark Construction Funnel) / Section 3.2",
+  "dataset": "A.S.E benchmark dataset (Tencent/AICGSecEval)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/Tencent/AICGSecEval",
+  "https://aicgseceval.tencent.com/home"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 10,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Only requires cloning/downloading the released benchmark metadata and counting instances; no LLM inference or SAST scan is needed for the 40-seed/80-mutant composition."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2508.18106",
+ "title": "A.S.E: A Repository-Level Benchmark for Evaluating Security in AI-Generated Code",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

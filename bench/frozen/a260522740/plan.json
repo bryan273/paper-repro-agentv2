@@ -1,0 +1,85 @@
+{
+ "approach": "Full-release reproduction of C2: clone/verify the authors' repo at https://github.com/smitswil/ternary_tree, `pip install -e \".[benchmark]\"`, and run `pytest tests/ -q` as a gate. Then a thin `reproduce.py` loads credit-g (OpenML dataset 31) through the authors' own loader in `benchmark/datasets_extended.py`, runs 5-fold stratified CV (seed 42, per-fold StandardScaler) with `make_classifier(delta_method='margin', routing_method='probabilistic', max_depth=4)` and, on the identical folds, `sklearn.tree.DecisionTreeClassifier(max_depth=4)`, computing decided accuracy / boundary-uncertain rate / overall accuracy with `ternary_tree.metrics`. No library code is modified or reimplemented — the margin δ (Eq. 10, clean-split gap fallback, 25% node-range clamp), the probabilistic blending and the Undec verdict all come from the released `delta_methods.py`/`binary_ternary_tree.py`. The script writes `results/metrics.json` with the credit-g decided accuracy (target 0.6808 ± 0.02), boundary-uncertain rate (target 0.481 ± 0.05), CART baseline (target 0.7130) and η, plus a per-fold CSV; `verify_results.py` then does the tolerance check and flags the documented 'margin < CART on credit-g' result.",
+ "files": [
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin driver (no reimplementation): imports `ternary_tree.make_classifier` and the credit-g loader from `benchmark.datasets_extended`; builds the seed-42 5-fold StratifiedKFold, fits StandardScaler per training fold, fits margin+probabilistic depth-4 tree and the sklearn CART baseline per fold; computes Dec-Acc, Undec%, Acc.All and η (Eq. 11 / Sec 4.3) via `ternary_tree.metrics`; writes results/metrics.json and results/creditg_folds.csv. Supports `--smoke` (1 fold, 200-row subsample) and `--folds N`.",
+   "requirement_ids": [
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "verify_results.py",
+   "purpose": "Reads results/metrics.json and checks the declared tolerance bands (Dec-Acc 0.6808 ± 0.02; Undec% 0.481 ± 0.05; CART baseline 0.7130 ± 0.02), asserts η == Dec-Acc − Acc.All of the baseline within 1e-9, prints a PASS/FAIL table and echoes `reproduced` vs `not reproduced` into metrics.json's `verdict` field.",
+   "requirement_ids": [
+    "R10",
+    "R14"
+   ]
+  },
+  {
+   "path": "results/metrics.json",
+   "purpose": "Final metric artifact: per-dataset (credit-g) decided accuracy, boundary-uncertain rate, overall accuracy, CART baseline accuracy, η, per-fold values, software versions, seed, delta/routing config, tolerance comparison and verdict.",
+   "requirement_ids": [
+    "R10",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "repo": "https://github.com/smitswil/ternary_tree (pinned to cloned HEAD, unmodified)",
+  "install": "pip install -e \".[benchmark]\" (deps: numpy>=1.24, scipy>=1.10, scikit-learn>=1.3, pandas>=2.0, openml>=0.14) (R13)",
+  "dataset": "OpenML credit-g, dataset id 31, loaded via benchmark.datasets_extended (R11)",
+  "n_splits": "5 (paper, Sec 5.2, R11)",
+  "fold_splitter": "sklearn StratifiedKFold(n_splits=5, shuffle=True, random_state=42) — assumption A5; unshuffled variant reported as sensitivity check",
+  "random_state": "42 (paper, App. E / R13)",
+  "max_depth": "4 (paper, Sec 5.2)",
+  "delta_method": "margin (Eq. 10) (paper, Sec 3.4 / C2)",
+  "routing_method": "probabilistic (paper, Sec 3.5 / C2)",
+  "delta_clamp": "min(delta, 0.25 * (node feature max - min)) — A3 (library-implemented)",
+  "delta_zero_handling": "δ = 0 disables the zone at that node, i.e. hard routing — A2 (library-implemented)",
+  "margin_clean_split_fallback": "gap between the two adjacent data points straddling θ* (R4, library-implemented)",
+  "dominant_class_tiebreak": "lowest class index among tied majorities — A1 (library-implemented)",
+  "zone_blending_recursion": "full recursion, weights multiplied at every zone on the path — A4 (library-implemented)",
+  "preprocessing": "StandardScaler fitted on the training part of each fold, applied to the test fold (paper, Sec 5.2 / R11); categorical columns handled exactly as the authors' loader returns them — A7",
+  "class_weight": "None / uniform for both the ternary tree and the CART baseline — A8",
+  "min_samples": "sklearn CART defaults (min_samples_split=2, min_samples_leaf=1) — A10",
+  "cart_baseline": "sklearn.tree.DecisionTreeClassifier(max_depth=4, random_state=42) on identical folds and identical standardised features (R12)",
+  "fold_aggregation": "mean of the 5 per-fold decided accuracies — A6",
+  "empty_decided_fold": "skip fold, average remaining, record count — A9",
+  "metrics": "Dec-Acc = accuracy on verdict-True instances; Undec% = fraction with verdict 0; Acc.All = accuracy on all instances; η = (Dec-Acc − Acc_CART)/Undec% (R10, R14)",
+  "targets": {
+   "decided_accuracy": "0.6808 ± 0.02 (C2)",
+   "boundary_uncertain_rate": "0.481 ± 0.05 (C2)",
+   "cart_baseline": "0.7130 ± 0.02 (C2)"
+  }
+ },
+ "steps": [
+  "Confirm the repo is present at ./ternary_tree (route says cloned: true); if absent run `git clone https://github.com/smitswil/ternary_tree` and `cd ternary_tree`.",
+  "`pip install -e \".[benchmark]\"` inside the repo; verify `python -c \"import ternary_tree, sklearn, openml; print(ternary_tree.__file__, sklearn.__version__, openml.__version__)\"`.",
+  "Run `pytest tests/ -q` (67 unit tests on the delta methods, splitter and both tree types) as the sanity gate; record pass/fail. Do not modify any repo file.",
+  "Read `benchmark/datasets_extended.py` and `benchmark/run_extended_benchmark.py` (read-only) to identify (a) the per-dataset credit-g / CC18 loader function, (b) the exact `make_classifier(...)` invocation the authors use for the margin/probabilistic configuration, and (c) the metric helper in `ternary_tree/metrics.py`. Note the credit-g preprocessing path (shape, dtype coercion) in results/metrics.json under `loader`.",
+  "Fetch credit-g once (openml id 31) through the authors' loader, cache it under `data/`, and print N, d, class balance, missing values; do not re-download between runs.",
+  "Write reproduce.py: seed everything (np.random.seed(42), random_state=42), build the StratifiedKFold, and per fold scale → fit margin/probabilistic depth-4 tree → `predict` / `predict_ternary` → metrics; fit the depth-4 sklearn CART baseline on the same scaled fold and compute its accuracy; aggregate as mean of per-fold values.",
+  "Run the smoke test (`python reproduce.py --smoke`) and inspect `results/metrics.json` smoke block.",
+  "Run the full 5-fold credit-g evaluation (`python reproduce.py`) — expected < 15 s of compute.",
+  "Run `python verify_results.py` to apply the tolerance bands and write the verdict; if Dec-Acc is outside 0.6808 ± 0.02, first re-check the loader (A7), the splitter (A5) and the fold-aggregation rule (A6) before concluding non-reproduction, and record the unshuffled-fold sensitivity result.",
+  "If budget remains (>5 min), optionally run the same driver on diabetes (OpenML 'diabetes', C7) and mammography (C5) via the medical loader to cross-check the node-bootstrap rows; write them to a separate `results/metrics_secondary.json` and do not overwrite the primary metrics.json."
+ ],
+ "smoke_test": "`python reproduce.py --smoke`: load credit-g, take the first 200 training rows of one stratified fold, fit the margin/probabilistic depth-4 tree plus the CART baseline, and assert (a) both fit without error, (b) `predict_ternary` returns only {0,1}, (c) at least one split node has δ > 0 and δ ≤ 0.25 × node feature range, (d) `predict_proba` rows sum to 1, (e) metrics.json smoke block is written with dec_acc, undec_rate and acc_all keys. Runs in a few seconds and exercises the full data→tree→metric→JSON path.",
+ "intermediate_checks": [
+  "pytest tests/ -q: all 67 tests pass (delta methods incl. margin/clean-split fallback, splitter, probabilistic routing).",
+  "credit-g loaded shape is N = 1000 with d = 20 (or the loader's documented encoded width); class balance ≈ 700/300; assert no NaN and no inf after StandardScaler.",
+  "CART baseline 5-fold accuracy lands at 0.7130 ± 0.02 — this validates folds, scaler and aggregation before trusting the ternary numbers.",
+  "Margin δ diagnostics: fraction of split nodes with δ > 0, mean δ / node feature range, and fraction of nodes hitting the 25% clamp; δ ≡ 0 at every node indicates a broken margin estimator, and a clamp fraction near 1.0 indicates the A3 feature-range choice is wrong.",
+  "Boundary-uncertain rate sanity: must be strictly between 0 and 1 (target ≈ 0.481); Undec% = 0 means δ is never positive, Undec% ≈ 1 means the clamp/zone logic is degenerate — both are red flags, not results.",
+  "δ = 0 control run: with `routing_method='probabilistic'` but δ forced to 0 (all-zero zone), the tree must reproduce the CART decided accuracies exactly, confirming that blending is the only difference (R1).",
+  "Determinism: rerun the driver once and confirm the per-fold decided accuracies are bit-identical (seed 42, A5)."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "≈15 min total inside the 20-min budget. 0-5 min: verify/clone the repo, `pip install -e \".[benchmark]\"` (numpy/scipy/scikit-learn/pandas/openml already largely cached). 5-7 min: `pytest tests/ -q` gate plus the read-only inspection of the authors' loader/runner and the OpenML credit-g download (~900 KB, one-off, cached). 7-9 min: smoke test plus δ diagnostics and the δ = 0 control run. 9-13 min: full 5-fold margin run and CART baseline (< 15 s of compute), verification and metrics.json write. 13-15 min: slack for an OpenML retry, an unshuffled-fold sensitivity check, or the optional diabetes (C7) cross-check; the 71-dataset CC18 sweep behind C1/C3 (~3-4 h) is explicitly out of scope for this budget."
+}

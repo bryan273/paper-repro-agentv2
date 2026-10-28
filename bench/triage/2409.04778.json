@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "LoCa-0.95 achieves 71.08% top-1 accuracy on CIFAR-100 with ResNet56 teacher and ResNet20 student, +0.42 over vanilla KD (70.66%)",
+  "table_ref": "Table 2, row 'LoCa-0.95', column 'ResNet56 -> ResNet20'",
+  "dataset": "CIFAR-100"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Paper reports ~2 hours on 1 A100 GPU for CIFAR-100 distillation (240 epochs); on an 8-core CPU this is roughly 10x slower, i.e. ~20 hours, and the LoCa method must be reimplemented from scratch since no code is released."
+ },
+ "blockers": [
+  "No code released (no repository link in paper)",
+  "Requires reimplementing LoCa calibration and full KD training pipeline from scratch",
+  "240-epoch training on CPU is slow (~20h), exceeding a few-hour budget"
+ ],
+ "suitable": false,
+ "id": "2409.04778",
+ "title": "LoCa: Logit Calibration for Knowledge Distillation",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Average FDP of BH0.1 after INCREASE-10 on credit card fraud data (c=10, E[FDP[BH0.1; p+c]] = 0.23)",
+  "table_ref": "Table 2, row c=10, column E[FDP[BH0.1; p+c]]",
+  "dataset": "Credit Card Fraud Detection (Kaggle mlg-ulb/creditcardfraud)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires reimplementing isolation forest training (R isotree or Python equivalent), conformal p-value calibration, and INCREASE-c algorithm; 100 simulations on 284k transactions with 141k training samples; paper reports each run <5 min on MacBook Air, but reimplementation and debugging add time."
+ },
+ "blockers": [
+  "No code released; must reimplement isolation forest training, conformal p-value construction, and INCREASE-c from paper description",
+  "Isolation forest implementation details (hyperparameters, random seed) not fully specified",
+  "Exact train/calibration/test splits and random seeds not provided"
+ ],
+ "suitable": true,
+ "id": "2501.03402",
+ "title": "On the Adversarial Robustness of Benjamini Hochberg",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

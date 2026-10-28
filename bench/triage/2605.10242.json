@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "RTTAD AUC-ROC on the Wine dataset (0.9986), a single table cell in Table IV",
+  "table_ref": "Table IV",
+  "dataset": "Wine (ODDS/ADBench, 129 samples, 13 dims)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": 2,
+  "basis": "No code released; the full RTTAD pipeline (masked autoencoder with dual reconstruction tasks, mask-diversity loss, GMM-thresholded pseudo-label selection, KNN contrastive test-time adaptation with iterative updates) must be reimplemented from the paper, then trained 200 epochs and adapted on the shifted test split; the Wine dataset itself is tiny so runtime is dominated by reimplementation and debugging, not compute."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Normality-shift split (K-Means on normals, largest cluster to train) must be reconstructed from description",
+  "Several hyperparameters (mask count T, tau, gamma, GMM details, update rounds n) only partially specified"
+ ],
+ "suitable": false,
+ "id": "2605.10242",
+ "title": "When Normality Shifts: Risk-Aware Test-Time Adaptation for Unsupervised Tabular Anomaly Detection",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

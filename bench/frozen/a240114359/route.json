@@ -1,0 +1,39 @@
+{
+ "route": "full_release",
+ "why": "The repository contains the authors' R package implementing the MCD stability framework plus the exact vignette script for the target claim, vigenettes/star_mcd.R, which produces Figure 4 for StarsCYG. The only requirements are an R installation, a C++ toolchain to compile the package's Rcpp sources, CRAN dependencies, and the StarsCYG dataset from robustbase.",
+ "repo": "https://github.com/qhengncsu/StableMCD",
+ "entrypoints": [
+  "vigenettes/star_mcd.R",
+  "R CMD INSTALL . (or devtools::install_github('qhengncsu/StableMCD'))"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "Requires R and a C++ build toolchain; on Windows this means installing Rtools before the package's src/ code can compile.",
+  "StarsCYG for C1 is not stored directly in the repository; it must be loaded from the CRAN package robustbase or an equivalent copy.",
+  "The repository is an R package, not Python, despite the machine's Python 3.12 environment."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-15 minutes including R/Rtools setup and package compilation; the star_mcd.R grid itself is reported to take about 3 seconds.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Installing/compiling a small Rcpp-based R package and running a B=100 bootstrap grid over h for n=47, p=2, which the paper reports as a 3-second computation."
+ },
+ "repo_info": {
+  "url": "https://github.com/qhengncsu/StableMCD",
+  "cloned": true,
+  "n_files": 35,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

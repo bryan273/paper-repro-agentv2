@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "CoWork-X mean episode return 52.0 over episodes 0–9 (first 10 Execute–Optimize iterations)",
+  "table_ref": "Table 1, row CoWork-X, column 0–9",
+  "dataset": "Overcooked-AI-like real-time burger preparation benchmark (DPT-Agent environment)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Paper reports 160.3 s total per episode including Co-Optimizer, so 10 episodes are about 27 min of runtime once code exists; however the paper provides no code link, and the exact DPT-Agent-based environment, prompts, and initial skill library must be rebuilt while calling a closed LLM API."
+ },
+ "blockers": [
+  "No code link in paper; code is stated only as 'will be available' under MIT License",
+  "Requires Gemini-3-Pro-Preview-Thinking or comparable closed LLM API for the Co-Optimizer",
+  "Exact DPT-Agent Overcooked environment, prompts, and initial skill library are not provided",
+  "Closed-model API access/cost may be a hard practical constraint"
+ ],
+ "suitable": false,
+ "id": "2602.05004",
+ "title": "CoWork-X: Experience-Optimized Co-Evolution for Multi-Agent Collaboration System",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Isolation Forest F1-score of 85.0 on the TON_IoT thermostat dataset (vs OC-SVM 74.0)",
+  "table_ref": "Table I",
+  "dataset": "TON_IoT Train_Test_IoT_Thermostat.csv"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "TON_IoT thermostat CSV is a small public file; sklearn IsolationForest/OneClassSVM on a few thousand rows trains in seconds, so time is dominated by download and writing the preprocessing pipeline from scratch (no code released)."
+ },
+ "blockers": [
+  "No code or configs released; preprocessing (feature selection, 70:30 split, Min-Max scaling) must be re-derived from prose",
+  "Exact split/random seed unspecified, so exact 85.0 F1 may not be bit-reproducible",
+  "Resource metrics (inference time, peak RAM, model size) are hardware-dependent and not reproducible exactly"
+ ],
+ "suitable": true,
+ "id": "2511.21842",
+ "title": "Unsupervised Anomaly Detection for Smart IoT Devices: Performance and Resource Comparison",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

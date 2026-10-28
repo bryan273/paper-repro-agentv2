@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "ROC AUC of SAM++ on the Credit Card Fraud dataset (mean ± 2 std over 10 bootstrapped train-test splits)",
+  "table_ref": "Table 1, row SAM++, column cc",
+  "dataset": "Credit Card Fraud (Kaggle mlg-ulb/creditcardfraud)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Credit card dataset is ~150 MB; SAM fits 30 linear regressions (with optional RANSAC) per split, 10 splits, all CPU-friendly; no code released so implementation must be written from Algorithm 1/2."
+ },
+ "blockers": [
+  "No code released; must reimplement SAM (Algorithm 1/2) from paper text",
+  "RANSAC stochasticity and exact hyperparameters (e.g., RANSAC settings, normalization constant) not fully specified, so exact reproduction of 0.92 ± 0.04 is uncertain"
+ ],
+ "suitable": true,
+ "id": "2501.18417",
+ "title": "Real-Time Anomaly Detection with Synthetic Anomaly Monitoring (SAM)",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

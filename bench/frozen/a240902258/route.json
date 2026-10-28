@@ -1,0 +1,39 @@
+{
+ "route": "full_release",
+ "why": "The authors released the R scripts and an renv.lock for the illustrative example. Claims C1/C2 require only a 4x4 generalized eigenproblem from a self-contained simulated example; no external data or weights are needed. The only likely setup is installing R and restoring the declared CRAN packages.",
+ "repo": "https://github.com/AuroreAA/ICS_PSD_Replication",
+ "entrypoints": [
+  "code/ICS_PSD_illustrative_example.R",
+  "code/ICS_PSD_illustrative_example_G.R",
+  "code/utilities.R"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "The machine has Python but no R runtime listed; this is an R-only repository requiring R 4.3.3 and CRAN packages declared in renv.lock.",
+  "First run may require renv::restore(); package installation is the main setup cost, not the computation."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Seconds for the 4x4 eigenproblem once R and packages are installed; first-time R/package setup may take several minutes.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "C1/C2 are a tiny self-contained simulated example solved by one 4x4 generalized eigenproblem; the dominant cost is one-time R/renv package installation, not numerical work."
+ },
+ "repo_info": {
+  "url": "https://github.com/AuroreAA/ICS_PSD_Replication",
+  "cloned": true,
+  "n_files": 74,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

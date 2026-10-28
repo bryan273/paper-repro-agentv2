@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Mean MCC of EHyOut across all 19 DGPs at α=0.1 is 0.806 (Table 1).",
+  "table_ref": "Table 1",
+  "dataset": "Simulated data from 19 DGPs (200 curves each, α=0.1, 100 simulations per DGP)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/bpulidob/ehyout"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The target requires running 100 simulations for each of 19 DGPs (1900 runs total), each involving spline smoothing, derivative computation, ABEI/ABHI calculation, and the Comedian method. The paper reports mean execution time of 0.008 seconds per run for EHyOut, but this likely excludes data generation and preprocessing. With overhead, each run might take ~1-2 seconds, leading to ~30-60 minutes of computation. However, the code repository may not include the exact simulation setup or the Comedian method implementation, requiring additional coding and debugging. The estimate assumes the code is mostly complete and runs efficiently on a CPU."
+ },
+ "blockers": [
+  "The GitHub repository may not contain the full simulation code or the Comedian method implementation.",
+  "The exact DGP definitions are in the appendix but may require manual coding if not provided in the repository.",
+  "The target is an aggregate over 19 DGPs, requiring all DGPs to be implemented correctly."
+ ],
+ "suitable": true,
+ "id": "2507.05701",
+ "title": "Area-based epigraph and hypograph indices for functional outlier detection",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

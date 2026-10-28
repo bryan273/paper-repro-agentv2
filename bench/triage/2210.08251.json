@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GCN + CLAR achieves 80.65% accuracy on CiteSeer node classification (vs 79.15% for vanilla GCN)",
+  "table_ref": "Table III",
+  "dataset": "CiteSeer"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/sajqavril/Complement-Laplacian-Regularization"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": 2.0,
+  "basis": "CiteSeer is a small citation graph (4,732 nodes, 13,703 edges); training a 2-layer GCN with CLAR for 50 runs on CPU is feasible in ~1-2 hours, though the paper's exact hyperparameter search and 50-run protocol add overhead."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated (only one link provided, no explicit data/configs)",
+  "Exact hyperparameters (α, β, S) for CiteSeer in Table III are not fully specified in the paper",
+  "50-run averaging protocol requires multiple training runs, increasing time"
+ ],
+ "suitable": true,
+ "id": "2210.08251",
+ "title": "Improving Your Graph Neural Networks: A High-Frequency Booster",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

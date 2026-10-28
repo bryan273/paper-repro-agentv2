@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Weighted accuracy of the parameter-free sorted-conditional bz2 compression baseline on the 102-pair Tübingen CEP set (forced decision, no tuning) = 74.7%",
+  "table_ref": "Table 2, row 'Compression (ours, our 102 pairs)' (also §4.1)",
+  "dataset": "Tübingen Cause-Effect Pairs (CEP), 102 pairs with scalar cause/effect and >=50 samples, official pairmeta.txt weights"
+ },
+ "release": "partial",
+ "code_links": [
+  "stateoftheart.nl/causal"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The baseline is a single pure-Python bz2 function with zero fitted parameters; the paper reports ~1 ms per pair (0.20 s aggregate for 100 pairs), so the only real cost is downloading the CEP data and writing the ~50-line scorer."
+ },
+ "blockers": [
+  "Code link is a bare project URL (stateoftheart.nl/causal) with no repository/DOI in the PDF, so the released scorer may not be directly retrievable",
+  "Exact 102-pair subset and weighting must be reconstructed from pairmeta.txt (paper says 102 pairs; literature varies 95-108)"
+ ],
+ "suitable": true,
+ "id": "2606.23767",
+ "title": "One Ruler: A Same-Hands Re-Evaluation of Bivariate Causal Direction on Tuebingen, with a Parameter-Free Compression Baseline",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

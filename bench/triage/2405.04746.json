@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "HR@10 of SVD-AE on ML-1M = 31.79",
+  "table_ref": "Table 2",
+  "dataset": "ML-1M"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/seoyoungh/svd-ae"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Closed-form truncated SVD on a 6k x 3.7k matrix; paper reports 0.54s preprocessing and 2.06s inference on ML-1M, so the main cost is downloading ML-1M and installing scipy/numpy."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2405.04746",
+ "title": "SVD-AE: Simple Autoencoders for Collaborative Filtering",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,256 @@
+{
+ "title": "SubSearch: Robust Estimation and Outlier Detection for Stochastic Block Models via Subgraph Search",
+ "summary": "SubSearch addresses robust estimation of Stochastic Block Model connectivity parameters when an adversary can arbitrarily modify edges incident to up to γn nodes, a setting where standard SBM fitters are biased. The method performs simulated annealing over fixed-size connected subgraphs, minimizing the spectral-norm cost ||A_S - Qhat(S)||, where Qhat(S) is obtained by spectral clustering and plug-in estimation on S, and returns the best subgraph for parameter estimation and outlier detection. On a single n=200, K=2, γ=0.3 synthetic SBM, it reaches sum-absolute estimation error 0.05 (oracle 0.02; pruning baseline 0.353) in about 14 CPU minutes, and on the jazz network it identifies outliers and yields final cost 14.94.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "SubSearch reaches a final sum-absolute estimation error of 0.05 on the single-run synthetic SBM graph with n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, and γ=0.3.",
+   "metric": "sum over k,l of |Γ_kl - Γhat_kl| (empirical estimation error)",
+   "dataset": "Synthetic SBM graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, 30% node corruption",
+   "split": "single run on one generated graph",
+   "value": 0.05,
+   "unit": "sum absolute error (probability units)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1, single-run experiment (Figure 2a)",
+   "config_for_value": "n=200; K=2; Γ11=Γ22=0.65; Γ12=0.35; γ=0.3; m=60 outliers; |S|=140; Markov chain length L_t=60; T0=2.25; S.A. seed=12345; cooling rate=0.99; t_max=1000; t_tol=25; ε=1e-4",
+   "reported_spread": null,
+   "est_compute": "CPU (2.7 GHz dual-core i5, 8 GB RAM), ~14 min",
+   "quote": "As the temperature lowers we eventually stabilize at an absolute estimation error of P kl|Γkl −(ˆΓSA)kl| = 0.05",
+   "page": 6
+  },
+  {
+   "id": "C2",
+   "statement": "The oracle estimator, using the true inlier subgraph and true community labels, achieves sum-absolute estimation error 0.02 on the same single-run synthetic graph.",
+   "metric": "sum over k,l of |Γ_kl - Γhat_kl| (empirical estimation error)",
+   "dataset": "Synthetic SBM graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, 30% node corruption",
+   "split": "single run on one generated graph",
+   "value": 0.02,
+   "unit": "sum absolute error (probability units)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1, single-run experiment (oracle comparison)",
+   "config_for_value": "Oracle baseline: subgraph of inlier nodes with their true community labels; same graph as C1",
+   "reported_spread": null,
+   "est_compute": "CPU, negligible (<1 s)",
+   "quote": "For comparison, the error of the oracle is P kl|Γkl − (ˆΓinliers)kl| = 0.02.",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "The pruning baseline with num_to_prune=γn commits a sum-absolute estimation error of 0.353 on the single-run synthetic graph, much larger than SubSearch's 0.05.",
+   "metric": "sum over k,l of |Γ_kl - Γhat_kl| (empirical estimation error)",
+   "dataset": "Synthetic SBM graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, 30% node corruption",
+   "split": "single run on one generated graph",
+   "value": 0.353,
+   "unit": "sum absolute error (probability units)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1, single-run experiment (pruning baseline)",
+   "config_for_value": "Pruning baseline: num_to_prune=γn=60; removes num_to_prune/K highest- and lowest-degree nodes per community plus isolated nodes, then reclusters; same graph as C1",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 s",
+   "quote": "the pruning baseline with num to prune = γn commits an error of P kl|Γkl −(ˆΓpruning)kl| = 0.353",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "The pruning baseline retains 27 of the 60 outliers and has final spectral-norm cost c(S_pruning)=22.15 on the single-run synthetic graph.",
+   "metric": "spectral-norm cost c(S)=||A_S - Qhat(S)||",
+   "dataset": "Synthetic SBM graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, 30% node corruption",
+   "split": "single run on one generated graph",
+   "value": 22.15,
+   "unit": "spectral norm cost",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1, single-run experiment (pruning baseline)",
+   "config_for_value": "Pruning baseline: num_to_prune=γn=60; same graph as C1",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 s",
+   "quote": "keeps 27 out of the 60 outliers, with a final cost of c(Spruning) = 22.15.",
+   "page": 6
+  },
+  {
+   "id": "C5",
+   "statement": "On the jazz collaboration graph, SubSearch with |S|=178 and K=3 attains final spectral-norm cost c(S_SA)=14.94.",
+   "metric": "spectral-norm cost c(S)=||A_S - Qhat(S)||",
+   "dataset": "Jazz collaboration network (Gleiser and Danon, 2003), 198 nodes, 2742 edges",
+   "split": "full graph, single run",
+   "value": 14.94,
+   "unit": "spectral norm cost",
+   "higher_is_better": false,
+   "table_ref": "Section 4.3, real-data experiment (Figure 4a/4b)",
+   "config_for_value": "n=198; K=3; |S|=178 (90% of graph); Markov chain length n_iters_inner=γn=19; S.A. seed=12345; cooling rate=0.99; t_max=1000; t_tol=25; ε=1e-4",
+   "reported_spread": null,
+   "est_compute": "CPU (2.7 GHz dual-core i5, 8 GB RAM), likely minutes to <1 h",
+   "quote": "and the final cost is c(SS.A.) = 14.94.",
+   "page": 8
+  },
+  {
+   "id": "C6",
+   "statement": "SubSearch runs the single-run synthetic experiment in 14 minutes on CPU, versus 10 seconds for filtering and 1 second for pruning.",
+   "metric": "wall-clock runtime",
+   "dataset": "Synthetic SBM single-run graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, γ=0.3",
+   "split": "single run",
+   "value": 14,
+   "unit": "minutes",
+   "higher_is_better": false,
+   "table_ref": "Section 4.3, 'A comment on runtimes and scalability'",
+   "config_for_value": "2.7 GHz dual-core Intel i5, 8 GB DDR3 RAM; same single-run experiment as C1",
+   "reported_spread": null,
+   "est_compute": "CPU, measured 14 min",
+   "quote": "SubSearch ran the single-run experiment in 14 minutes, while filtering ran in 10 seconds, and pruning in 1 second.",
+   "page": 8
+  },
+  {
+   "id": "C7",
+   "statement": "The final SubSearch subgraph in the single-run synthetic experiment contains 5 of the 60 outlier nodes.",
+   "metric": "outlier count in selected subgraph",
+   "dataset": "Synthetic SBM graph, n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, 30% node corruption",
+   "split": "single run on one generated graph",
+   "value": 5,
+   "unit": "outlier nodes (out of 60)",
+   "higher_is_better": false,
+   "table_ref": "Section 4.1, single-run experiment (Figure 2a)",
+   "config_for_value": "Same settings as C1; final subgraph after simulated annealing",
+   "reported_spread": null,
+   "est_compute": "CPU, ~14 min",
+   "quote": "and the final subgraph contains 5 outliers out of the 60.",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest faithful target: one n=200 synthetic graph and one S.A. run (~14 min CPU), and it is exactly the user-hinted 0.05 sum-absolute estimation error that demonstrates the paper's central robust-estimation result."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the paper reports no repeated-run std for C1; the target is a continuous sum-absolute estimation-error loss, not an accuracy/F1/AUC percentage on a large test set, so use a 10% relative band (±0.005 around 0.05)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Generate simple undirected SBM graphs with K communities, community assignment matrix Z, size parameters Π, and connectivity Γ; expected adjacency satisfies E[A]=Q−diag(Q) with Q=ZΓZ^T.",
+   "cite": "Section 2, 'Graphs'",
+   "quote": "Given community assignments Z, one can show that E[A] = Q −diag(Q), where Q = ZΓZt",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Corrupt exactly m=floor(γn) outlier nodes by drawing, for each outlier and each community k, a new connection probability from Beta(α,β) with mean Γ_z(i)k and maximal variance subject to [0,1].",
+   "cite": "Section 4, 'Model for Corruptions'",
+   "quote": "draw a new connection probability between that node and nodes in community k using a Beta distribution",
+   "page": 6
+  },
+  {
+   "id": "R3",
+   "stmt": "For a candidate subgraph S partitioned into K groups, estimate each Γ_kl by the empirical edge density inside S_k×S_l: (1/(|S_k||S_l|)) sum_{i in S_k,j in S_l} A_ij.",
+   "cite": "Section 2, 'Submatrices'",
+   "quote": "we can estimate the connectivity parameters associated to them, for k, l ∈{1, . . . , K}, by",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Form Qhat(S)=S Γhat S^T and use c(S)=||A_S−Qhat(S)|| (spectral norm) as the simulated-annealing objective.",
+   "cite": "Section 3.2",
+   "quote": "in search for a subgraph S minimizing the cost function c(S) = ∥AS −ˆQ(S)∥.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Cluster each candidate subgraph with spectral clustering on the symmetric normalized Laplacian using the known K, then compute Qhat(S) from those inferred labels.",
+   "cite": "Section 2, 'Clustering'",
+   "quote": "all clustering is performed using spectral clustering with this given K.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Initialize simulated annealing from a randomly selected connected subgraph S_current with |S|=(1−γ)n and an adaptively chosen initial temperature T0.",
+   "cite": "Algorithm 1 / Section 3.2",
+   "quote": "The algorithm begins with a randomly selected connected subgraph Scurrent ∈S and initial temperature T0.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Define the proposal neighborhood by swapping one node inside S with an adjacent node outside S while keeping the candidate subgraph connected.",
+   "cite": "Section 3.2",
+   "quote": "by swapping a node within S with an adjacent node outside of it.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Accept a candidate with probability min(1, exp(Δ/T_t)), where Δ=c(S_current)−c(S_candidate).",
+   "cite": "Algorithm 1",
+   "quote": "The candidate is accepted with probability min (1, exp (∆/Tt))",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Use S.A. seed 12345, geometric cooling T_{t+1}=cT_t with c=0.99, and at most t_max=1000 outer iterations in the main experiments.",
+   "cite": "Section 4, experiment setup",
+   "quote": "All S.A. experiments were run with seed=12345, cooling rate=0.99, n iters outer=1000",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Use per-temperature Markov chains of length L_t=m=γn and stop when the absolute cost variation over t_tol=25 chains falls below ε=1e−4.",
+   "cite": "Section 4, experiment setup",
+   "quote": "Markov Chains of length Lt = m = γn, and the stopping condition of n iters tolerance=25 iterations with absolute cost variation below tolerance=10−4.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Set T0 adaptively: start at 1, run a long Markov chain (e.g. 100 states), and multiply T0 by 1.5 until the neighbor-acceptance rate is close to one.",
+   "cite": "Section 3.2, adaptive initial temperature",
+   "quote": "T0 is multiplied by 1.5 until the rate of acceptance of neighboring states is close to one",
+   "page": 5
+  },
+  {
+   "id": "R12",
+   "stmt": "Report the nodes excluded from S_best as outliers; SubSearch's outlier detection should go beyond simply pruning high-degree nodes.",
+   "cite": "Contributions / Section 3.2",
+   "quote": "SubSearch also serves as an outlier-detection method, identifying a set of nodes that are most deviant from the model",
+   "page": 2
+  },
+  {
+   "id": "R13",
+   "stmt": "Implement the pruning baseline: cluster the graph, remove num_to_prune/K highest- and lowest-degree nodes from each community plus resulting isolated nodes, then recluster.",
+   "cite": "Section 4, 'Baselines'",
+   "quote": "clusters the graph, removes num to prune / K nodes with the highest and lowest degrees from each community",
+   "page": 6
+  },
+  {
+   "id": "R14",
+   "stmt": "In the main experiments, provide all methods the true γ so that each method can search/remove the intended number of nodes.",
+   "cite": "Footnote 2",
+   "quote": "we assume knowledge of the true γ for all methods to achieve the best possible estimation error.",
+   "page": 6
+  },
+  {
+   "id": "R15",
+   "stmt": "Implement the filtering baseline of Acharya et al. (2022): start with S0=G, then iteratively remove a node sampled proportionally to squared entries of the top eigenvector of A_S−Qhat(S), allowing up to n/2 removals.",
+   "cite": "Section 4, 'Baselines'",
+   "quote": "It starts with S0 = G and at each step removes a node it from St sampled according to it ∼v2 t",
+   "page": 6
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic SBM graphs",
+   "how_to_get": "Generated by the authors' code at https://github.com/leobianco/robust_estim_sbm/ using the parameters in Section 4; no external dataset download is required."
+  },
+  {
+   "name": "Jazz collaboration network",
+   "how_to_get": "Public network from Gleiser and Danon (2003), with 198 nodes and 2742 edges; the paper cites this source and the authors' repository likely includes the loader or data file."
+  }
+ ],
+ "code_links": [
+  "https://github.com/leobianco/robust_estim_sbm/"
+ ],
+ "stated_compute": "All experiments were executed on a 2.7 GHz Dual-Core Intel i5 processor and 8 GB of DDR3 RAM memory.",
+ "paper_meta": {
+  "source": "2506.03657",
+  "kind": "arxiv",
+  "arxiv_id": "2506.03657",
+  "url": "https://arxiv.org/abs/2506.03657",
+  "title": "SubSearch: Robust Estimation and Outlier Detection for Stochastic Block Models via Subgraph Search",
+  "pages": 11
+ }
+}

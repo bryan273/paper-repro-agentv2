@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "MLR model for total discharge (TD) on H-Top layout: test R2 = 0.72 (and train R2 = 0.96) with coefficients λ0=11.3, λ1=-0.46, λ2=0.025, λ3=0.025",
+  "table_ref": "Table 2",
+  "dataset": "36 experimental flume tests (18 H-Top layout tests), Movasat & Tomac 2024 lab data"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "Fitting a 4-feature multiple linear regression on 18 rows is seconds of CPU work; the only real cost is obtaining the tabulated experimental data, which is not released."
+ },
+ "blockers": [
+  "Data 'available upon reasonable request' — not publicly downloadable",
+  "No code or repository linked in the paper",
+  "Only 18 data points; exact train/test split (65/35) and random seed not specified, so exact R2/MSE values are not reproducible without the raw data"
+ ],
+ "suitable": false,
+ "id": "2602.11194",
+ "title": "Predicting the post-wildfire mudflow onset using machine learning models on multi-parameter experimental data",
+ "pages": 39,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "NLLog (WWS + TF-IDF + MiniLM + LGBM) achieves F1 = 97.49% on BGL under the matched protocol (Table 4, full WWS F1).",
+  "table_ref": "Table 4 (BGL row, Full F1 column)",
+  "dataset": "BGL (Blue Gene/L) log dataset from LogHub"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": 3.0,
+  "basis": "No code released; must reimplement Drain3 parsing, WWS rewriting (481 templates with heuristics/lexical refinements), MiniLM embedding of ~4.7M log lines, TF-IDF pooling, and LGBM training with 5 seeds and 3-fold CV; CPU-only feasible but embedding millions of lines dominates runtime."
+ },
+ "blockers": [
+  "No code or artifact released (paper says package will be submitted only if accepted)",
+  "WWS rewriting rules and lexical refinements for 481 BGL templates are not provided; must be reverse-engineered from examples",
+  "Exact sessionization (100-line windows) and train/test split details are only partially specified"
+ ],
+ "suitable": false,
+ "id": "2606.04957",
+ "title": "NLLog: Lightweight, Explainable SOC Anomaly Detection via Log-to-Language Rewriting",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

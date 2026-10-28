@@ -1,0 +1,42 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository is cloned and contains the R implementation plus the real datasets needed for Table 3 (Lymphoma) and Figure 7 (Usoskin/GSE59739). The match target C1 is produced by code_11_table3.R. The only likely fixes are environmental: installing R/Rcpp/Rtools and any undeclared R packages, not rebuilding the method or data.",
+ "repo": "https://github.com/GXguanxin/MNAR-k-means",
+ "entrypoints": [
+  "code_11_table3.R",
+  "code_01_functions.R"
+ ],
+ "missing_artifacts": [
+  "R package dependency manifest/versions",
+  "Windows compilation toolchain for initcenters_oncepkpod_functions.cpp (Rtools) if Rcpp::sourceCpp is used"
+ ],
+ "blockers_seen": [
+  "Repository is R-based while the machine lists Python 3.12 and no R installation.",
+  "No dependency file is provided; R packages must be inferred from scripts and installed manually.",
+  "A C++ helper exists, so Rcpp and a compiler (Rtools on Windows) may be required."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes for R/Rtools/package setup if not already present; the C1 Table 3 row itself should take a few minutes for n=62, p=4026, k=3 and 10 repetitions. Full 20-minute budget is tight if toolchain installation is needed.",
+  "fits_budget": false,
+  "scale_down_plan": "Run only the C1 row (Lymphoma, k=3, MNAR0 30%) with 3-5 repetitions instead of 10, and if Rcpp compilation is problematic, port only the one-time center initialization helper to plain R. This gives a noisier CER estimate but preserves the proposed-vs-k-POD comparison.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 3,
+  "ref_minutes": 25,
+  "gpu_speedup": null,
+  "basis": "C1 needs 10 repetitions of k=3 clustering on a 62 x 4026 matrix with 30% missingness and 5 lambda candidates; the numerical fits are small, while R/Rcpp environment setup and repeated R loops dominate command time."
+ },
+ "repo_info": {
+  "url": "https://github.com/GXguanxin/MNAR-k-means",
+  "cloned": true,
+  "n_files": 19,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

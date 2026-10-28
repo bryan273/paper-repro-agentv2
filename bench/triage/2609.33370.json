@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "OUTPOST AUC-ROC on Photo under the validation rule (0.791 ± 0.048), the cheapest cell showing the paper's core claim that the selection rule changes the leader",
+  "table_ref": "Table 1, Photo row, OUTPOST column under 'Best epoch on validation'",
+  "dataset": "Photo (Amazon co-purchase, semi-synthetic relabeled classes)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code is linked, so OUTPOST (GraphSAGE + spherical k-means atlas + conformal pseudo-labeling + mixup/halo synthesis + SimSample) must be reimplemented from the text, then trained for 400 epochs x 10 seeds x multiple class rotations on Photo; CPU-feasible but the reimplementation and multi-seed protocol dominate the time."
+ },
+ "blockers": [
+  "No code or repository link anywhere in the paper (empty link list, no appendix URLs)",
+  "OUTPOST must be reimplemented from prose; many hyperparameters (K, alpha_r, lambda weights, warm-up W, margins) are only in an appendix not fully visible",
+  "Target is a mean over class rotations x 10 seeds, so many training runs are needed for a matching number",
+  "Exact split generator and seed-to-split mapping are not released, so the number cannot be matched exactly"
+ ],
+ "suitable": false,
+ "id": "2609.33370",
+ "title": "The Selection Rule Decides the Winner: A Pre-Registered Audit of Open-Set Graph Anomaly Detection",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

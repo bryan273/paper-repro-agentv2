@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "LOO-LBFP ROC-AUC on the Mixture scenario (mean over 100 replications)",
+  "table_ref": "Table 2, row LOO-LBFP, column Mixture",
+  "dataset": "Simulated Mixture scenario (n=1000, 5% contamination, 100 replications)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Simulation of 100 samples of size 1000 in 2D, computing a closed-form score and ROC-AUC; no training, no GPU, minimal memory and disk."
+ },
+ "blockers": [
+  "No code released; must implement LBFP estimator and LOODIS from paper description",
+  "Simulation details (exact mixture parameters, seeds, bin-width constants) are in Supplementary Materials not included in the PDF"
+ ],
+ "suitable": true,
+ "id": "2607.14335",
+ "title": "A Leave-One-Out Influence Statistic for Density-Based Outlier Detection",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

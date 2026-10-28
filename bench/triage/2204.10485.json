@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AHIQ achieves PLCC 0.989 and SROCC 0.984 on the LIVE dataset (full-reference IQA).",
+  "table_ref": "Table 2, row 'AHIQ (ours)', columns LIVE PLCC/SROCC",
+  "dataset": "LIVE (29 reference images, 779 distorted images)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/AHIQ"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": 20,
+  "basis": "Training AHIQ (ViT-B/16 + ResNet50) for 50 epochs on LIVE requires a GPU; on CPU it would take many hours, and the paper reports 30 min/epoch on PIPAL (much larger than LIVE), so LIVE training is feasible on a mid-range GPU but not on a CPU-only laptop within a few hours."
+ },
+ "blockers": [
+  "Training requires a GPU (paper used RTX2080 Ti); CPU-only laptop would be too slow.",
+  "Code release may not include exact training configs/scripts for LIVE; reproduction may require reimplementation.",
+  "ViT-B/16 pretrained weights and ResNet50 weights need to be downloaded (public but adds setup time)."
+ ],
+ "suitable": false,
+ "id": "2204.10485",
+ "title": "Attentions Help CNNs See Better: Attention-based Hybrid Image Quality Assessment Network",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

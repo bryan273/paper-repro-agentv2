@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Whole-client deletion at k=10, T=0: total fresh/replay request-time ratio of 35.79x (compact replay) on the Adult dataset (one preselected client, five seeds).",
+  "table_ref": "Table 2 (Adult, Compact T=0 column)",
+  "dataset": "Adult (UCI, processed arrays in repo)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/arareddy/mufsc",
+  "https://github.com/arareddy/mufsc/releases/tag/v1.0.0"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 45,
+  "basis": "Adult is a small tabular dataset (~48k rows, 14 features); the repo ships processed arrays and commands, and the T=0 compact path is a lightweight k-means++/summary replay over five seeds, so install + run + re-timing fits well under an hour on CPU."
+ },
+ "blockers": [
+  "Timing ratios are hardware- and load-dependent, so the exact 35.79x number will not reproduce numerically on a different laptop (only the qualitative >1 speedup is robust)",
+  "Requires the versioned v1.0.0 release artifacts (processed arrays, reconstruction recipes) to be intact"
+ ],
+ "suitable": true,
+ "id": "2610.13717",
+ "title": "Machine Unlearning for Federated Socially Fair k-Means Clustering",
+ "pages": 53,
+ "model": "DeepSeek-V4.1-Flash"
+}

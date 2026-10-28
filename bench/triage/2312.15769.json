@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "AUC of the proposed lp-norm constrained one-class classifier fusion on the Banknotes dataset (D1) in the pure learning scenario, reported as 99.97 ± 0.0% in Table 2.",
+  "table_ref": "Table 2, row D1, column 'Pure' (proposed method)",
+  "dataset": "Banknotes (UCI)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code is released; the target requires reimplementing four one-class base learners (SVDD, GP, KPCA, GMM), score normalisation, and the Frank-Wolfe fusion algorithm, then running 10 random splits on a small UCI dataset (1372 samples, 4 features)."
+ },
+ "blockers": [
+  "No code or configuration files are provided; all components must be reimplemented from the paper text.",
+  "Exact hyperparameter tuning (kernel widths, KPCA dimensions, p, rho) and the two-sided min-max score normalisation details are only partially specified, making exact numerical reproduction unlikely."
+ ],
+ "suitable": true,
+ "id": "2312.15769",
+ "title": "Lp-Norm Constrained One-Class Classifier Combination",
+ "pages": 31,
+ "model": "DeepSeek-V4.1-Flash"
+}

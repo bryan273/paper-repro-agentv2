@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "SROCC of RADN on the NTIRE 2021 IQA Challenge validation dataset (PIPAL) = 0.8438",
+  "table_ref": "Table 3 (ablation study, full model row)",
+  "dataset": "PIPAL (NTIRE 2021 Perceptual Image Quality Assessment Challenge validation set)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 60,
+  "ref_minutes": 1200,
+  "gpu_speedup": 8,
+  "basis": "No code released; RADN (deformable conv + patch-level attention + contrastive pretraining) must be reimplemented from scratch and trained on PIPAL (250 refs, 29k distorted images, 1.13M judgments) with 32-patch sampling and small batch size, which is a multi-hour training run even on CPU."
+ },
+ "blockers": [
+  "No code or configs released by the authors",
+  "PIPAL is large (~29k distorted images, 1.13M human judgments) requiring substantial download and preprocessing",
+  "Contrastive pretraining + full RADN training is long (paper reports ~20 min/epoch even with efficient Siamese backprop)",
+  "Exact SROCC depends on train/val split and training schedule not fully specified"
+ ],
+ "suitable": false,
+ "id": "2104.11599",
+ "title": "Region-Adaptive Deformable Network for Image Quality Assessment",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "PoseDet with DLA-34 backbone achieves 59.2 AP on COCO test-dev without TTA",
+  "table_ref": "Table 1",
+  "dataset": "COCO test-dev"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 10080,
+  "gpu_speedup": 20,
+  "basis": "Training PoseDet on COCO requires 8 V100 GPUs for 210 epochs; even the smallest backbone (DLA-34) needs days of GPU time, and no code is released."
+ },
+ "blockers": [
+  "No code released",
+  "Requires 8 NVIDIA V100 GPUs for training",
+  "Training on COCO takes ~210 epochs",
+  "No pre-trained model provided"
+ ],
+ "suitable": false,
+ "id": "2107.10466",
+ "title": "PoseDet: Fast Multi-Person Pose Estimation Using Pose Embedding",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

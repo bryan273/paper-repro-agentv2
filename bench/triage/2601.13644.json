@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "TokenCore achieves token-level AUROC (ROC) 0.6371 on the Grammar dataset.",
+  "table_ref": "Table 1, Grammar column, Token ROC row (TokenCore)",
+  "dataset": "Grammar Correction Dataset (Kaggle grammar-correction; 300 documents, 270 normal and 30 anomalous)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/charles-cao/TokenCore",
+  "https://www.kaggle.com/datasets/satishgunjal/grammar-correction?resource=download"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 20,
+  "gpu_speedup": 4,
+  "basis": "The target only requires BERT-base-uncased embedding of roughly 300 short sentences, construction of a token memory bank from the normal split, and nearest-neighbor scoring; this is a few minutes of CPU inference after installing PyTorch/transformers and downloading BERT."
+ },
+ "blockers": [
+  "The random 50% normal-document train/test split is not fixed with a seed, so the exact AUROC may vary slightly from the table cell."
+ ],
+ "suitable": true,
+ "id": "2601.13644",
+ "title": "Towards Token-Level Text Anomaly Detection",
+ "pages": 4,
+ "model": "DeepSeek-V4.1-Flash"
+}

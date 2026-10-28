@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "LaSagnA achieves 42.0 mIoU on ADE20K closed-set semantic segmentation (Table 1).",
+  "table_ref": "Table 1",
+  "dataset": "ADE20K"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/congvvc/LaSagnA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 3000,
+  "gpu_speedup": 20,
+  "basis": "Training LaSagnA requires 8 A100 GPUs for ~50 hours (paper states), which is infeasible on a CPU-only laptop; even with a GPU, the 7B vLLM and SAM ViT-H backbone demand substantial VRAM and time."
+ },
+ "blockers": [
+  "Requires 8 A100 GPUs for training",
+  "Large model (LLaVA-7B + SAM ViT-H) needs high VRAM",
+  "Training time ~50 hours on 8 A100s"
+ ],
+ "suitable": false,
+ "id": "2404.08506",
+ "title": "LaSagnA: Language-based Segmentation Assistant for Complex Queries",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

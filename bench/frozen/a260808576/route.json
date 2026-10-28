@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "No repository is present on this machine (repository.url is null, cloned=false) and the only code pointer in the contract is a Zenodo archive (10.5281/zenodo.21831681) that has not been fetched, so there is nothing to run. The match target (C1) is nonetheless a self-contained, fully specified numerical check: an additive chi-square-family statistic on the 3x3, N=18 margin fibre with 406 tables, compared against brute-force multiple-hypergeometric enumeration. The cell-separable DP (Wallenius/Fisher noncentral hypergeometric cell factorization with four moment accumulators) is described in enough algorithmic detail in the paper to reimplement, and the reference side is a 406-table enumeration, so no authors' artifacts are strictly required. If the Zenodo archive turns out to be reachable, this immediately upgrades to full_release (entrypoints exact_moments_dp.py / exact_moments_dp_fast.py).",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "condexact Zenodo archive 10.5281/zenodo.21831681 (code, tests, derivations DH1-DH8) - not downloaded",
+  "exact_moments_dp.py (enumeration-verified moment engine named in the paper)",
+  "exact_moments_dp_fast.py (vectorized moment engine, used for C2/C3)",
+  "cf_tail.py, cos_tail.py (characteristic-function and COS-inversion engines, C6/C7)",
+  "rerun/m0h_fwe_truncation_dp.py (simultaneous-cutoff truncation DP, C8)",
+  "Any stored reference outputs / expected-value fixtures for the five design families"
+ ],
+ "blockers_seen": [
+  "no repository found or given; only a Zenodo DOI, archive not obtained",
+  "all scripts must be reimplemented from the paper's algorithmic description rather than run",
+  "paper's headline sizes (5x5 at 79e9 tables, distribution map, characteristic function) are out of reach if attempted from scratch, but they are not needed for the C1 target"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "under 1 minute of compute: 406-table enumeration is instant; the cell-by-cell moment DP over the 3x3 lattice is milliseconds (paper reports 5.5 ms). Total session including numpy/scipy install and a clean re-run is a few minutes on the 22-core CPU.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "C1 is a 406-table enumeration plus a 3x3 cell-by-cell DP with four accumulators (paper: 5.5 ms); the only real cost is reimplementing the DP and the reference enumerator, and the command-time budget covers a numpy/scipy install, the verification run, and a clean re-run well inside a few minutes on 8 CPU cores."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

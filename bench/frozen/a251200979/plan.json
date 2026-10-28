@@ -1,0 +1,100 @@
+{
+ "approach": "The GitHub repository contains only PDF renders, so this plan reimplements the paper's USArrests pipeline in Python. Load the four numeric USArrests variables, standardize each with its mean and sample SD (ddof=1), run PCA on the correlation matrix, and keep all four prcomp-style eigenvectors as loadings. Transpose the standardized 50x4 matrix to 4x50, run Euclidean K-means with K=2 on the four variable-points, label the singleton UrbanPop cluster as 1 and the Murder/Assault/Rape cluster as 2, then compute S_{k,j}=sum of absolute loadings and P_{k,j}=S_{k,j}/sum_k S_{k,j}. Write all loadings, S/P matrices, variance shares, cluster assignments, and C1-C8 checks to results/metrics.json; a fixed seed plus an exhaustive 7-partition check removes K-means seed sensitivity.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin numpy, pandas, scikit-learn, requests, scipy, matplotlib, and tqdm for the Python 3.12 CPU run.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker so reproduce.py can import src.data, src.method, and src.verify.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Download or load R datasets::USArrests, cache it at data/usarrests.csv, drop the State identifier, validate 50 rows x 4 numeric variables, and print summary statistics.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/method.py",
+   "purpose": "Implement standardization with ddof=1, PCA on the correlation matrix, absolute loading matrix, K-means on Z.T with K=2 and fixed seed, cluster label mapping, S/P contribution matrices, and exhaustive K=2 partition sanity check.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/verify.py",
+   "purpose": "Validate shapes, orthonormal PCA loadings, partition sizes/labels, P columns summing to 1, and claim values against the contract with 10% relative tolerance.",
+   "requirement_ids": [
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: parse --smoke, load USArrests, run the method, run verification, write results/metrics.json and results/smoke_metrics.json when requested, and print a concise claim table.",
+   "requirement_ids": [
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "R datasets::USArrests, n=50 states, p=4 variables Murder/Assault/UrbanPop/Rape; drop State identifier (A6)",
+  "data_url": "https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/USArrests.csv",
+  "cache_path": "data/usarrests.csv",
+  "standardization": "z_ij=(x_ij-mean_j)/sd_j using sample sd with ddof=1 (R1)",
+  "pca": "PCA on the correlation matrix of standardized Z; sklearn PCA(svd_solver='full', n_components=4) (R2,R14,A8,A9)",
+  "loadings": "L = pca.components_.T; use absolute values |L| for S/P and table display (R3,R13,A1,A5)",
+  "k": 2,
+  "kmeans": "Euclidean squared-distance K-means on Z.T (shape 4x50); no restandardization after transpose (R4,R6,A3,A7)",
+  "kmeans_random_state": "123 (A2,R12)",
+  "kmeans_n_init": "1000 (A2; paper only specifies a fixed seed, R-adjacent nstart=25 is exceeded for stability)",
+  "kmeans_init": "k-means++ (A2)",
+  "cluster_labeling": "cluster 1 = cluster containing UrbanPop; cluster 2 = cluster containing Murder/Assault/Rape (R7)",
+  "contribution": "S[k,j] = sum_{i in C_k} |L[i,j]| (R8,R13)",
+  "proportion": "P[k,j] = S[k,j] / sum_k S[k,j] (R9,R10)",
+  "tolerance": "relative 0.1 (contract)",
+  "smoke_subset": "first 10 states, only for data-flow smoke test",
+  "output": "results/metrics.json"
+ },
+ "steps": [
+  "Run `pip install -r requirements.txt`; confirm numpy, pandas, scikit-learn, and requests import correctly.",
+  "Implement src/data.py: try data/usarrests.csv first; otherwise download the Rdatasets USArrests CSV with requests, read it with pandas using the first column as State/index, keep columns Murder, Assault, UrbanPop, Rape, cache to data/usarrests.csv, and validate shape (50,4) with no missing values.",
+  "Implement src/method.py: standardize X with pandas/numpy ddof=1; fit sklearn PCA with 4 components; set L = pca.components_.T and La = abs(L); run KMeans(n_clusters=2, init='k-means++', n_init=1000, random_state=123) on Z.T; map labels by the cluster containing UrbanPop; compute S and P for all 4 PCs.",
+  "Add an exhaustive partition check for p=4: enumerate the 7 unique nonempty proper two-cluster partitions, compute within-cluster SSE for each, and assert the K-means partition is the global SSE minimum and equals {UrbanPop} vs {Murder,Assault,Rape}.",
+  "Implement src/verify.py: check loadings shape (4,4) and orthonormal columns; check P sums to 1 for every PC; check cluster sizes {1,3} with UrbanPop singleton; compare C1-C8 values to targets with relative tolerance 0.1.",
+  "Implement reproduce.py: default full run writes results/metrics.json; --smoke uses the first 10 states, K=2 with n_init=10, writes results/smoke_metrics.json, and exits nonzero only if smoke-shape checks fail.",
+  "Run `python -m src.data` or the equivalent data-loading command to fetch and cache USArrests; inspect shape, columns, means, and sample SDs before the full run.",
+  "Run `python reproduce.py --smoke` and confirm the small data-flow run completes, produces non-NaN loadings/S/P, and P columns sum to 1.",
+  "Run `python reproduce.py` on the full 50-state dataset; this is the final run and should write results/metrics.json.",
+  "Inspect results/metrics.json: confirm S_{2,PC1}~1.662, S_{1,PC1}~0.278, P_{2,PC1}~0.857, P_{1,PC1}~0.143, PC1~62% variance, PC2~25% variance, Assault PC1 loading~0.583, and UrbanPop PC2 loading~0.873.",
+  "If any check fails, debug only the paper-defined steps (ddof=1 standardization, correlation-matrix PCA, absolute eigenvectors, Z.T K-means, label mapping); do not tune thresholds or data to force a match."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`: load the first 10 USArrests states, standardize with ddof=1, compute 4 PCA components, run K=2 K-means with n_init=10 on Z.T, compute S and P, and write results/smoke_metrics.json. Assert Z.T shape is (4,10), loadings shape is (4,4), S and P shapes are (2,4), no NaNs are present, and every P column sums to 1. The smoke run does not compare to the paper values and is not used for the final claims.",
+ "intermediate_checks": [
+  "USArrests shape is exactly (50,4) after dropping State; columns are Murder, Assault, UrbanPop, Rape; no missing values.",
+  "Approximate dataset moments before scaling: Murder mean~7.788 sd~4.356; Assault mean~170.76 sd~83.338; UrbanPop mean~65.54 sd~14.475; Rape mean~21.232 sd~9.366.",
+  "PCA loadings matrix is 4x4; columns are orthonormal within numerical tolerance; explained variance ratios sum to 1.0; PC1 is about 0.620 and PC2 about 0.247, both within 10% relative tolerance of the paper's 62.5% and 25%.",
+  "Absolute PC1 loadings are approximately Murder 0.536, Assault 0.583, UrbanPop 0.278, Rape 0.543; absolute UrbanPop PC2 loading is approximately 0.873.",
+  "K-means partition has sizes {1,3}; the singleton is UrbanPop and the triple is {Murder, Assault, Rape}; the same partition is the global minimum over all 7 unique K=2 partitions of the four transposed variable-points.",
+  "Contribution sanity baseline: S_{2,PC1} should be approximately 1.6625 and S_{1,PC1} approximately 0.2782; P_{2,PC1} approximately 0.8567 and P_{1,PC1} approximately 0.1433; P columns sum to 1 within 1e-12.",
+  "Random-partition sanity check: a random 1-vs-3 split should not produce the same S/P pattern, confirming the reported values depend on the K-means variable clustering rather than an arbitrary assignment."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total budget about 8-10 minutes on CPU: 3-4 minutes for environment setup, pip install, and USArrests download/cache; 1 minute for the smoke test; under 1 minute for the full 50-state PCA plus K-means run; 3-4 minutes for validation, JSON inspection, and final reporting; leave a small buffer for network retry if the Rdatasets download is slow."
+}

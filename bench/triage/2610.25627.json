@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Distilled student (DT/RF) policy utility within 0.011 absolute utility of its causal-forest/BCF teacher on the PIMA obesity (BMI) experiment, evaluated by held-out doubly robust policy value.",
+  "table_ref": "Results section (PIMA BMI teacher-student fidelity/utility table)",
+  "dataset": "PIMA Indians Diabetes Dataset (BMI >=30 obesity state, diabetes outcome)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/py-why/EconML"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No paper code released (only the EconML library link); the pipeline (causal-structure-informed covariate roles, OOF causal forest + BCF teachers via StochTree, DT/RF distillation, K-means/causal-tree comparators, selective-shift doubly robust evaluation with bootstrap) must be rebuilt from prose, and BCF MCMC plus bootstrap on a small table is CPU-bound but nontrivial to reimplement faithfully."
+ },
+ "blockers": [
+  "No released code or configs for the distillation/policy pipeline",
+  "Causal-structure-informed covariate roles are prespecified from a prior paper and not fully specified here",
+  "BCF teacher requires StochTree/R or equivalent reimplementation",
+  "Exact held-out split, bootstrap protocol, and DR estimator details must be inferred"
+ ],
+ "suitable": false,
+ "id": "2610.25627",
+ "title": "Conditional Average Treatment Effect Distillation for Hypothetical State-Intervention Targeting Under Budget Constraints",
+ "pages": 46,
+ "model": "DeepSeek-V4.1-Flash"
+}

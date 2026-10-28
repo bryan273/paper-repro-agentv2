@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MaskCD reduces CHAIR_s to 40.6 and CHAIR_i to 10.8 on LLaVA-1.5-7b (vs baseline 50.2/15.4), the paper's headline hallucination-mitigation result",
+  "table_ref": "Table 2 (CHAIR, LLaVA-1.5-7b, MaskCD row)",
+  "dataset": "500 random images from COCO 2014 validation set, caption prompt 'Please describe this image in detail.'"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Deng-Jingyuan/MaskCD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 40,
+  "ref_minutes": 480,
+  "gpu_speedup": 4,
+  "basis": "Requires downloading LLaVA-1.5-7b (~14GB) and COCO val2014, running 500 caption generations twice (original + masked) plus a 500-image image-head discovery pass, and CHAIR scoring with an object detector; all feasible on CPU but slow (7B model, ~2x inference cost of CD)."
+ },
+ "blockers": [
+  "Repo may not include the exact image-head mask for LLaVA-1.5-7b at tau=0.9, requiring re-running the 500-image attention-recording pass",
+  "CHAIR evaluation needs COCO ground-truth annotations and an object detector (e.g., GRiT) that may not be packaged",
+  "CPU-only inference of a 7B LVLM over 500 images is slow; no GPU available"
+ ],
+ "suitable": true,
+ "id": "2510.02790",
+ "title": "MaskCD: Mitigating LVLM Hallucinations by Image Head Masked Contrastive Decoding",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

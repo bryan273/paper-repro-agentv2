@@ -1,0 +1,229 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The learning rate and momentum for full-batch SGD on Breast Cancer logistic regression are not specified.",
+  "options": [
+   "constant LR 0.01",
+   "constant LR 0.1",
+   "decaying LR schedule",
+   "momentum 0.9 with LR 0.1"
+  ],
+  "chosen": "constant learning rate 0.1 with no momentum",
+  "rationale": "0.1 lies inside the paper's reported 0.05–0.5 sweep range and is a conventional full-batch LR for standardized logistic regression.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Learning-rate sweeps (0.05–0.5) do not rescue the uncompensated variants.",
+  "page": 8
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The number of training epochs and the stopping criterion are not stated.",
+  "options": [
+   "fixed 100 epochs",
+   "fixed 200 epochs",
+   "until gradient norm <1e-6",
+   "until relative train-loss change <1e-6"
+  ],
+  "chosen": "200 full-batch epochs with early stop when relative train-loss change <1e-6",
+  "rationale": "The paper reports convergence parity but does not publish an epoch count; 200 epochs is enough for small CPU-scale logistic regression and the tolerance avoids overfitting.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The logistic-regression penalty/regularization is not specified.",
+  "options": [
+   "unregularized binary cross-entropy",
+   "L2 with λ=1e-4",
+   "L2 with λ=1.0",
+   "scikit-learn default regularization"
+  ],
+  "chosen": "unregularized binary cross-entropy",
+  "rationale": "The paper names logistic regression among standard losses without stating a penalty; unregularized cross-entropy is the minimal faithful choice for reproducing the baseline.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "logistic regression, linear SVM, softmax regression, and a one-hidden-layer MLP",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether feature standardization is fit on the training split only or on the full dataset is not stated.",
+  "options": [
+   "fit scaler on training split only",
+   "fit scaler on full dataset",
+   "no standardization"
+  ],
+  "chosen": "fit StandardScaler on the training split only and transform the test split",
+  "rationale": "Avoids train/test leakage and follows standard practice for a 75/25 split.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "N = 0.3, α = 0.3 unless stated; 75/25 stratified splits; standardized features",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "It is ambiguous whether epoch-t masks use epoch-(t−1) stored losses or current-epoch losses, since the protocol says current losses but the library uses delayed losses.",
+  "options": [
+   "use stored previous-epoch losses for epoch-t masks",
+   "use current-epoch losses after a full forward pass",
+   "use a fixed threshold from initial losses"
+  ],
+  "chosen": "use stored epoch-(t−1) losses to form epoch-t masks and recompute the 40th percentile on those stored losses",
+  "rationale": "This matches the released library's delayed-losses description and preserves the claimed forward-pass saving for excluded samples.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "delayed-losses pattern (masks for epoch t built from epoch t−1 losses; released with the library) removes even the forward of excluded samples",
+  "page": 3
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The exact weighted without-replacement sampling algorithm and finite-sample inclusion probabilities are not fully algorithmic.",
+  "options": [
+   "np.random.choice with p=pi and replace=False; use πi=m pi",
+   "systematic PPS sampling; use πi=m pi",
+   "rejective sampling with exact inclusion probabilities"
+  ],
+  "chosen": "np.random.choice with defensive-mixture probabilities without replacement for m draws; use πi=m pi in the Hajek weights",
+  "rationale": "The paper explicitly invokes the Poisson/rejective approximation and specifies single-draw probabilities but not a unique sampler; this is the direct implementation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Draw S ⊂M, |S| = m, without replacement with single-draw probabilities",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Table 1 prints a single value and a spread, but the aggregation rule for a single reproduction is not explicit beyond paired seeds.",
+  "options": [
+   "use seed 0 only",
+   "report mean over seeds 0–4",
+   "report median over seeds 0–4"
+  ],
+  "chosen": "report mean test accuracy over seeds 0–4",
+  "rationale": "The paper says seeds 0–4 are paired throughout, so the reported number is the paired multi-seed mean.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Seeds are published and paired across methods (seeds 0–4 throughout; 0–9 for Table 3)",
+  "page": 7
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The per-sample loss used for logistic regression is not formally specified.",
+  "options": [
+   "binary cross-entropy on sigmoid output",
+   "squared error on sigmoid output",
+   "hinge loss"
+  ],
+  "chosen": "binary cross-entropy on the sigmoid output",
+  "rationale": "The paper groups logistic, softmax, and squared losses and uses loss thresholds; binary cross-entropy is the standard logistic-regression loss.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "for the standard losses used here (logistic, softmax, squared), the per-sample gradient factorizes as",
+  "page": 6
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The population over which the 40th-percentile threshold is computed is not fully pinned down.",
+  "options": [
+   "all training-set per-sample losses",
+   "only previous-epoch minor losses",
+   "per-batch losses"
+  ],
+  "chosen": "all training-set per-sample losses from the previous epoch",
+  "rationale": "The protocol says per-epoch recalibration at the 40th percentile of current losses; with delayed masks the current available full set is the previous epoch's stored losses.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "per-epoch recalibration of K at the 40th percentile of current losses",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "For α=0.3, exact inclusion probabilities under without-replacement sampling are not computed.",
+  "options": [
+   "exact without-replacement inclusion probabilities",
+   "πi=m pi Poisson/rejective approximation",
+   "πi=m/k simple random sampling"
+  ],
+  "chosen": "πi=m pi Poisson/rejective approximation",
+  "rationale": "Assumption 1(b) explicitly authorizes this approximation for α<1, and the paper measures its residual bias as small.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we use the Poisson/rejective approximation πi = m pi, standard for high-entropy without-replacement designs",
+  "page": 4
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The synthetic fraud replica's class covariance, exact positive count, and split details are not fully specified.",
+  "options": [
+   "isotropic unit-variance Gaussians with exact 34 positives",
+   "shared empirical covariance from a real fraud set",
+   "random covariance per class"
+  ],
+  "chosen": "isotropic unit-variance Gaussians, exact 34 positives (0.17% of 20,000), 75/25 stratified split",
+  "rationale": "The paper gives means, n, d, and imbalance but not covariance; isotropic Gaussians with the stated mean shift are the minimal generator.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "0.17% positives, n = 20,000, d = 15, Gaussian classes with mean shift 1.2",
+  "page": 8
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "How 40% symmetric label noise is applied is not detailed.",
+  "options": [
+   "flip 40% of training labels uniformly to the other class",
+   "flip 40% of all labels including test",
+   "flip each training label independently with probability 0.4"
+  ],
+  "chosen": "flip exactly 40% of training labels uniformly to the other class, fixed per seed",
+  "rationale": "Symmetric flips on training labels are the usual interpretation and keep the test set clean for evaluation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "at 40% symmetric flips on Breast Cancer, accuracy collapses to 0.386 (baseline 0.832; v3 0.808)",
+  "page": 7
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "The initialization of logistic-regression weights is not stated.",
+  "options": [
+   "zero initialization",
+   "small random Gaussian initialization",
+   "scikit-learn default initialization"
+  ],
+  "chosen": "zero initialization",
+  "rationale": "Standard for convex logistic regression and deterministic across paired seeds; paired data ordering and split still control comparison.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Whether all samples are forward-passed each epoch or only retained samples are forward-passed is not explicit in the protocol.",
+  "options": [
+   "forward all samples to compute losses and mask",
+   "forward only retained samples using delayed masks",
+   "forward a random subset"
+  ],
+  "chosen": "forward all samples for loss scoring in the baseline reproduction, while excluding backward passes only for non-retained minors",
+  "rationale": "The central compute saving is defined as backward-pass saving; using delayed masks changes forward cost but not the reported backward fraction.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The number of backward passes per iteration is (n −k) + m",
+  "page": 4
+ }
+]

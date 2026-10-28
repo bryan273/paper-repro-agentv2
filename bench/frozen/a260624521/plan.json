@@ -1,0 +1,117 @@
+{
+ "approach": "Use the authors' released repository as-is: clone it, pip install -e . from requirements.txt, ignore the UTF-16 environment.yml and the R/rpy2 comparison tests, and run examples/randu.py under the Agg backend to confirm the published Figure 1 demo. Add one thin reproduce.py that executes the author example unchanged, then repeats the exact Section 3 three-line fit with X = generate_randu(), ICS(S1='cov', S2='tcovAxis', algorithm='standard') and fit_transform, alongside a PCA baseline on the same data. It saves a side-by-side component plot and a gap-cluster diagnostic for the last invariant component, records C1 as a 1/0 structural indicator per A8/A3, and also inventories the four algorithms and eight scatters for C2/C3. All results are written to results/metrics.json and no author source file is modified.",
+ "files": [
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin full-release wrapper: run authors' examples/randu.py unchanged, then perform the exact Section 3 RANDU ICS fit and PCA baseline, save diagnostic figure, run C2/C3 and cheap requirement inventory checks, and write results/metrics.json. No author code is edited.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/cbecquart/ICSpyLab",
+  "package_version": "1.0.2 (repo setup.py/README)",
+  "python": "3.12 (sandbox)",
+  "install": "git clone https://github.com/cbecquart/ICSpyLab; python -m pip install -e . from the clone using requirements.txt",
+  "ignore": [
+   "environment.yml (UTF-16 encoded, conda/R pins; do not use)",
+   "tests/comparisons/test_python_vs_r.py (requires R/rpy2; not needed for C1)"
+  ],
+  "randu_generator": "icspylab.distributions.generate_randu() with package defaults; do not override n/seed unless the generator requires arguments (A2)",
+  "standardization": "none; pass X=generate_randu() directly to fit_transform (A6)",
+  "S1": "cov (paper Figure 1 / Section 3 code)",
+  "S2": "tcovAxis (paper Figure 1 / Section 3 code)",
+  "algorithm": "standard (paper Figure 1 / Section 3 code)",
+  "component_selection": "None; retain all 3 components (R5, A3)",
+  "component_order": "use the package-returned column order exactly as in X_ics=ics.fit_transform(X); A3 assumes ascending generalized kurtosis with the extremal component last, but reproduce.py must not manually reorder the package output",
+  "cov_denominator": "1/n (A5)",
+  "tcovAxis_args": {
+   "location": "fixed at the sample mean of the observation pairs",
+   "initialization": "sample covariance scaled to unit determinant",
+   "max_iter": 100,
+   "tol": 1e-06,
+   "source": "A4"
+  },
+  "sign_convention": "leave solver signs; judge structure up to axis reflection (A7)",
+  "pca": {
+   "n_components": 3,
+   "svd_solver": "full",
+   "random_state": 0
+  },
+  "C1_expected_value": 1,
+  "C1_structural_proxy": {
+   "method": "sort the 1D projected values, form gaps between consecutive sorted values, cluster where a gap exceeds gap_factor times the median within-level gap, and count clusters with at least 1% of points",
+   "gap_factor": 10,
+   "pass_last_ic_cluster_count": [
+    2,
+    30
+   ],
+   "pass_pca_min_cluster_count": 60,
+   "note": "audit proxy only; the saved figure is the primary qualitative evidence per A8. Do not tune thresholds to force a pass."
+  },
+  "C2_expected_algorithms": [
+   "eigh",
+   "standard",
+   "whiten",
+   "QR"
+  ],
+  "C3_expected_scatters": [
+   "cov",
+   "covW",
+   "cov4",
+   "covAxis",
+   "mcd",
+   "tcov",
+   "tcovAxis",
+   "tM"
+  ],
+  "smoke_subset": 200,
+  "plot": {
+   "backend": "Agg",
+   "dpi": 150,
+   "panels": "ICS pairwise scatter matrix, PCA pairwise scatter matrix, and histograms of the last invariant component vs PCA components (A9)"
+  },
+  "random_seed": "package RANDU default; numpy seed 0 only for any auxiliary ordering/checks",
+  "metric_output": "results/metrics.json"
+ },
+ "steps": [
+  "Clone the public repository if it is not already present: git clone https://github.com/cbecquart/ICSpyLab and cd into it.",
+  "Set up only the Python environment: python -m pip install -U pip, then python -m pip install -e . from the clone. Do not use environment.yml and do not install rpy2/R or run the R comparison tests.",
+  "Run a quick import check: import icspylab, numpy, scipy, sklearn, numba; confirm the installed package version is 1.0.2 and matplotlib can use Agg.",
+  "Run the authors' demonstration unchanged: MPLBACKEND=Agg python examples/randu.py. Confirm it exits 0 and generates the RANDU ICS/PCA panels.",
+  "Create results/ and write reproduce.py. In reproduce.py, first execute the author example unchanged with runpy.run_path('examples/randu.py', run_name='__main__') after setting MPLBACKEND=Agg, so the entrypoint still runs the authors' script.",
+  "In reproduce.py, repeat the exact Section 3 data flow for numeric evidence: X = generate_randu(); ics = ICS(S1='cov', S2='tcovAxis', algorithm='standard'); X_ics = ics.fit_transform(X); pca = PCA(n_components=3, svd_solver='full', random_state=0); X_pca = pca.fit_transform(X).",
+  "In reproduce.py, verify both outputs are shape (n,3) and finite. Compute the gap-cluster diagnostic for the last column of X_ics and for each PCA column; save a diagnostic figure showing the ICS pair matrix, PCA pair matrix, and histograms of the last IC vs PCA components to results/randu_ics_vs_pca.png.",
+  "Set C1 value=1 only if the last invariant component shows the RANDU parallel-hyperplane banding under the documented qualitative/proxy check and PCA components do not; otherwise value=0. Record the proxy diagnostics, figure path, and any ordering ambiguity from A3 in metrics.json.",
+  "Run C2/C3 inventories: fit ICS on the same RANDU data for each algorithm in ['eigh','standard','whiten','QR'] and record successes; use each scatter name in ['cov','covW','cov4','covAxis','mcd','tcov','tcovAxis','tM'] as an S1/S2 specifier and record successes. C2 value is the number of usable algorithms; C3 value is the number of usable built-in scatters.",
+  "Run cheap requirement checks where possible: R1 BaseEstimator inheritance and fit/transform/fit_transform methods; R2 constructor parameters S1/S2/algorithm/component selection; R5 ComponentSelect median/normal/unimodality importable and omission allowed; R6 Scatter base class importable; R7 static source check for numba/njit in tcov/tcovAxis; R8 static source check for sklearn MinCovDet in mcd; R9 generate_randu import/use; R10 distribution generators importable; R11 LICENSE.txt contains MIT and repository URL.",
+  "Run MPLBACKEND=Agg python reproduce.py from the repository root. Inspect results/randu_ics_vs_pca.png once; if the proxy and the figure disagree, document the discrepancy and use the figure as the primary C1 evidence per A8. Write results/metrics.json with C1, C2, C3, and requirement-check statuses.",
+  "Do not modify any file under icspylab/ or examples/. If an author script fails only because of display blocking, rerun with MPLBACKEND=Agg; do not patch the script."
+ ],
+ "smoke_test": "MPLBACKEND=Agg python - <<'PY'\nfrom icspylab.distributions import generate_randu\nfrom icspylab import ICS\nX = generate_randu()\nics = ICS(S1='cov', S2='tcovAxis', algorithm='standard')\nZ = ics.fit_transform(X[:200])\nprint(X.shape, Z.shape, Z.shape[1] == 3)\nprint('finite:', bool(__import__('numpy').isfinite(Z).all()))\nPY\nExpected: X has shape (n,3), Z has shape (200,3), finite=True. First tcovAxis call may take a few seconds for Numba compilation.",
+ "intermediate_checks": [
+  "Package import succeeds on Python 3.12: import icspylab, numpy, scipy, sklearn, numba; no R/rpy2 needed.",
+  "generate_randu() returns a 2D array with shape (n,3), n at least several hundred, all values finite, and no constant/degenerate columns.",
+  "ICS(S1='cov', S2='tcovAxis', algorithm='standard').fit_transform(X) returns shape (n,3), finite, and has a well-defined last column.",
+  "PCA(n_components=3).fit_transform(X) returns shape (n,3), finite; use it as the sanity baseline for the absence of banding.",
+  "Gap-cluster diagnostic on the last invariant component is in the small-cluster regime (2 to 30 clusters) while PCA components are not; if not, inspect the saved figure before assigning C1.",
+  "C2 inventory returns exactly the set {'eigh','standard','whiten','QR'} with no fit errors on the RANDU sample; record per-algorithm status.",
+  "C3 inventory returns all eight scatters {'cov','covW','cov4','covAxis','mcd','tcov','tcovAxis','tM'} usable as S1/S2 specifiers; record per-scatter status and any wrapper/JIT notes.",
+  "R1/R2/R5/R6/R9 import and API checks pass; R7 confirms numba/JIT use for tcov/tcovAxis; R8 confirms mcd uses sklearn MinCovDet; R11 confirms MIT license text and GitHub URL.",
+  "No comparison test under tests/comparisons/ is run; environment.yml is never parsed."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Reference budget is about 6 minutes, dominated by installation. Allocate ~3 minutes to clone/pip install -e . and verify imports (Numba wheel may be the slowest part), ~30-60 seconds to the smoke test including first-call Numba compilation, ~1 minute to run examples/randu.py plus the exact ICS/PCA fit and diagnostic plotting, and ~30 seconds to finish inventory checks and write results/metrics.json. Total expected ~5-6 minutes on CPU; no GPU and no R installation are used. If pip install is slower, keep the full run because the actual ICS computation is sub-minute."
+}

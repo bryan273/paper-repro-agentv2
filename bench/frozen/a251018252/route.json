@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "No author repository, code link, trained model, or bundled data was provided. The reported experiments must be reimplemented from the paper/claim contract using standard libraries (XGBoost, imbalanced-learn, scikit-learn).",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Author code for preprocessing, ADASYN scenario construction, XGBoost training, and bootstrap tests",
+  "Give Me Some Credit cs-training.csv dataset file (Kaggle login and competition-rules acceptance required)",
+  "Exact preprocessing/config scripts, including missing-value handling and ADASYN sampling_strategy details",
+  "Trained model outputs or prediction files for the reported AUC/Gini values"
+ ],
+ "blockers_seen": [
+  "No repository or code link in the claim contract",
+  "Kaggle dataset is gated by account login and competition rules, not a direct unauthenticated download",
+  "Exact missing-value imputation and ADASYN multiplier implementation are not fully specified",
+  "Python 3.12 requires current xgboost/imbalanced-learn/scikit-learn versions, but the described stack is compatible"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes for the headline C1 reproduction (install, data prep, baseline and ADASYN 1x XGBoost, optional 1,000 bootstrap AUCs); about 25-40 minutes for all 10 scenarios plus bootstrap comparisons.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 12,
+  "gpu_speedup": 2.0,
+  "basis": "Two XGBoost 100-tree fits on roughly 68k-73k rows with about 10 features, plus ADASYN generation and optional 1,000 test-set AUC bootstraps; the dataset is small and CPU-bound."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

@@ -1,0 +1,271 @@
+{
+ "type": "json_object",
+ "title": "K-ABENA: K-Adaptive Backpropagation with Error-based N-exclusion Algorithm : (Compensated Loss-Based Sample Exclusion with Unbiased Gradient Estimation)",
+ "summary": "The paper addresses the bias of loss-based selective backpropagation, where skipping low-loss samples saves backward passes but gives a loss-correlated, biased gradient. K-ABENA v3 uses a defensive-mixture sampling design over the minor set with Horvitz-Thompson/Hajek inverse-probability reweighting, plus theory for design-unbiasedness, self-normalization bias, and SGD convergence. On real scikit-learn datasets v3 matches full-batch SGD, e.g. Breast Cancer logistic regression 0.9706 while saving 28.5%, and on a 0.17%-imbalance fraud replica it reaches AUC 0.9991 versus 0.9998 for full batch.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "K-ABENA v3 with full-batch SGD logistic regression on Breast Cancer reaches the same test accuracy as the full-batch baseline, 0.9706.",
+   "metric": "test accuracy",
+   "dataset": "Breast Cancer (scikit-learn bundled, n=569)",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 0.9706,
+   "unit": "accuracy (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row LogReg / Breast Cancer, column v3 (canonical)",
+   "config_for_value": "Logistic regression, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 stratified split, standardized features, seeds 0–4",
+   "reported_spread": "±0.009 (Table 1, v3)",
+   "est_compute": "CPU, <1 min for one seed; full table suite <1 CPU-hour",
+   "quote": "LogReg / Breast Cancer acc. 0.9706 0.9706 ±0.009 0.9706 ±0.009 28.5%",
+   "page": 8
+  },
+  {
+   "id": "C2",
+   "statement": "K-ABENA v3 saves 28.5% of backward passes on the Breast Cancer logistic-regression benchmark at N=0.3 and K=40th percentile.",
+   "metric": "fraction of backward passes saved",
+   "dataset": "Breast Cancer (scikit-learn bundled, n=569)",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 28.5,
+   "unit": "% backward passes saved",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row LogReg / Breast Cancer, column Saving",
+   "config_for_value": "Logistic regression, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 stratified split, standardized features, seeds 0–4",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min for one seed; full table suite <1 CPU-hour",
+   "quote": "LogReg / Breast Cancer acc. 0.9706 0.9706 ±0.009 0.9706 ±0.009 28.5%",
+   "page": 8
+  },
+  {
+   "id": "C3",
+   "statement": "K-ABENA v3 softmax regression on Digits matches the full-batch baseline test accuracy 0.9609 while saving 28.4%.",
+   "metric": "test accuracy",
+   "dataset": "Digits (scikit-learn bundled, n=1797, 10 classes)",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 0.9609,
+   "unit": "accuracy (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Softmax / Digits (10 cl.), column v3 (canonical)",
+   "config_for_value": "Softmax regression, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 stratified split, standardized features, seeds 0–4",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min",
+   "quote": "Softmax / Digits (10 cl.) acc. 0.9609 0.9644 ±0.003 0.9609 28.4%",
+   "page": 8
+  },
+  {
+   "id": "C4",
+   "statement": "K-ABENA v3 softmax regression on Wine matches the full-batch baseline test accuracy 0.9822 while saving 28.1%.",
+   "metric": "test accuracy",
+   "dataset": "Wine (scikit-learn bundled, n=178, 3 classes)",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 0.9822,
+   "unit": "accuracy (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Softmax / Wine (3 cl.), column v3 (canonical)",
+   "config_for_value": "Softmax regression, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 stratified split, standardized features, seeds 0–4",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "Softmax / Wine (3 cl.) acc. 0.9822 0.9867 ±0.011 0.9822 28.1%",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "K-ABENA v3 linear regression on Diabetes reaches test R^2 0.4249 while saving 28.1%.",
+   "metric": "test R^2",
+   "dataset": "Diabetes (scikit-learn bundled, n=442)",
+   "split": "75/25 split, seeds 0–4 (paper states stratified splits; regression stratification unspecified)",
+   "value": 0.4249,
+   "unit": "R^2 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row LinReg / Diabetes, column v3 (canonical)",
+   "config_for_value": "Linear regression, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 split, standardized features, seeds 0–4",
+   "reported_spread": "±0.039",
+   "est_compute": "CPU, <1 min",
+   "quote": "LinReg / Diabetes R2 0.4259 — 0.4249 ±0.039 28.1%",
+   "page": 8
+  },
+  {
+   "id": "C6",
+   "statement": "K-ABENA v3 with a one-hidden-layer MLP on Digits reaches test accuracy 0.9609 while saving 28.0% of backward passes.",
+   "metric": "test accuracy",
+   "dataset": "Digits (scikit-learn bundled, n=1797, 10 classes)",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 0.9609,
+   "unit": "accuracy (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row MLP-32 / Digits, column v3 (canonical)",
+   "config_for_value": "MLP-32, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, 75/25 stratified split, standardized features, seeds 0–4",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2 min",
+   "quote": "MLP-32 / Digits acc. 0.9548 0.9593 ±0.005 0.9609 28.0%",
+   "page": 8
+  },
+  {
+   "id": "C7",
+   "statement": "On the synthetic 0.17%-positive fraud replica, K-ABENA v3 attains AUC 0.9991 at 28.4% compute saving.",
+   "metric": "AUC",
+   "dataset": "Synthetic fraud replica (0.17% positives, n=20,000, d=15)",
+   "split": "Paper protocol 75/25 stratified split, seeds 0–4 (fraud split not separately detailed)",
+   "value": 0.9991,
+   "unit": "AUC (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row v3 (canonical), column AUC (0.17%)",
+   "config_for_value": "Full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, fraud replica 0.17% positives n=20,000 d=15, seeds 0–4",
+   "reported_spread": "±0.0014",
+   "est_compute": "CPU, ~1–2 min",
+   "quote": "AUC reaches 0.9991 ± 0.0014 at the same 28.4% compute saving.",
+   "page": 7
+  },
+  {
+   "id": "C8",
+   "statement": "Under 40% symmetric label noise on Breast Cancer, K-ABENA v3 retains 0.8084 accuracy versus 0.8322 for the full-batch baseline.",
+   "metric": "test accuracy under 40% symmetric label noise",
+   "dataset": "Breast Cancer with 40% symmetric label flips",
+   "split": "75/25 stratified train/test split, seeds 0–4",
+   "value": 0.8084,
+   "unit": "accuracy (fraction, 0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row Accuracy, 40% label noise (baseline 0.8322), column v3",
+   "config_for_value": "Breast Cancer, 40% symmetric label flips, full-batch SGD, K at the 40th loss percentile, N=0.3, α=0.3, seeds 0–4",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2 min",
+   "quote": "Accuracy, 40% label noise (baseline 0.8322) — 0.386 (collapse) 0.8084 (safe)",
+   "page": 10
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the direct user hint and the cheapest claim that still shows the paper's central parity result: v3 matches full-batch SGD on the smallest real benchmark, Table 1's Breast Cancer logistic regression; C2 records the same row's 28.5% saving."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: bounded accuracy on the 143-example Breast Cancer test set (below 2,000), and the paper prints accuracies as fractions in [0,1], so 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Run the benchmark with full-batch SGD, recalibrating K each epoch at the 40th percentile of current losses, with default N=0.3 and α=0.3.",
+   "cite": "Section 7, Protocol",
+   "quote": "per-epoch recalibration of K at the 40th percentile of current losses, N = 0.3, α = 0.3 unless stated",
+   "page": 7
+  },
+  {
+   "id": "R2",
+   "stmt": "Partition samples by loss threshold K into the minor set with li≤K and its complement; always retain all major samples.",
+   "cite": "Section 3.1, Setting and notation",
+   "quote": "partitions the indices into the minor set M = {i : li ≤K}, k = |M|, and the major set Mc",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Set the number of retained minors to m = round(N k), as in the paper's finite retention budget.",
+   "cite": "Section 3.1",
+   "quote": "A retention proportion N ∈(0, 1) fixes the number of retained minors m = ⌊Nk⌉.",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Sample exactly m minors without replacement using the defensive-mixture single-draw probabilities in Eq. 1.",
+   "cite": "Definition 1, Eq. (1)",
+   "quote": "Draw S ⊂M, |S| = m, without replacement with single-draw probabilities",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "For α<1, use inclusion probabilities πi = m pi under the stated Poisson/rejective approximation; for α=1 use exact πi=m/k.",
+   "cite": "Assumption 1(b)",
+   "quote": "we use the Poisson/rejective approximation πi = m pi, standard for high-entropy without-replacement designs",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Implement the Horvitz-Thompson form with majors weighted by 1 and selected minors weighted by 1/πi for the design-unbiased estimator.",
+   "cite": "Definition 1, Eq. (2) and Lemma 2",
+   "quote": "the Horvitz–Thompson form is design-unbiased (unbiased over the sampling randomization, conditionally on the iterate)",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Use the self-normalized Hajek estimator in Eq. 3 for the reported practical v3 results.",
+   "cite": "Definition 1, Eq. (3)",
+   "quote": "the self-normalized (H ́ajek) estimator, used in practice, is",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute and report the exact backward-pass saving G=(1−N)k/n, expected to be 0.28 at K=40th percentile and N=0.3.",
+   "cite": "Proposition 1",
+   "quote": "With K at the 40th loss percentile and N = 0.3, G = 0.7 × 0.4 = 0.28",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Pair methods by seed with identical split, initialization, and data ordering; use seeds 0–4 throughout for Table 1.",
+   "cite": "Section 7, Protocol",
+   "quote": "Seeds are published and paired across methods (seeds 0–4 throughout; 0–9 for Table 3)",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Report 95% confidence intervals and two-sided paired sign-flip permutation tests with 20,000 permutations against the full-batch baseline.",
+   "cite": "Section 7, Protocol",
+   "quote": "We report 95% confidence intervals and two-sided paired sign-flip permutation tests (20,000 permutations)",
+   "page": 8
+  },
+  {
+   "id": "R11",
+   "stmt": "Use the scikit-learn bundled Breast Cancer dataset with n=569, a 75/25 stratified split, and standardized features for C1.",
+   "cite": "Section 7, Protocol and datasets",
+   "quote": "Real datasets are the scikit-learn bundled sets (Breast Cancer n=569, Digits n=1797/10 classes, Wine n=178/3 classes, Diabetes n=442)",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Implement v3 as the canonical compensated design with defensive-mixture α, inverse-probability weights, and a seeded RNG.",
+   "cite": "Section 9, Reproducibility",
+   "quote": "the canonical compensated design (defensive mixture α, inverse-probability weights, seeded generator for exact reproducibility",
+   "page": 10
+  },
+  {
+   "id": "R13",
+   "stmt": "For C1 specifically, use logistic regression rather than a linear SVM, softmax model, or MLP on Breast Cancer.",
+   "cite": "Table 1, row LogReg / Breast Cancer",
+   "quote": "LogReg / Breast Cancer acc. 0.9706 0.9706 ±0.009 0.9706 ±0.009 28.5%",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "Breast Cancer",
+   "how_to_get": "scikit-learn bundled dataset via sklearn.datasets.load_breast_cancer(); n=569, binary classification."
+  },
+  {
+   "name": "Digits",
+   "how_to_get": "scikit-learn bundled dataset via sklearn.datasets.load_digits(); n=1797, 10 classes."
+  },
+  {
+   "name": "Wine",
+   "how_to_get": "scikit-learn bundled dataset via sklearn.datasets.load_wine(); n=178, 3 classes."
+  },
+  {
+   "name": "Diabetes",
+   "how_to_get": "scikit-learn bundled dataset via sklearn.datasets.load_diabetes(); n=442, regression."
+  },
+  {
+   "name": "Synthetic fraud replica",
+   "how_to_get": "Generated per paper/validation scripts in the kabena-ml repository: 0.17% positives, n=20,000, d=15, Gaussian classes with mean shift 1.2; see validation/ scripts."
+  }
+ ],
+ "code_links": [
+  "https://github.com/Bonbhel/kabena-ml"
+ ],
+ "stated_compute": "Experiments require only NumPy and scikit-learn (no GPU), consistent with the scope stated in Limitation L4; total runtime for the full table suite is under one CPU-hour.",
+ "paper_meta": {
+  "source": "2607.05903",
+  "kind": "arxiv",
+  "arxiv_id": "2607.05903",
+  "url": "https://arxiv.org/abs/2607.05903",
+  "title": "K-ABENA: K-Adaptive Backpropagation with Error-based N-exclusion Algorithm : (Compensated Loss-Based Sample Exclusion with Unbiased Gradient Estimation)",
+  "pages": 13
+ }
+}

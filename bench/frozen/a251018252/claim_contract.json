@@ -1,0 +1,234 @@
+{
+ "title": "Finding the Sweet Spot: Optimal Data Augmentation Ratio for Imbalanced Credit Scoring Using ADASYN",
+ "summary": "The paper studies how much synthetic oversampling is optimal for imbalanced credit scoring, using the Give Me Some Credit dataset (97,243 observations, 7.07% defaults) and XGBoost with SMOTE, BorderlineSMOTE, and ADASYN at 1x, 2x, and 3x multipliers. It evaluates 10 augmentation scenarios on a held-out 29,173-observation real test set, using AUC/Gini and 1,000-iteration bootstrap tests. The headline result is that ADASYN 1x is best with test AUC 0.6778 and Gini 0.3557 versus baseline AUC 0.6727/Gini 0.3453 (p=0.017), while higher multipliers degrade performance.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "ADASYN 1x achieves test AUC 0.6778 on Give Me Some Credit, versus baseline AUC 0.6727.",
+   "metric": "AUC-ROC",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations (30% stratified split)",
+   "value": 0.6778,
+   "unit": "AUC (fraction, 0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, rank 1, row ADASYN 1x, column AUC; Table 5, row AUC, column ADASYN 1x",
+   "config_for_value": "ADASYN 1x on the 68,070-row training set only; N Train=72,817; XGBoost max_depth=6, learning_rate=0.1, n_estimators=100, scale_pos_weight=n_majority/n_minority, eval_metric='auc'; StandardScaler fit on training set; random_state=42; evaluated on 29,173 real test rows",
+   "reported_spread": "95% CI for delta-AUC vs baseline [+0.000473, +0.010004] (bootstrap, 1,000 iterations)",
+   "est_compute": "CPU, ~5-15 min (XGBoost 100 trees on ~73k rows plus ADASYN)",
+   "quote": "With AUC of 0.6778 and Gini of 0.3557, ADASYN at 1x multiplication (doubling the minority class) ranks first among all configurations.",
+   "page": 10
+  },
+  {
+   "id": "C2",
+   "statement": "ADASYN 1x achieves test Gini coefficient 0.3557 on Give Me Some Credit, versus baseline Gini 0.3453.",
+   "metric": "Gini coefficient",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations (30% stratified split)",
+   "value": 0.3557,
+   "unit": "Gini coefficient (fraction, 0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, rank 1, row ADASYN 1x, column Gini; Table 5, row Gini, column ADASYN 1x",
+   "config_for_value": "ADASYN 1x on the 68,070-row training set only; N Train=72,817; XGBoost max_depth=6, learning_rate=0.1, n_estimators=100, scale_pos_weight=n_majority/n_minority, eval_metric='auc'; StandardScaler fit on training set; random_state=42; evaluated on 29,173 real test rows",
+   "reported_spread": "95% CI for delta-Gini vs baseline [+0.000946, +0.020008] (bootstrap, 1,000 iterations)",
+   "est_compute": "CPU, ~5-15 min (XGBoost 100 trees on ~73k rows plus ADASYN)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C3",
+   "statement": "ADASYN 2x achieves test AUC 0.6753, below ADASYN 1x and above ADASYN 3x.",
+   "metric": "AUC-ROC",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations (30% stratified split)",
+   "value": 0.6753,
+   "unit": "AUC (fraction, 0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, rank 3, row ADASYN 2x, column AUC; Table 3, row 2x",
+   "config_for_value": "ADASYN 2x on training set; N Train=77,255; same fixed XGBoost config and 29,173-row real test set; random_state=42",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5-15 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C4",
+   "statement": "ADASYN 3x achieves test AUC 0.6694, below baseline AUC 0.6727.",
+   "metric": "AUC-ROC",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations (30% stratified split)",
+   "value": 0.6694,
+   "unit": "AUC (fraction, 0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, rank 9, row ADASYN 3x, column AUC; Table 3, row 3x",
+   "config_for_value": "ADASYN 3x on training set; N Train=82,005; same fixed XGBoost config and 29,173-row real test set; random_state=42",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5-15 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C5",
+   "statement": "ADASYN 1x improves absolute test AUC over baseline by 0.0052.",
+   "metric": "delta-AUC vs baseline",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations; bootstrap over test set",
+   "value": 0.0052,
+   "unit": "AUC difference (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 5, row delta-AUC (absolute); Section 4.2 bullet",
+   "config_for_value": "ADASYN 1x vs no-augmentation baseline; same XGBoost config; bootstrap 1,000 resamples with replacement",
+   "reported_spread": "95% CI [+0.000473, +0.010004]; p=0.017",
+   "est_compute": "CPU, ~5-20 min including 1,000 bootstrap AUCs",
+   "quote": "Doubling the minority class (from 4,810 to 9,620 samples) yields maximum improvement of +0.0052 AUC (+0.77%).",
+   "page": 11
+  },
+  {
+   "id": "C6",
+   "statement": "ADASYN 1x vs baseline bootstrap p-value is 0.017, reported as statistically significant.",
+   "metric": "bootstrap p-value",
+   "dataset": "Give Me Some Credit (Kaggle)",
+   "split": "held-out test set, 29,173 real observations; bootstrap over test set",
+   "value": 0.017,
+   "unit": "p-value (lower is more significant)",
+   "higher_is_better": false,
+   "table_ref": "Table 5, row p-value; Table 2 p-value column for ADASYN 1x",
+   "config_for_value": "ADASYN 1x vs baseline; bootstrap hypothesis test with 1,000 iterations; p = proportion of bootstrap delta-AUC <= 0",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5-20 min including 1,000 bootstrap AUCs",
+   "quote": null,
+   "page": null
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the paper's headline result: ADASYN 1x test AUC 0.6778 versus baseline 0.6727. Reproducing this single augmented run demonstrates the central sweet-spot finding without the full 10-scenario grid or bootstrap analysis."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.01,
+  "why": "Rule 2: AUC is printed as a fraction on a 29,173-example held-out test set (2,000+ examples), so use 0.01 absolute. This prescribed band is wider than the paper's 0.0052 reported AUC gain."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the Give Me Some Credit dataset and binary target SeriousDlqin2yrs; after cleaning the paper expects 97,243 observations with 6 predictors and a 7.07% default rate.",
+   "cite": "Section 3.1, Dataset Description",
+   "quote": "the cleaned dataset comprises 97,243 observations with six predictor variables and a binary target variable indicating serious delinquency",
+   "page": 6
+  },
+  {
+   "id": "R2",
+   "stmt": "Define the positive class as SeriousDlqin2yrs = 1, i.e. serious delinquency of 90+ days past due within a two-year window.",
+   "cite": "Section 3.1, Target Variable",
+   "quote": "binary target variable indicating serious delinquency (90+ days past due) within a two-year window.",
+   "page": 6
+  },
+  {
+   "id": "R3",
+   "stmt": "Use exactly the six listed predictors: age, MonthlyIncome, DebtRatio, NumberOfDependents, NumberOfOpenCreditLinesAndLoans, NumberRealEstateLoansOrLines.",
+   "cite": "Section 3.1, Predictor Variables",
+   "quote": "The feature set includes six variables spanning demographic, financial, and credit history dimensions:",
+   "page": 6
+  },
+  {
+   "id": "R4",
+   "stmt": "Apply the stated domain caps, including age in [21, 85] years and MonthlyIncome capped at $25,000.",
+   "cite": "Section 3.1, Data Preprocessing",
+   "quote": "age is bounded to [21, 85] years based on demographic data, while monthly income is capped at $25,000 to exclude extreme outliers.",
+   "page": 6
+  },
+  {
+   "id": "R5",
+   "stmt": "After synthetic generation, round the three discrete count variables back to realistic integer values.",
+   "cite": "Section 3.1, Data Preprocessing",
+   "quote": "Three variables (NumberOfDependents, NumberOfOpenCreditLinesAndLoans, NumberRealEstateLoansOrLines) are discrete integers, requiring post-generation rounding to maintain realistic values.",
+   "page": 6
+  },
+  {
+   "id": "R6",
+   "stmt": "Use a stratified 70/30 train-test split with 68,070 training rows (4,810 defaults) and 29,173 test rows (2,061 defaults), keeping the test set untouched.",
+   "cite": "Section 3.1, Train-Test Split",
+   "quote": "We employ a stratified 70-30 split, yielding 68,070 training observations (4,810 defaults, 7.07%) and 29,173 test observations (2,061 defaults, 7.06%).",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Fit StandardScaler on the training set only and transform both train and test sets.",
+   "cite": "Section 3.1, Feature Scaling",
+   "quote": "All features undergo standardization (mu = 0, sigma = 1) using StandardScaler fit exclusively on the training set to prevent data leakage.",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Generate synthetic samples only in the training set after the split; never augment the test set.",
+   "cite": "Section 3.3, Critical Design Choices",
+   "quote": "Synthetic generation occurs exclusively on the training set after the train-test split. The test set (29,173 observations) remains 100% real data",
+   "page": 8
+  },
+  {
+   "id": "R9",
+   "stmt": "Implement ADASYN with kNN majority-neighbor ratios r_i, normalized weights, total synthetic budget G, and SMOTE-style interpolation.",
+   "cite": "Section 3.2.3, ADASYN",
+   "quote": "ADASYN adaptively allocates more synthetic samples to minority instances surrounded by majority neighbors (high ri), indicating regions where the model struggles to learn minority patterns.",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Implement ADASYN 1x as the paper describes, doubling the minority class from 4,810 to 9,620; record any deviation from Table 1's N=72,817.",
+   "cite": "Section 4.2 and Table 1",
+   "quote": "Doubling the minority class (from 4,810 to 9,620 samples) yields maximum improvement of +0.0052 AUC (+0.77%).",
+   "page": 11
+  },
+  {
+   "id": "R11",
+   "stmt": "Train XGBoost with max_depth=6, learning_rate=0.1, n_estimators=100, and eval_metric='auc' in every experiment.",
+   "cite": "Section 3.4, XGBoost Configuration",
+   "quote": "All experiments use identical XGBoost configurations to isolate the effect of augmentation strategies.",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Set scale_pos_weight dynamically to n_majority/n_minority for each augmented training set.",
+   "cite": "Section 3.4, XGBoost Configuration",
+   "quote": "scale pos weight: Dynamically calculated as nmajority/nminority for each augmented training set to balance internal gradient updates",
+   "page": 8
+  },
+  {
+   "id": "R13",
+   "stmt": "Report AUC-ROC and Gini = 2*AUC - 1 on the held-out real test set.",
+   "cite": "Section 3.4, Evaluation Metrics",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R14",
+   "stmt": "Use 1,000 bootstrap resamples with replacement on the test set for p-values and percentile 95% CIs.",
+   "cite": "Section 3.4, Statistical Significance Testing",
+   "quote": "Generate 1,000 bootstrap samples by randomly resampling the test set with replacement",
+   "page": 9
+  },
+  {
+   "id": "R15",
+   "stmt": "Set random_state=42 for the split, synthetic generation, and model training.",
+   "cite": "Section 3.3, Critical Design Choices",
+   "quote": "All random processes (train-test split, synthetic generation, model training) use random state=42 to guarantee exact reproducibility.",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "Give Me Some Credit (Kaggle)",
+   "how_to_get": "Kaggle competition data: https://www.kaggle.com/c/GiveMeSomeCredit/data; use cs-training.csv"
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2510.18252",
+  "kind": "arxiv",
+  "arxiv_id": "2510.18252",
+  "url": "https://arxiv.org/abs/2510.18252",
+  "title": "Finding the Sweet Spot: Optimal Data Augmentation Ratio for Imbalanced Credit Scoring Using ADASYN",
+  "pages": 25
+ }
+}

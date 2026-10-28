@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "S2J-Qwen2.5-7B achieves an average solve-to-judge gap P(j=0|s=1) of 21.1% (Delta = -16.2) on the PPE objective subsets MMLU-Pro, MATH and GPQA.",
+  "table_ref": "Table 2, S2J-Qwen2.5-7B (Ours) row, Average and Delta columns",
+  "dataset": "PPE objective subsets: MMLU-Pro, MATH, GPQA"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 128,
+  "disk_gb": 100,
+  "ref_minutes": 100000000,
+  "gpu_speedup": null,
+  "basis": "The target requires training a 7B generative reward model with DAPO/GRPO on 300 RL steps, batch size 128 and 16 responses per prompt with max response length 8192, which the paper runs on 8 NVIDIA H800 GPUs and is practically infeasible on an 8-core CPU/16GB laptop; the paper also releases no code or trained checkpoint."
+ },
+ "blockers": [
+  "No code or model checkpoint link in the paper (PDF Links list is empty)",
+  "Training S2J-Qwen2.5-7B requires 8 NVIDIA H800 GPUs in the paper setup",
+  "DAPO/GRPO RL on Qwen2.5-7B with 16 rollouts, 8192 max response length and 300 steps is infeasible on a normal laptop",
+  "Evaluation of a 7B GRM on four reward-model benchmarks is GPU-class inference in practice",
+  "Training data synthesis uses Qwen2.5-32B-Instruct and multiple public preference datasets"
+ ],
+ "suitable": false,
+ "id": "2509.22099",
+ "title": "S2J: Bridging the Gap Between Solving and Judging Ability in Generative Reward Models",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

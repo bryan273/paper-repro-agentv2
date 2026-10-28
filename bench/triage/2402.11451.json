@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "SciAgent-Coder-7B achieves 32.2% accuracy on SciToolBench (all domains) with toolset.",
+  "table_ref": "Table 2, row SciAgent-Coder 7B, column SciToolBench All",
+  "dataset": "SciToolBench"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "No code or data links are provided in the paper; reproducing the result would require re-implementing the entire pipeline (data construction, retriever training, LLM fine-tuning, evaluation) from scratch, which is infeasible without the original data and code."
+ },
+ "blockers": [
+  "No code or data links provided in the paper",
+  "Requires fine-tuning a 7B LLM (SciAgent-Coder-7B) on a proprietary corpus (MATHFUNC) constructed using GPT-4",
+  "Requires access to SciToolBench benchmark and its associated toolsets, which are not publicly released",
+  "Requires significant GPU compute for fine-tuning and inference"
+ ],
+ "suitable": false,
+ "id": "2402.11451",
+ "title": "SciAgent: Tool-augmented Language Models for Scientific Reasoning",
+ "pages": 34,
+ "model": "DeepSeek-V4.1-Flash"
+}

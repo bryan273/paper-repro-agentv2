@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "F1 score of EILOF on the simulated 2D dataset at k=50, m=1280 (0.8485), compared against ILOF (0.5750) in Table II",
+  "table_ref": "Table II (EILOF) / Table I (ILOF), row k=50, column m=1280, 2D",
+  "dataset": "Synthetic Gaussian 2D dataset (2280 points, 5% outliers, 1000 initial + 1280 streamed)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://pypi.org/project/eilof"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Pure-Python/numpy LOF on ~2280 2D points with k up to 150 is trivial; the main cost is installing the eilof package, regenerating the synthetic data (random seed not specified, so exact F1 may not match), and running the incremental protocol over m in {5..1280}."
+ },
+ "blockers": [
+  "Synthetic data generation seed/parameters not fully specified, so exact table values may not be reproducible",
+  "PyPI package may not expose the exact experiment scripts/configs used for the tables"
+ ],
+ "suitable": true,
+ "id": "2501.01061",
+ "title": "An Efficient Outlier Detection Algorithm for Data Streaming",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

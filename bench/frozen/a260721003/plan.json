@@ -1,0 +1,175 @@
+{
+ "approach": "Follow the partial_release route: keep the authors' ADABORD boosting, aRPS, weight-update, voting, and metric code unchanged, and replace only the missing OGini tree dependency. The port uses the fact that OGini on Q ordinal classes equals, up to a constant factor, multi-output Gini on the Q-1 cumulative binary targets 1(y<=q), so a stock sklearn DecisionTreeClassifier fit on those cumulative targets with sample weights gives exactly the same split criterion and weighted leaf cumulative probabilities. Run a disclosed scaled-down slice (4 small Q>=5 TOC-UCO datasets, 5 splits, 3-fold CV, 3 random-search configs, 50-100 trees) rather than the paper's 31 datasets x 30 splits x 20 configs. The exact 0.823 +/- 0.046 over 31 datasets is out of budget; results/metrics.json will report the subset AMAE and explicitly mark it as a partial reproduction, not an exact match.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Central configuration: dataset list and fallback selector, split counts/seeds, CV/search protocol, estimator candidates, tree/boosting hyperparameters, metric names, output paths, and time-budget guards.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "data.py",
+   "purpose": "Download/extract the TOC-UCO repository with Python requests+zipfile, parse dataset files and metadata, select four small Q>=5 datasets, load repository 70/30 partitions when present, otherwise generate 5 stratified 70/30 splits with fixed seeds.",
+   "requirement_ids": [
+    "R12"
+   ]
+  },
+  {
+   "path": "ogini_tree.py",
+   "purpose": "Sklearn-compatible OGiniDecisionTreeClassifier: fit stock DecisionTreeClassifier(criterion='gini') on cumulative binary targets with sample weights, convert multi-output leaf probabilities to ordinary class probabilities, expose predict/predict_proba/get_params/set_params. Includes the proof-by-equivalence docstring for OGini.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R15"
+   ]
+  },
+  {
+   "path": "adabord_port.py",
+   "purpose": "Import the authors' adabord package, monkeypatch the module-level DecisionTreeClassifier references in adabord._adabord_base and adabord._adabord with OGiniDecisionTreeClassifier, and expose the unchanged ADABORD estimator.",
+   "requirement_ids": [
+    "R1",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R15"
+   ]
+  },
+  {
+   "path": "metrics_utils.py",
+   "purpose": "Wrap the authors' adabord._metrics functions; provide exact fallback implementations of AMAE, QWK, MMAE, and BACC using labels mapped to 1..Q; enforce per-split metric computation before averaging.",
+   "requirement_ids": [
+    "R11"
+   ]
+  },
+  {
+   "path": "baselines.py",
+   "purpose": "Cheap same-split baselines: stock sklearn AdaBoostClassifier with standard Gini trees, and XGBoost multi:softprob if installable; used only as sanity comparisons, not to validate the full eight-method ranking.",
+   "requirement_ids": [
+    "R11"
+   ]
+  },
+  {
+   "path": "experiment.py",
+   "purpose": "Run the scaled protocol: for each dataset/split tune n_estimators by 3-fold stratified CV over the scaled candidate set, select by mean AMAE, refit on the full training partition, evaluate ADABORD and baselines on the test partition, aggregate mean/std over executions.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: prepares data and repo, runs smoke or full scaled experiment, writes results/metrics.json with claim C1 comparison, protocol disclosure, per-dataset/per-split values, and limitations.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13",
+    "R14"
+   ]
+  }
+ ],
+ "config": {
+  "route": "partial_release",
+  "selected_datasets": [
+   "eucalyptus",
+   "glass",
+   "yeast",
+   "winequality-red"
+  ],
+  "dataset_selection_rule": "4 smallest TOC-UCO datasets with Q>=5 and N<=2000; exact names verified from Table 1/metadata at runtime (scale-down, route)",
+  "fallback_dataset_selection": "If a named dataset is unavailable, auto-select the first 4 datasets with Q>=5 and N<=2000",
+  "train_fraction": "0.70 (paper, Sec 4.4/R12)",
+  "splits_per_dataset": "5 (scaled from paper 30, route)",
+  "split_seed_start": "0 (A5 fallback; use repository seeds/partitions if present)",
+  "cv_folds": "3 (paper, Sec 4.4/R13)",
+  "random_search_iterations": "3 (scaled from paper 20, route)",
+  "estimator_candidates_paper": [
+   50,
+   100,
+   250,
+   500,
+   1000,
+   2000
+  ],
+  "estimator_candidates_scaled": [
+   50,
+   100
+  ],
+  "max_depth": "null (A1: unlimited sklearn default)",
+  "min_samples_split": "2 (sklearn default, A3)",
+  "min_samples_leaf": "1 (sklearn default, A3)",
+  "criterion": "OGini via cumulative multi-output Gini equivalence (R1/R2)",
+  "sample_weight": "used in every base-tree fit (paper Sec 3.2/R3)",
+  "leaf_probabilities": "sample-weight-normalised leaf class frequencies, no smoothing (A2/A9)",
+  "err_clip": "1e-10 (A8)",
+  "alpha_formula": "log((1-err_m)/err_m), no log(Q-1) term (R8)",
+  "weight_update": "w_i <- w_i * exp(alpha_m * 1(y_i != f_m(x_i))); then renormalise to sum 1 (R9)",
+  "final_aggregation": "weighted hard-label majority vote, argmax_q sum_m alpha_m 1(f_m(x)=q) (R10)",
+  "cumulative_encoding": "c_{i,q}=1(y_i<=q) for q=1..Q-1; omit q=Q (R6)",
+  "arps": "mean absolute difference of cumulative probabilities divided by Q-1 (R4/R5/R7)",
+  "label_mapping": "classes mapped to 1..Q (A12)",
+  "metrics": [
+   "AMAE",
+   "QWK",
+   "MMAE",
+   "BACC"
+  ],
+  "metric_averaging": "compute each metric per test split, then mean/std over 5 executions (A14)",
+  "baseline_adaboost_n_estimators": "50 (scaled; paper base AdaBoost config not fully specified)",
+  "baseline_adaboost_max_depth": "null (A1-like default)",
+  "xgboost_n_estimators": "50 (scaled)",
+  "xgboost_max_depth": "3 (scaled)",
+  "xgboost_learning_rate": "0.1 (scaled)",
+  "xgboost_objective": "multi:softprob",
+  "random_state": "0 (A5/A6/A7)",
+  "n_jobs": "min(8, cpu_count)",
+  "time_budget_minutes": {
+   "setup": 4,
+   "smoke": 2,
+   "full": 14
+  },
+  "fallback_if_over_budget": "3 datasets x 3 splits x 50 trees",
+  "output_json": "results/metrics.json"
+ },
+ "steps": [
+  "Setup: verify Python 3.12 and stock scikit-learn; clone https://github.com/ayrna/adabord if absent; do NOT install the git+ssh scikit-learn fork. Download https://github.com/ayrna/tocuco via requests as zip and extract with zipfile, trying main then master branch.",
+  "Inspect the authors' adabord/_adabord.py, adabord/_adabord_base.py, and adabord/_metrics.py to record constructor signatures, where DecisionTreeClassifier is instantiated, whether fit receives sample_weight, and whether predict_proba is expected to return ordinary class probabilities.",
+  "Implement ogini_tree.py. In fit(X, y, sample_weight): build Ycum[:,q]=1[y<=q] for q=1..Q-1, fit internal DecisionTreeClassifier(criterion='gini', max_depth=..., random_state=..., min_samples_split=..., min_samples_leaf=...) on Ycum with sample_weight. In predict_proba: read internal multi-output P(Ycum_q=1), set c_Q=1, compute p_1=c_1, p_q=c_q-c_{q-1}, p_Q=1-c_{Q-1}, clip to [0,1] and renormalise. predict returns classes_[argmax(predict_proba)].",
+  "Add get_params/set_params so sklearn clone and the authors' code can treat the wrapper like a DTC; accept and ignore criterion='ogini' if passed.",
+  "Unit-test the OGini equivalence in ogini_tree.py on a tiny 3-class dataset: enumerate candidate thresholds, compute direct OGini(D)=sum_q c_q(1-c_q) weighted child impurity decrease, and compare the chosen split to the wrapper's internal tree split. Abort if they disagree.",
+  "Implement data.py: parse TOC-UCO .train/.test or partition files, use repository-supplied 70/30 partitions if found; otherwise generate 5 stratified 70/30 splits with seeds 0-4. Parse class labels from the last column and map them to 1..Q. Select the four configured Q>=5 datasets or the fallback rule.",
+  "Implement metrics_utils.py around adabord._metrics. If the author functions are present and return the expected AMAE/QWK/MMAE/BACC, call them unchanged. Otherwise implement AMAE=mean over classes of MAE, MMAE=max over classes of MAE, QWK with quadratic weights on labels 1..Q, and BACC=mean per-class recall.",
+  "Implement adabord_port.py: import adabord._adabord_base and adabord._adabord, replace their module-level DecisionTreeClassifier symbol with OGiniDecisionTreeClassifier, and expose ADABORD. Keep all boosting/aRPS/weight/vote code unchanged.",
+  "Run smoke: glass, one stratified split, n_estimators=10, max_depth=3, one config. Fit ADABORD, check predict shape, predict_proba rows sum to 1, alpha and sample weights are finite, and AMAE/QWK/MMAE/BACC are finite. Run standard AdaBoost on the same split as a sanity check.",
+  "Run intermediate checks on all selected datasets: N, Q, class counts, 70/30 split sizes, stratification, and that every Q>=5. Check that the wrapper's cumulative probabilities are monotone within each row.",
+  "Full scaled run: for each dataset and split, evaluate the 3 sampled configurations from estimator_candidates_scaled using 3-fold stratified CV on the training partition, selecting lowest mean AMAE (tie-break lower STD then fewer estimators). Refit the best config on the full 70% training partition.",
+  "Evaluate the refitted ADABORD on the 30% test partition with AMAE, QWK, MMAE, BACC. Repeat for the cheap baselines on the same split. Store per-split and per-dataset values.",
+  "Aggregate: compute mean and STD over all dataset/split executions and over datasets. Write results/metrics.json with claim_id C1, reported_value 0.823, tolerance 0.138, measured_subset_mean_AMAE, measured_subset_std, per_dataset, per_split, baseline_means, protocol disclosure, and status 'partially_reproduced' or 'not_reproduced_at_scale' depending on whether the subset mean falls within the tolerance.",
+  "Budget guard: before the full loop, time one dataset/split with 50 trees. If projected full time exceeds 14 minutes, automatically reduce to 3 datasets x 3 splits x 50 trees and record the reduction in metrics.json."
+ ],
+ "smoke_test": "python reproduce.py --smoke: load glass, build one stratified 70/30 split with seed 0, fit OGiniDecisionTreeClassifier on a toy 3-class problem to verify the OGini split equals direct brute-force OGini, then fit ADABORD with n_estimators=10 and max_depth=3 on the real split. Assert predict shape (n_test,), predict_proba shape (n_test,Q), rows sum to 1, cumulative probabilities are monotone, all metrics are finite, and standard sklearn AdaBoost also runs on the same split.",
+ "intermediate_checks": [
+  "TOC-UCO extraction found all four selected datasets and parsed the expected number of rows/features/classes; Q>=5 for every selected dataset.",
+  "Class balance per dataset: print counts per class and flag classes with fewer than 3 examples because stratified 3-fold CV and 70/30 splits can fail.",
+  "Split integrity: each training partition is 70% and test 30%, every class appears in both partitions where possible, and repository partitions are used when available.",
+  "OGini equivalence: on a toy dataset, the wrapper's chosen split threshold matches the threshold that minimises direct weighted OGini impurity decrease; repeat for 2-3 random toy sets.",
+  "Leaf probabilities: predict_proba rows sum to 1, are nonnegative, and cumulative sums are nondecreasing; hard labels are in classes_.",
+  "Boosting internals: after one ADABORD iteration, err_m is in [1e-10,1-1e-10], alpha_m is finite, updated sample weights sum to 1, and final hard-vote predictions are in classes_.",
+  "Parameter/runtime check: one dataset/split with 50 trees completes within a few seconds; count tree nodes and cap min_samples_leaf only if a tree exceeds the memory guard, recording the deviation.",
+  "Sanity baseline: standard AdaBoost on glass/one split gives a finite AMAE in the expected 0.8-0.9 range; if not, debug data parsing before the full run."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup 4 minutes: clone/verify adabord, download/extract TOC-UCO, parse metadata, implement and unit-test the OGini wrapper. Smoke 2 minutes: one glass split with 10 trees plus the brute-force OGini equivalence check. Full run 14 minutes: 4 datasets x 5 splits x (3 configs x 3 CV folds + 1 final fit) with 50-100 trees, parallelised over dataset/split up to 8 workers; if the timing guard projects over 14 minutes, fall back to 3 datasets x 3 splits x 50 trees and record the scaled protocol in results/metrics.json."
+}

@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "Qwen3-4B-Instruct-2507 reaches F1 = 25.5% (Acc 55.7, Prec 77.6, Rec 15.3) on ATBench-C binary safe/unsafe trajectory classification.",
+  "table_ref": "Table 2 (Main results on ATBench, ATBench-C block, row 'Qwen3-4B-Instruct-2507')",
+  "dataset": "ATBench (1,000 trajectories, 503 safe / 497 unsafe; ~9.01 turns, ~3.95k tokens each)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/LiYu0524/ATbench",
+  "https://huggingface.co/datasets/AI45Research/ATBench",
+  "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 15,
+  "ref_minutes": 300,
+  "gpu_speedup": 15,
+  "basis": "One 4B judge model must be run over all 1,000 trajectories averaging ~3.95k input tokens (~4M prefill tokens) on 8 CPU cores; a 4-bit 4B model fits easily in 16 GB and can finish in a few hours, but nothing about the run is small per-sample and the exact judge prompt template must be rebuilt if the repo is incomplete."
+ },
+ "blockers": [
+  "Top numbers (GPT-5.4/GPT-5.2/Gemini-3.x, 76.7% F1 headline) are closed-source API models and cannot be reproduced locally",
+  "Large open baselines (QwQ-32B, Qwen3-235B-A22B, Qwen3.5-397B-A17B) exceed 16 GB RAM/CPU-only budget",
+  "Llama-3.1-8B-Instruct and Llama-Guard-3/4 are gated on Hugging Face and need access approval",
+  "The exact LLM-judge prompt (stated to be the AgentDoG template) and guard native templates live in another paper's release; if the ATbench repo lacks them, scores are only approximate",
+  "Cannot verify from the paper text that the linked GitHub repo contains runnable evaluation configs for every baseline row"
+ ],
+ "suitable": true,
+ "id": "2604.02022",
+ "title": "ATBench: A Diverse and Realistic Agent Trajectory Benchmark for Safety Evaluation and Diagnosis",
+ "pages": 31,
+ "model": "DeepSeek-V4.1-Flash"
+}

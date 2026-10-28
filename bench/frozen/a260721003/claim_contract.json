@@ -1,0 +1,241 @@
+{
+ "title": "ADABORD: a novel AdaBoost approach for ordinal classification",
+ "summary": "ADABORD addresses ordinal classification by embedding ordinal information in AdaBoost: decision trees with the Ordinal Gini splitting criterion are used as base learners, and the absolute Ranked Probability Score (aRPS) replaces the misclassification error used to compute estimator weights. The method is compared with seven baselines on the 46 TOC-UCO datasets using 30 stratified 70/30 splits, and the paper reports significant ordinal-metric gains, especially for datasets with five or more classes. The main results table reports only aggregate mean and standard deviation over datasets and executions; it does not print a per-dataset MAE for tae or newthyroid.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "ADABORD's mean AMAE over the 31 TOC-UCO datasets with Q >= 5 is 0.823, the best among the eight methods.",
+   "metric": "AMAE",
+   "dataset": "TOC-UCO, 31 datasets with Q >= 5",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 0.823,
+   "unit": "AMAE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row ADABORD, column AMAE under Datasets with Q >= 5; also Table 7(a), row ADABORD",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; per-dataset hyperparameter selection by 20-iteration randomized search with stratified 3-fold CV, selecting AMAE; #Estimators in {50, 100, 250, 500, 1000, 2000}; all 31 datasets with Q >= 5.",
+   "reported_spread": "0.046 (STD; Table 3 prints 0.8230.046)",
+   "est_compute": "CPU cluster, several days for 31 datasets x 30 splits x 20-iteration 3-fold CV; up to 2000 trees per model",
+   "quote": "ADABORD 0.823 AdaBoost 0.854 OEAdaBoost 0.858 XGBoost 0.860",
+   "page": 32
+  },
+  {
+   "id": "C2",
+   "statement": "ADABORD's mean QWK over the 31 Q >= 5 datasets is 0.790, the best result, with XGBoost second at 0.789.",
+   "metric": "QWK",
+   "dataset": "TOC-UCO, 31 datasets with Q >= 5",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 0.79,
+   "unit": "QWK (higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table 7(b), row ADABORD; Table 3 row ADABORD column QWK under Q >= 5",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; same 31-dataset Q >= 5 protocol and CV tuning as C1.",
+   "reported_spread": "0.018",
+   "est_compute": "CPU cluster, several days for 31 datasets x 30 splits x 20-iteration 3-fold CV",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C3",
+   "statement": "ADABORD's mean MMAE over the 31 Q >= 5 datasets is 1.342, the best among the eight methods.",
+   "metric": "MMAE",
+   "dataset": "TOC-UCO, 31 datasets with Q >= 5",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 1.342,
+   "unit": "MMAE (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 7(c), row ADABORD; Table 3 row ADABORD column MMAE under Q >= 5",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; same 31-dataset Q >= 5 protocol and CV tuning as C1.",
+   "reported_spread": "0.147",
+   "est_compute": "CPU cluster, several days for 31 datasets x 30 splits x 20-iteration 3-fold CV",
+   "quote": "ADABORD 1.342 AdaBoost 1.418 OEAdaBoost 1.424 XGBoost 1.439 O-LGBM 1.773",
+   "page": 32
+  },
+  {
+   "id": "C4",
+   "statement": "ADABORD's mean BACC over the 31 Q >= 5 datasets is 0.474, third behind XGBoost 0.479 and AdaBoost 0.475.",
+   "metric": "BACC",
+   "dataset": "TOC-UCO, 31 datasets with Q >= 5",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 0.474,
+   "unit": "BACC (higher is better)",
+   "higher_is_better": true,
+   "table_ref": "Table 7(d), row ADABORD; Table 3 row ADABORD column BACC under Q >= 5",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; same 31-dataset Q >= 5 protocol and CV tuning as C1.",
+   "reported_spread": "0.024",
+   "est_compute": "CPU cluster, several days for 31 datasets x 30 splits x 20-iteration 3-fold CV",
+   "quote": "XGBoost 0.479 AdaBoost 0.475 ADABORD 0.474 OEAdaBoost 0.446 O-LGBM 0.399",
+   "page": 32
+  },
+  {
+   "id": "C5",
+   "statement": "Averaged over all 46 TOC-UCO datasets, ADABORD's mean rank for AMAE is 2.902, the best among the eight methods.",
+   "metric": "average rank by AMAE",
+   "dataset": "TOC-UCO, all 46 datasets",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 2.902,
+   "unit": "average rank (lower is better)",
+   "higher_is_better": false,
+   "table_ref": "Table 4, row ADABORD, column AMAE under All datasets (46)",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; all 46 datasets; per-dataset CV tuning by AMAE.",
+   "reported_spread": null,
+   "est_compute": "CPU cluster, several days for 46 datasets x 30 splits x 20-iteration 3-fold CV",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C6",
+   "statement": "ADABORD ranks first or second on 25 of the 31 datasets with Q >= 5, with 10 first places and 14 second places.",
+   "metric": "number of datasets where rank <= 2 by AMAE",
+   "dataset": "TOC-UCO, 31 datasets with Q >= 5",
+   "split": "30 stratified 70/30 hold-out splits per dataset",
+   "value": 25,
+   "unit": "datasets with rank 1 or 2",
+   "higher_is_better": true,
+   "table_ref": "Section 5.2, paragraph after Figure 5",
+   "config_for_value": "ADABORD with DTC + OGini and aRPS; same 31-dataset Q >= 5 protocol and CV tuning as C1.",
+   "reported_spread": null,
+   "est_compute": "CPU cluster, several days for 31 datasets x 30 splits x 20-iteration 3-fold CV",
+   "quote": "ADABORD achieves either the first or second rank in 25 datasets, with 10 in first place and 14 in second.",
+   "page": 27
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint asks for tae/newthyroid per-dataset MAE, but the paper prints no per-dataset values: Table 3 and Table 7 give only aggregate AMAE/QWK/MMAE/BACC over datasets and executions. C1 is the cheapest printed claim that still carries the paper's central result (best AMAE on the Q >= 5 subset); the all-46-dataset result would be more expensive. It is not a side ablation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.138,
+  "why": "Rule 1: Table 3 reports STD 0.046 for the 0.823 AMAE target; 3 x 0.046 = 0.138 at the paper's three-decimal precision. The requested tae/newthyroid per-dataset MAE is not printed, so no tighter per-dataset band can be derived."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "The base estimator must be a decision tree classifier using the Ordinal Gini (OGini) splitting criterion, not standard Gini.",
+   "cite": "Section 3.3; Algorithm 2 line 3",
+   "quote": "The first major contribution is the use of a DTC with OGini splitting criterion as the base estimator.",
+   "page": 10
+  },
+  {
+   "id": "R2",
+   "stmt": "The node impurity must be OGini(D_m) = sum_{q=1}^{Q} c_hat_{q|m}(1 - c_hat_{q|m}), where c_hat_{q|m} is the cumulative frequency of class q in node D_m.",
+   "cite": "Section 3.3, Equation (6)",
+   "quote": "The OGini index of a tree node Dm can be expressed as:",
+   "page": 10
+  },
+  {
+   "id": "R3",
+   "stmt": "Each boosting iteration must train the OGini decision tree on the current sample weights w_i, so that tree fitting and leaf class estimates are weighted.",
+   "cite": "Algorithm 2 line 3; Section 3.2",
+   "quote": "Train a DTC with OGini splitting criterion as base classifier fm(x), employing sample weights wi;",
+   "page": 14
+  },
+  {
+   "id": "R4",
+   "stmt": "At each iteration, compute the aRPS of the base tree on the training set and divide it by Q-1 to obtain err_m^(aRPS).",
+   "cite": "Algorithm 2 line 4, Equation (9)",
+   "quote": "Compute the aRPS of fm(x) in the training set:",
+   "page": 14
+  },
+  {
+   "id": "R5",
+   "stmt": "The aRPS must use absolute differences between cumulative probabilities, not squared differences; the squared variant is qRPS and is not ADABORD's loss.",
+   "cite": "Section 3.4",
+   "quote": "The other variant, that is the one employed in ADABORD, replaces the square by the absolute error, and is named as absolute RPS (aRPS).",
+   "page": 11
+  },
+  {
+   "id": "R6",
+   "stmt": "Targets must be encoded cumulatively as c_{i,q}=1(y_i <= q), and the final cumulative threshold Q is omitted because c_{i,Q}=c_hat_{i,Q}=1.",
+   "cite": "Section 3.4, Equation (7); text after Equation (8)",
+   "quote": "the output variable Y is required to be encoded following a one-hot cumulative strategy",
+   "page": 11
+  },
+  {
+   "id": "R7",
+   "stmt": "The aRPS error must be normalised by Q-1 before computing the estimator weight, matching Algorithm 2 Equation (9).",
+   "cite": "Section 3.5; Algorithm 2 Equation (9)",
+   "quote": "Note that the denominator Q -1 included in the err(aRPS) m formula acts as normalisation term with respect to the number of classes.",
+   "page": 13
+  },
+  {
+   "id": "R8",
+   "stmt": "The estimator weight must be alpha_m = log((1 - err_m^(aRPS))/err_m^(aRPS)), with no log(Q-1) term.",
+   "cite": "Algorithm 2 line 5, Equation (10); Section 3.5",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R9",
+   "stmt": "Sample weights must be updated by w_i <- w_i * exp(alpha_m * 1(y_i != f_m(x_i))) and then renormalised to sum to one, using hard misclassification indicators.",
+   "cite": "Algorithm 2 lines 6-7, Equations (11)-(12)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R10",
+   "stmt": "Final predictions must be the weighted majority vote F(x)=argmax_q sum_m alpha_m 1(f_m(x)=q), not an expected-label or cumulative-probability aggregation.",
+   "cite": "Algorithm 2 line 8, Equation (13)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R11",
+   "stmt": "Evaluation must use the paper's four metrics: AMAE, QWK, MMAE, and BACC, with the class-averaged AMAE and maximum class MAE definitions in Equations (14)-(18).",
+   "cite": "Section 4.3, Equations (14)-(18)",
+   "quote": "For evaluating the different methodologies, the following four performance metrics are considered",
+   "page": 20
+  },
+  {
+   "id": "R12",
+   "stmt": "Use the TOC-UCO repository partitions rather than regenerating splits: each dataset has a 70/30 stratified hold-out resampled 30 times with different seeds.",
+   "cite": "Section 4.4",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R13",
+   "stmt": "For each training partition, tune hyperparameters with a randomised search of 20 iterations using stratified 3-fold CV, selecting the configuration with best AMAE.",
+   "cite": "Section 4.4",
+   "quote": "Each method included in the experiments is cross-validated on each training partition by means of a randomised search with 20 iterations.",
+   "page": 21
+  },
+  {
+   "id": "R14",
+   "stmt": "For ADABORD, the number of estimators must be selected from {50, 100, 250, 500, 1000, 2000}; other hyperparameters are not listed for ADABORD in Table 2.",
+   "cite": "Table 2, ADABORD row",
+   "quote": "Hyperparameters shown as sets indicate the candidate values considered during cross-validation.",
+   "page": 22
+  },
+  {
+   "id": "R15",
+   "stmt": "The trained decision tree must expose weighted leaf class probabilities so that cumulative predicted probabilities c_hat_{m,i,q} can be formed for aRPS.",
+   "cite": "Section 3.4",
+   "quote": "Similarly, the cumulative probabilities predicted by a model fm are denoted as c_hat_m,i in R^Q",
+   "page": 11
+  }
+ ],
+ "data": [
+  {
+   "name": "TOC-UCO repository (46 ordinal datasets, including tae and newthyroid)",
+   "how_to_get": "Use the TOC-UCO repository from reference [11]; the ADABORD GitHub repository https://github.com/ayrna/adabord contains the code and experimental protocols. The 31-dataset Q >= 5 subset is defined in Table 1."
+  },
+  {
+   "name": "tae and newthyroid datasets",
+   "how_to_get": "Available within TOC-UCO; Table 1 lists tae (#Train 105, #Test 46, K 54, Q 3) and newthyroid (#Train 150, #Test 65, K 5, Q 3). The paper does not print per-dataset ADABORD MAE for them."
+  }
+ ],
+ "code_links": [
+  "https://github.com/ayrna/adabord",
+  "https://www.uco.es/grupos/ayrna/adabord"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2607.21003",
+  "kind": "arxiv",
+  "arxiv_id": "2607.21003",
+  "url": "https://arxiv.org/abs/2607.21003",
+  "title": "ADABORD: a novel AdaBoost approach for ordinal classification",
+  "pages": 42
+ }
+}

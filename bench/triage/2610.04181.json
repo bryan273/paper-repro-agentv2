@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "95% profile-score confidence interval for the intercept-slope covariance ψ2 in the autism socialization linear mixed model: (-34.566, -18.401)",
+  "table_ref": "Table 1, row ψ2 (Covariance), column 'Profile score'",
+  "dataset": "WWGbook autism socialization data (610 scores, 158 children)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/koekvall/reconf-suppl"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Small n=610 dataset, r=4 covariance parameters, paper reports ~0.5 s per full interval set in R; cost is dominated by installing R + reconf and downloading WWGbook, then a single fit and interval inversion."
+ },
+ "blockers": [
+  "Requires R and the reconf package (installable from GitHub); no GPU or large data needed"
+ ],
+ "suitable": true,
+ "id": "2610.04181",
+ "title": "Score-based confidence intervals for variance-covariance parameters in linear mixed models",
+ "pages": 46,
+ "model": "DeepSeek-V4.1-Flash"
+}

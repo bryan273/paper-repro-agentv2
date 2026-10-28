@@ -1,0 +1,286 @@
+{
+ "title": "Conformalized Physics-Informed Weak Regression for Parameter Estimation in Epidemic Models",
+ "summary": "Compartment epidemic models are often linear in coefficients that are physical parameters or products of parameters, so parameter estimation can be reduced to closed-form least squares. The paper introduces physics-informed weak regression (PIWR), which integrates the model in time with cubic-spline quadrature, avoids differentiating noisy data, estimates the initial state jointly, and is wrapped with split conformal prediction using simulated epidemics as the calibration population, plus a residual-adaptive factor (PIWR-RACC). Across eleven DINN benchmarks, PIWR or PIR-FD6 is reported to improve on DINN errors by one to four orders of magnitude where sampling resolves the dynamics, each fit takes about a millisecond, and the 90% simultaneous intervals achieve 87–92% empirical coverage in all 88 tested settings.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "PIWR estimates the COVID-19 SIDR transmission rate α with 0.124 % relative error at 1 % measurement noise.",
+   "metric": "% relative error of α",
+   "dataset": "COVID-19 SIDR synthetic benchmark (DINN)",
+   "split": "100 samples on [0,500] days; ε=0.01 noise level",
+   "value": 0.124,
+   "unit": "% relative error",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row α, column PIWR / PIWR-RACC under noise level ε = 0.01",
+   "config_for_value": "PIWR with cubic-spline quadrature and jointly estimated initial state; SIDR parameters α=0.191, β=0.05, γ=0.0294; N=59·10^6; 100 equally spaced samples on [0,500] days; 1 % multiplicative Gaussian noise",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s including data simulation; single PIWR fit is about 0.2 ms",
+   "quote": "With 1 % noise the error of PIR-FD2 grows to 1.2–1.5 %, while PIR-FD6 and PIWR reach 0.12–0.49 %.",
+   "page": 9
+  },
+  {
+   "id": "C2",
+   "statement": "Noise-free PIWR estimates α for the COVID-19 SIDR model with 0.000105 % relative error.",
+   "metric": "% relative error of α",
+   "dataset": "COVID-19 SIDR synthetic benchmark (DINN)",
+   "split": "100 samples on [0,500] days; ε=0",
+   "value": 0.000105,
+   "unit": "% relative error",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row α, column PIWR / PIWR-RACC under noise level ε = 0",
+   "config_for_value": "PIWR with cubic-spline quadrature and jointly estimated initial state; SIDR parameters α=0.191, β=0.05, γ=0.0294; N=59·10^6; 100 equally spaced samples on [0,500] days; no noise",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s including data simulation; single PIWR fit is about 0.2 ms",
+   "quote": "PIR-FD6 reduces it to 0.002–0.003 %, and PIWR to 0.0001 %, four orders of magnitude below DINN",
+   "page": 9
+  },
+  {
+   "id": "C3",
+   "statement": "PIWR is the most accurate estimator in 15 of the 22 model/noise settings across the eleven DINN benchmarks.",
+   "metric": "number of settings where the estimator is most accurate",
+   "dataset": "Eleven DINN benchmark models",
+   "split": "Noise-free and 1 % noise settings (22 model/noise settings total)",
+   "value": 15,
+   "unit": "of 22 settings",
+   "higher_is_better": true,
+   "table_ref": "Section 5.4 and Table 3; statement over 22 model/noise settings",
+   "config_for_value": "PIR-FD2, PIR-FD4, PIR-FD6 and PIWR compared at ε=0 and ε=1 % on the eleven DINN benchmarks; median % error at literature values",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes for 22 fits; each fit is milliseconds, no conformal calibration needed for point estimates",
+   "quote": "We find that PIWR is the most accurate estimator in 15 of the 22 model/noise settings, and PIR-FD6 in the remaining seven.",
+   "page": 10
+  },
+  {
+   "id": "C4",
+   "statement": "The plain split-conformal layer achieves mean 90.0 % empirical coverage over all 88 DINN benchmark settings, with a reported range of 87.6–92.0 %.",
+   "metric": "empirical simultaneous coverage",
+   "dataset": "All 88 DINN benchmark settings (11 models, 4 estimators, 2 noise levels)",
+   "split": "999 calibration problems and 2,000 independent test problems; α=0.1",
+   "value": 90.0,
+   "unit": "% coverage",
+   "higher_is_better": true,
+   "table_ref": "Section 5.5 coverage text and Fig. 5c; Table 4 reports PIWR-RACC coverage",
+   "config_for_value": "Split conformal prediction with n=999 calibration problems, α=0.1, plain layer (h=1); coverage measured on 2,000 independent test problems",
+   "reported_spread": "range 87.6–92.0 % over 88 settings",
+   "est_compute": "CPU, 9–56 s per model on Apple M4 Max for the full conformal pipeline",
+   "quote": "the empirical coverage is 87.6–92.0 % for the plain layer (mean 90.0 %) and 86.7–92.5 % for the adaptive layer (mean 89.9 %).",
+   "page": 11
+  },
+  {
+   "id": "C5",
+   "statement": "A PIWR fit on the COVID-19 SIDR benchmark takes 0.21 ms median CPU time.",
+   "metric": "median CPU time per fit",
+   "dataset": "COVID-19 SIDR synthetic benchmark (DINN)",
+   "split": "100 samples on [0,500] days; ε=0; median of 30 repeated fits",
+   "value": 0.21,
+   "unit": "ms per fit",
+   "higher_is_better": false,
+   "table_ref": "Table 2, CPU time [ms] row, PIWR column",
+   "config_for_value": "PIWR on SIDR; median of 30 repeated fits of one data set; measured on Apple M4 Max",
+   "reported_spread": null,
+   "est_compute": "CPU, sub-millisecond to millisecond per fit",
+   "quote": "each fit takes about a millisecond, against minutes to hours of training of DINN to perform the same parameter estimation.",
+   "page": 1
+  },
+  {
+   "id": "C6",
+   "statement": "On the S3I3R model with known recovery rates and 1 % noise, PIWR has median error 0.51 %.",
+   "metric": "median % error over estimated parameters",
+   "dataset": "S3I3R model from Nielsen et al. (2025)",
+   "split": "Daily samples over first 28 days; ε=1 %; γ1, γ2, γ3 known",
+   "value": 0.51,
+   "unit": "% median error",
+   "higher_is_better": false,
+   "table_ref": "Table 5, ε=1 %, γ1,γ2,γ3 known setting; Section 5.6 text",
+   "config_for_value": "PIWR with cubic-spline quadrature; S3I3R parameters from Nielsen et al. (2025); known recovery rates fixed; 1 % noise",
+   "reported_spread": null,
+   "est_compute": "CPU, milliseconds per fit; full calibration is seconds",
+   "quote": "With 1 % noise and γi known it is found that PIWR has the smallest median error, 0.51 % against 0.79–1.0 % for PIR-FD2/4/6",
+   "page": 12
+  },
+  {
+   "id": "C7",
+   "statement": "On the real 1978 boarding-school influenza data, PIWR-VP gives median test error 7.56 %.",
+   "metric": "median % error on test problems",
+   "dataset": "1978 boarding-school influenza outbreak",
+   "split": "14 daily observations; five calibration/test splits",
+   "value": 7.56,
+   "unit": "% median test error",
+   "higher_is_better": false,
+   "table_ref": "Table 6, row PIWR-VP, column test err. [%]",
+   "config_for_value": "SIR model with only infected observed; PIWR-VP imposing the coefficient constraint by variable projection; 95 % simultaneous conformal intervals; negative-binomial calibration population",
+   "reported_spread": null,
+   "est_compute": "CPU, 2.3 ms per PIWR-VP fit; full conformal pipeline 110 s",
+   "quote": "PIWR-VP reduces it to 7.6 %, and its intervals are 5–12 times narrower",
+   "page": 13
+  },
+  {
+   "id": "C8",
+   "statement": "For the time-varying transmission Case 3 benchmark, PIWR reaches relative 2-norm error 2.7·10^-3 for Rt after day 20.",
+   "metric": "relative 2-norm error for Rt over last 70 days",
+   "dataset": "Millevoi et al. (2024) time-varying transmission benchmark, Case 3 (Italian Rt)",
+   "split": "90 days; error evaluated after day 20; median over 100 noise realizations",
+   "value": 0.0027,
+   "unit": "relative 2-norm error",
+   "higher_is_better": false,
+   "table_ref": "Table 9, Case 3, row Rt, last 70 d, column PIWR",
+   "config_for_value": "B-spline expansion of β(t) with K=24 cubic B-splines, second-difference P-spline penalty selected by GCV, Poisson counts; PIWR with unknown I0",
+   "reported_spread": null,
+   "est_compute": "CPU, 6.2 ms per fit; calibration 14–27 s per case and estimator",
+   "quote": "PIWR reaches 5.0 · 10−3 for β(t) and 2.7 · 10−3 for Rt, against 1.6 · 10−2 and 6.7 · 10−2 for the better PINN.",
+   "page": 16
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is a single SIDR PIWR fit, costs about a millisecond, and directly demonstrates the paper's central claim that weak-form regression estimates a transmission rate accurately under 1 % noise; no 11-model sweep or conformal calibration is needed."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the target is a relative % error with no reported std for this row and is an unbounded error metric, so use a 10 % relative band around 0.124 %, i.e. about 0.1116–0.1364 % error."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Formulate the epidemic model in parameter-linear form ẋ = f0(x,t) + A(x,t)θ, with the library A containing no unknown parameters and a map h recovering physical parameters from θ.",
+   "cite": "Section 2, equations (2) and (4)",
+   "quote": "the library A(x, t) ∈Rn×p contains no unknowns",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "For PIWR, use the integrated weak relation x(tj)=x0+Jjθ, with Jj the time integral of the library, instead of differentiating the data.",
+   "cite": "Section 3.2, equation (12)",
+   "quote": "The relation is still linear in θ, but it contains the data themselves instead of their derivatives.",
+   "page": 6
+  },
+  {
+   "id": "R3",
+   "stmt": "Evaluate each library entry by a cubic spline with not-a-knot end conditions on the sample grid and integrate the spline exactly to obtain quadrature weights.",
+   "cite": "Section 3.2, Quadrature, equation (13)",
+   "quote": "interpolated over t0, . . . , tm−1 by a cubic spline (not-a-knot end conditions), and the spline is integrated exactly from t0 to tj.",
+   "page": 6
+  },
+  {
+   "id": "R4",
+   "stmt": "Estimate the initial state x0 jointly with θ using the augmented system with identity blocks for x0.",
+   "cite": "Section 3.2, equation (14)",
+   "quote": "The initial state x0 is treated as n additional unknowns, so that the noise of the first sample is not propagated into every equation.",
+   "page": 6
+  },
+  {
+   "id": "R5",
+   "stmt": "Solve the PIWR least-squares problem by a numerically stable orthogonal factorization or SVD-based least squares, not by explicitly forming the normal equations.",
+   "cite": "Section 3.2, Closed-form least-squares solution",
+   "quote": "In implementation, we do not form the normal equations (16), whose condition number is the square of that of MD.",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Column-scale the regression matrix to unit column norm before the solve; scaling is a change of variables and leaves the minimizer unchanged.",
+   "cite": "Sections 3.1 and 3.2, equations (11) and implementation after (18)",
+   "quote": "the columns are scaled to unit norm before the solve",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "For the synthetic benchmarks, add compartment-wise noise with standard deviation ε times the maximum absolute true compartment value over the time grid.",
+   "cite": "Section 5.1, setup",
+   "quote": "add noise per compartment c as  ̃xc(ti) = xc(ti)+ε maxt|xc(t)| ξi, ξi ∼N(0, 1)",
+   "page": 8
+  },
+  {
+   "id": "R8",
+   "stmt": "For conformal calibration, draw calibration parameters from a prior box of ±50 % around literature values, capped at 1 for probabilities and [0,c] for parameters whose literature value is zero.",
+   "cite": "Section 5.1, setup",
+   "quote": "The prior box is ±50 % around the literature values (capped at 1 for probabilities, and [0, c] for the three parameters whose literature value is zero)",
+   "page": 8
+  },
+  {
+   "id": "R9",
+   "stmt": "Use the maximum normalized error over all parameters as the split-conformal nonconformity score, then form simultaneous intervals with the corresponding quantile.",
+   "cite": "Section 4.2, equations (20)–(22)",
+   "quote": "To obtain intervals that hold for all k parameters at once, we use the maximum normalized error as the nonconformity score",
+   "page": 8
+  },
+  {
+   "id": "R10",
+   "stmt": "For PIWR-RACC, compute the residual-adaptive factor h = 1 + R/Rbar, with Rbar the median residual on 200 tuning draws, and apply h to scores and intervals.",
+   "cite": "Section 4.3, equations (23)–(24)",
+   "quote": "with  ̄R the median residual on 200 tuning draws, and use it in the score (20) and the intervals (21).",
+   "page": 8
+  },
+  {
+   "id": "R11",
+   "stmt": "Use 999 calibration problems and α=0.1 for the 90 % simultaneous intervals, with tuning done on separate draws.",
+   "cite": "Section 5.1, setup",
+   "quote": "The calibration uses n = 999 problems and α = 0.1.",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Recover physical parameters through ω=h(θ) and, when uncertainty in ω is reported, propagate the coefficient covariance by the delta method.",
+   "cite": "Section 3.3, equation (19)",
+   "quote": "The physical parameters are ˆω = h(ˆθ). Their uncertainty follows from the delta method",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "For the COVID-19 SIDR benchmark, use N=59·10^6, initial state S0=N−1 and I0=1, parameters α=0.191, β=0.05, γ=0.0294, and 100 equally spaced samples on [0,500] days.",
+   "cite": "Section 2 worked example and Appendix A.1",
+   "quote": "100 equally spaced samples on [0, 500] days (∆t = 5.05 days) of the solution with (α, β, γ) = (0.191, 0.05, 0.0294)",
+   "page": 4
+  },
+  {
+   "id": "R14",
+   "stmt": "Report errors as percent of the actual parameter value, using the median over estimated parameters of a model when summarizing a model.",
+   "cite": "Section 5.1, setup",
+   "quote": "Errors are reported in percent of the actual value, as the median over the estimated parameters of a model.",
+   "page": 9
+  },
+  {
+   "id": "R15",
+   "stmt": "Generate synthetic benchmark trajectories with LSODA at relative and absolute tolerances of 10^-10.",
+   "cite": "Appendix A, generation details",
+   "quote": "integrated with LSODA (Petzold, 1983) at relative and absolute tolerances of 10−10.",
+   "page": 19
+  }
+ ],
+ "data": [
+  {
+   "name": "DINN benchmark generator notebooks and data",
+   "how_to_get": "Clone https://github.com/Shaier/DINN and regenerate the eleven benchmarks with the same initial conditions, grids and parameters; the paper says agreement is about 1e-8 except for Anthrax."
+  },
+  {
+   "name": "COVID-19 SIDR synthetic benchmark",
+   "how_to_get": "Generate directly from Appendix A.1: N=59·10^6, S0=N−1, I0=1, D0=R0=0, α=0.191, β=0.05, γ=0.0294, 100 samples on [0,500] days. No external file needed."
+  },
+  {
+   "name": "1978 boarding-school influenza data",
+   "how_to_get": "Use influenza_england_1978_school from the R package outbreaks, https://github.com/reconhub/outbreaks; counts are 3, 8, 26, 76, 225, 298, 258, 233, 189, 128, 68, 29, 14, 4 at days 1–14 with I(0)=1."
+  },
+  {
+   "name": "S3I3R benchmark",
+   "how_to_get": "Generate with the parameters and initial state in Appendix B.1, taken from Nielsen et al. (2025), arXiv:2508.19249; 29 daily samples on [0,28] days."
+  },
+  {
+   "name": "Time-varying transmission benchmark",
+   "how_to_get": "Generate Cases 1–4 with the setup of Millevoi et al. (2024); reference β(t) curves for Cases 2–4 must be digitized from their Figs. 5, 7 and 8 as described in Section 5.8."
+  }
+ ],
+ "code_links": [
+  "https://github.com/Shaier/DINN",
+  "https://github.com/reconhub/",
+  "https://github.com/reconhub/outbreaks"
+ ],
+ "stated_compute": "The timings reported in section 5 were measured on a MacBook Pro (Nov 2024, Apple M4 Max, 16 cores, 48 GB RAM). The implementation uses Python with NumPy, SciPy and Matplotlib.",
+ "paper_meta": {
+  "source": "2610.19058",
+  "kind": "arxiv",
+  "arxiv_id": "2610.19058",
+  "url": "https://arxiv.org/abs/2610.19058",
+  "title": "Conformalized Physics-Informed Weak Regression for Parameter Estimation in Epidemic Models",
+  "pages": 30
+ }
+}

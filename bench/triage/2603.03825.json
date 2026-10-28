@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "AVAR-Thinker achieves 74.7% accuracy on MathVista, a +6.5% gain over Qwen2.5-VL-7B (68.2%)",
+  "table_ref": "Table 1",
+  "dataset": "MathVista"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/lrlbbzl/Qwen-AVAR",
+  "https://huggingface.co/Kangheng/OVR-7B-ColdStart",
+  "https://huggingface.co/Kangheng/OVR-7B-RL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 128,
+  "disk_gb": 500,
+  "ref_minutes": 4320,
+  "gpu_speedup": 20,
+  "basis": "Reproducing the headline number requires the full AVAR pipeline: cold-start training on 30.6K samples for 20 epochs on 16 A100 GPUs, followed by RL for 4 epochs on 17.9K samples on the same hardware, then evaluation on MathVista; this is far beyond a laptop's capability."
+ },
+ "blockers": [
+  "Requires 16 A100 GPUs for cold-start and RL training",
+  "Training data synthesis uses Gemini 2.5-Pro and Qwen3-235B-A22B, which are closed or very large models",
+  "No released training code or data; only model weights are available"
+ ],
+ "suitable": false,
+ "id": "2603.03825",
+ "title": "From Narrow to Panoramic Vision: Attention-Guided Cold-Start Reshapes Multimodal Reasoning",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "IDSIM of 0.7733 for the proposed IDE method on the LR-contour identity-guided face generation task",
+  "table_ref": "Table 1",
+  "dataset": "CelebA-HQ (LR contour condition, 32x32 bicubic downsampled)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "No code is released, so the full dual-encoder + StyleGAN inversion pipeline must be reimplemented and trained on 30k 1024x1024 CelebA-HQ images, which is a multi-day GPU training job far beyond a few CPU hours."
+ },
+ "blockers": [
+  "No code or pretrained weights released",
+  "Requires training a StyleGAN-inversion dual-encoder on 30k 1024x1024 images",
+  "Needs a pretrained StyleGAN generator and ArcFace model",
+  "Evaluation requires generating 28,420 test outputs to compute IDSIM/FID",
+  "Training is GPU-bound; not feasible on an 8-core CPU laptop"
+ ],
+ "suitable": false,
+ "id": "2110.04854",
+ "title": "Identity-guided Face Generation with Multi-modal Contour Conditions",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

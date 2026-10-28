@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Locked balanced LinearSVC (word unigram-bigram TF-IDF, C=0.5) achieves Macro-F1 = 0.6578 on the held-out CrisisBench Test split",
+  "table_ref": "Table 6",
+  "dataset": "CrisisBench v1.0 English humanitarian task (87,455 records; 11 labels)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 25,
+  "basis": "TF-IDF + LinearSVC on ~70k short texts fits in seconds on CPU (paper reports ~2s vectorisation, ~2s fitting); main cost is downloading CrisisBench and writing the preprocessing/vectoriser code, which is fully specified in the text."
+ },
+ "blockers": [
+  "No code released; pipeline must be re-implemented from the paper's prose description",
+  "Exact preprocessing/vectoriser details must be matched to hit the reported number",
+  "CrisisBench download location not linked in the paper (must be found independently)"
+ ],
+ "suitable": true,
+ "id": "2610.24652",
+ "title": "Lightweight Machine Learning for Classifying Disaster-Related Social Media Posts",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

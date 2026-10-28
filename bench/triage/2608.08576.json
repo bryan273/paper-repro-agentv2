@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Exact conditional moments (mean, variance, third cumulant) of the chi-square-family statistic for a 3x3 table with N=18 (406 tables on the margin fibre) agree with brute-force enumeration to max relative error 8.9e-15, computed in ~5.5 ms.",
+  "table_ref": "Section 2.2 (text; corresponds to Table 1 row 3x3)",
+  "dataset": "Simulated 3x3 contingency table, N=18, margins fixed (no external data)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://doi.org/10.5281/zenodo.21831680",
+  "https://doi.org/10.5281/zenodo.21831681"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "The target is a 3x3 table with 406 tables on the fibre; the paper reports 5.5 ms runtime and the deposited package plus brute-force enumeration check are tiny, so install + run is minutes on a laptop CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2608.08576",
+ "title": "Exact Conditional Distributions of Chi-Square-Family Statistics for Two-Way Contingency Tables, by Cell-Separable Dynamic Programming",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

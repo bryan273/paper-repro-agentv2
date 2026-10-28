@@ -1,0 +1,122 @@
+{
+ "approach": "Reimplement the paper's cell-separable moment dynamic program from the algorithmic description in Section 2 (route = paper_only; the Zenodo archive is not available), and validate it against an independent brute-force enumeration of the both-margins-conditioned fibre with multiple-hypergeometric weights (R11). The design for C1 is the 3x3 table with all row and column margins equal to 6 (N=18, 406 tables, E_ij = 2 per cell), which also resolves assumption A1: the paper's Table 2 label '3x3, 2/cell' means two expected per cell, i.e. margins 6, matching the '406 tables' of Section 2.2. The DP walks one cell at a time in column-major order, keeps the state as the vector of remaining row capacities (the current column's remaining need is determined by that vector and the column totals), prunes to states whose residual row capacities can still meet the residual column totals, and carries four accumulators A0..A3 per state, expanding (s_new + s_partial)^r on each transition. Per-cell summands are pluggable (Anscombe-root primary, plus Pearson, G2, Cressie-Read 2/3) so the member-agnosticism requirement R12 is exercised for free; the headline metric is the maximum relative error of the three moments (mean, variance, third cumulant) of the Anscombe-root statistic, DP versus enumeration.",
+ "files": [
+  {
+   "path": "condexact/__init__.py",
+   "purpose": "Package marker so reproduce.py and the verification module can import condexact.* without path hacks.",
+   "requirement_ids": []
+  },
+  {
+   "path": "condexact/statistics.py",
+   "purpose": "Per-cell expected counts E_ij = a_i b_j / N and the pluggable additive summand hook s(O, E) for the four chi-square-family members (Anscombe-root primary, Pearson, G2, Cressie-Read lambda=2/3), plus the null odds w=1. Vectorized over integer counts, handles O=0 (0 log 0 = 0) and O=E.",
+   "requirement_ids": [
+    "R1",
+    "R7",
+    "R12"
+   ]
+  },
+  {
+   "path": "condexact/fibre.py",
+   "purpose": "Brute-force enumeration of all nonnegative integer tables with the given row/column margins; table weight prod_ij w_ij^O_ij / O_ij! (multiple-hypergeometric, normalized at the end); returns atom map S -> probability (merged coincident atoms) and the reference mean, variance and third cumulant computed with math.fsum, plus the fibre size and atom count.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R8",
+    "R11"
+   ]
+  },
+  {
+   "path": "condexact/moment_dp.py",
+   "purpose": "The cell-separable moment DP: dict keyed by the remaining-row-capacity tuple, four float64 accumulators A0..A3 per state, columns processed in order with the last column forced by the residual row capacities, admissible-k pruning at every cell, and the binomial expansion of (s_new + s_partial)^r. Returns A0 plus the exact conditional mean, variance and third cumulant and a wall-clock timing hook.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "condexact/moment_dp_dense.py",
+   "purpose": "Optional non-gating cross-check: the same recursion written as a shifted-slice transition over a dense numpy array flattened over an enumerated row-capacity grid, to confirm the paper's dense-array formulation (R4) agrees with the dict reference. Only reported, never used to gate the claim.",
+   "requirement_ids": [
+    "R4",
+    "R5"
+   ]
+  },
+  {
+   "path": "condexact/verify_c1.py",
+   "purpose": "Orchestrates the C1 check: builds the 3x3 margins-6 design, runs enumeration and the moment DP for all four summands, computes per-moment and maximum relative errors against the enumeration reference, measures DP wall clock with one warm-up plus median of 5, runs the 2x2 margins-10 sanity design (11 tables, 6 atoms), audits fibre size 406 and the atom count, and assembles the metrics dictionary. --smoke runs a 2x2 subset once.",
+   "requirement_ids": [
+    "R1",
+    "R3",
+    "R11",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: parses --smoke, calls verify_c1.run(), writes results/metrics.json, prints the DP and enumeration moments side by side, the maximum relative error, the DP wall clock and a pass/fail line against the paper's 8.9e-15 / 5.5 ms.",
+   "requirement_ids": [
+    "R3",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "design_c1_rows": "[6, 6, 6] (paper Sec 2.2 '3x3, N = 18, 406 tables'; A1 resolved: Table 2 '2/cell' = 2 expected per cell)",
+  "design_c1_cols": "[6, 6, 6] (same)",
+  "design_c1_N": "18 (paper Sec 2.2)",
+  "design_c1_expected_tables": "406 (paper Sec 2.2; asserted by the enumerator)",
+  "design_sanity_2x2_rows": "[10, 10] (paper Table 2 / C4 'five per cell', N = 20)",
+  "design_sanity_2x2_cols": "[10, 10] (same; expected 11 tables and 6 atoms of S)",
+  "odds_w": "1 for every cell (null / independence, R7 citing Sec 1.2)",
+  "expected_counts": "E_ij = a_i b_j / N (A5; independence MLE given both margins)",
+  "statistic_primary": "anscombe: s_ij(O) = 4 * (sqrt(O + 3/8) - sqrt(E_ij + 3/8))^2 (A2; paper Sec 3.2 'the Anscombe-root statistic the engine carries'; the factor 4 makes it agree with (O-E)^2/E to first order and keeps S nonnegative so the Patnaik fit of C5 is well defined)",
+  "statistic_members": "['anscombe', 'pearson', 'g2', 'cr23'] with pearson s = (O-E)^2/E, g2 s = 2 O log(O/E), cr23 s = (2/(lam*(lam+1))) * O * ((O/E)^lam - 1), lam = 2/3 (R12)",
+  "cell_order": "column-major: outer loop over columns j = 0..C-2, inner loop over rows i = 0..R-1, last column forced (R5; A9: margins sorted ascending, labels mapped back, which is a no-op for the constant-margin designs)",
+  "state": "tuple of remaining row capacities only; at cell (i, j) the remaining need of column j is need_j = sum(state) - sum(b[j+1:]) (R5 citing Sec 2.1)",
+  "pruning": "k in [max(0, need_j - sum(state[i+1:])), min(state[i], need_j)]; a partial state is admissible iff its residual row capacities can still meet the residual column totals (R6)",
+  "cell_weight": "w_ij(k) = odds_ij^k / k! (normalizing constant N!/(prod a_i! prod b_j!) cancels; R2, Fisher noncentral hypergeometric cell factorization)",
+  "accumulators": "A0 = sum w, A1 = sum w s, A2 = sum w s^2, A3 = sum w s^3 per state; transition adds sum_{m<=r} C(r,m) s_new^(r-m) A_m (R3)",
+  "moment_definitions": "mean = A1/A0; var = A2/A0 - mean^2; kappa3 = A3/A0 - 3*mean*A2/A0 + 2*mean^3 (A6: unstandardized third central moment)",
+  "dtype": "float64 throughout (paper config_for_value)",
+  "relative_error": "elementwise |dp - enum| / max(|enum|, 1e-300), maximized over {mean, variance, kappa3} for the primary statistic (A3)",
+  "relative_error_secondary": "same with denominator max(|enum|, V^1.5 * 1e-12) reported alongside, so a near-zero third cumulant cannot masquerade as a large error (diagnostic only)",
+  "timing_protocol": "one warm-up call, then median of 5 end-to-end wall-clock calls of the moment DP only, enumeration excluded (A4)",
+  "paper_value_max_rel_err": "8.9e-15 (C1 / Sec 2.2)",
+  "paper_value_dp_time_ms": "5.5 (C1 / Sec 2.2)",
+  "tolerance": "relative 0.1 on 8.9e-15, i.e. accept 8.01e-15 <= measured <= 9.79e-15; additionally flag measured <= 8.9e-15 as 'not worse than the paper' and record the ratio measured/8.9e-15",
+  "n_dp_repeats": 5,
+  "smoke_design": "2x2 with all margins 10, statistic anscombe only, single DP pass, no timing loop"
+ },
+ "steps": [
+  "Create the tree: condexact/ package, results/ directory; no external data or downloads are required.",
+  "Write condexact/statistics.py: expected_counts(row_margins, col_margins, N) returning E_ij = a_i b_j / N; SUMMANDS = {'anscombe','pearson','g2','cr23'} each a vectorized function s(O_array, E) -> float array; guard O=0 for g2/cr23; provide cell_summation(order, margins, summand) returning the S contribution for a whole table for the enumerator.",
+  "Write condexact/fibre.py: enumerate_tables(row_margins, col_margins) by recursive row-block generation (for each row choose a nonnegative composition of a_i consistent with the residual column margins); for each table compute weight prod_ij 1/O_ij! (odds all 1), normalize weights to sum 1, compute S = sum_ij s(O_ij, E_ij); return dict {'n_tables', 'atoms' (S rounded to repr for keying, merged, with probabilities), 'moments' {mean, var, kappa3} using math.fsum over the atom map, 'max_table'}; assert every table has the exact margins.",
+  "Write condexact/moment_dp.py: moments_dp(row_margins, col_margins, summand, odds=None) implementing the state = remaining-row-capacity tuple recursion with the pruning rule, the 1/k! cell weights, the four accumulators and the forced last column; return {'A0', 'mean', 'var', 'kappa3', 'n_states', 'n_transitions'}. Add a helper assert_feasible that raises if any need_j < 0 or any pruning bound is empty on a reachable state.",
+  "Write condexact/moment_dp_dense.py (non-gating): enumerate the reachable row-capacity states per column stage into a lexicographic grid, represent the accumulators as a dense (n_states, 4) numpy array, and perform the transition as a shifted slice add; return the same three moments.",
+  "Write condexact/verify_c1.py: define DESIGNS; run enumeration then DP for the primary statistic on the 3x3 margins-6 design; assert n_tables == 406 and A0 (DP total weight) matches the enumerator's total weight to 1e-13 relative; compute the three relative errors and their maximum; time the DP with 1 warm-up + median of 5; repeat the accuracy comparison for pearson, g2, cr23; run the 2x2 margins-10 sanity design and record its table count (expect 11) and atom count (expect 6); record the 3x3 atom count (paper says 21, informative); assemble and return the metrics dict.",
+  "Write reproduce.py: argparse --smoke; on the normal path call verify_c1.run(), dump results/metrics.json with json.dump(indent=2), and print DP vs enumeration moments, per-moment and maximum relative errors, DP median wall clock in ms, fibre size and atom counts, and a final PASS/FAIL line against the paper's 8.9e-15 (both the band reading and the 'no worse than' reading).",
+  "Run the smoke test (python reproduce.py --smoke) and inspect that the 2x2 sanity design returns 11 tables, 6 atoms and agreement better than 1e-10 between DP and enumeration.",
+  "Run the full check (python reproduce.py) and read results/metrics.json; if the maximum relative error is above 1e-13, first verify A0 agreement and the 406-table count, then re-check the pruning bound (an off-by-one in need_j shows up as a mass deficit), then re-check the kappa3 expansion coefficient signs.",
+  "Record in results/metrics.json: measured max relative error, measured median DP milliseconds, per-member errors, fibre/atom counts, and the ratio to the paper value; do not modify the reported number to fit the tolerance band."
+ ],
+ "smoke_test": "python reproduce.py --smoke -> runs only the 2x2 all-margins-10 design (11 tables, 6 atoms of S) with the anscombe summand: enumerates the fibre, runs one DP pass, prints both moment triples and asserts max relative error < 1e-10 and n_tables == 11. This exercises statistics.py, fibre.py, moment_dp.py and the JSON writer end to end in well under a second.",
+ "intermediate_checks": [
+  "Fibre size: the 3x3 margins-6 enumerator must return exactly 406 tables; every table must satisfy the exact row and column sums (asserted per table) and be nonnegative.",
+  "Mass audit: the enumerated weights sum to 1 (to 1e-14) and the DP's terminal A0 equals the enumerated unnormalized total weight prod 1/O_ij! to 1e-13 relative -- this catches any pruning or transition bug before moments are compared.",
+  "Design reading: the 2x2 all-margins-10 design must give 11 tables and 6 distinct atoms of the Anscombe statistic, reproducing the paper's C4 description; the 3x3 margins-6 design's atom count is recorded and compared with the paper's 21 (informative, non-gating).",
+  "Parameter sanity: print E_ij (=2 for every cell of the 3x3 design, 5 for the 2x2), the mean/variance/third cumulant from enumeration, and confirm variance > 0 and that the Anscombe moments are close (but not equal) to the Pearson ones -- magnitudes within a factor of ~2 of each other.",
+  "Hand-computable baseline: for a tiny 2x2 with all margins 2 (3 tables, x = 0,1,2), compute the three moments by hand/Fraction and confirm both the enumerator and the DP reproduce them, so that a shared indexing bug cannot hide.",
+  "Independent-path check: confirm DP and enumeration share no code except statistics.py (no shared table generator, no shared accumulation routine), and that the optional dense DP agrees with the dict DP to 1e-12 relative.",
+  "Timing sanity: the DP must touch a number of states consistent with the state count printed by the enumerator-like grid (order 10^2), so a median wall clock in the low milliseconds is expected; a value above ~100 ms signals an accidental re-enumeration."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Agent/write time dominates: ~10 minutes to author statistics.py, fibre.py, moment_dp.py and verify_c1.py, plus the optional dense cross-check. Compute is negligible: setup ~2 min (no downloads needed; numpy/math/json only), smoke test < 1 s (11-table 2x2), full run < 5 s (406-table enumeration ~10 ms, four summands through both engines, DP timing as 1 warm-up + 5 repeats at a few ms each, plus the 2x2 and atom-count audits). Reserve the remaining slack for the one plausible failure mode: landing outside the narrow 8.0e-15..9.8e-15 band, in which case verify correctness (A0 audit, 406 count, hand-computed 2x2), report the measured value honestly, and record both the band reading and the 'no worse than 8.9e-15' reading in metrics.json."
+}

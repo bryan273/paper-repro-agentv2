@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "CoHD with Swin-Tiny backbone achieves 65.89 gIoU on the gRefCOCO validation set (Table 1, row 'CoHD (Ours)' with Swin-T).",
+  "table_ref": "Table 1",
+  "dataset": "gRefCOCO"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RobertLuo1/CoHD",
+  "https://github.com/facebookresearch/detectron2"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Training CoHD with Swin-T on gRefCOCO requires ~1 day on 8x A10 GPUs (paper states 13-18GB per GPU); on a single 8-core CPU laptop this is infeasible within a few hours, and even with a mid-range GPU it would take many hours."
+ },
+ "blockers": [
+  "Requires GPU training (8x A10 in paper, ~1 day)",
+  "Large dataset (gRefCOCO: 278k expressions, 20k images)",
+  "No pre-trained model weights provided for direct evaluation"
+ ],
+ "suitable": false,
+ "id": "2405.15658",
+ "title": "CoHD: A Counting-Aware Hierarchical Decoding Framework for Generalized Referring Expression Segmentation",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

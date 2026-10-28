@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Gmean of NS-SVDDψ0-min on the Seeds dataset (Kama target class), linear case",
+  "table_ref": "Table I",
+  "dataset": "Seeds (UCI)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement NS-SVDD (SVDD QP + Hessian-based Newton update) and the full hyperparameter grid search (5-fold CV over ~5x7x7x5x2 settings) with 5 random splits on a tiny dataset; all CPU work, but reimplementation and debugging dominate."
+ },
+ "blockers": [
+  "No code released; algorithm must be reimplemented from equations",
+  "Exact hyperparameter search protocol and random splits not fully specified, so exact cell value may not match"
+ ],
+ "suitable": true,
+ "id": "2309.13960",
+ "title": "Newton Method-based Subspace Support Vector Data Description",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,161 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "How the dominant classes c_L and c_R are chosen when the left or right partition has a class-count tie (or the node is multiclass and no class dominates).",
+  "options": [
+   "lowest class index among tied majority classes",
+   "the node-level majority class",
+   "the class of the nearest example on that side",
+   "random tie-break with seed 42"
+  ],
+  "chosen": "lowest class index among tied majority classes (deterministic)",
+  "rationale": "The paper only says 'dominant classes on the left and right sides'; a deterministic tie-break keeps the zero-hyperparameter claim and matches sklearn's np.argmax convention on class-probability vectors.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "where cL and cR are the dominant classes on the left and right sides of θ∗ respectively",
+  "page": 9
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "What happens numerically when δ_M = 0 (e.g. adjacent opposite-class examples coincide, or the feature is duplicated), since w_L = (θ + δ − x_f)/(2δ) divides by zero.",
+  "options": [
+   "treat δ = 0 as decisive hard routing and skip blending",
+   "add an epsilon floor to δ",
+   "raise an error"
+  ],
+  "chosen": "δ = 0 disables the zone at that node (decisive hard routing)",
+  "rationale": "Consistent with the paper's statement that δ = 0 recovers standard binary CART behaviour; no epsilon is introduced anywhere in the paper.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Setting δ = 0 recovers standard binary CART behaviour.",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The 'feature range' used for the 25% clamp is not defined (full dataset vs node subset; raw vs standardised units).",
+  "options": [
+   "max−min of the feature column among the training examples reaching the node",
+   "max−min of the feature column over the whole training fold",
+   "max−min over the full dataset"
+  ],
+  "chosen": "max−min of the feature column among the node's own training examples (in the standardised space used for fitting)",
+  "rationale": "Section 3.4 states each method receives the node's feature column c ∈ R^n, and clamps are meant to be node-local like δ itself.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "clamped to at most 25% of the feature range to prevent degenerate cases",
+  "page": 8
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether an instance that enters uncertainty zones at two or more nodes on the same path has its child weights multiplied recursively, or whether only the first zone's blend is applied.",
+  "options": [
+   "full recursion: evaluate both subtrees and combine at every zone, multiplying weights down the path",
+   "blend only at the topmost zone and use hard routing below"
+  ],
+  "chosen": "full recursion with weight multiplication at every zone",
+  "rationale": "The paper defines the prediction rule per node and notes multi-zone traversal is negligible at depth ≤ 4, so recursion is the faithful reading and differences are numerically tiny.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "At depth ≤4, the probability of a single instance traversing two or more uncertainty zones on the same path is negligible in practice.",
+  "page": 9
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The exact 5-fold splitter configuration (shuffle on/off, random_state, class stratification details) is not specified, yet credit-g has only 1,000 examples, so fold composition can move decided accuracy by several points.",
+  "options": [
+   "sklearn StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+   "sklearn StratifiedKFold(n_splits=5, shuffle=False) as in the OpenML CC18 task definitions",
+   "OpenML task folds via openml.tasks.get_task(...).get_split"
+  ],
+  "chosen": "sklearn StratifiedKFold(n_splits=5, shuffle=True, random_state=42) as primary; report the unshuffled variant as a sensitivity check",
+  "rationale": "The paper fixes seeds at 42 but does not state the splitter; OpenML CC18 tasks ship their own folds, which is the other plausible source.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether the reported per-dataset value is the mean of per-fold decided accuracies or the pooled decided accuracy over all out-of-fold predictions.",
+  "options": [
+   "mean of the 5 per-fold decided accuracies",
+   "pooled decided accuracy over the union of out-of-fold decided predictions"
+  ],
+  "chosen": "mean of the 5 per-fold decided accuracies",
+  "rationale": "The paper describes the values as 5-fold CV means, and mean-of-folds is the sklearn cross_val_score default; the two differ slightly because the decided sets have different sizes per fold.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Results are 5-fold CV means under probabilistic routing.",
+  "page": 24
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "How credit-g's categorical/nominal attributes are handled: the paper only says features are standardised, implying all 20 columns are used as numeric features for threshold splits.",
+  "options": [
+   "load credit-g from OpenML and treat every column as numeric (sklearn-style axis-aligned thresholds)",
+   "one-hot encode nominal columns",
+   "ordinal encode categoricals"
+  ],
+  "chosen": "load OpenML credit-g as provided and treat all features as numeric (no encoding beyond the dataset's own coding)",
+  "rationale": "The paper never mentions categorical handling, standardises all features, and uses plain sklearn CART, which only supports numeric splits; standardising implies numeric columns.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Features are standardised within each fold (StandardScaler fitted on training data only)",
+  "page": 13
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Whether sample weights are passed to the tree (class balancing) — relevant since mammography is 2.3% positive and credit-g is 70/30 — and whether δ estimators use those same weights.",
+  "options": [
+   "uniform weights everywhere",
+   "class_weight='balanced' in both the ternary tree and the CART baseline",
+   "balanced only for the neural/medical datasets"
+  ],
+  "chosen": "uniform weights everywhere, identical for the ternary tree and the CART baseline",
+  "rationale": "The paper reports sklearn CART as the baseline with no mention of class_weight, and the margin estimator (Eq. 10) does not use weights at all.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "the sample weights w ∈Rn, the optimal threshold θ∗",
+  "page": 8
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "What to report if a fold produces zero decided instances (possible on small, heavily flagged configurations such as credit-g with class-overlap), since decided accuracy is then undefined.",
+  "options": [
+   "skip the fold and average the remaining folds",
+   "fall back to overall accuracy for that fold",
+   "report NaN"
+  ],
+  "chosen": "skip folds with an empty decided set and average the remaining folds (record how many were skipped)",
+  "rationale": "Not discussed in the paper; skipping preserves the meaning of 'accuracy restricted to decided instances'.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Minimum node size / stopping rule for growing the depth-4 trees (minimum samples to split, minimum leaf size, whether pure nodes stop early).",
+  "options": [
+   "sklearn defaults (min_samples_split=2, min_samples_leaf=1)",
+   "min_samples_leaf tuned to keep δ_NB meaningful",
+   "explicit N ≥ 500 rule applied to node-bootstrap"
+  ],
+  "chosen": "sklearn CART defaults for both the ternary tree and the baseline",
+  "rationale": "The paper only fixes max_depth = 4 and compares against a default sklearn DecisionTreeClassifier, so matching defaults keeps the comparison like-for-like.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "All ternary trees use max_depth = 4.",
+  "page": 13
+ }
+]

@@ -1,0 +1,32 @@
+{
+ "route": "paper_only",
+ "why": "No author repository is present on this machine (repository.cloned=false, repository.url=null). The only code pointer is an anonymous.4open.science link (SVEAD-2B97), which is not cloned and is typically not fetchable/durable, so there is no runnable authors' entrypoint here. With no code, no weights and no configs to port, the only viable path is to reimplement SVEAD from the paper description (random Voronoi anchor sampling, normalized cell-relative distance weighted by local scale, averaging over t=100 partitions) and run it against the ADBench cardio dataset, which is a small, publicly obtainable dataset.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Author SVEAD source code (only an anonymous.4open.science link given; not cloned, no local copy)",
+  "Trained/selected configurations (m-selection procedure, normalization/scaling details, anchor sampling distribution)",
+  "ADBench cardio dataset file (needs download from Minqi824/ADBench; not present locally)",
+  "All 45 ADBench datasets (only needed for C3/C4, out of scope for the match target)"
+ ],
+ "blockers_seen": [
+  "No GPU on this machine, so C6 (GPU <1 s at 500k instances) is untestable; CPU-only",
+  "Code link is anonymous.4open.science and unverified/uncloned; may be inaccessible or time-limited",
+  "Paper does not fully specify anchor sampling distribution, normalization constant and exact m-selection criterion, so some reimplementation choices will be inferred",
+  "ADBench cardio must be fetched rather than read from a local repo"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Reimplementation (~15-25 min) plus C1 runs on cardio (1831x21, small): a full m-grid (8 values) x 5 repeats at ~1 min each is ~40 min; a reduced protocol (8 m values x 3 repeats, or 4 m values x 5 repeats) is ~15-25 min. Total ~30-50 min, comfortably inside the 90-minute budget.",
+  "fits_budget": true,
+  "scale_down_plan": "Prioritize C1 exactly as specced (m in {2^1..2^8}, t=100) if time allows; otherwise shrink repeats from 5 to 3 and/or narrow the m-grid to 4 values around the apparent optimum. Expected effect: mean AUC-ROC may drift by roughly the reported std (~0.006-0.03), so the reproduced number should be reported with its spread and flagged as a reduced protocol. C3/C4 (45 datasets) and C5/C6 (500k-instance scalability / GPU timing) are out of scope for this budget and for a GPU-less machine.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

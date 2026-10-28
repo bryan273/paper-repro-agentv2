@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Final global clustering coefficient C > 0.5 for the entropy-driven rewiring model at (q=0.9, r=0.9, beta=128), N=100, K=4 ring lattice, T=3e6, theta=100, averaged over 10 trials",
+  "table_ref": "Fig. 2a (heatmap cell at q=0.9, r=0.9, beta=128)",
+  "dataset": "synthetic Quoter-model simulation (Zipf vocabulary z=1000, alpha=1.5; Poisson text length lambda=3)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "No code released; the agent must reimplement the Quoter model, the O(t^2) match-length cross-entropy estimator (paper cites a C++ implementation [24] but does not link it), softmax rewiring, and Louvain metrics, then run T=3e6 timesteps x 10 trials for one (q,r,beta) cell; the full heatmap is 21x21x8 parameter sets x 10 trials, which is far beyond a few hours on 8 CPU cores."
+ },
+ "blockers": [
+  "no code or configs released",
+  "cross-entropy match-length estimator must be reimplemented (cited C++ tool not linked)",
+  "T=3e6 timesteps x 10 trials per cell is heavy for pure Python; needs optimized C/C++ or vectorized implementation",
+  "full parameter sweep (q,r in 21 values, beta in 8 values, 10 trials) is infeasible in a few hours"
+ ],
+ "suitable": false,
+ "id": "2610.28016",
+ "title": "An Information-Theoretic Model for the Evolution of a Social Network",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

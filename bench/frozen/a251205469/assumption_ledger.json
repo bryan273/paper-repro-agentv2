@@ -1,0 +1,259 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Exact Breast Cancer file/version and target encoding are not pinned down.",
+  "options": [
+   "sklearn.datasets.load_breast_cancer",
+   "UCI wdbc.data with M/B labels",
+   "Kaggle Breast Cancer Wisconsin CSV"
+  ],
+  "chosen": "sklearn.datasets.load_breast_cancer with malignant=1",
+  "rationale": "Matches 569 samples and 30 features and is the standard near-linear benchmark; the paper cites UCI but does not name a CSV.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "This dataset contains 569 instances with 30 real-valued features",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The Heart Disease source/version is ambiguous because UCI Cleveland has 303 rows while the paper reports 1,025 rows.",
+  "options": [
+   "UCI Cleveland 303 rows",
+   "Kaggle heart.csv 1,025 rows",
+   "Statlog 270 rows"
+  ],
+  "chosen": "Kaggle heart.csv with 1,025 rows and 13 features, binary target",
+  "rationale": "The paper's sample count and feature count match the 1,025-row combined Heart Disease file, not the 303-row Cleveland file.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The Heart Disease dataset contains 1,025 instances with 13 clinical attributes",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Heart Disease contains nominal/categorical clinical attributes; the paper does not state whether to one-hot encode them.",
+  "options": [
+   "Treat integer codes as numeric",
+   "One-hot encode nominal attributes",
+   "Target encode categorical attributes"
+  ],
+  "chosen": "Treat integer codes as numeric to preserve the 13-feature count; no one-hot expansion",
+  "rationale": "The paper says 13 clinical attributes and only mentions z-score scaling for linear models, not categorical expansion.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The Heart Disease dataset contains 1,025 instances with 13 clinical attributes",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Pima Diabetes contains zero values that are often treated as missing, but the paper does not mention imputation.",
+  "options": [
+   "Leave zeros as numeric",
+   "Median impute inside CV",
+   "Mean impute inside CV",
+   "Drop affected rows"
+  ],
+  "chosen": "Leave zeros as numeric (no imputation) to preserve 768 records",
+  "rationale": "The paper reports 768 records and does not describe an imputation step; leaving zeros is the simplest faithful default.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The Pima Indians Diabetes dataset contains 768 records of female patients of Pima Indian heritage",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Credit Card Fraud has 28 PCA components plus Time and Amount; the paper calls all 30 'PCA-derived'.",
+  "options": [
+   "Use V1–V28 plus Time and Amount as 30 features",
+   "Use only V1–V28",
+   "Drop Time and keep Amount"
+  ],
+  "chosen": "Use all 30 columns (V1–V28, Time, Amount), scaling only inside pipelines",
+  "rationale": "This matches the stated 284,807 × 30 shape; the 'PCA-derived' wording is loose about Time and Amount.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The table caption says std across 5 seeds, while the methods say across seeds and folds.",
+  "options": [
+   "Std of five per-seed mean accuracies",
+   "Std over all seed×fold scores",
+   "Std over folds for one seed"
+  ],
+  "chosen": "Std of five per-seed mean test accuracies, using the table caption as the primary convention",
+  "rationale": "Table III reports 'mean ± std across 5 seeds'; per-seed means avoid inflating n by treating folds as independent.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "TOP-3 MODELS PER DATASET BY TEST ACCURACY (MEAN ± STD ACROSS 5 SEEDS).",
+  "page": 6
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Exact hyperparameter grids are not listed; only 'compact grids' and typical ranges are given.",
+  "options": [
+   "Small grids such as C ∈ {0.1, 1, 10}, gamma ∈ {scale, 0.01, 0.1}",
+   "All scikit-learn defaults",
+   "Random search"
+  ],
+  "chosen": "Compact 2–3 value grids per model family, selected by CV F1, and record the grids in the config",
+  "rationale": "The paper explicitly says compact grids with 2–3 values, not exhaustive or random search.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "GridSearchCV over compact grids (typically 2–3 values for C, depths, learning rates, and n-estimators)",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "It is unclear whether GridSearchCV is nested inside each outer CV fold or run once before the final cross-validation.",
+  "options": [
+   "Nested GridSearchCV inside each outer training fold",
+   "Tune once on full data then cross-validate",
+   "Use fixed defaults"
+  ],
+  "chosen": "Nested GridSearchCV inside each outer training fold to avoid leakage",
+  "rationale": "The paper only says GridSearchCV; nested tuning is the defensible convention for repeated-CV estimates.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "We perform light hyperparameter tuning with GridSearchCV over compact grids",
+  "page": 4
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The SVM probability-calibration mechanism is not specified.",
+  "options": [
+   "SVC(probability=True)",
+   "CalibratedClassifierCV wrapping SVC",
+   "Use decision_function threshold instead of probabilities"
+  ],
+  "chosen": "SVC(kernel='rbf', probability=True) inside the pipeline",
+  "rationale": "Scikit-learn's probability=True implements Platt scaling and matches the paper's 'probability calibration' wording.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "SVM (RBF): RBF-kernel SVM with probability calibration; features standardized.",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The exact seeding of stochastic estimators and CV splitters is not specified beyond the five seed values.",
+  "options": [
+   "Set random_state=seed on CV splitter and all stochastic estimators",
+   "Seed only the CV split",
+   "Set a global NumPy seed only"
+  ],
+  "chosen": "Set random_state=seed on the CV splitter and all stochastic estimators; repeat each seed",
+  "rationale": "Controlling both split and estimator randomness is needed for reproducible five-seed means and stds.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "five independent random seeds (42, 123, 456, 789, 1011)",
+  "page": 4
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Positive-class mapping and F1 averaging are not fully specified per dataset.",
+  "options": [
+   "Malignant/disease/fraud as positive with binary F1",
+   "Benign/healthy as positive",
+   "Macro F1 on all datasets"
+  ],
+  "chosen": "Positive class = malignant for Breast Cancer, disease presence for Heart/Pima, fraud=1 for Credit; binary F1 except explicit fraud-class F1",
+  "rationale": "The paper reports binary F1 for two-class problems and a separate fraud-class F1.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "mean and standard deviation of test F1-score (macro for multiclass, binary for two-class problems)",
+  "page": 4
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The single seed for the Credit Card Fraud subsample is not identified.",
+  "options": [
+   "Use seed 42",
+   "Use seed 123",
+   "Use the first seed in the list"
+  ],
+  "chosen": "Use seed 42 for the stratified 10% subsample and the 3-fold CV",
+  "rationale": "The paper lists 42 first among its seeds but does not identify the fraud seed; 42 is a reasonable deterministic choice.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "a 10% stratified subsample that preserves class imbalance, followed by three-fold stratified CV with a single seed",
+  "page": 4
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "The number of folds for the three smaller datasets is only given as 'up to five' with capping.",
+  "options": [
+   "Use 5 folds for all three smaller datasets",
+   "Use min(5, minimum per-class count) folds",
+   "Use 10 folds"
+  ],
+  "chosen": "Use 5 folds for Breast Cancer, Heart Disease, and Pima, capping by the minimum per-class count if lower",
+  "rationale": "The paper states up to five folds with capping; all three datasets have enough minority samples for five folds.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "For the three smaller datasets we use up to five folds, with k capped by the minimum per-class count",
+  "page": 4
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Whether class weighting is applied to all datasets or only imbalanced ones is not defined.",
+  "options": [
+   "Always use class_weight='balanced' on LR/trees/RF",
+   "Only use weighting when imbalance ratio > 1.5",
+   "Never weight on Heart Disease"
+  ],
+  "chosen": "Use class_weight='balanced' for LR, Decision Tree, and Random Forest on all datasets, and scale_pos_weight=neg/pos for XGBoost/LightGBM/CatBoost",
+  "rationale": "The paper gives a general class-imbalance handling bullet without a per-dataset threshold; Heart Disease is roughly balanced so the effect is small.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "class-weighted LR, trees, and Random Forests (larger weights for minority)",
+  "page": 4
+ },
+ {
+  "id": "A15",
+  "by": "reader",
+  "gap": "It is unclear whether accuracy is averaged per fold, per seed, or over pooled predictions.",
+  "options": [
+   "Average fold accuracies within each seed",
+   "Pool test predictions across folds",
+   "Report one accuracy per seed from a holdout split"
+  ],
+  "chosen": "Compute accuracy per fold, average folds within a seed, then mean/std across seeds",
+  "rationale": "This matches repeated stratified CV and the table's five-seed reporting unit.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "mean and standard deviation of train and test accuracy across seeds and folds",
+  "page": 4
+ },
+ {
+  "id": "A16",
+  "by": "reader",
+  "gap": "The Wilcoxon pairing unit is ambiguous: the paper mentions seeds × folds and a maximum W of 30, which is inconsistent with 5 × 5 = 25.",
+  "options": [
+   "Pair all seed×fold scores",
+   "Pair five per-seed mean scores",
+   "Pair fold scores within seeds"
+  ],
+  "chosen": "Pair all seed×fold scores when the same folds are used across models; if fold matching fails, pair seed-level means",
+  "rationale": "The Wilcoxon test is described as paired over CV scores across seeds and folds; preserving fold pairing is the most faithful option.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "pairwise Wilcoxon signed-rank tests (α = 0.05, two-tailed) between the top-performing models on each dataset",
+  "page": 5
+ }
+]

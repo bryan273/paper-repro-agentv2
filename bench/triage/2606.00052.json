@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Product-Aware autoencoder average F1-score of 0.5322 vs Global 0.4643 on the Extended TEP fault test set (Modes 1,3,5)",
+  "table_ref": "Table III",
+  "dataset": "Extended Tennessee Eastman Process (Reinartz et al. 2021), Modes 1/3/5, 52 variables"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": 2,
+  "basis": "Small MLP autoencoders on 52-dim TEP data train in minutes on CPU, but the paper gives no code and the exact data split (SpVariation Mag 100 normal runs, 28 fault runs stratified across modes) must be reconstructed from the public Reinartz extended-TEP dataset, which is the main time cost."
+ },
+ "blockers": [
+  "No code or configs released; architecture/training described but data extraction and split must be re-implemented",
+  "Extended TEP dataset must be downloaded and parsed (large simulation files) and the specific SpVariation/fault subsets identified",
+  "Exact reproduction of 0.5322/0.4643 unlikely without the authors' precise split and thresholding details"
+ ],
+ "suitable": true,
+ "id": "2606.00052",
+ "title": "Product-Aware Deep Autoencoders for Robust Process Monitoring in Multi-Product Cyber-Physical Systems",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

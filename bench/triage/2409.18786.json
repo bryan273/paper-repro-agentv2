@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "F1 score for recognition of known/unknown on the SelfAware benchmark (3369 questions, 31% unknown) for a given LLM",
+  "table_ref": "Table 1 (benchmark description) / Section 3.1 evaluation protocol",
+  "dataset": "SelfAware (Yin et al., 2023)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/SihengLi99/LLM-Honesty-Survey"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 2,
+  "basis": "Survey paper with no experiments; reproducing a single F1 cell requires re-implementing the evaluation protocol from scratch and running a capable LLM (e.g., Llama-2-7B) over 3369 questions on CPU, which is slow but feasible."
+ },
+ "blockers": [
+  "No code or configs released (repo is only a paper list)",
+  "No experimental results in the paper to compare against",
+  "Requires re-implementing the evaluation protocol from scratch",
+  "Running a capable LLM on CPU is slow"
+ ],
+ "suitable": false,
+ "id": "2409.18786",
+ "title": "A Survey on the Honesty of Large Language Models",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

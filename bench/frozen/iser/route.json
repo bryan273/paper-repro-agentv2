@@ -1,0 +1,33 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository is cloned and contains the actual implementation (ISER.py exposes exactly the three scoring functions the claim contract needs: ISER_A, ISER_S, ISER_IF) plus the benchmark data bundled in-tree as data/*.npz, including data/18_Ionosphere.npz (351x32) which is the exact dataset for the match target C3. No weights, no exotic dependencies: the imports are numpy/scipy/sklearn/random/warnings (torch only appears in the optional ISER_GPU.py, which we do not need on a GPU-less box). What is missing is only the thin evaluation driver (the psi grid search over {2,4,...,256} and the 5-repeat AUC-ROC loop) that produced Table IV; that is a small harness written around the released class API, which is fully documented in the README, so it qualifies as 'small environment fix' rather than a rebuild.",
+ "repo": "https://github.com/charles-cao/ISER",
+ "entrypoints": [
+  "ISER.py",
+  "demo.ipynb",
+  "data/18_Ionosphere.npz"
+ ],
+ "missing_artifacts": [
+  "Evaluation/driver script that performs the per-dataset psi search over {2,4,...,256} and averages AUC-ROC over 5 repetitions (Table III/IV loop) - released only as the demo notebook, not as a runnable script",
+  "Exact random seeds / repetition indices used for the 5 runs (random_state is exposed but the paper's seeds are not stated)",
+  "Baseline iForest value 0.8530 for Ionosphere (baseline table rows) - PyOD would need to be installed to regenerate it, not required for the C3 target itself"
+ ],
+ "blockers_seen": [
+  "ISER_GPU.py imports torch and is CUDA-oriented; unusable on this machine (no GPU), but it is optional and the CPU path in ISER.py covers all three scores",
+  "data/ filenames (18_Ionosphere.npz, 36_speech.npz, ...) do not match Table II names one-to-one; the Ionosphere npz must be sanity-checked for shape (351,32) and 126 positives before trusting the AUC"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Match target C3 (Ionosphere ISER-IF): building Phi is ~200 partitionings x (n=351 x psi<=256) neighbour-radius lookups, which is milliseconds-to-seconds per psi; the full psi grid {2,4,...,256} (8 values) x 5 repeats x a 100-tree iForest on a 351x200 feature matrix is roughly 4-12 minutes single-process on 22 CPU cores with 15.4 GB RAM. Adding the sibling numbers (ISER-S 0.9359, ISER-A 0.9179 on the same dataset) and the speech row (n=3686, d=400, 3686x200 phi-space) stays well inside the 90-minute budget, since the shipped npz files remove all download cost.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "repo_info": {
+  "url": "https://github.com/charles-cao/ISER",
+  "cloned": true,
+  "n_files": 59,
+  "n_python": 2,
+  "python2_style_files": 0
+ }
+}

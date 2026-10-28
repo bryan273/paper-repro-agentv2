@@ -1,0 +1,27 @@
+{
+ "target": {
+  "statement": "Leave-one-out accuracy of classifying OCC models trained on normal vs abnormal KDD Cup 1999 subsets (2-class task) is 100.0%.",
+  "table_ref": "Table 2, row 'normal (963) vs abnormal (3927)', column 'leave-one-out'",
+  "dataset": "KDD Cup 1999 (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ToshiHayashi/ClassOCC"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "KDD Cup 1999 is ~0.5 GB; training 200 sklearn OCC models on ~1k-4k samples and computing 200x200 Spearman correlations on 4941-length rankings is minutes of CPU work; the paper's own timing shows 4400 rankings take ~4 min with their fast Spearman, so 200 rankings is seconds."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.17858",
+ "title": "Meta-classification of one-class classification models using ranking correlation and nearest neighbor",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

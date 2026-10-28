@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "StyleHEAT generates 1024x1024 one-shot talking face video from a single source image driven by a video, achieving higher resolution than prior methods (Table 1 comparison).",
+  "table_ref": "Table 1",
+  "dataset": "HDTF (test set) / CelebA-HQ source images"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Requires training two motion generators (200K iterations each on VoxCeleb) plus joint fine-tuning (20K iterations) on HDTF, all with a frozen StyleGAN2 1024x1024 generator and GAN inversion; no code released, so the entire pipeline must be reimplemented from scratch."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires training multiple networks for hundreds of thousands of iterations",
+  "Needs large datasets (VoxCeleb ~100K videos, HDTF 362 videos) and StyleGAN2 1024x1024 pretrained model",
+  "GPU with substantial VRAM required for StyleGAN2 1024x1024 and training"
+ ],
+ "suitable": false,
+ "id": "2203.04036",
+ "title": "StyleHEAT: One-Shot High-Resolution Editable Talking Face Generation via Pre-trained StyleGAN",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

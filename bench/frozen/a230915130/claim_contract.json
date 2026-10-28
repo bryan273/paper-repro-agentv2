@@ -1,0 +1,270 @@
+{
+ "title": "Understanding the Structure of QM7b and QM9 Quantum Mechanical Datasets Using Unsupervised Learning",
+ "summary": "The paper asks how the internal structure of the QM7b and QM9 molecular datasets is organized and whether atomic composition can be predicted from quantum-derived properties for inverse molecular design. It applies intrinsic-dimension estimation, UMAP, tree-SNE/alpha-clustering, SUOD outlier detection, and regression-tree models predicting the number of atoms from original or 2D embedded features. The main result is that the intrinsic dimension is about 25% of the descriptor space, QM7b is two-cluster while QM9 has an inner clustered core plus an outlier shell, and atom count is highly predictable from original properties, with QM7b test MSE 0.1397 and R 0.9906.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Regression tree predicting the number of atoms from the 14 original QM7b properties on the test set achieves MSE 0.1397, RMSE 0.3737, MAE 0.2451, R 0.9906, with 101 rules.",
+   "metric": "MSE",
+   "dataset": "QM7b",
+   "split": "test set (random 10% of 7211 molecules)",
+   "value": 0.1397,
+   "unit": "MSE (atom-count squared)",
+   "higher_is_better": false,
+   "table_ref": "Table II, QM7b, row 14 original, columns MSE/RMSE/MAE/R/nbrOfRules",
+   "config_for_value": "Regression tree model; 14 original z-scored QM7b properties; target = number of atoms per molecule; random 90%/10% training/testing split; test-set evaluation.",
+   "reported_spread": null,
+   "est_compute": "CPU, a few minutes (7,211 x 14 regression tree)",
+   "quote": "QM7b Features MSE RMSE MAE R nbrOfRules 2 generated 1.0525 1.0259 0.7146 0.9266 70 14 original 0.1397 0.3737 0.2451 0.9906 101",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "Regression tree predicting the number of atoms from the 2 generated features on QM7b test set achieves MSE 1.0525, RMSE 1.0259, MAE 0.7146, R 0.9266, with 70 rules.",
+   "metric": "MSE",
+   "dataset": "QM7b",
+   "split": "test set (random 10% of 7211 molecules)",
+   "value": 1.0525,
+   "unit": "MSE (atom-count squared)",
+   "higher_is_better": false,
+   "table_ref": "Table II, QM7b, row 2 generated, columns MSE/RMSE/MAE/R/nbrOfRules",
+   "config_for_value": "Regression tree model; 2 generated UMAP/PCA embedding features; target = number of atoms per molecule; random 90%/10% training/testing split; QM7b test set.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "QM7b Features MSE RMSE MAE R nbrOfRules 2 generated 1.0525 1.0259 0.7146 0.9266 70",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "Regression tree predicting the number of atoms from the 14 original QM9 properties as printed in Table II achieves MSE 0.0061, RMSE 0.0781, MAE 0.0315, R 0.9997, with 46 rules.",
+   "metric": "MSE",
+   "dataset": "QM9",
+   "split": "test set (random 10% of 133,885 molecules)",
+   "value": 0.0061,
+   "unit": "MSE (atom-count squared)",
+   "higher_is_better": false,
+   "table_ref": "Table II, QM9, row 14 original, columns MSE/RMSE/MAE/R/nbrOfRules",
+   "config_for_value": "Regression tree model; row labeled 14 original in Table II (paper text says QM9 has 19 properties); target = number of atoms per molecule; random 90%/10% split; QM9 test set.",
+   "reported_spread": null,
+   "est_compute": "CPU, tens of minutes to a few hours (133,885 x 14/19 regression tree)",
+   "quote": "QM9 Features MSE RMSE MAE R nbrOfRules 2 generated 0.8917 0.9443 0.3382 0.9475 358 14 original 0.0061 0.0781 0.0315 0.9997 46",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "Regression tree predicting the number of atoms from the 2 generated features on QM9 test set achieves MSE 0.8917, RMSE 0.9443, MAE 0.3382, R 0.9475, with 358 rules.",
+   "metric": "MSE",
+   "dataset": "QM9",
+   "split": "test set (random 10% of 133,885 molecules)",
+   "value": 0.8917,
+   "unit": "MSE (atom-count squared)",
+   "higher_is_better": false,
+   "table_ref": "Table II, QM9, row 2 generated, columns MSE/RMSE/MAE/R/nbrOfRules",
+   "config_for_value": "Regression tree model; 2 generated embedding features; target = number of atoms per molecule; random 90%/10% split; QM9 test set.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes to hours",
+   "quote": "QM9 Features MSE RMSE MAE R nbrOfRules 2 generated 0.8917 0.9443 0.3382 0.9475 358",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "SUOD outlier detection on QM9 yields Nout = 6430 outliers, an outlier/inliner ratio of 4.8%, using a 0.77 threshold from the 1.5*IQR rule.",
+   "metric": "outlier/inliner ratio",
+   "dataset": "QM9",
+   "split": "full dataset",
+   "value": 4.8,
+   "unit": "% of N",
+   "higher_is_better": false,
+   "table_ref": "Section IV-A, paragraph on SUOD outliers (Fig. 4)",
+   "config_for_value": "SUOD ensemble combining CBLOF, HBOS, LODA, LOF, and Isolation Forest; empirical SUOD score distribution; threshold 0.77 from 1.5*InterquartileRange rule.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes to hours (SUOD on 133,885 x 19)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C6",
+   "statement": "For QM7b, the largest stable alpha-clustering interval is alpha levels [1,6] with 2 clusters.",
+   "metric": "stable cluster count",
+   "dataset": "QM7b",
+   "split": "full dataset (unsupervised)",
+   "value": 2,
+   "unit": "clusters",
+   "higher_is_better": false,
+   "table_ref": "Section IV-A, Fig. 2a caption and text",
+   "config_for_value": "tree-SNE with 100 alpha levels; alpha-clustering stability interval [1,6].",
+   "reported_spread": null,
+   "est_compute": "CPU, hours (tree-SNE 100 levels on 7,211 molecules)",
+   "quote": "The curly brace between the horizontal dashed lines indicates the largest α-level interval ([1,6]) with a stable number of clusters (2).",
+   "page": 5
+  },
+  {
+   "id": "C7",
+   "statement": "For QM9, the largest stable alpha-clustering interval is alpha levels [13,20] with 33 clusters.",
+   "metric": "stable cluster count",
+   "dataset": "QM9",
+   "split": "full dataset (unsupervised)",
+   "value": 33,
+   "unit": "clusters",
+   "higher_is_better": false,
+   "table_ref": "Section IV-A, Fig. 2b caption and text",
+   "config_for_value": "tree-SNE with 100 alpha levels; alpha-clustering stability interval [13,20].",
+   "reported_spread": null,
+   "est_compute": "CPU, several hours to a day (tree-SNE 100 levels on 133,885 molecules)",
+   "quote": "cluster stability is found at higher levels ([13,20]), with 33 clusters, indicated by the curly braces between the horizontal dashed lines.",
+   "page": 5
+  },
+  {
+   "id": "C8",
+   "statement": "The consensus intrinsic-dimension estimates for QM9 have mean 5.088 and median 4.469, giving an Idim/Nv ratio in [0.235, 0.268].",
+   "metric": "mean intrinsic dimension",
+   "dataset": "QM9",
+   "split": "full dataset (unsupervised)",
+   "value": 5.088,
+   "unit": "dimensions",
+   "higher_is_better": false,
+   "table_ref": "Section IV-A, text after Table I",
+   "config_for_value": "Consensus of intrinsic-dimension estimators (DANCo, CorrInt, FisherS, MiND ML, MLE, TLE, MOM, lPCA, TwoNN) on z-scored QM9 properties.",
+   "reported_spread": null,
+   "est_compute": "CPU, hours (multiple ID estimators on 133,885 x 19)",
+   "quote": "The mean and median dimensions are 5.088 and 4.469, respectively, for a Idim/Nv ratio in the [0.235, 0.268] range.",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest claim that still shows the paper's central predictability result: QM7b has only 7,211 molecules and 14 original properties, while QM9 has 133,885 molecules and is much more expensive; C1 is the paper's headline QM7b 14-original regression-tree row and matches the user hint."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: the primary target metric MSE is unbounded and the paper reports no std over repeated runs for this value, so use a 10% relative band around 0.1397; RMSE/MAE are treated analogously."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the QM7b dataset with 7,211 molecules and the 14 original property predictors.",
+   "cite": "Section II, QM7b dataset description",
+   "quote": "QM7b is composed of 7211 objects described in terms of 14 properties representing the inputs (Coulomb matrices).",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Convert all original property values to z-scores before modeling.",
+   "cite": "Section II-A, Preprocessing",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R3",
+   "stmt": "Use zero-mean, unit-variance standardized properties as the common input scale.",
+   "cite": "Section II-A, Preprocessing",
+   "quote": "With the new variables having zero mean and unit variance, all properties are expressed in the same unit of measure",
+   "page": 2
+  },
+  {
+   "id": "R4",
+   "stmt": "Set the prediction target to the number of atoms in the molecule.",
+   "cite": "Section IV-A, regression tree predictability assessment",
+   "quote": "using the number of atoms in the molecule as the target.",
+   "page": 7
+  },
+  {
+   "id": "R5",
+   "stmt": "Evaluate regression tree models on a random 90%/10% training/testing split.",
+   "cite": "Section IV-A, regression tree predictability assessment",
+   "quote": "was made with regression tree models using a random 90%/10% training/testing split.",
+   "page": 6
+  },
+  {
+   "id": "R6",
+   "stmt": "Use regression tree models rather than a complex black-box regressor.",
+   "cite": "Section IV-A, regression tree predictability assessment",
+   "quote": "They were used because of a trade-off between their simplicity and their ability to work with either a small or large number of predictor features",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Report test-set MSE, RMSE, MAE, R, and nbrOfRules for QM7b and QM9 in Table II form.",
+   "cite": "Section IV-A and Table II",
+   "quote": "The results for the testing sets of both QM7b and QM9 are shown in Table II and Fig. 6.",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Reproduce the QM7b 14-original row: MSE 0.1397, RMSE 0.3737, MAE 0.2451, R 0.9906, nbrOfRules 101.",
+   "cite": "Table II, QM7b rows",
+   "quote": "QM7b Features MSE RMSE MAE R nbrOfRules 2 generated 1.0525 1.0259 0.7146 0.9266 70 14 original 0.1397 0.3737 0.2451 0.9906 101",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Reproduce the QM7b 2-generated-features row: MSE 1.0525, RMSE 1.0259, MAE 0.7146, R 0.9266, nbrOfRules 70.",
+   "cite": "Table II, QM7b row 2 generated",
+   "quote": "QM7b Features MSE RMSE MAE R nbrOfRules 2 generated 1.0525 1.0259 0.7146 0.9266 70",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Reproduce the QM9 Table II rows as printed, including the 14-original and 2-generated-features entries.",
+   "cite": "Table II, QM9 rows",
+   "quote": "QM9 Features MSE RMSE MAE R nbrOfRules 2 generated 0.8917 0.9443 0.3382 0.9475 358 14 original 0.0061 0.0781 0.0315 0.9997 46",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "For outlier analysis, use the SUOD ensemble with CBLOF, HBOS, LODA, LOF, and Isolation Forest.",
+   "cite": "Section III-B, Outlier Detection",
+   "quote": "using the following combination of state-of-the-art individual techniques: CBLOF [17], HBOS [13], LODA [30], LOF [8], and Isolation Forest [24].",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Compute tree-SNE dendrograms with 100 stacked alpha levels.",
+   "cite": "Section IV-A, tree-SNE clustering",
+   "quote": "The tree-SNE dendrogram was computed with 100 alpha levels in order to better appreciate the evolution of the successive embeddings in the hierarchy.",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "For the 2 generated features, use the canonical UMAP mapping composed with PCA to the target dimension.",
+   "cite": "Section III-A2, Manifold Learning",
+   "quote": "The final transformation is given by the function composition φ = (U ◦P)",
+   "page": 3
+  },
+  {
+   "id": "R14",
+   "stmt": "Use t-SNE perplexity starting at 365 and decreasing to 1.06 for the tree-SNE hierarchy.",
+   "cite": "Section IV-A, tree-SNE clustering",
+   "quote": "a relatively higher value (365, because of the large size of the molecule dataset), to a small value (1.06)",
+   "page": 4
+  },
+  {
+   "id": "R15",
+   "stmt": "Run 1,000 t-SNE iterations per level in the tree-SNE hierarchy.",
+   "cite": "Section IV-A, tree-SNE clustering",
+   "quote": "The number of iterations for the computation of the R19 →R t-SNE mappings required by each level was set to 1000 to ensure good convergence.",
+   "page": 5
+  }
+ ],
+ "data": [
+  {
+   "name": "QM7b",
+   "how_to_get": "Public QM7b dataset from the quantum-machine.org dataset collection (http://quantum-machine.org/datasets/); also available through MoleculeNet/DeepChem QM7b loaders."
+  },
+  {
+   "name": "QM9",
+   "how_to_get": "Public QM9 dataset from the quantum-machine.org dataset collection (http://quantum-machine.org/datasets/); also available through MoleculeNet/DeepChem QM9 loaders."
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2309.15130",
+  "kind": "arxiv",
+  "arxiv_id": "2309.15130",
+  "url": "https://arxiv.org/abs/2309.15130",
+  "title": "Understanding the Structure of QM7b and QM9 Quantum Mechanical Datasets Using Unsupervised Learning",
+  "pages": 8
+ }
+}

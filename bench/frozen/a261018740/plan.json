@@ -1,0 +1,95 @@
+{
+ "approach": "We treat this as a full-release reproduction of C1 and do not reimplement or modify the authors' search, static checker, or exact oracle. A thin reproduce.py verifies the archived certificate's SHA-256, invokes the authors' pure-Python static checker and independent exact path oracle on certificates/V7_16_le28/select_7th_of_16_28cmp.rs, parses the computed worst-case depth, and writes results/metrics.json. The mandatory path uses only Python stdlib and takes seconds; Rust re-search/randtest and Lean kernel checks are optional and skipped because only python, pip, and git are available. The expected exact result is depth 28 for n=16, 1-based rank 7 / 0-based rank 6, with 329 functions. The checksum, checker, and oracle together pin C1; the Lean proof is recorded as not run rather than silently claimed.",
+ "files": [
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin orchestrator: verify SHA-256 of the target certificate, invoke the authors' static checker and exact path oracle via subprocess using sys.executable -I, parse the computed worst-case depth/function count, enforce C1 checks, and write results/metrics.json plus an optional --smoke result. It must not modify or reimplement checker/oracle/search code.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "scope": "C1 only; C2-C7 are not required for the match target",
+  "repo_url": "https://github.com/JCremerr/selection-7-of-16",
+  "checkout": "use the existing clone at repo root; if absent, git clone into repo root",
+  "certificate": "certificates/V7_16_le28/select_7th_of_16_28cmp.rs (paper Table 3)",
+  "optional_alt_certificate": "certificates/V7_16_le28/select_7th_of_16_28cmp_alt.rs (A1, optional second witness, not required)",
+  "sha256sums_file": "certificates/V7_16_le28/SHA256SUMS",
+  "certificate_sha256_expected_prefix": "eb8f064c12bb (paper Table 3)",
+  "certificate_function_count_expected": "329 (paper Table 3)",
+  "n": "16 (paper C1)",
+  "one_based_rank_i": "7 (paper C1)",
+  "zero_based_rank_r": "6 (A4, certificate/Lean convention)",
+  "expected_worst_case": "28 (paper C1, Table 3)",
+  "metric_unit": "comparisons",
+  "higher_is_better": false,
+  "tolerance": {
+   "type": "relative",
+   "value": "0.1 (contract)",
+   "note": "the quantity is an exact integer depth; faithful reproduction must equal 28. Because the contract says any computed value above 28 must be recorded as failed, the effective acceptance is computed_worst_case == 28, not merely <= 30.8"
+  },
+  "checker_script": "code/verifier/verify_rs_algorithm.py (authors' code, read-only)",
+  "checker_args": [
+   "--expect-n",
+   "16",
+   "--expect-i",
+   "7",
+   "--expect-worst",
+   "28"
+  ],
+  "oracle_script": "code/independent_checks/checker/pathcheck.py (authors' code, read-only)",
+  "oracle_cwd": "code/independent_checks/checker",
+  "python_flags": [
+   "-I"
+  ],
+  "subprocess_timeout_seconds": "600",
+  "input_domain": "permutations of 0..15; certificate accesses inputs only by comparison (A10)",
+  "comparison_model": "decision DAG depth; return costs 0, comparison costs 1 + max(branch costs) (R1/R7)",
+  "output_metrics": "results/metrics.json",
+  "smoke_metrics": "results/smoke_metrics.json",
+  "optional_rust_search": "false (Rust toolchain not executable in this sandbox; only python/pip/git)",
+  "optional_rust_randtest": "false (2*10^7 permutations would need rustc; A7 seed not needed)",
+  "optional_lean": "false (R11 not run; Lean toolchain not available under the python/pip/git-only constraint)",
+  "optional_r16_analysis": "optional; run code/analysis/structure/r16_check.py only if it has a trivial CLI and fits in seconds (R12)"
+ },
+ "steps": [
+  "Setup: confirm the repository root contains certificates/V7_16_le28/select_7th_of_16_28cmp.rs, code/verifier/verify_rs_algorithm.py, and code/independent_checks/checker/pathcheck.py. If the checkout is absent, run git clone https://github.com/JCremerr/selection-7-of-16 into the working directory; otherwise use the existing clone. Do not pip-install anything.",
+  "Read-only inspect the authors' scripts and archived outputs: code/verifier/verify_rs_algorithm.py, code/independent_checks/checker/pathcheck.py, certificates/V7_16_le28/SHA256SUMS, verifier_output.txt, and randtest_output.txt. Determine the exact stdout labels for computed worst-case depth and function count so reproduce.py can parse them without changing the scripts.",
+  "Write reproduce.py at repo root. It must use pathlib to locate the repo root from __file__, use hashlib for SHA-256 (not the sha256sum shell command), use subprocess.run([sys.executable, '-I', ...]) for authors' Python scripts, and use json to write results/metrics.json.",
+  "Implement the checksum check: parse certificates/V7_16_le28/SHA256SUMS for the line matching select_7th_of_16_28cmp.rs, compute hashlib.sha256 of the file, require equality with the SHA256SUMS entry, and require the hex digest to start with eb8f064c12bb. Record the full digest and both match flags.",
+  "Implement the static-checker invocation: subprocess.run([sys.executable, '-I', 'code/verifier/verify_rs_algorithm.py', 'certificates/V7_16_le28/select_7th_of_16_28cmp.rs', '--expect-n', '16', '--expect-i', '7', '--expect-worst', '28'], cwd=repo_root, capture_output=True, text=True, timeout=600). Require exit code 0. Capture stdout/stderr in metrics.",
+  "Parse the checker stdout for the computed worst-case depth and, if printed, the function count. Use the exact labels discovered in step 2. Do not set the metric solely from --expect-worst; if the checker does not print a computed depth, rely on the independent oracle for computed_worst_case and record checker_output_has_depth=false.",
+  "Implement the exact path-oracle invocation: run from code/independent_checks/checker with the certificate path resolved absolutely, using subprocess.run([sys.executable, '-I', 'pathcheck.py', absolute_cert_path], cwd=oracle_dir, capture_output=True, text=True, timeout=600). Require exit code 0. Parse its computed worst-case depth and function count if reported.",
+  "Enforce consistency: require oracle computed depth == 28; require checker computed depth == 28 if the checker reports one; require checker_depth == oracle_depth when both are present. If a function count is reported by either check, require 329; if neither reports it, count Rust fn declarations in the certificate with a simple regex and record the source as 'regex', but do not let an auxiliary count mismatch override a correct depth without recording a warning.",
+  "Implement --smoke mode: verify SHA-256 and run only the static checker on the target certificate, parse depth 28, and write results/smoke_metrics.json. This proves path resolution, subprocess invocation, output parsing, and JSON writing without running the full oracle.",
+  "Implement full mode: run checksum, static checker, and exact oracle; create results/ if needed; write results/metrics.json with claim_id C1, certificate path, n=16, one_based_rank=7, zero_based_rank=6, expected_worst_case=28, computed_worst_case, unit='comparisons', passed=true iff all mandatory checks pass and depth==28, sha256, function_count, tolerance, per-check exit codes/stdout/stderr, and an optional_checks_not_run list for Rust search/randtest and Lean R11.",
+  "Exit 0 only when the claim is reproduced exactly (computed depth 28 and mandatory checks pass). If any mandatory check fails, write metrics.json with passed=false and a non-empty error field, then exit nonzero. Never fabricate a computed depth from the expected value.",
+  "Optionally run code/analysis/structure/r16_check.py if it exposes a simple CLI, to record the shared R16 opening check; this is auxiliary and must not block the C1 verdict. Optionally verify the alt 365-function certificate only if time remains."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`: it should verify the SHA-256 of certificates/V7_16_le28/select_7th_of_16_28cmp.rs, invoke only the authors' static checker with --expect-n 16 --expect-i 7 --expect-worst 28, parse computed depth 28, and write results/smoke_metrics.json. This takes seconds and proves the data flow before the full oracle run.",
+ "intermediate_checks": [
+  "Confirm the target certificate exists and is 89,947 bytes; compute SHA-256 and confirm the prefix eb8f064c12bb from Table 3 and the entry in SHA256SUMS.",
+  "Inspect the static checker's actual stdout on the target certificate. Confirm it exits 0 and prints a computed worst-case depth of 28; confirm whether it prints the function count 329. If it prints only 'OK', still require exit 0 and use the oracle for the numeric depth.",
+  "Inspect the exact oracle's actual stdout on the target certificate. Confirm it exits 0, enumerates all paths, and reports worst-case depth 28; record runtime.",
+  "Negative control: run the static checker with --expect-worst 27 on the same certificate and require a nonzero exit. If it still exits 0, stop and inspect the checker's semantics before trusting the positive run.",
+  "Check the rank convention: --expect-i is 1-based (7), while the certificate and Lean triple use 0-based rank 6. Verify the checker is invoked with 7 and metrics record both conventions.",
+  "Check function count: if checker/oracle reports 329, require 329. If not, count `fn` declarations in the Rust certificate with a regex and record the count/source; investigate any mismatch from 329 without silently changing the depth metric.",
+  "Confirm `python -I` works for both authors' scripts from the intended working directories (repo root for checker, code/independent_checks/checker for oracle) and that there are no missing imports or pip requirements.",
+  "Confirm results/ is writable and that all captured stdout/stderr strings are JSON-serializable (decode bytes with errors='replace').",
+  "Optional: run code/analysis/structure/r16_check.py if it has a simple CLI to sanity-check the 15-comparison R16 opening (R12); do not block on it."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 20 minutes total: 0-3 min setup/clone/inspect authors' scripts; 3-8 min write reproduce.py; 8-9 min smoke run; 9-12 min intermediate checks including the wrong-expectation negative control; 12-15 min full run and metrics write; 15-20 min buffer for parser adjustments. The mandatory Python checker and oracle runs are seconds each. Do not spend budget on Rust or Lean toolchains; record them as optional checks not run."
+}

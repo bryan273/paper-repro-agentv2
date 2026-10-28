@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Test accuracy of GBkNN++ on the Parkinsons dataset (10-fold CV average)",
+  "table_ref": "Table 4 (Impact of AM module on GBkNN++ in terms of test Accuracy), row 'Parkinsons', column 'GBkNN++ with AM'",
+  "dataset": "Parkinsons (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/CherylTse/GBG-plusplus"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Parkinsons is a tiny UCI table (~200 samples); GBG++/GBkNN++ are pure CPU Python with 10-fold CV, so a few minutes of runtime plus install/download overhead."
+ },
+ "blockers": [
+  "Code repo may be incomplete or outdated; may need to reimplement GBG++/GBkNN++ from the paper",
+  "Exact data split/preprocessing not fully specified, so the reported 0.907 may not be exactly reproduced"
+ ],
+ "suitable": true,
+ "id": "2305.18450",
+ "title": "GBG++: A Fast and Stable Granular Ball Generation Method for Classification",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

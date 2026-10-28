@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "BCE returns a good chip using at most n-1 tests (worst-case test count bound, e.g. verified on the GGBBBGG example returning x7 after 4 tests, and/or exhaustive simulation confirming <= n-1 tests and correctness)",
+  "table_ref": "Table 2 (example trace) / Theorem 7 (cost bound)",
+  "dataset": "synthetic chip type assignments (no external dataset)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The algorithm is a few dozen lines of pure Python; reproducing the example trace and exhaustively checking the n-1 test bound and correctness over all small type assignments takes seconds on a CPU."
+ },
+ "blockers": [
+  "No code released, but algorithm is fully specified in pseudocode (Algorithm 1) so reimplementation is trivial",
+  "No real dataset; target is a theoretical/synthetic claim"
+ ],
+ "suitable": true,
+ "id": "2609.26995",
+ "title": "Backtracking Candidate Elimination: A One-Pass Algorithm for the Chip Testing Problem",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

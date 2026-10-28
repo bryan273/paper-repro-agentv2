@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "OCRKM achieves 86.15% accuracy on the acute_inflammation dataset (Table 1, row acute_inflammation, column OCRKM).",
+  "table_ref": "Table 1",
+  "dataset": "acute_inflammation (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/mtanveer1/OCRKM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The method solves a small linear system (kernel matrix inversion) for a tiny UCI dataset; hyperparameter grid search over 11x11 values with 5-fold CV is the main cost, but still minutes on a CPU."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated; need to verify it contains the exact OCRKM implementation and data splits.",
+  "Exact train/test split and random seed not specified, so reproducing the exact 86.15% may require multiple runs or may not match exactly."
+ ],
+ "suitable": true,
+ "id": "2502.10443",
+ "title": "One Class Restricted Kernel Machines",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

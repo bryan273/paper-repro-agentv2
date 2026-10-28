@@ -1,0 +1,206 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Random seed for iForest training, tree construction, and synthetic data generation is not reported.",
+  "options": [
+   "fix a single seed (e.g., 42) for all stochastic steps",
+   "run multiple seeds and report mean/spread",
+   "use the seed in the DPG-iForest repository if present"
+  ],
+  "chosen": "Use the DPG-iForest repository seed if present; otherwise fix a single seed and disclose it.",
+  "rationale": "IOP-Score depends on random splits and which points are labelled outliers; without a seed the exact -0.2429 value is not reproducible.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "we chose 200 trees to ensure robust and stable predictions.",
+  "page": 8
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "No train/test split or holdout protocol is specified for Annthyroid; the graph could be built from all samples or only training samples.",
+  "options": [
+   "use all 6,916 samples for iForest training and graph traversal",
+   "split train/test and build the graph only from training traversal"
+  ],
+  "chosen": "Use all 6,916 samples for training and graph traversal.",
+  "rationale": "The paper reports no split and describes predicate lists from training samples; this is the simplest faithful reading.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Subsequently, each training sample traverses each tree. We identify all predicate lists satisfied by the samples in each tree-based learner.",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The outlier/inlier threshold used to label observations is not explicitly given as a parameter.",
+  "options": [
+   "scikit-learn default contamination='auto' (anomaly score threshold near 0.5)",
+   "set contamination to Annthyroid's 3.61% anomaly rate",
+   "tune the threshold to match literature [21]"
+  ],
+  "chosen": "Use scikit-learn default contamination='auto', which corresponds to the paper's s(x,n) < 0.5 inlier rule.",
+  "rationale": "The paper defines inliers by s<0.5 and says output labels come from the model; default scikit-learn matches this threshold.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "If s(x, n) < 0.5, then x is likely to be a typical instance (inlier).",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Subsampling size/max_samples for each iTree is not explicitly stated beyond the depth formula min(256, |X|).",
+  "options": [
+   "scikit-learn default max_samples='auto' = min(256, n_samples)",
+   "use all samples per tree",
+   "use 256 max samples"
+  ],
+  "chosen": "Use max_samples='auto' (min(256, n_samples)).",
+  "rationale": "The paper's max-depth formula uses min(256, |X|), which is scikit-learn's default subsampling and depth convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "through an effective subsampling procedure, iForest mitigates the swamp effect",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Eq. 2 defines fin(v) as the sum of frequencies of edges entering v, but fi(v) and fo(v) are outgoing edges to terminal classes; the normalization basis is ambiguous.",
+  "options": [
+   "use literal incoming frequency as denominator",
+   "use total outgoing weighted frequency from v to all successors plus terminals",
+   "use total weighted frequency through v (incoming = outgoing)"
+  ],
+  "chosen": "Use total weighted outgoing frequency from v (predicate successors plus terminal class edges) as fin(v), so the score is defined for root and intermediate nodes.",
+  "rationale": "Literal incoming frequency can be zero for root predicates and does not match the outgoing numerator; outgoing normalization is the only denominator that yields a bounded [-1,1] score for all nodes.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "This normalization ensures the score accounts for the node’s overall context, providing a balanced measure of its tendency to propagate toward either class.",
+  "page": 6
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "It is not explicit whether the class-imbalance weights wo and wi are applied to the final predicate-to-class terminal edges or only to predicate-to-predicate edges.",
+  "options": [
+   "apply wo/wi to all transitions including terminal class edges",
+   "weight only predicate-to-predicate edges and leave terminal edges unweighted"
+  ],
+  "chosen": "Apply the same wo/wi class weights to terminal edges into “Outlier” and “Inlier”.",
+  "rationale": "The appended class label is treated as the final element of the predicate list, so terminal transitions should receive the same class-based weighting.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Each list is then extended by appending the label previously assigned to the observations",
+  "page": 5
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The paper says to remove paths exceeding dmax for outliers, but not whether inlier paths exceeding dmax are also removed.",
+  "options": [
+   "remove only outlier lists exceeding dmax",
+   "remove all lists exceeding dmax for both classes",
+   "do not remove any lists"
+  ],
+  "chosen": "Remove only outlier lists exceeding dmax; keep inlier lists as stated.",
+  "rationale": "The text explicitly restricts this cleaning step to outlier sets.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "we eliminate all predicate lists that exceed the trees’ maximum depth from the outlier sets.",
+  "page": 5
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Whether identical (f,σ) predicates from different trees are merged into one node is not spelled out by an equation, though the text implies cross-tree aggregation.",
+  "options": [
+   "merge all (f,σ) predicates globally",
+   "keep per-tree predicate nodes distinct"
+  ],
+  "chosen": "Merge identical (f,σ) predicates into one global node.",
+  "rationale": "The paper removes v specifically to allow cross-tree aggregation and reports one IOP-Score per (f,σ).",
+  "source": "paper",
+  "risk": "low",
+  "quote": "By focusing on the feature and direction of the split only, we retain a meaningful and aggregable representation of the isolation patterns across trees.",
+  "page": 6
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Exact stopping rule for tree depth and how to compute dmax in scikit-learn.",
+  "options": [
+   "ceil(log2(max_samples)) with max_samples=min(256,n)",
+   "ceil(log2(min(256,n))) as printed",
+   "unlimited depth until isolated"
+  ],
+  "chosen": "Use dmax = ceil(log2(min(256, |X|))) as printed.",
+  "rationale": "The paper explicitly defines maximum depth with this formula.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The iTree reaches its maximum depth, which is defined as:",
+  "page": 3
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "No feature scaling, encoding, or missing-value handling is described for Annthyroid beyond excluding binary features.",
+  "options": [
+   "use raw six numerical features without scaling",
+   "standardize features before iForest",
+   "impute missing values with median"
+  ],
+  "chosen": "Use raw six numerical features without scaling; drop binary features; no imputation unless data require it.",
+  "rationale": "iForest splits on feature ranges and the paper reports no preprocessing; scaling is unnecessary for tree splits.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether graph labels use iForest predictions or ground-truth anomaly labels.",
+  "options": [
+   "model-predicted outlier/inlier labels",
+   "ground-truth labels",
+   "both"
+  ],
+  "chosen": "Use model-predicted labels, as the paper says.",
+  "rationale": "The method explains the model, not the dataset; the paper explicitly assigns labels from model output.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "These observations are assigned labels: “Outlier” if the model classifies them as such, and “Inlier” otherwise.",
+  "page": 5
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Whether a transition is counted once per sample-tree or once per occurrence if the same predicate pair repeats in one path.",
+  "options": [
+   "count each consecutive occurrence per sample-tree",
+   "deduplicate repeated predicate pairs within a path"
+  ],
+  "chosen": "Count each consecutive occurrence per sample-tree; repeated pairs in one path count multiple times.",
+  "rationale": "Edges represent frequency of consecutive predicate satisfaction; no deduplication is mentioned.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "The graph’s edges represent the frequency with which the pair of predicates stored in the connected nodes appears consecutively",
+  "page": 6
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "The single-cluster distribution used to generate the 200-point synthetic datasets is not specified (normal vs uniform, covariance).",
+  "options": [
+   "use the DPG-iForest repository generator",
+   "standard normal independent features",
+   "uniform features in observed ranges"
+  ],
+  "chosen": "Use the DPG-iForest repository generator if present; otherwise use standard normal independent features.",
+  "rationale": "The paper reports only 200 samples and six numerical features in a single cluster, so the exact generator must come from code or be disclosed as a guess.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Each dataset contains 200 data points characterized by six numerical features",
+  "page": 8
+ }
+]

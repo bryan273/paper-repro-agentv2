@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Moran's I (accuracy) = 0.362 for the ndscape embedding on Glass Identification (6 classes, 945 enumerated NDs)",
+  "table_ref": "Table 6, Glass Identification row, I (accuracy) column",
+  "dataset": "UCI Glass Identification (214 samples, 9 features, 6 classes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/res-lucid/ndscape",
+  "https://res-lucid.github.io/ndscape-plots/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Requires enumerating 945 NDs, fitting logistic regression at each node on 214x9 data, plus 100 bootstrap resamples for variance and 999-permutation Moran's I; all small CPU work but the full pipeline (embedding, all trees, bootstraps, permutations) must be re-implemented from the paper's token spec if the repo is incomplete."
+ },
+ "blockers": [
+  "Repo may not contain the exact real-data pipeline/configs for Table 6",
+  "Tokenisation spec is detailed but re-implementation risk (depth weights, root emphasis, small-group tokens) could shift Moran's I",
+  "Bootstrap variance (100 resamples x 945 trees) and 999 permutations add runtime"
+ ],
+ "suitable": true,
+ "id": "2610.18050",
+ "title": "ndscape: a structural map of the nested dichotomy space",
+ "pages": 37,
+ "model": "DeepSeek-V4.1-Flash"
+}

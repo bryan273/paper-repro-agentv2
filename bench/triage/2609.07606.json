@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "CLUES-WEASEL clustering accuracy on a single UCR dataset (e.g., one of the 112 UCR datasets), averaged over 10 seeds, matching the paper's reported accuracy for that dataset",
+  "table_ref": "Section 5 results (per-dataset accuracy table, omitted middle of paper)",
+  "dataset": "UCR Time Series Classification Archive (one univariate dataset, e.g., a small one like GunPoint/ECG200)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/johannfaouzi/CLUES-WEASEL"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "CLUES-WEASEL is WEASEL 2.0 unsupervised transform + PCA + k-means; on one small UCR dataset with 10 seeds this is minutes of CPU work, but the exact per-dataset number requires the repo's config and the omitted results table, and the WEASEL 2.0 transform implementation must be installed/verified."
+ },
+ "blockers": [
+  "Per-dataset headline numbers are in the omitted middle of the paper, so the exact target value must be inferred from the repo or re-derived",
+  "Repo may not include the exact hyperparameter config (20% variance PCA, 30k random feature cap) needed to match the number",
+  "WEASEL 2.0 unsupervised transform dependency must be available and version-matched"
+ ],
+ "suitable": true,
+ "id": "2609.07606",
+ "title": "CLUES-WEASEL: No additional clues required to choose your time series clustering algorithm",
+ "pages": 51,
+ "model": "DeepSeek-V4.1-Flash"
+}

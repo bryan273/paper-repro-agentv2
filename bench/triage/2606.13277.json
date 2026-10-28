@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ProtoX-AD (MT) achieves AUROC of 100.00 ± 0.00 on the UMD dataset",
+  "table_ref": "Table 1",
+  "dataset": "UMD"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Aitorzan3/ProtoX-AD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": 2,
+  "basis": "Small synthetic dataset, TS2Vec encoder, batch size 4, up to 1000 epochs with early stopping; 5 seeds; CPU feasible but may take ~2 hours."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.13277",
+ "title": "ProtoX-AD: Self-Explainable Time Series Anomaly Detection and Characterization",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

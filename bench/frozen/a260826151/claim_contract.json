@@ -1,0 +1,234 @@
+{
+ "title": "Explainable Artificial Intelligence for Customer Churn Prediction in Telecommunications: A Framework for CRM Integration",
+ "summary": "Telecom churn models can rank at-risk subscribers, but opaque ensembles are hard to translate into retention actions, so the paper studies explainable churn prediction and CRM integration. It benchmarks Logistic Regression, Random Forest, XGBoost, and LightGBM on the IBM Telco Customer Churn benchmark (7,043 records, 19 features, SMOTE on the training partition only), then applies SHAP/LIME and designs a four-layer CRM workflow. Logistic Regression obtains the best test AUC-ROC (0.8411), LightGBM the best accuracy (78.42%), all four sit within a 0.011 AUC band, and the framework projects $199K–$319K preserved per campaign cycle for the top-risk quintile.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Logistic Regression (L2 regularisation, 0.5 threshold, 40-dimensional one-hot/min-max features, SMOTE on the training partition only) achieves AUC-ROC 0.8411 on the held-out test set.",
+   "metric": "AUC-ROC",
+   "dataset": "IBM Telco Customer Churn",
+   "split": "held-out 20% test set, n=1,409",
+   "value": 0.8411,
+   "unit": "AUC-ROC (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Logistic Reg., column AUC; also Sec. IV-B and Conclusion",
+   "config_for_value": "Logistic Regression with l2 regularisation; stratified 80/20 train-test split; 40 features after label encoding, one-hot encoding, and min-max scaling; SMOTE on training only, yielding 8,278 balanced training records; fixed 0.5 decision threshold with no post-hoc tuning",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1–3 min for LR after preprocessing; full pipeline <10 min",
+   "quote": "Logistic Regression posts the best AUC-ROC (0.8411) and the highest recall (78.34%) after SMOTE balancing",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "LightGBM achieves 78.42% accuracy on the held-out test set.",
+   "metric": "accuracy",
+   "dataset": "IBM Telco Customer Churn",
+   "split": "held-out 20% test set, n=1,409",
+   "value": 78.42,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row LightGBM (GBM-L), column Acc.",
+   "config_for_value": "Official LightGBM library; 0.5 threshold; SMOTE-balanced training only; 40 features; hyperparameters not specified in the paper",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1–5 min",
+   "quote": "LightGBM leads on raw accuracy (78.42%) and precision (59.07%), with XGBoost close behind",
+   "page": 3
+  },
+  {
+   "id": "C3",
+   "statement": "Random Forest achieves the best F1-score, 0.6231, on the held-out test set.",
+   "metric": "F1-score",
+   "dataset": "IBM Telco Customer Churn",
+   "split": "held-out 20% test set, n=1,409",
+   "value": 0.6231,
+   "unit": "F1 (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Random Forest, column F1",
+   "config_for_value": "Random Forest with 400 CART trees, max depth 12, min leaf 8, sqrt(p) features per split, bootstrap sampling; 0.5 threshold; SMOTE-balanced training only",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2–5 min",
+   "quote": "while Random Forest edges the best F1 (0.6231)",
+   "page": 3
+  },
+  {
+   "id": "C4",
+   "statement": "Five-fold stratified cross-validation gives Logistic Regression a mean AUC-ROC of 0.845 with fold standard deviation 0.013.",
+   "metric": "AUC-ROC",
+   "dataset": "IBM Telco Customer Churn",
+   "split": "5-fold stratified cross-validation, with scaling and SMOTE refit inside each fold",
+   "value": 0.845,
+   "unit": "AUC-ROC (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Section IV-B, cross-validation paragraph",
+   "config_for_value": "Logistic Regression with l2 regularisation; 5-fold stratified CV; feature scaling and SMOTE refit inside each fold to preclude leakage; report mean AUC-ROC across folds",
+   "reported_spread": "±0.013 (std over 5 folds)",
+   "est_compute": "CPU, ~5× single LR fit, <10 min",
+   "quote": "mean AUC-ROC was 0.845±0.013 (Logistic Regression), 0.842±0.012 (Random Forest)",
+   "page": 4
+  },
+  {
+   "id": "C5",
+   "statement": "In the top 20% risk segment used for the business-impact projection, the model attains about 67% precision and 50% recall.",
+   "metric": "precision in top-risk quintile (recall 50%)",
+   "dataset": "IBM Telco Customer Churn (full 7,043 cohort)",
+   "split": "full-cohort scoring/projection; top 20% by predicted churn probability (~1,408 customers)",
+   "value": 67,
+   "unit": "% precision (top 20% segment; recall 50%)",
+   "higher_is_better": true,
+   "table_ref": "Section V-E, Business Impact",
+   "config_for_value": "Logistic Regression scores; target top 20% of the full 7,043 cohort, approximately 1,408 subscribers; about 937 of those targeted are stated to be genuine churners; paper labels these figures illustrative",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to score 7,043 customers",
+   "quote": "the model achieves a precision of approximately 67% and a recall of 50%",
+   "page": 5
+  },
+  {
+   "id": "C6",
+   "statement": "Targeting the top-risk quintile is projected to preserve about $199,000 per campaign cycle under 25% campaign uptake.",
+   "metric": "projected preserved revenue per campaign cycle",
+   "dataset": "IBM Telco Customer Churn (full 7,043 cohort)",
+   "split": "top-20% segment, 25% uptake among true churners, $850 12-month CLV",
+   "value": 199000,
+   "unit": "USD per campaign cycle",
+   "higher_is_better": true,
+   "table_ref": "Section V-E, Business Impact",
+   "config_for_value": "Top-20% segment; 25% campaign uptake; 12-month forward CLV $850; 937 true churners among 1,408 targeted; illustrative projection",
+   "reported_spread": null,
+   "est_compute": "spreadsheet arithmetic, negligible compute",
+   "quote": "expected revenue preserved ≈0.25 × 937 × $850 ≈$199,000 per cycle",
+   "page": 5
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the paper's headline AUC result and the user's explicit target: a single L2 logistic regression on public tabular data is the cheapest way to demonstrate the central finding, requiring no tree ensembles, SHAP stack, or CRM simulation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: AUC-ROC is printed as a fraction in [0,1] and evaluated on n=1,409 (<2,000), so the bounded-score band is 0.02 absolute; no test-set standard deviation is reported for C1."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the IBM Telco Customer Churn CSV with 7,043 records and 21 columns; drop customerID and Churn to leave 19 predictors, with Churn as the binary target.",
+   "cite": "Section III-A, Dataset",
+   "quote": "Dropping the customer identifier and the churn label from the benchmark’s 21-column schema leaves 19 predictive features",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Label-encode gender and the binary yes/no fields Partner, Dependents, PhoneService, and PaperlessBilling to {0,1}; leave SeniorCitizen as already 0/1.",
+   "cite": "Section III-B, Preprocessing",
+   "quote": "Gender and binary yes/no features (Partner, Dependents, PhoneService, PaperlessBilling) are label-encoded to {0,1}.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "One-hot encode MultipleLines, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies, Contract, and PaymentMethod with all levels, yielding 40 features.",
+   "cite": "Section III-B, Preprocessing",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R4",
+   "stmt": "Min-max scale the continuous features tenure, MonthlyCharges, and TotalCharges to [0,1].",
+   "cite": "Section III-B, Preprocessing",
+   "quote": "Continuous features are min-max scaled to [0,1]. A stratified 80/20 train–test split preserves the class ratio",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Use a stratified 80/20 train-test split preserving the churn ratio; the held-out test partition must contain 1,409 records.",
+   "cite": "Section III-B, Preprocessing",
+   "quote": "A stratified 80/20 train–test split preserves the class ratio across partitions.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "Apply SMOTE only to the training partition using five nearest neighbours, producing 8,278 balanced training records; never oversample the test set.",
+   "cite": "Section III-B, Preprocessing",
+   "quote": "SMOTE is applied exclusively to training data: synthetic minority instances are interpolated between each real churner and one of its five nearest neighbours",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "Train Logistic Regression with L2 regularisation as the primary interpretable model.",
+   "cite": "Section III-C, Models",
+   "quote": "Logistic Regression (l2 regularisation) serves as the interpretable linear baseline against which non-linear methods are measured.",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "Use a fixed 0.5 decision threshold for every classifier and do not tune the threshold post hoc.",
+   "cite": "Section III-C, Models",
+   "quote": "All models use a 0.5 decision threshold for class assignment, with no post-hoc threshold tuning, preserving comparability.",
+   "page": 3
+  },
+  {
+   "id": "R9",
+   "stmt": "Configure Random Forest with 400 CART trees, maximum depth 12, minimum leaf size 8, sqrt(p) features per split, and bootstrap sampling.",
+   "cite": "Section III-C, Models",
+   "quote": "Random Forest aggregates 400 CART trees (max depth 12, min leaf 8, √p features per split) via bootstrap sampling.",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Use the official xgboost and lightgbm libraries for the boosted-tree models, falling back to scikit-learn equivalents only if unavailable.",
+   "cite": "Section III-C, Models; Table 1 caption",
+   "quote": "XGBoost and LightGBM rows use the official libraries.",
+   "page": 4
+  },
+  {
+   "id": "R11",
+   "stmt": "Compute AUC-ROC from predicted probabilities via trapezoidal integration and evaluate all reported metrics only on the held-out test set.",
+   "cite": "Table 1 caption; Section IV-B",
+   "quote": "Classifier performance on the test set (n = 1,409); best value per metric in bold, AUC-ROC via trapezoidal integration.",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "For the Logistic Regression global explanations, compute SHAP values for every test instance using shap's LinearExplainer and rank features by mean absolute SHAP value.",
+   "cite": "Section III-D, Explanation Methods",
+   "quote": "We compute Shapley values for every test instance of the primary model (Logistic Regression) with the shap library’s LinearExplainer",
+   "page": 3
+  },
+  {
+   "id": "R13",
+   "stmt": "For local explanations, use lime's LimeTabularExplainer in classification mode, quartile-discretise the three continuous features, and declare binary and one-hot columns categorical.",
+   "cite": "Section III-D, Explanation Methods",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R14",
+   "stmt": "Implement CRM risk tiers with High for p > 0.70, Medium for 0.40 ≤ p ≤ 0.70, and Low for p < 0.40.",
+   "cite": "Section III-E, CRM Integration Design; Section V-B",
+   "quote": "High (p > 0.70), Medium (0.40 ≤p ≤0.70), and Low (p < 0.40) risk tiers",
+   "page": 3
+  },
+  {
+   "id": "R15",
+   "stmt": "Monitor PSI on incoming feature distributions and trigger retraining when PSI exceeds 0.20.",
+   "cite": "Section III-E; Section V-D",
+   "quote": "monitoring on incoming feature distributions triggers model retraining when PSI exceeds 0.20.",
+   "page": 3
+  }
+ ],
+ "data": [
+  {
+   "name": "IBM Telco Customer Churn dataset",
+   "how_to_get": "Public CSV with 7,043 rows and 21 columns; available from Kaggle as 'Telco Customer Churn' (blastchar) at https://www.kaggle.com/datasets/blastchar/telco-customer-churn"
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2608.26151",
+  "kind": "arxiv",
+  "arxiv_id": "2608.26151",
+  "url": "https://arxiv.org/abs/2608.26151",
+  "title": "Explainable Artificial Intelligence for Customer Churn Prediction in Telecommunications: A Framework for CRM Integration",
+  "pages": 10
+ }
+}

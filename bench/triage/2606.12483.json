@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "UCF achieves an Average Precision (AP) of 0.313 ± 0.252 on the 'Small' category of ADBench datasets (N ≤ 1000 and d ≤ 50).",
+  "table_ref": "Table 1, row UCF, column Small",
+  "dataset": "ADBench 'Small' category (datasets with N ≤ 1000 and d ≤ 50)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/fgrivet/ucf-scalable-ad-in-any-dimension",
+  "https://github.com/yzhao062/pyod"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "The UCF method is a lightweight, non-training algorithm that only requires inverting small (n+1)×(n+1) matrices per query point; the 'Small' ADBench datasets are tiny (N ≤ 1000), and the paper reports inference times on the order of 10^-2 seconds per sample, so running 5 repetitions over ~10 small datasets should take well under an hour on a CPU."
+ },
+ "blockers": [
+  "The GitHub repository may not include the exact ADBench data splits or the full experimental configuration (e.g., the specific 5 random seeds and stratified splits), which could cause slight deviations from the reported mean and standard deviation."
+ ],
+ "suitable": true,
+ "id": "2606.12483",
+ "title": "Scalable anomaly detection via a univariate Christoffel function",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

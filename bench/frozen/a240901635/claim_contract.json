@@ -1,0 +1,272 @@
+{
+ "title": "PMLBmini: A Tabular Classification Benchmark Suite for Data-Scarce Applications",
+ "summary": "Tabular benchmarks are not geared toward data-scarce applications, making empirical comparisons on small datasets difficult to interpret. The paper introduces PMLBmini, 44 binary classification datasets with sample sizes at most 500 selected from PMLB, and evaluates AutoML frameworks, off-the-shelf tabular deep networks, and L2-regularized logistic regression with stratified 3-fold cross-validation. Logistic regression lies within 3% of the best AutoML or deep learning method on 55% of datasets, while AutoML tends to help on more complex datasets and deep models on feature distributions resembling their meta-training data.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Logistic regression achieves a mean test AUC of 0.17 on parity5 (M=32, N=5) in PMLBmini.",
+   "metric": "mean test AUC",
+   "dataset": "parity5 (PMLBmini)",
+   "split": "stratified 3-fold cross-validation, mean over folds",
+   "value": 0.17,
+   "unit": "AUC",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row parity5, column Logistic regression (test AUC in parentheses)",
+   "config_for_value": "L2-regularized logistic regression with labels re-encoded to {-1,1}, min-max scaled features, λ grid [0.5,0.1,0.02,0.004] tuned by nested stratified 3-fold CV with deviance; λ*=0.5; M=32, N=5; mean test AUC over 3 folds.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min",
+   "quote": "parity5 32 5 0.50 (0.27) 0.04 (0.98) 1.00 (0.02) 1.00 (0.02) 0.50 (0.17) 0.5",
+   "page": 16
+  },
+  {
+   "id": "C2",
+   "statement": "AutoGluon achieves a mean test AUC of 0.98 on parity5 (M=32, N=5) in PMLBmini.",
+   "metric": "mean test AUC",
+   "dataset": "parity5 (PMLBmini)",
+   "split": "stratified 3-fold cross-validation, mean over folds",
+   "value": 0.98,
+   "unit": "AUC",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row parity5, column AutoGluon (test AUC in parentheses)",
+   "config_for_value": "AutoGluon 1.0.0 with best quality preset, 3h runtime limit per dataset (1h per fold), stratified 3-fold CV; M=32, N=5.",
+   "reported_spread": null,
+   "est_compute": "CPU, up to 3 h",
+   "quote": "parity5 32 5 0.50 (0.27) 0.04 (0.98) 1.00 (0.02) 1.00 (0.02) 0.50 (0.17) 0.5",
+   "page": 16
+  },
+  {
+   "id": "C3",
+   "statement": "Logistic regression is within 3% of the best AutoML or deep learning approach on 55% of PMLBmini datasets.",
+   "metric": "percentage of datasets within 3% AUC of best approach",
+   "dataset": "PMLBmini (44 datasets)",
+   "split": "mean test AUC from stratified 3-fold CV per dataset",
+   "value": 55,
+   "unit": "% of datasets",
+   "higher_is_better": true,
+   "table_ref": "Sect. 4.2 text; also abstract and Fig. 1",
+   "config_for_value": "All 44 PMLBmini binary classification datasets, mean test AUC per method from stratified 3-fold CV, comparison of LR to best of AutoPrognosis, AutoGluon, TabPFN, HyperFast.",
+   "reported_spread": null,
+   "est_compute": "8 vCPU, 32 GiB; ~44 datasets x 5 methods x up to 4h, days on cluster",
+   "quote": "lies within 1%, 2%, and 3% of the best approach on 34%, 48%, and 55% of the datasets, respectively",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "Logistic regression performs on par with or better than the best AutoML or deep learning approach on 16% of PMLBmini datasets.",
+   "metric": "percentage of datasets on par or better",
+   "dataset": "PMLBmini (44 datasets)",
+   "split": "mean test AUC from stratified 3-fold CV per dataset",
+   "value": 16,
+   "unit": "% of datasets",
+   "higher_is_better": true,
+   "table_ref": "Sect. 4.2 text",
+   "config_for_value": "All 44 PMLBmini datasets; compare LR mean test AUC with best of AutoPrognosis, AutoGluon, TabPFN, HyperFast.",
+   "reported_spread": null,
+   "est_compute": "8 vCPU, 32 GiB; ~44 datasets x 5 methods x up to 4h, days on cluster",
+   "quote": "Logistic regression performs on par with or better than the best AutoML or deep learning approach on 16% of the datasets",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "At sample sizes 101-200, HyperFast reaches a mean test AUC of 0.82, with the largest method gap.",
+   "metric": "mean test AUC",
+   "dataset": "PMLBmini sample-size bin 101-200",
+   "split": "stratified 3-fold cross-validation, mean over folds",
+   "value": 0.82,
+   "unit": "AUC",
+   "higher_is_better": true,
+   "table_ref": "Fig. 2a and Sect. 4.2 text",
+   "config_for_value": "HyperFast 0.1.3 without fine-tuning, 32 ensemble members; datasets with sample sizes 101 to 200.",
+   "reported_spread": null,
+   "est_compute": "8 vCPU, 32 GiB; up to 4h per dataset",
+   "quote": "with HyperFast and logistic regression only reaching a mean test AUC of 0.82 and 0.78, respectively",
+   "page": 7
+  },
+  {
+   "id": "C6",
+   "statement": "AutoPrognosis and TabPFN rank significantly better than logistic regression (Holm-adjusted Wilcoxon, p<0.05), while AutoGluon and HyperFast do not.",
+   "metric": "Holm-adjusted Wilcoxon signed-rank p-value threshold",
+   "dataset": "PMLBmini (44 datasets)",
+   "split": "pairwise mean test AUC ranks across datasets",
+   "value": 0.05,
+   "unit": "p-value threshold",
+   "higher_is_better": false,
+   "table_ref": "Fig. 2b and Sect. 4.2 text",
+   "config_for_value": "Pairwise mean test AUC differences across 44 PMLBmini datasets; Holm-adjusted Wilcoxon signed-rank test at 0.05 significance level.",
+   "reported_spread": null,
+   "est_compute": "Negligible given per-dataset AUCs",
+   "quote": "AutoPrognosis and TabPFN achieve a better rank than logistic regression (p < 0.05), whereas AutoGluon and HyperFast are not different",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "PMLBmini contains 44 binary classification datasets with sample sizes at most 500.",
+   "metric": "number of datasets",
+   "dataset": "PMLBmini",
+   "split": "N/A",
+   "value": 44,
+   "unit": "datasets",
+   "higher_is_better": true,
+   "table_ref": "Abstract; Table 1 row PMLBmini",
+   "config_for_value": "Selected all binary classification datasets with sample sizes ≤500 from PMLB.",
+   "reported_spread": null,
+   "est_compute": "Data download, minutes",
+   "quote": "We introduce PMLBmini, a tabular benchmark suite of 44 binary classification datasets with sample sizes ≤500.",
+   "page": 1
+  },
+  {
+   "id": "C8",
+   "statement": "The meta-feature analysis computes 3932 PyMFE meta-features in total.",
+   "metric": "number of meta-features",
+   "dataset": "PMLBmini",
+   "split": "N/A",
+   "value": 3932,
+   "unit": "meta-features",
+   "higher_is_better": false,
+   "table_ref": "Sect. 3.3 text",
+   "config_for_value": "PyMFE 0.4.3, all available meta-feature groups, all available summary functions.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes to hours",
+   "quote": "This yields 3932 meta-features in total for in-depth analyses.",
+   "page": 6
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It is the user-specified target and the cheapest reproduction: one 32-sample dataset and a 3-fold logistic-regression run. Although it is a single-dataset baseline value, it directly verifies the reported LR number used in the low-data comparison."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: AUC is a bounded score and the paper prints 0.17 in [0,1]; parity5 has only 32 samples, far below 2,000, so use 0.02 absolute (two AUC points). No repeated-run standard deviation is reported."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Build PMLBmini from all binary classification datasets with sample sizes ≤500 in PMLB, yielding 44 datasets.",
+   "cite": "Sect. 3.1",
+   "quote": "We selected all binary classification datasets with sample sizes ≤500 from the curated benchmark suite with the largest number of small-sized datasets, PMLB",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Shuffle each dataset and encode original labels to {0,1} before method-specific preprocessing.",
+   "cite": "Sect. 3.1",
+   "quote": "We shuffled all datasets and encoded all labels to {0, 1}.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Use an L2-regularized logistic regression designed to be deterministic, matching the paper's conic formulation or an equivalent fixed solver.",
+   "cite": "Sect. 3.2",
+   "quote": "We use a continuous conic formulation that is designed to be run-to-run deterministic (MOSEK ApS, 2023)",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "For logistic regression, re-encode labels to {-1,1} and min-max scale all features.",
+   "cite": "Sect. 3.2",
+   "quote": "We re-encode all labels to {-1, 1} and ”min-max” scale all features for logistic regression.",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Tune λ over the fixed grid [0.5,0.1,0.02,0.004] using deviance as the validation score.",
+   "cite": "Sect. 3.2",
+   "quote": "using [0.5, 0.1, 0.02, 0.004] as the hyperparameter grid and the deviance as the validation score.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Evaluate discriminative performance with the area under the ROC curve (AUC).",
+   "cite": "Sect. 3.3 and Sect. 4.1",
+   "quote": "we evaluate estimators with the area under the receiver operating characteristic curve (AUC)",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Use a stratified 3-fold cross-validation to obtain mean test performance.",
+   "cite": "Sect. 3.3 and Sect. 4.1",
+   "quote": "using a stratified, 3-fold cross validation procedure to obtain mean test performances",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Apply the 3h mean-test-AUC budget as 1h per fold for non-LR methods.",
+   "cite": "Sect. 4.1",
+   "quote": "the mean test AUC with a 3h runtime limit via a stratified, 3-fold cross-validation procedure (i.e., 1h per fold)",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Track the best λ* on the whole data for reporting in Table 3.",
+   "cite": "Sect. 4.1",
+   "quote": "For logistic regression, we also tracked the best L2-regularization hyperparameter value λ∗obtained on the whole data",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "Use nested cross-validation for logistic-regression test AUC, not non-nested CV.",
+   "cite": "Sect. 4.1",
+   "quote": "used a nested instead of a non-nested cross-validation procedure",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "Run AutoPrognosis 0.1.21 with default settings from Python 3.10.13.",
+   "cite": "Sect. 4.1",
+   "quote": "AutoPrognosis 0.1.21 was run from Python 3.10.13 with the default settings",
+   "page": 6
+  },
+  {
+   "id": "R12",
+   "stmt": "Run AutoGluon 1.0.0 with best quality preset and TabPFN 0.1.9 with 32 ensemble members.",
+   "cite": "Sect. 4.1",
+   "quote": "AutoGluon 1.0.0 with the ”best quality” preset, and TabPFN 0.1.9 with 32 ensemble members (Hollmann et al., 2023).",
+   "page": 6
+  },
+  {
+   "id": "R13",
+   "stmt": "Run HyperFast 0.1.3 without fine-tuning of the main networks but with 32 ensemble members.",
+   "cite": "Sect. 4.1",
+   "quote": "HyperFast 0.1.3 was used without fine-tuning of the main networks",
+   "page": 6
+  },
+  {
+   "id": "R14",
+   "stmt": "Run experiments on 8 vCPU cores with 32 GiB memory.",
+   "cite": "Sect. 4.1",
+   "quote": "Each experiment was run on 8 vCPU cores with 32GiB memory on an internal cluster.",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "PMLBmini datasets",
+   "how_to_get": "Packaged in the TabMini GitHub repository: https://github.com/RicardoKnauer/TabMini"
+  },
+  {
+   "name": "PMLB",
+   "how_to_get": "Penn Machine Learning Benchmarks source collection: https://github.com/EpistasisLab/pmlb"
+  },
+  {
+   "name": "OpenML",
+   "how_to_get": "OpenML dataset repository: https://www.openml.org"
+  }
+ ],
+ "code_links": [
+  "https://github.com/RicardoKnauer/TabMini",
+  "https://github.com/RicardoKnauer/TabMini/blob/master/tabmini/analysis/meta_feature.py",
+  "https://github.com/automl/auto-sklearn/issues/1683",
+  "https://github.com/automl/auto-sklearn/issues/1695"
+ ],
+ "stated_compute": "Each experiment was run on 8 vCPU cores with 32GiB memory on an internal cluster.",
+ "paper_meta": {
+  "source": "2409.01635",
+  "kind": "arxiv",
+  "arxiv_id": "2409.01635",
+  "url": "https://arxiv.org/abs/2409.01635",
+  "title": "PMLBmini: A Tabular Classification Benchmark Suite for Data-Scarce Applications",
+  "pages": 19
+ }
+}

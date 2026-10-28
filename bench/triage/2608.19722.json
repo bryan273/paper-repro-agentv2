@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Median F1 score for k-means recovery of the upper-severity-score category at 15% prevalence and 0% dilution noise (Table 4, k-means row, Prev.=15%, Noise=0%: Med. F1 = 0.971)",
+  "table_ref": "Table 4",
+  "dataset": "Synthetic 172-row reconstruction from Thompson et al. 2017 marginal MIC frequency tables (Table 2 of that paper)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 90,
+  "basis": "Marginal frequency tables are public in Thompson et al. 2017 Table 2, but no code is released and the exact selected reconstruction (one of 800 nested reconstructions chosen by a silhouette/F1 distance criterion) must be re-derived, plus the 4,000-replication rare-category experiment; all R clustering on 500x5 matrices is CPU-trivial."
+ },
+ "blockers": [
+  "No code released (available only on request)",
+  "Synthetic reconstruction selection procedure must be reimplemented from prose",
+  "Exact headline cell depends on reproducing the specific selected reconstruction, which is not uniquely specified"
+ ],
+ "suitable": true,
+ "id": "2608.19722",
+ "title": "Copula-Based Reconstruction and Clustering of Coccidioides Minimum Inhibitory Concentration Profiles",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

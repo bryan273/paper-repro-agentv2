@@ -1,0 +1,269 @@
+{
+ "title": "Gradient-Guided Density Peak Clustering",
+ "summary": "Density peak clustering links each point to its nearest higher-density neighbor, but these 1NN uphill paths can be unstable and produce irregular cluster boundaries. GGDPC inserts a one-step gradient-ascent update before each 1NN uphill search, while keeping the higher-density constraint anchored at the original observation, and builds clustering, decision-diagram, waterfall, and dendrogram summaries from the resulting graph. The paper proves consistency under five complementary criteria and reports competitive ARI with lower runtime on a two-component Gaussian mixture, plus a qualitative Old Faithful geyser illustration.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "GGDPC attains ARI 0.916 on the n=500 two-component Gaussian-mixture simulation.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.916,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row GGDPC, column Sample Size 500, metric ARI",
+   "config_for_value": "n=500; Gaussian KDE density estimate; GGDPC with cluster centers selected as observations whose 1NN uphill distance exceeds the sample mean by at least 4 sample standard deviations; 1000 Monte Carlo replications; reported GGDPC runtime excludes optional dendrogram construction.",
+   "reported_spread": null,
+   "est_compute": "CPU, about 0.028 s per replication; about 28 s for 1000 replications (reported runtime excludes dendrogram)",
+   "quote": "GGDPC 0.916 0.938 0.953 0.963 0.967",
+   "page": 25
+  },
+  {
+   "id": "C2",
+   "statement": "GGDPC attains ARI 0.967 on the n=8000 two-component Gaussian-mixture simulation.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.967,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row GGDPC, column Sample Size 8000, metric ARI",
+   "config_for_value": "n=8000; Gaussian KDE density estimate; GGDPC with cluster centers selected as observations whose 1NN uphill distance exceeds the sample mean by at least 4 sample standard deviations; 1000 Monte Carlo replications; reported GGDPC runtime excludes optional dendrogram construction.",
+   "reported_spread": null,
+   "est_compute": "CPU, about 2.601 s per replication; about 43 min for 1000 replications (reported runtime excludes dendrogram)",
+   "quote": "GGDPC 0.916 0.938 0.953 0.963 0.967",
+   "page": 25
+  },
+  {
+   "id": "C3",
+   "statement": "GGDPC runs in 0.028 seconds at n=500 on the two-component Gaussian mixture.",
+   "metric": "Running Time",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.028,
+   "unit": "seconds",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row GGDPC, column Sample Size 500, metric Running Time (seconds)",
+   "config_for_value": "n=500; GGDPC with Gaussian KDE density; cluster-center threshold is sample mean 1NN uphill distance plus 4 sample standard deviations; GGDPC running times exclude optional dendrogram construction.",
+   "reported_spread": null,
+   "est_compute": "CPU, single replication at n=500; about 28 s for 1000 replications",
+   "quote": "GGDPC 0.028 0.067 0.203 1.061 2.601",
+   "page": 25
+  },
+  {
+   "id": "C4",
+   "statement": "GGDPC runs in 2.601 seconds at n=8000 on the two-component Gaussian mixture.",
+   "metric": "Running Time",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 2.601,
+   "unit": "seconds",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row GGDPC, column Sample Size 8000, metric Running Time (seconds)",
+   "config_for_value": "n=8000; GGDPC with Gaussian KDE density; cluster-center threshold is sample mean 1NN uphill distance plus 4 sample standard deviations; GGDPC running times exclude optional dendrogram construction.",
+   "reported_spread": null,
+   "est_compute": "CPU, single replication at n=8000; about 43 min for 1000 replications",
+   "quote": "GGDPC 0.028 0.067 0.203 1.061 2.601",
+   "page": 25
+  },
+  {
+   "id": "C5",
+   "statement": "Original DPC attains ARI 0.898 at n=500 on the same Gaussian-mixture simulation.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.898,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row DPC, column Sample Size 500, metric ARI",
+   "config_for_value": "n=500; DPC with Gaussian KDE density; cluster centers selected as observations whose 1NN uphill distance exceeds the sample mean by at least 4 sample standard deviations; 1000 Monte Carlo replications.",
+   "reported_spread": null,
+   "est_compute": "CPU, about 0.039 s per replication; about 39 s for 1000 replications",
+   "quote": "DPC 0.898 0.920 0.935 0.946 0.953",
+   "page": 25
+  },
+  {
+   "id": "C6",
+   "statement": "Original DPC runs in 0.039 seconds at n=500 on the same Gaussian-mixture simulation.",
+   "metric": "Running Time",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.039,
+   "unit": "seconds",
+   "higher_is_better": false,
+   "table_ref": "Table 1, row DPC, column Sample Size 500, metric Running Time (seconds)",
+   "config_for_value": "n=500; DPC with Gaussian KDE density; cluster centers selected as observations whose 1NN uphill distance exceeds sample mean by at least 4 sample standard deviations.",
+   "reported_spread": null,
+   "est_compute": "CPU, single replication at n=500; about 39 s for 1000 replications",
+   "quote": "DPC 0.039 0.100 0.347 1.858 4.627",
+   "page": 25
+  },
+  {
+   "id": "C7",
+   "statement": "DPC-KNN-PCA attains ARI 0.935 at n=500, the strongest non-GGDPC ARI at that sample size.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.935,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row DPC-KNN-PCA, column Sample Size 500, metric ARI",
+   "config_for_value": "n=500; DPC-KNN-PCA; true number of clusters (two) supplied whenever required; k-nearest-neighbor parameter k selected to maximize ARI against ground-truth labels (oracle tuning); other tuning parameters set to recommended defaults; 1000 Monte Carlo replications.",
+   "reported_spread": null,
+   "est_compute": "CPU, about 0.020 s per replication; about 20 s for 1000 replications",
+   "quote": "DPC-KNN-PCA 0.935 0.939 0.943 0.945 0.948",
+   "page": 25
+  },
+  {
+   "id": "C8",
+   "statement": "Original DPC attains ARI 0.953 at n=8000, below GGDPC's 0.967 at the same sample size.",
+   "metric": "Adjusted Rand Index (ARI)",
+   "dataset": "two-component Gaussian mixture 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2)",
+   "split": "Monte Carlo simulation; 1000 replications; no train/test split",
+   "value": 0.953,
+   "unit": "ARI (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row DPC, column Sample Size 8000, metric ARI",
+   "config_for_value": "n=8000; DPC with Gaussian KDE density; cluster centers selected as observations whose 1NN uphill distance exceeds the sample mean by at least 4 sample standard deviations; 1000 Monte Carlo replications.",
+   "reported_spread": null,
+   "est_compute": "CPU, about 4.627 s per replication; about 77 min for 1000 replications",
+   "quote": "DPC 0.898 0.920 0.935 0.946 0.953",
+   "page": 25
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The Old Faithful result in Figure 1 is qualitative and the paper reports no numeric ARI or cluster label for it, so the cheapest quantitative central claim is GGDPC's n=500 ARI, which exercises the same density-gradient 1NN graph, center selection, and assignment pipeline under known mixture labels."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3 applies: no standard deviation or confidence interval is printed for the target ARI, and ARI is a bounded score printed in [0,1] on an n=500 simulation, so the band is 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Compute the density estimate bp(Xi) and the gradient estimate bg(Xi)=∇bp(Xi) at every observation.",
+   "cite": "Algorithm 1, Step 1; Section 3, Assumption A2",
+   "quote": "Compute bp(Xi) and bg(Xi) for each observation Xi ∈Xn.",
+   "page": 10
+  },
+  {
+   "id": "R2",
+   "stmt": "For every non-global-mode observation Xi, form the gradient-ascent update Xi+ηn bg(Xi), then choose the nearest observation Xj whose estimated density exceeds bp(Xi).",
+   "cite": "Section 3, Eq. (6); Algorithm 1, Step 2",
+   "quote": "Before searching for the 1NN of higher density, GGDPC takes a one-step gradient ascent from each observation and performs the 1NN uphill search around that update.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "Impose the higher-density constraint relative to the original observation Xi, not the gradient-updated point.",
+   "cite": "Section 3, paragraph after Eq. (6)",
+   "quote": "The gradient ascent update in (6) provides a stable search direction, while the density ordering remains anchored at the original observation.",
+   "page": 9
+  },
+  {
+   "id": "R4",
+   "stmt": "Add a directed edge Xi to its gradient-guided 1NN uphill point and assign the uphill weight as the Euclidean distance between the point and Xi, with the global mode handled as the root with infinite/undefined outgoing weight.",
+   "cite": "Section 3; Algorithm 1, Step 3; Eq. (7)",
+   "quote": "We also associate Xi with the weight bwn(Xi) defined in (7).",
+   "page": 9
+  },
+  {
+   "id": "R5",
+   "stmt": "Select cluster centers by thresholding gradient-guided 1NN uphill distances; for the Figure 1 Old Faithful illustration use the sample mean plus three sample standard deviations as the threshold.",
+   "cite": "Figure 1 caption, bottom left panel",
+   "quote": "The gray dashed line shows the distance threshold used in this illustration, equal to the sample mean uphill distance plus three sample standard deviations.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "For the Table 1 simulation comparisons, select cluster centers as observations whose 1NN uphill distance exceeds the sample mean by at least four sample standard deviations.",
+   "cite": "Section 8, paragraph before Table 1",
+   "quote": "For DPC and GGDPC, we select observations whose 1NN uphill distances exceed the sample mean by at least four sample standard deviations as cluster centers.",
+   "page": 26
+  },
+  {
+   "id": "R7",
+   "stmt": "Remove outgoing edges from selected centers and assign each remaining observation to the center reached by following its directed edges in the truncated graph.",
+   "cite": "Algorithm 1, Step 4; Section 3",
+   "quote": "Each remaining observation is assigned to a cluster center by following its directed path in Gλ.",
+   "page": 10
+  },
+  {
+   "id": "R8",
+   "stmt": "Produce the decision diagram with gradient-guided 1NN uphill distance on the horizontal axis and estimated density on the vertical axis, marking selected centers and the threshold line.",
+   "cite": "Figure 1 caption, bottom left panel",
+   "quote": "the gradient-guided 1NN uphill distance plotted against estimated density.",
+   "page": 3
+  },
+  {
+   "id": "R9",
+   "stmt": "Produce the density waterfall plot with GGDPC graph distance to the sample global mode on the horizontal axis and estimated density on the vertical axis.",
+   "cite": "Section 7.2; Figure 1 caption, top right panel",
+   "quote": "which displays estimated density against GGDPC graph distance to the sample global mode",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Compute the GGDPC graph distance as the sum of Euclidean edge lengths along the unique directed path to the sample global-mode root.",
+   "cite": "Section 7.1, Eq. (18)",
+   "quote": "For any Xi̸ = X∗, let Xi ≡Xi1 →Xi2 →· · · →XiTi ≡X∗denote its unique directed path in G",
+   "page": 21
+  },
+  {
+   "id": "R11",
+   "stmt": "Construct the GGDPC dendrogram by thresholding edge weights, taking connected components with edge directions ignored, so partitions refine as the threshold decreases.",
+   "cite": "Section 5.1, Propositions 3 and 4",
+   "quote": "The second is a GGDPC dendrogram, obtained by thresholding gradient-guided 1NN uphill distances and following how graph components merge as the threshold increases.",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "Equivalently build a single-linkage dendrogram from the dissimilarity matrix with adjacent-pair distances ||Xi-Xj|| and a common d* larger than every edge weight for nonadjacent pairs.",
+   "cite": "Section 5.1, Eq. (11); Proposition 4",
+   "quote": "Applying single linkage clustering to D then yields the same hierarchy as thresholding the GGDPC graph directly.",
+   "page": 15
+  },
+  {
+   "id": "R13",
+   "stmt": "For the Old Faithful illustration, use the 272 recorded eruptions, construct pairs of consecutive eruption durations (current and next), and apply GGDPC with Gaussian KDE.",
+   "cite": "Section 8; Figure 1 caption",
+   "quote": "GGDPC applied to pairs of consecutive eruption durations in the Old Faithful data.",
+   "page": 3
+  },
+  {
+   "id": "R14",
+   "stmt": "Do not use ground-truth labels to tune GGDPC on the Gaussian-mixture simulations.",
+   "cite": "Section 8, paragraph after Table 1",
+   "quote": "despite using no ground-truth information for parameter tuning.",
+   "page": 26
+  }
+ ],
+ "data": [
+  {
+   "name": "Old Faithful Geyser data (Azzalini and Bowman, 1990)",
+   "how_to_get": "Public Old Faithful eruption data with 272 eruptions; in R this is available as the base `faithful` dataset with columns `eruptions` and `waiting`. Use the `eruptions` sequence to form consecutive current-next eruption-duration pairs for Figure 1."
+  },
+  {
+   "name": "Two-component Gaussian-mixture simulation",
+   "how_to_get": "Synthetic data from 0.5 N((0,0),0.09 I2)+0.5 N((1,0),0.09 I2); generate n=500, 1000, 2000, 5000, 8000 as in Table 1 and Figure 2."
+  },
+  {
+   "name": "GGDPC reference implementation",
+   "how_to_get": "The paper states all code is available at the linked GitHub repository; use it for DPC-type competitor implementations and plotting conventions where possible."
+  }
+ ],
+ "code_links": [
+  "https://github.com/zhangyk8/GGDPC"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2610.01050",
+  "kind": "arxiv",
+  "arxiv_id": "2610.01050",
+  "url": "https://arxiv.org/abs/2610.01050",
+  "title": "Gradient-Guided Density Peak Clustering",
+  "pages": 91
+ }
+}

@@ -1,0 +1,257 @@
+{
+ "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+ "summary": "The paper addresses unsupervised anomaly detection on datasets with heterogeneous local densities, where global distance-based methods miss local outliers and density-based methods are quadratic-time and parameter-sensitive. It proposes SVEAD, which builds an ensemble of t random Voronoi partitions by uniformly sampling m anchor points per partition, assigns each point to its nearest anchor, and scores it within its cell as (delta/delta_max)*delta_mean (relative position normalized by cell radius, weighted by mean cell distance as a density proxy), averaging scores across the ensemble. On 45 ADBench benchmark datasets, SVEAD reportedly achieves the best average AUC-ROC (0.8538) and AUC-PR (0.5000) among 13 methods, with linear time and constant space complexity.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "SVEAD attains mean AUC-ROC 0.9339 on the cardio dataset (AD-Bench; 1,831 samples, 21 features, 9.61% anomalies), averaged over 5 unsupervised full-dataset scoring runs.",
+   "metric": "AUC-ROC",
+   "dataset": "cardio (ADBench)",
+   "split": "full dataset scored transductively, no train/test split; labels used only to compute AUC after prediction",
+   "value": 0.9339,
+   "unit": "AUC-ROC (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row cardio, column VEAD (SVEAD); std in Table 5, row cardio, column VEAD",
+   "config_for_value": "SVEAD per Algorithm 1: Euclidean distance, per-partition anchor count m grid-searched over {2^1,...,2^8} (paper prints superscripts as {21,...,28}), ensemble size t=100, dual-factor score (delta/delta_max)*delta_mean averaged over t partitions, unsupervised scoring of the whole cardio dataset, mean of 5 runs. The paper does not state which m produced 0.9339.",
+   "reported_spread": "std 0.0063 over 5 runs (Table 5, cardio, VEAD)",
+   "est_compute": "CPU-only; n=1,831, d=21, t=100, m<=256 is trivially vectorized: seconds per run, well under 1 CPU-minute for the full m-grid x 5 runs",
+   "quote": "cardio 0.6179 0.9260 0.9447 0.9531 0.9350 0.9219 0.9001 0.7507 0.6089 0.9281 0.4975 0.7651 0.9339",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "SVEAD achieves the highest average AUC-ROC of 0.8538 across the 45 ADBench datasets, beating all 12 baselines.",
+   "metric": "AUC-ROC (mean over 45 datasets)",
+   "dataset": "45 ADBench real-world datasets",
+   "split": "full datasets scored unsupervised; labels used only for AUC",
+   "value": 0.8538,
+   "unit": "AUC-ROC (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row Average, column VEAD (SVEAD)",
+   "config_for_value": "Same SVEAD configuration as all methods (m grid {2^1..2^8}, t=100, 5 runs averaged), evaluated on all 45 ADBench datasets of Table 3; per-dataset values in Table 4.",
+   "reported_spread": null,
+   "est_compute": "CPU; largest dataset 619,326 x 10; paper reports <3 s per 500k-instance CPU run, so all 45 datasets x 8 m values x 5 runs is a few CPU-hours",
+   "quote": "Average 0.6879 0.7772 0.8213 0.8327 0.7435 0.7504 0.7172 0.7558 0.6933 0.7348 0.7493 0.6651 0.8538",
+   "page": 14
+  },
+  {
+   "id": "C3",
+   "statement": "SVEAD achieves the highest average AUC-PR of 0.5000 across the 45 ADBench datasets, beating all 12 baselines.",
+   "metric": "AUC-PR (mean over 45 datasets)",
+   "dataset": "45 ADBench real-world datasets",
+   "split": "full datasets scored unsupervised; labels used only for AUC-PR",
+   "value": 0.5,
+   "unit": "AUC-PR (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row Average, column VEAD (SVEAD)",
+   "config_for_value": "Same SVEAD configuration as all methods (m grid {2^1..2^8}, t=100, 5 runs averaged) on all 45 ADBench datasets; per-dataset values in Table 6.",
+   "reported_spread": null,
+   "est_compute": "CPU; same run matrix as C2, a few CPU-hours",
+   "quote": "Average 0.2765 0.3941 0.4336 0.4414 0.3462 0.3394 0.3344 0.2990 0.2723 0.3111 0.3244 0.2471 0.5000",
+   "page": 16
+  },
+  {
+   "id": "C4",
+   "statement": "SVEAD attains mean AUC-ROC 0.9427 on annthyroid, the largest margin over the best baseline (SLAD 0.8696) among healthcare datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "annthyroid (ADBench; 7,200 samples, 6 features, 7.42% anomalies)",
+   "split": "full dataset scored unsupervised",
+   "value": 0.9427,
+   "unit": "AUC-ROC (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row annthyroid, column VEAD (SVEAD); std in Table 5",
+   "config_for_value": "SVEAD with m grid-searched over {2^1..2^8}, t=100, 5 runs averaged; specific m not stated.",
+   "reported_spread": "std 0.0024 over 5 runs (Table 5, annthyroid, VEAD)",
+   "est_compute": "CPU; 7,200 x 6, seconds per run",
+   "quote": "annthyroid 0.7392 0.8611 0.7542 0.7119 0.7887 0.7760 0.6522 0.7341 0.7303 0.6758 0.8696 0.5593 0.9427",
+   "page": 14
+  },
+  {
+   "id": "C5",
+   "statement": "SVEAD attains AUC-ROC 1.0000 on the http dataset (zero std over 5 runs).",
+   "metric": "AUC-ROC",
+   "dataset": "http (ADBench; 567,498 samples, 3 features, 0.39% anomalies)",
+   "split": "full dataset scored unsupervised",
+   "value": 1.0,
+   "unit": "AUC-ROC (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row http, column VEAD (SVEAD); std in Table 5",
+   "config_for_value": "SVEAD with m grid-searched over {2^1..2^8}, t=100, 5 runs averaged; specific m not stated.",
+   "reported_spread": "std 0.0000 over 5 runs (Table 5, http, VEAD)",
+   "est_compute": "CPU; 567k x 3, seconds per run per the paper's scalability numbers",
+   "quote": "http 0.4392 0.9998 0.9968 0.9987 0.9786 0.9915 0.9972 0.9747 0.2614 0.9933 0.9992 0.9963 1.0000",
+   "page": 14
+  },
+  {
+   "id": "C6",
+   "statement": "SVEAD attains AUC-ROC 1.0000 on the musk dataset (zero std over 5 runs).",
+   "metric": "AUC-ROC",
+   "dataset": "musk (ADBench; 3,062 samples, 166 features, 3.17% anomalies)",
+   "split": "full dataset scored unsupervised",
+   "value": 1.0,
+   "unit": "AUC-ROC (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 4, row musk, column VEAD (SVEAD); std in Table 5",
+   "config_for_value": "SVEAD with m grid-searched over {2^1..2^8}, t=100, 5 runs averaged; specific m not stated.",
+   "reported_spread": "std 0.0000 over 5 runs (Table 5, musk, VEAD)",
+   "est_compute": "CPU; 3,062 x 166, seconds per run",
+   "quote": "musk 0.4912 0.9997 1.0000 1.0000 0.9559 0.9463 0.9466 0.8562 0.3118 0.9819 0.8706 0.5599 1.0000",
+   "page": 14
+  },
+  {
+   "id": "C7",
+   "statement": "SVEAD attains mean AUC-PR 0.5356 on cardio (below IDK's 0.6381 on this dataset).",
+   "metric": "AUC-PR",
+   "dataset": "cardio (ADBench)",
+   "split": "full dataset scored unsupervised",
+   "value": 0.5356,
+   "unit": "AUC-PR (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row cardio, column VEAD (SVEAD); std in Table 7",
+   "config_for_value": "SVEAD with m grid-searched over {2^1..2^8}, t=100, 5 runs averaged; specific m not stated.",
+   "reported_spread": "std 0.0246 over 5 runs (Table 7, cardio, VEAD)",
+   "est_compute": "CPU; 1,831 x 21, seconds per run",
+   "quote": "cardio 0.1729 0.5861 0.5684 0.6381 0.5674 0.5776 0.5231 0.3038 0.2066 0.5909 0.1653 0.2948 0.5356",
+   "page": 16
+  },
+  {
+   "id": "C8",
+   "statement": "SVEAD runtime scales linearly: it processes 500,000 instances (10 dimensions) in less than 3 seconds on CPU, and in less than 1 second with GPU-parallel distance computation.",
+   "metric": "runtime (upper bound)",
+   "dataset": "scaling dataset used for Figure 5a (samples varied, dimensionality fixed at 10)",
+   "split": "n/a (unsupervised scoring)",
+   "value": 3,
+   "unit": "seconds (CPU, 500k instances; GPU < 1 s)",
+   "higher_is_better": false,
+   "table_ref": "Section 5.3 Scalability Analysis and Figure 5a",
+   "config_for_value": "SVEAD CPU implementation and GPU variant, dimensionality fixed at 10, sample size swept up to 500,000; device CPU AMD Ryzen 9 9950X, GPU Nvidia RTX 4090.",
+   "reported_spread": null,
+   "est_compute": "CPU AMD Ryzen 9 9950X / GPU RTX 4090; seconds per run",
+   "quote": "requiring less than 3 seconds to process 500,000 instances on CPU",
+   "page": 8
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "User hint explicitly targets Table 4 SVEAD AUC-ROC on cardio. It is the cheapest probe of the paper's central claim (SVEAD's dual-factor Voronoi scoring is state-of-the-art on ADBench): one 1,831-point dataset, CPU-only, seconds per run, no training. Honesty note for the reproducer: on cardio the paper itself shows IDK (0.9531) and iNNE (0.9447) above SVEAD's 0.9339; the target is SVEAD's reported value, not superiority on this specific dataset."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.0189,
+  "why": "Rule 1: the paper reports a std over repeated runs for exactly this target value (Table 5, cardio, VEAD: std 0.0063 over 5 runs). Band = 3 x 0.0063 = 0.0189 in AUC fraction units, kept at the 4-decimal precision the paper prints. Although AUC is bounded, Rule 1 takes precedence over Rules 2/3."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "For each of t partitions, sample m anchors uniformly from the full dataset X (including anomalies) WITHOUT replacement; anchors are data points themselves.",
+   "cite": "Section 4.1 'Anchor Sampling'; Algorithm 1 line 2",
+   "quote": "we randomly sample m points from the dataset X without replacement to form an anchor set",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Cell membership is determined purely by nearest-anchor queries under Euclidean distance; no explicit Voronoi diagram (boundaries/vertices) is constructed.",
+   "cite": "Section 4.1, Equation (1); Algorithm 1 lines 3-6",
+   "quote": "Each point x ∈X is assigned to its nearest anchor",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Within-cell score must be the dual-factor product s(x) = (delta/delta_max) * delta_mean, where delta is distance to the assigned anchor, delta_max the maximum anchor-distance within the cell, delta_mean the mean anchor-distance within the cell (Eq. 2-3).",
+   "cite": "Section 4.2, Equations (2)-(3); Algorithm 1 lines 7-9 and 17",
+   "quote": "the first term δ/δmax normalizes the distance by the maximum cell radius",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "If a cell contains only its anchor (|Ci| = 1), skip scoring for that point in that partition rather than dividing by delta_max = 0.",
+   "cite": "Section 4.2 'Within-Cell Scoring', singleton-cell clause",
+   "quote": "we skip scoring for this point in this partition and rely on the other t −1 partitions",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "Final anomaly score is the arithmetic mean of the per-partition scores across the t partitions (Eq. 5); higher score = more anomalous.",
+   "cite": "Section 4.2 'Ensemble Aggregation', Equation (5); Algorithm 1 lines 12-21",
+   "quote": "The final anomaly score is computed as the arithmetic mean",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Hyperparameters for SVEAD (and iForest, iNNE, IDK): subsample/anchor count m grid-searched over {2^1,...,2^8} (printed in the PDF as {21, 22, ..., 28}; superscripts are lost in text extraction), with ensemble size t fixed at 100.",
+   "cite": "Section 5.1 'Parameter Settings'",
+   "quote": "the number of sample points is searched over {21, 22, . . . , 28}, with ensemble size fixed at 100",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Evaluation is fully unsupervised: the model scores all data without labels; labels are used only afterwards to compute AUC-ROC/AUC-PR.",
+   "cite": "Section 5.1 'Evaluation Metrics'",
+   "quote": "the labels are used to compute the AUC-ROC and AUC-PR for each dataset only after the models have made predictions",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Repeat each experiment 5 times (different random anchor draws) and report the mean; Tables 5 and 7 give the corresponding standard deviations.",
+   "cite": "Section 5.1 'Evaluation Metrics'; Appendix D note before Tables 4-7",
+   "quote": "For each dataset and method, we repeat experiments 5 times and report the average performance.",
+   "page": 7
+  },
+  {
+   "id": "R9",
+   "stmt": "Use the ADBench versions of the 45 real-world datasets; for cardio: 1,831 samples x 21 features, 176 anomalies (9.61%), per Table 3.",
+   "cite": "Section 5.1 'Datasets'; Appendix A Table 3",
+   "quote": "We evaluate SVEAD on 45 publicly available benchmark datasets widely used in anomaly detection from ADBench (Han et al., 2022).",
+   "page": 7
+  },
+  {
+   "id": "R10",
+   "stmt": "For reproducing comparison columns: load LOF, iForest, iNNE, IDK, ECOD, COPOD, DeepSVDD, AE etc. from PyOD; take SLAD and DTE from their official repositories.",
+   "cite": "Section 5.1 'Baseline Methods'",
+   "quote": "Most algorithms are implemented from the PyOD library (Zhao et al., 2019), while SLAD and DTE are obtained from their official repositories.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "For baseline parity: LOF's neighborhood size k grid is {5, 10, 20, 40}; ECOD and COPOD run with defaults (deterministic, zero variance); deep methods use original-paper defaults.",
+   "cite": "Section 5.1 'Parameter Settings'",
+   "quote": "LOF's neighborhood size k is searched over {5, 10, 20, 40}",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "A reference implementation exists; consult it to resolve ambiguities (it is the ground truth for details the paper omits).",
+   "cite": "Section 1, code availability statement",
+   "quote": "All the code are available at https://anonymous. 4open.science/r/SVEAD-2B97/.",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "ADBench cardio (and the other 44 real-world benchmark datasets)",
+   "how_to_get": "Official ADBench benchmark repository (Han et al., NeurIPS 2022): https://github.com/Minqi824/ADBench - dataset files (npz/class format) are downloaded via the repo's data links; cardio = 1,831 samples x 21 features, 176 anomalies (9.61%), matching Table 3 of the paper."
+  },
+  {
+   "name": "PyOD (baselines LOF, iForest, iNNE, IDK, ECOD, COPOD, DeepSVDD, AE)",
+   "how_to_get": "pip install pyod; source at https://github.com/yzhao062/pyod (the library the paper cites for baseline implementations)."
+  },
+  {
+   "name": "SVEAD reference implementation",
+   "how_to_get": "https://anonymous.4open.science/r/SVEAD-2B97/ as printed in the paper (anonymous link; may be replaced by a de-anonymized repository at publication)."
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/SVEAD-2B97/",
+  "https://github.com/Minqi824/ADBench",
+  "https://github.com/yzhao062/pyod"
+ ],
+ "stated_compute": "Only for the scalability experiment (Figure 5 caption): \"The test device is on CPU @AMD Ryzen 9 9950X and GPU @Nvidia RTX 4090.\" No hardware is stated for the 45-dataset benchmark runs.",
+ "paper_meta": {
+  "source": "2601.03664",
+  "kind": "arxiv",
+  "arxiv_id": "2601.03664",
+  "url": "https://arxiv.org/abs/2601.03664",
+  "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+  "pages": 17
+ }
+}

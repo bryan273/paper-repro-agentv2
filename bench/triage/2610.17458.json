@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Selective Type I error of the proposed ppolar test at α=0.05 after k-means on null Gaussian data (median over cells, e.g. isotropic covariance), i.e. a single cell of the Type I error table",
+  "table_ref": "Table D.1 (also Figure 1(b), Figure D.1)",
+  "dataset": "Synthetic Gaussian data from the paper's simulation design (n up to 200, p up to 100, isotropic/AR(1)/compound-symmetric/spiked covariance)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/yiqunchen/selectiveHotelling",
+  "https://github.com/yiqunchen/selectiveHotelling-paper"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Synthetic data plus an R package; one p-value takes 2-6 s on one core (M=5000, L=2), so a few hundred replicates for one (n,p,Σ) cell is minutes of compute, plus install and code-reading overhead."
+ },
+ "blockers": [
+  "Results are Monte Carlo estimates; exact table cell requires matching the paper's simulation seed/design",
+  "R package and reproduction repo must be installed and understood (no GPU, but some setup time)"
+ ],
+ "suitable": true,
+ "id": "2610.17458",
+ "title": "Selective Inference for Clustering Under Unknown Covariance",
+ "pages": 50,
+ "model": "DeepSeek-V4.1-Flash"
+}

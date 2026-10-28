@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Match4Rec achieves NDCG@10 of 0.3370 on the Beauty dataset, outperforming BERT4Rec (0.3298) by 2.1%.",
+  "table_ref": "Table 2, row Beauty, column NDCG@10, Ours",
+  "dataset": "Amazon Beauty (review subset)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code released; must reimplement Match4Rec and BERT4Rec baseline from paper, preprocess Amazon Beauty reviews, and train a 2-layer Transformer on 22k users/12k items for multiple epochs on CPU."
+ },
+ "blockers": [
+  "No official code or configuration files released",
+  "Baseline BERT4Rec results differ from original paper, requiring careful reimplementation",
+  "Exact preprocessing of Amazon review subset not fully specified",
+  "Hyperparameter tuning (learning rate, dropout, negative sampling) needed to match reported numbers"
+ ],
+ "suitable": false,
+ "id": "2008.13345",
+ "title": "Match4Rec: A Novel Recommendation Algorithm Based on Bidirectional Encoder Representation with the Matching Task",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

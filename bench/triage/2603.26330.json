@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "LoRA+IADA improves the average reasoning score (R-Avg) from 52.2 to 61.7 (+9.5) over LoRA-only on Qwen3-VL-2B.",
+  "table_ref": "Table 1, rows B (LoRA-only) and D (IADA+LoRA), R-Avg and Δ(D−B)",
+  "dataset": "Qwen3-VL-2B fine-tuned on LLaVA-Instruct-Mix (259K samples), evaluated on 11 benchmarks: MMMU, MathVista, ScienceQA, MMStar, AI2D, MME, POPE, RealWorldQA, ChartQA, TextVQA, OCRBench"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 200,
+  "ref_minutes": 12000,
+  "gpu_speedup": 50,
+  "basis": "The target requires fine-tuning a 2B VLM on 259K visual-instruction samples for 16,198 steps plus evaluating 11 VLM benchmarks; the paper used a single H200 GPU and reports no code, so an AI agent would have to implement IADA and run a full SFT/eval protocol, which is infeasible on an 8-core CPU-only 16GB laptop in hours."
+ },
+ "blockers": [
+  "No code or repository link in the paper; IADA and the exact training/eval pipeline would need to be reimplemented from scratch.",
+  "Target requires full supervised fine-tuning of Qwen3-VL-2B on 259K LLaVA-Instruct-Mix samples (16,198 optimization steps), not a small classic ML run.",
+  "Paper used a single NVIDIA H200 GPU; CPU-only training/inference on the target laptop is practically infeasible.",
+  "Evaluation requires running 11 vision-language benchmarks, many with large image sets and generation-based scoring.",
+  "Even the cheapest single-benchmark variant still requires the same full fine-tuning run, so the cost is dominated by SFT."
+ ],
+ "suitable": false,
+ "id": "2603.26330",
+ "title": "Mitigating the Reasoning Tax in Vision-Language Fine-Tuning with Input-Adaptive Depth Aggregation",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

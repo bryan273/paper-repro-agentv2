@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "ProReflow-II attains FID = 10.70 on the MS COCO 2014 validation set with only 4 sampling steps (SDv1.5 backbone), close to its 32-step DDIM teacher (FID = 10.05).",
+  "table_ref": "Table 2 (Flow-based methods, ProReflow-II 4 steps); also quoted in the abstract",
+  "dataset": "MS COCO 2014 validation (model trained on 0.8M LAION-Art images)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 500,
+  "ref_minutes": 1000000,
+  "gpu_speedup": 100,
+  "basis": "The metric is produced by a student SDv1.5 UNet trained in three progressive reflow stages (windows 8-4-2, 10000 iterations at batch 256 each), which the paper reports as 6.5 + 8.7 = 15.2 H20-GPU-days on 8 NVIDIA H20 GPUs, plus 32-step DDIM teacher data synthesis and COCO FID/CLIP evaluation - far beyond a CPU laptop (only a GPU-enabled, non-reproducible-in-hours run)."
+ },
+ "blockers": [
+  "No code or checkpoint released: the PDF contains no repository link and only states 'Our codes will be released at Github'",
+  "Training requires 8 NVIDIA H20 GPUs and ~15.2 H20-GPU-days for the full ProReflow-I + ProReflow-II pipeline (SDXL variant even larger)",
+  "Training set is 0.8M LAION-Art images (SDXL variant additionally uses 1.5M laion2B-en-aesthetic samples) - hundreds of GB download, filtering and preprocessing",
+  "Teacher-trajectory synthesis needs 32-step DDIM sampling of the frozen SDv1.5 in every training batch, an expensive per-iteration cost that cannot be scaled to few CPU hours",
+  "FID evaluation on COCO-2014/2017 at 512x512 with CLIP scoring also needs stable-diffusion-scale inference, impractical on 8 CPU cores"
+ ],
+ "suitable": false,
+ "id": "2503.04824",
+ "title": "ProReflow: Progressive Reflow with Decomposed Velocity",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

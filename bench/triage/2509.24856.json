@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Random Forest test accuracy of 90.4% (Table 2) for predicting Billboard Hot 100 inclusion on the balanced 7,180-track dataset",
+  "table_ref": "Table 2",
+  "dataset": "Custom dataset D: 3,590 charting + 3,590 non-charting Spotify singles (1985+), joined to Billboard Hot 100 archive"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/guoguo12/billboard-charts"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "Modeling is trivial (Random Forest on ~7k rows), but the dataset D is not released: it requires re-querying the Spotify Web API for 30,000 tracks (now largely deprecated audio-features endpoints, rate-limited) plus scraping Billboard charts and rebuilding the title-artist fuzzy join, which is the dominant cost and may be infeasible."
+ },
+ "blockers": [
+  "Dataset D not published; must be reconstructed from scratch",
+  "Spotify audio-features/popularity API endpoints deprecated/restricted for new apps",
+  "Title-artist fuzzy matching to Billboard archive is non-trivial and error-prone",
+  "Popularity feature is time-dependent and non-reproducible"
+ ],
+ "suitable": false,
+ "id": "2509.24856",
+ "title": "Beyond the Hook: Predicting Billboard Hot 100 Chart Inclusion with Machine Learning from Streaming, Audio Signals, and Perceptual Features",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

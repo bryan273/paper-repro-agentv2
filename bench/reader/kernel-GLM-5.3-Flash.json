@@ -1,0 +1,262 @@
+{
+ "title": "Kernel Representation and Similarity Measure for Incomplete Data",
+ "summary": "Measuring similarity between samples with missing values usually forces row deletion or imputation as a separate preprocessing step, which loses information and biases downstream tasks such as clustering. The paper proposes the proximity kernel: per-feature equal-frequency (percentile) bin centers with nearest-center (Voronoi) assignment and one-hot encoding into a sparse d×nbins space, where missing features are estimated as bin-probability distributions via a three-level cascading fallback (intersection matching → union matching → global priors) using kernel mean embedding, and similarity is the normalized inner product K=(1/d)z^T z'. Averaged over 10 runs of K-means (k = ground-truth class count) on 12 UCI incomplete datasets, it reaches 0.4245 mean NMI versus 0.3773 for the best baseline (HI-PMK), is best or second-best on 10 of 12 datasets, and scores 0.2289 NMI on Hepatitis.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Proximity kernel (Ours) achieves NMI 0.2289 on Hepatitis with K-means, the best on this dataset (best baseline HI-PMK: 0.2001; Mean imputation: 0.1932).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Hepatitis (UCI): 155 samples, 19 features (13 categorical, 6 numerical), 5.67% missing, 2 classes",
+   "split": "full dataset (unsupervised clustering, no train/test split; NMI computed against ground-truth class labels)",
+   "value": 0.2289,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Hepatitis'",
+   "config_for_value": "Proximity kernel: equal-frequency binning per feature with nbins tuned over {2,3,4,6,8}; proximity (nearest-center) assignment; one-hot encoding; cascading fallback (intersection -> union -> global prior) for the 5.67% missing cells; K-means with k=2 (ground-truth class count) on the representation z_i; result is the average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU only; seconds per run on 155x19 data; full 10-run x 5-value bin-grid search under a minute",
+   "quote": "Results between baselines and proposed methods in terms of NMI. The best performance are in bold.",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "Proximity kernel obtains the highest average NMI across all 12 datasets: 0.4245 vs 0.3773 for HI-PMK (next best) and 0.3540 for MIWAE.",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Average over the 12 UCI datasets of Table 2",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.4245,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'AVG.'",
+   "config_for_value": "Same protocol as all Table 3 cells: PK with nbins in {2,3,4,6,8}, K-means with k = ground-truth class count, NMI, average of 10 experiments per dataset, then averaged over the 12 datasets.",
+   "reported_spread": null,
+   "est_compute": "CPU; PK is single-pass linear time, but the full 12-dataset sweep incl. Adult (48,842 samples) and Mushroom (8,124) is roughly minutes-to-an-hour on a laptop",
+   "quote": "The proposed method achieves the best or second-best performance on 10 out of 12 datasets, and obtains the highest average NMI across all datasets.",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "Proximity kernel achieves NMI 0.6964 on Kidney, the best of all 10 methods (HI-PMK second at 0.6663).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Kidney (UCI): 400 samples, 25 features (3 categorical, 22 numerical), 10.54% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.6964,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Kidney'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8}; K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (400 samples, 10 runs)",
+   "quote": "Each experiment was conducted 10 times and report average results for stability.",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "Proximity kernel achieves NMI 0.3315 on Mammo, best of all methods (HI-PMK second at 0.3271).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Mammo (UCI Mammography): 961 samples, 5 numerical features, 3.37% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.3315,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Mammo'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8} (sensitivity analysis shows NMI stays in 0.30-0.33 for bins 2-10); K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (961 samples, 10 runs)",
+   "quote": "For the Mammo dataset, NMI scores fluctuate only slightly between 0.30 and 0.33 across all tested bin numbers.",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "Proximity kernel achieves NMI 0.785 on Wiscom (Cancer), the best of all methods (HI-PMK second at 0.7585).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Cancer/Wiscom (UCI): 699 samples, 9 features (1 categorical, 8 numerical), 0.25% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.785,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Wiscom'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8}; K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (699 samples, 10 runs)",
+   "quote": "we applied K-means with the number of clusters to the ground-truth number of classes",
+   "page": 6
+  },
+  {
+   "id": "C6",
+   "statement": "Proximity kernel achieves NMI 0.554 on M.room (Mushroom), by far the best (HI-PMK second at 0.3061; all imputation baselines below 0.13).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Mushroom/M.room (UCI): 8124 samples, 22 features (21 categorical, 1 numerical), 1.39% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.554,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'M.room'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8}; K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds-to-a-minute (8124 samples, 10 runs)",
+   "quote": "Table 3 presents the full results across 12 datasets.",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "Proximity kernel achieves NMI 0.3698 on Credit, second best behind MIWAE (0.4279).",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Credit (UCI): 690 samples, 15 features (9 categorical, 6 numerical), 0.64% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.3698,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Credit'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8}; K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (690 samples, 10 runs)",
+   "quote": "we perform hyperparameter tuning for all baseline methods",
+   "page": 6
+  },
+  {
+   "id": "C8",
+   "statement": "Proximity kernel achieves NMI 0.4947 on Voting (MIWAE best at 0.5012; HI-PMK 0.4892), one of the cells supporting the Friedman-Nemenyi finding that PK significantly outperforms all methods except HI-PMK.",
+   "metric": "NMI (Normalized Mutual Information), fraction in [0,1]",
+   "dataset": "Voting (UCI Congressional Voting Records): 435 samples, 16 categorical features, 5.63% missing, 2 classes",
+   "split": "full dataset (clustering, no split)",
+   "value": 0.4947,
+   "unit": "NMI (fraction in [0,1])",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row 'Ours', column 'Voting'",
+   "config_for_value": "PK with nbins tuned over {2,3,4,6,8}; K-means with k=2; average of 10 experiments.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (435 samples, 10 runs)",
+   "quote": "PK is the only method that shows significant better performance than all methods except HI-PMK.",
+   "page": 7
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user's target hint is exactly this cell (Table 3, proximity kernel NMI on Hepatitis, K-means). It is the cheapest demonstration of the paper's central claim that the kernel representation beats impute-then-cluster baselines: 155-sample dataset, CPU-only, no iterative training, deterministic pipeline aside from K-means init."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: NMI is a bounded score and the Hepatitis set has only 155 examples (<2,000), so the band is 2.0 points; the paper prints NMI as a fraction in [0,1] (0.2289), so 0.02 in fraction units. The paper reports only a 10-run mean with no std/CI, so rule 1 does not apply."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Per feature, compute nbins bin centers as evenly-spaced percentiles of the observed (non-missing) values only: c_{j,k} = percentile(X_obs,j, (k-1)*100/(nbins-1)), k=1..nbins, so the first and last centers equal the feature min and max.",
+   "cite": "Eq. (4), §4.1.1; §4.5 step (1)",
+   "quote": "The bin centers cj,kare determined by computing evenly-spaced percentiles of the observed distribution:",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Assign each observed value to its NEAREST bin center (argmin over centers, Eq. 5), i.e. Voronoi proximity assignment — NOT classic interval-membership binning; this is what produces the density-adaptive cells.",
+   "cite": "Eq. (5), §4.1.2",
+   "quote": "Unlike traditional binning methods that assign values to bins based on interval membership, our approach employs proximity assignment.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "One-hot encode the bin assignment of each feature (binary vector of length nbins) and concatenate across all features to get z_i of length d*nbins; complete samples have exactly d ones.",
+   "cite": "Eqs. (6)-(7), §4.1.3",
+   "quote": "The complete encoding for sample iconcatenates the one-hot vectors across all features as:",
+   "page": 4
+  },
+  {
+   "id": "R4",
+   "stmt": "Missing handling Level 1: per observed feature j build C_{i,j} = {m : m != i, b_{m,j} = b_{i,j}}, take the intersection S1(i) over ALL observed features; if S1(i) is non-empty, set the missing features' encodings to the average one-hot over S1(i) (KME).",
+   "cite": "Eqs. (8)-(10), §4.2.1",
+   "quote": "If S1(i) ≠∅, we estimate missing encoding through kernel mean embedding:",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Level 2 fallback: if S1(i) is empty, use the union S2(i) of C_{i,j} over observed features (samples sharing at least one bin on any observed feature) and average their one-hot encodings.",
+   "cite": "Eqs. (11)-(12), §4.2.2",
+   "quote": "we relax the constraint to consider samples that match on any observed feature.",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Level 3 fallback: if S2(i) is empty, set the missing feature's encoding to the global bin prior p_{j,k} = count(samples in bin k for feature j) / count(samples with observed feature j), which sums to 1.",
+   "cite": "Eqs. (13)-(14), §4.2.3",
+   "quote": "we cannot leverage local similarity and must use the global distribution of each missing feature.",
+   "page": 5
+  },
+  {
+   "id": "R7",
+   "stmt": "Define the kernel K(x_m,x_n) = (1/d) z_m^T z_n and use the representation z_i directly as input features for K-means with k set to the ground-truth number of classes; evaluate with NMI.",
+   "cite": "Eq. (15), §4.3; §5.1 Evaluation Protocol",
+   "quote": "For fair comparison, we applied K-means with the number of clusters to the ground-truth number of classes.",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Every reported cell is the average of 10 repeated experiments; reproduce with 10 repetitions and report the mean.",
+   "cite": "§5.1 Evaluation Protocol",
+   "quote": "Each experiment was conducted 10 times and report average results for stability.",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "The method's single hyperparameter, bins per dimension, must be searched over {2,3,4,6,8} for the main-table results; the paper also reports stability for nbins in 2-10 and recommends 3-6 in practice.",
+   "cite": "§5.1 Hyperparameter Settings; §5.5",
+   "quote": "For the proximity kernel, we search the number of bins per dimension in {2, 3, 4, 6, 8}.",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Evaluate on the 12 UCI datasets of Table 2 with their NATIVE missingness (no synthetic masking for Table 3; synthetic MCAR 10-50% is used only in §5.3 on 3L and Messidor). Hepatitis must be 155x19, 13 categorical + 6 numerical, 5.67% missing, 2 classes.",
+   "cite": "Table 2; §5.1 Datasets; §5.3",
+   "quote": "We evaluate the proximity kernel on 12 real-world datasets with varying characteristics.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "If reproducing the full comparison table: baselines are Mean, MissForest, MICE, KNN, EM (scikit-learn) and GAIN, MIRACLE, MIWAE, HI-PMK (hyperimpute), each with the paper's stated hyperparameter grids.",
+   "cite": "§5.1 Baselines and Hyperparameter Settings",
+   "quote": "The code of them are from python library scikit-learn 2 and hyperimpute 3 [10].",
+   "page": 6
+  },
+  {
+   "id": "R12",
+   "stmt": "Clustering on z_i is kernel k-means with the PSD kernel K = (1/d) Z Z^T; a plain K-means on z_i is an equivalent implementation because the objective depends only on K(x_i,x_j).",
+   "cite": "Eqs. (16)-(19), §4.4",
+   "quote": "Expanding the squared distance shows that this objective depends on kernel values K(xi,xj), making k-means in representation space equivalent to a kernel-based clustering approach.",
+   "page": 6
+  }
+ ],
+ "data": [
+  {
+   "name": "UCI datasets of Table 2 (Kidney, Mammo, Heart, Hepatitis, Horse, Cancer/Wiscom, Credit, Adult, Voting, Mushroom/M.room, Tumor, Soybean)",
+   "how_to_get": "Download from the UCI Machine Learning Repository at https://archive.ics.uci.edu/datasets (cited as footnote 1 in §5.1). For Hepatitis use the standard hepatitis data file (155 rows, 19 attribute columns) with '?' as the missing marker; hold out the Class column as NMI ground truth."
+  },
+  {
+   "name": "hyperimpute package (deep baselines GAIN/MIRACLE/MIWAE and possibly bundled copies of these datasets)",
+   "how_to_get": "pip install hyperimpute; documentation at https://hyperimpute.readthedocs.io/en/latest/ (footnote 3 of the paper)."
+  },
+  {
+   "name": "scikit-learn (KMeans, NMI, Mean/KNN/IterativeImputer baselines)",
+   "how_to_get": "pip install scikit-learn; imputation docs at https://scikit-learn.org/stable/modules/impute.html (footnote 2 of the paper)."
+  },
+  {
+   "name": "Authors' code for the proximity kernel",
+   "how_to_get": "Anonymous repository stated in the abstract: https://anonymous.4open.science/r/proximity-kernel-2289 — likely contains the exact preprocessing, categorical-feature handling, and bin-encoding implementation."
+  }
+ ],
+ "code_links": [
+  "https://anonymous.4open.science/r/proximity-kernel-2289",
+  "https://archive.ics.uci.edu/datasets",
+  "https://scikit-learn.org/stable/modules/impute.html",
+  "https://hyperimpute.readthedocs.io/en/latest/"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2510.13352",
+  "kind": "arxiv",
+  "arxiv_id": "2510.13352",
+  "url": "https://arxiv.org/abs/2510.13352",
+  "title": "Kernel Representation and Similarity Measure for Incomplete Data",
+  "pages": 9
+ }
+}

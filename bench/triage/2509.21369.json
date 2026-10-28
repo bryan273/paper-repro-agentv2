@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Total distance of the optimized route for Configuration 2 (5 K-means clusters, 10 iterations, GA mutation rate 0.10, 100 GA iterations) is 308.49 km, compared to the sequential reference route distance of 417.53 km.",
+  "table_ref": "Table 4, row Config 2 (Total Distance = 308.49 km)",
+  "dataset": "100 EV charging stations in Istanbul (lat/lon coordinates)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/oyenigun/RouteOptimization"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "K-means and a small genetic algorithm on 100 points run in seconds; the main cost is installing Python packages and possibly fetching the dataset from the linked GitHub repo."
+ },
+ "blockers": [
+  "The GitHub repository may be incomplete or outdated; the exact random seeds and parameter settings for the GA are not fully specified, so exact reproduction of 308.49 km may require tuning.",
+  "The paper mentions using Google Maps API for driving distances, but the reported distances appear to be Euclidean; if the code uses the API, an API key would be needed."
+ ],
+ "suitable": true,
+ "id": "2509.21369",
+ "title": "Smart Routing for EV Charge Point Operators in Mega Cities: Case Study of Istanbul",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

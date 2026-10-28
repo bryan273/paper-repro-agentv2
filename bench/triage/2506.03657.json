@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Estimation error of SubSearch on a synthetic SBM graph with n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, γ=0.3, reported as 0.05 (sum of absolute differences between true and estimated Γ).",
+  "table_ref": "Section 4.1, single-run experiment (Figure 2a)",
+  "dataset": "synthetic SBM graph (n=200, K=2, γ=0.3)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/leobianco/robust_estim_sbm/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Paper reports 14 minutes on a dual-core i5 with 8 GB RAM for the single-run experiment; on an 8-core laptop with code already available, the run should take similar or less time, plus install and data generation overhead."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2506.03657",
+ "title": "SubSearch: Robust Estimation and Outlier Detection for Stochastic Block Models via Subgraph Search",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

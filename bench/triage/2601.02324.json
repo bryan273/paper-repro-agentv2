@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AUC = 0.9536 for K-means clustering in latent space at 50 ppm noise (highest score at that noise level)",
+  "table_ref": "Table 2, row 'Noise 50 ppm', Feature Space 'Latent', column 'K-means'",
+  "dataset": "Modified ABC database (69,099 noiseless TauREx-recomputed spectra, CO2-rich anomalies vs CO2-poor normal)"
+ },
+ "release": "partial",
+ "code_links": [
+  "GitHub repository mentioned in Section 3.1 ('Further details of our implementation can be found in our public code available on Github') but no URL given in the text"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "The headline cell requires the noiseless TauREx-recomputed ABC spectra (not in the original ABC release; must be regenerated with TauREx/Alfnoor or obtained from the prior Forestano et al. 2023 work), then training an 8-dim autoencoder on ~tens of thousands of 52-bin spectra plus K-means/ROC evaluation across noise levels; CPU-feasible but data reconstruction dominates."
+ },
+ "blockers": [
+  "Noiseless TauREx spectra are not part of the public ABC database and must be regenerated with TauREx/Alfnoor (or sourced from the earlier Forestano et al. 2023 paper)",
+  "Code link is referenced but no URL is provided in the paper text",
+  "Exact preprocessing (radius cut, 210 ppm feature-height filter, CO2 thresholds) must be reimplemented from description"
+ ],
+ "suitable": false,
+ "id": "2601.02324",
+ "title": "Hunting for \"Oddballs\" with Machine Learning: Detecting Anomalous Exoplanets Using a Deep-Learned Low-Dimensional Representation of Transit Spectra with Autoencoders",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

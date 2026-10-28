@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ROC AUC of Two-Stage LKPLO (SVM-like) on the Glass dataset (0.881 ± 0.105)",
+  "table_ref": "Table 3",
+  "dataset": "Glass (ODDS)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement Two-Stage LKPLO from paper, then run 5-fold CV with Optuna (50 trials per fold) on Glass (214 samples, 9 dims) — small data but many hyperparameter trials and custom projection search."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Must reimplement kernel PCA, clustering, projection direction ensemble, and SVM-like loss from description",
+  "Optuna hyperparameter search (50 trials × 5 folds) adds runtime"
+ ],
+ "suitable": true,
+ "id": "2510.24043",
+ "title": "Localized Kernel Projection Outlyingness: A Two-Stage Approach for Multi-Modal Outlier Detection",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

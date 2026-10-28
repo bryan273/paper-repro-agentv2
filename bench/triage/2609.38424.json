@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "EB-GAD AUROC = 91.4 on Facebook (tied-best with TAM), reproduced by the training-free EB-GAD pipeline",
+  "table_ref": "Table 1, row Facebook, column EB-GAD",
+  "dataset": "Facebook (attributed social graph, standard GAD benchmark)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/heraclixus/EBGAD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 25,
+  "basis": "Paper reports the full run behind a Table 1 cell takes 8 s on 16 CPU threads for Facebook (small graph, no training, closed-form eigendecomposition + EB fit); the rest is install and dataset download, so a few tens of minutes on a laptop."
+ },
+ "blockers": [
+  "Code repo is anonymized/possibly not yet public at review time",
+  "Selector cutoffs are implementation defaults tuned on these benchmarks (transferability caveat, but not a reproduction blocker)"
+ ],
+ "suitable": true,
+ "id": "2609.38424",
+ "title": "Graph Anomaly Detection as Finite-Horizon Control: Training-Free Scoring via Empirical Bayes",
+ "pages": 41,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,44 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository exists and the clone itself succeeded — only the working-tree checkout failed, because it contains a file whose name embeds '|' (illegal on NTFS/Windows). The git objects are therefore intact and the sources can be restored with a --no-checkout clone plus a path-restricted checkout of the .py/.ipynb/.csv files. The match target (C1) is a plain scikit-learn RBF-SVM + StandardScaler + GridSearchCV pipeline on Breast Cancer Wisconsin, which is shippable as sklearn.datasets.load_breast_cancer (569x30) — no external download, no weights, no GPU, and every dependency (scikit-learn, pandas, numpy, scipy) is pip-installable on Python 3.12. So the authors' logic should run essentially as released after one small environment fix (the filename/checkout workaround) rather than needing a rebuild.",
+ "repo": "https://github.com/zubair0831/ensemble-generalization-gap",
+ "entrypoints": [
+  "(unverified - working tree blocked) top-level experiment script in repo root; restore via `git clone --no-checkout <url> repo && git -C repo checkout HEAD -- '*.py' '*.ipynb' '*.md' '*.txt'` to skip the '|'-named PNG"
+ ],
+ "missing_artifacts": [
+  "Credit Card Fraud dataset (Kaggle creditcardfraud.csv) - requires Kaggle credentials; NOT needed for the match target C1",
+  "Heart Disease combined 1,025x13 file (UCI/Kaggle) - not needed for C1",
+  "Pima Indians Diabetes CSV - not needed for C1",
+  "Precomputed result tables/figures - must be regenerated, but they are outputs, not inputs"
+ ],
+ "blockers_seen": [
+  "git checkout fails on Windows 11: repository contains the filename 'complexity_mean_|feature_corr|.png'; '|' is illegal on NTFS, so the tree cannot be materialized as-is (workaround: --no-checkout clone + path-restricted checkout, or exclude that file)",
+  "No GPU on this machine (irrelevant for C1: CPU-only sklearn pipeline)",
+  "Credit Card Fraud claims (C7, C8) are unreachable without Kaggle credentials plus a 150 MB download + 10% subsample run; out of scope for the target claim",
+  "Entrypoint names could not be verified because the working tree never materialized; the first step is to re-checkout and read the scripts before running them"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~3-8 minutes total for C1: ~60-90 s to pip-install scikit-learn/pandas/scipy (already partially present at py3.12), <5 s to load breast_cancer, and roughly 25 SVM fits plus a light GridSearchCV over a small C/gamma grid per fold on 569x30 -> well under a minute of actual fitting on 22 cores",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Match target C1 is 5 seeds x stratified 5-fold CV of an RBF-SVM (with light GridSearchCV) on the 569x30 Breast Cancer table, i.e. ~25 sub-second sklearn fits on an 8-core laptop, plus a few minutes of pip install."
+ },
+ "repo_info": {
+  "url": "https://github.com/zubair0831/ensemble-generalization-gap",
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

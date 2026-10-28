@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Macro-F1 of the proposed DARG method on the smallest KEEL dataset (zoo-3, 101 samples, 16 features, IR 19.2) under 5-fold CV, as reported in the main comparison table",
+  "table_ref": "Main results table (Macro-F1 comparison, Table ~2/3 region; zoo-3 row)",
+  "dataset": "KEEL zoo-3 (5-fold CV)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ChuantaoLi/DARG"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "Tiny tabular dataset (101 samples) with sklearn-based AdaBoost/SAMME and KD-tree KNN; the main cost is installing dependencies and re-implementing/validating the custom density-aware weighting and region-guided sampling if the repo is incomplete, plus 5-fold CV over a few dozen boosting iterations."
+ },
+ "blockers": [
+  "Repo may be incomplete or not match the paper's exact implementation (only a GitHub link given, no configs/scripts described)",
+  "Several hyperparameters (k, density threshold rho0, number of boosting rounds m, GMM cluster selection) are not fully specified, requiring guesswork to match the reported number",
+  "Exact table cell value for zoo-3 is not visible in the provided text excerpt"
+ ],
+ "suitable": true,
+ "id": "2512.22478",
+ "title": "Collaborative Optimization of Multiclass Imbalanced Learning: Density-Aware and Region-Guided Boosting",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

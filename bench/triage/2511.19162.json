@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Silhouette score of 0.664 for Agglomerative (average linkage) clustering with k=15 on 4D UMAP (neighbors=10, min_dist=0.01) using TF-IDF weighted codebook counts.",
+  "table_ref": "Table 5, row Agglomerative, column Silhouette",
+  "dataset": "BioArtlas dataset (81 bioartworks, 770 keywords, 13 axes)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/joonhyungbae/BioArtlas"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The dataset is tiny (81 works, 770 keywords); embedding with two large models on CPU is feasible, and the clustering sweep (800+ configs) on such small data should complete in minutes on 8 CPU cores."
+ },
+ "blockers": [
+  "Code repository may not include exact preprocessing scripts or the released features; paper says 'released features and scripts' but completeness unknown.",
+  "Requires downloading BGE-large-en-v1.5 and GTE-large-en-v1.5 models (~1.3GB each) and running them on CPU, which is slow but manageable.",
+  "UMAP and clustering hyperparameters are specified, but exact random seeds and library versions may affect reproducibility."
+ ],
+ "suitable": true,
+ "id": "2511.19162",
+ "title": "BioArtlas: Computational Clustering of Multi-Dimensional Complexity in Bioart",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

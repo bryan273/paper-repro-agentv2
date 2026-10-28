@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "O-DisCo-Edit attains the best normalized average score (0.7553) for the Object Removal (49-frame) task on the OmnimatteRF benchmark, surpassing MiniMax-Remover (0.4816), ProPainter (0.4844) and DiffuEraser (0.2682).",
+  "table_ref": "Table 3 (a.1), row 'O-DisCo-Edit', column 'Avg. Score↑'",
+  "dataset": "OmnimatteRF benchmark for object removal (49-frame videos, 480x720)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://cyqii.github.io/O-DisCo-Edit.github.io/ (project page only; no GitHub/repo or weights linked in the paper)"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 64,
+  "disk_gb": 150,
+  "ref_minutes": 720,
+  "gpu_speedup": 30,
+  "basis": "The target requires running a CogVideoX-I2V (5B-class DiT, 49 frames at 720x480) with two additional LoRAs plus the whole baseline suite (VACE 1.3B/14B, MiniMax-Remover, ProPainter, DiffuEraser), none of which is released, so the run cannot even be started on a CPU laptop; the vram/ref_minutes figures are the estimated GPU-class cost, not a laptop-feasible cost."
+ },
+ "blockers": [
+  "No code, no model weights, no checkpoints released ('In the future, we will make our model publicly available')",
+  "Trained on ~180k Senorita-2M video-mask pairs on 8xA800 GPUs (2400 + 5150 steps, batch 32) - retraining infeasible on a laptop",
+  "Inference needs a GPU (CogVideoX 5B-class DiT at 720x480x49 frames); CPU inference would take days per clip",
+  "The curated benchmark (134 sets from DIVAS/VPData) and its masks are not released; reference first frames were produced with HiDream-E1 and a commercial model (Jimeng), so inputs are not reproducible",
+  "Headline number is a normalized average over metrics that require re-running VACE 14B, Senorita, VideoPainter and removal baselines (many A100/V100-class GPU-hours)"
+ ],
+ "suitable": false,
+ "id": "2509.01596",
+ "title": "O-DisCo-Edit: Object Distortion Control for Unified Realistic Video Editing",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

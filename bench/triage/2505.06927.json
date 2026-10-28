@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Average test set MSE for sparse ridge regression with nested stability-regularized cross-validation on the Housing dataset (n=506, p=13), reported as 23.70 in Table 1.",
+  "table_ref": "Table 1, row Housing, column 'nested-kCV MSE'",
+  "dataset": "Housing (506 samples, 13 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "No code released; must reimplement cyclic coordinate descent for l0-l2 sparse regression, nested stability-regularized CV with 10 lambda values, 20 gamma values, and 10 repeats of 90/10 splits; each model fit solves a mixed-integer problem via greedy rounding, and the paper reports ~592 seconds per dataset for nesting on a MacBook, so a full reimplementation and run on one dataset could take hours."
+ },
+ "blockers": [
+  "No code or configuration files released",
+  "Requires reimplementation of the sparse regression solver and nested CV procedure from scratch",
+  "Hyperparameter grids and exact coordinate descent details are only partially specified"
+ ],
+ "suitable": false,
+ "id": "2505.06927",
+ "title": "Stability Regularized Cross-Validation",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Average silhouette coefficient of approximately 0.50 for the k=4 K-means electrofacies solution on Well C wireline logs",
+  "table_ref": "Fig. IV.3 (Silhouette Plot, k=4, Mean = 0.50)",
+  "dataset": "Well C wireline logs, offshore Keta Basin (GR, RHOZ, NPHI, DT, PEFZ, AHT60; ~11,195 samples)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "basis": "K-means on ~11k samples x 6 features is trivial on CPU; the only real cost is obtaining the proprietary Well C logs, which are not released."
+ },
+ "blockers": [
+  "Well C wireline log data are proprietary/not publicly released",
+  "No code or data links in the paper",
+  "Exact preprocessing (washout removal, outlier screening) cannot be replicated without raw logs"
+ ],
+ "suitable": false,
+ "id": "2604.27126",
+ "title": "Unsupervised Electrofacies Classification and Porosity Characterization in the Offshore Keta Basin Using Wireline Logs",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

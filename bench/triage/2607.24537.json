@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "K-SCAN achieves ARI > 0.99 on the 1M-point noisy Iris dataset with k'=1000 micro-clusters (Table 2, row k'=1000: ARI 0.9906, 3 clusters, 4.79% noise)",
+  "table_ref": "Table 2",
+  "dataset": "iris_1M_noise.csv (synthetic 1M-point KDE extension of UCI Iris with ~4.5% uniform noise)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "No code or data released; must reimplement K-SCAN (MiniBatchKMeans + weighted DBSCAN + label propagation) and regenerate the 1M-point KDE-synthesized Iris dataset from the paper's description, then run on CPU; the paper itself reports ~13 s per run on 2 vCPU, so the dominant cost is writing/validating the reimplementation and data synthesis, not compute."
+ },
+ "blockers": [
+  "No code repository or link provided in the paper",
+  "iris_1M_noise.csv is not publicly released; must be regenerated via KDE from UCI Iris, and exact reproduction of the 0.9906 ARI depends on unspecified KDE bandwidth, noise sampling, and random seeds",
+  "Weighted DBSCAN details (sample_weight handling, MinPts=5000 semantics on 1000 centroids) are underspecified"
+ ],
+ "suitable": true,
+ "id": "2607.24537",
+ "title": "The K-SCAN Clustering Algorithm",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

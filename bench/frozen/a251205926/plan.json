@@ -1,0 +1,141 @@
+{
+ "approach": "We reimplement the k=2 special case of BalLOT because no author repository is available. The run generates balanced two-component stochastic-ball data with exactly n/k points per cluster and uniform unit-ball noise, initializes from the exact Euclidean diameter pair, performs one exact balanced assignment (sorting C_i1-C_i0 for k=2, with an LP cross-check), and checks partition recovery up to label permutation. A Delta sweep around 2*sqrt(2) with 100 trials per point estimates the empirical recovery threshold; results/metrics.json records the estimated threshold and whether it is within 10% of 2.828427. Diagnostics also record the Delta*cos(theta) condition and optional full BalLOT stopping behavior, but the primary metric is the C1 threshold.",
+ "files": [
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker so reproduce.py can import the local modules.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for all run hyperparameters, sweep values, seeds, tolerances, and assumption ids.",
+   "requirement_ids": [
+    "R9"
+   ]
+  },
+  {
+   "path": "src/ball_model.py",
+   "purpose": "Generate balanced stochastic-ball data: centers separated by Delta, exactly n/k points per cluster, rotational-invariant uniform unit-ball noise, planted labels, and optional radial-law noise helper.",
+   "requirement_ids": [
+    "R6",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/bal_lot.py",
+   "purpose": "Implement diameter initialization, squared-distance costs, exact k=2 balanced assignment by sorting, generic HiGHS LP transportation assignment cross-check, coupling construction, centroid update, full BalLOT iteration with Frobenius stopping, and permutation-invariant partition matching.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "src/experiments.py",
+   "purpose": "Run one-step recovery trials over a Delta sweep, compute recovery fractions and Wilson intervals, estimate the empirical threshold, and aggregate per-Delta diagnostics including the Delta*cos(theta) condition.",
+   "requirement_ids": [
+    "R7",
+    "R9",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/plots.py",
+   "purpose": "Save a recovery-vs-Delta plot with the theoretical 2*sqrt(2) threshold line for visual inspection.",
+   "requirement_ids": [
+    "R11"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Main entrypoint: parse --smoke/--quick/full modes, run the configured experiment, write results/metrics.json, and assert the theoretical-threshold tolerance check.",
+   "requirement_ids": [
+    "R9",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "seed": 0,
+  "claim_id": "C1",
+  "n": "2000 (A1)",
+  "k": "2 (C1; Corollary 11)",
+  "d": "2 (A2)",
+  "delta_theory": 2.8284271247461903,
+  "delta_theory_source": "2*sqrt(2), C1/Corollary 11",
+  "delta_sweep": [
+   1.5,
+   1.75,
+   2.0,
+   2.25,
+   2.4,
+   2.5,
+   2.6,
+   2.7,
+   2.8,
+   2.8284271247461903,
+   2.9,
+   3.0,
+   3.2,
+   3.5,
+   4.0
+  ],
+  "delta_sweep_note": "Includes the theoretical threshold and brackets it on both sides (R9).",
+  "n_trials_per_delta": "100 (A1)",
+  "noise_distribution": "uniform on the unit Euclidean ball in d=2 (A3; Definition 3/R12)",
+  "noise_sampler": "radius U^(1/d) with U~Uniform(0,1), direction from normalized Gaussian",
+  "center_placement": "(-Delta/2, 0) and (Delta/2, 0) (A4)",
+  "diameter_tie_break": "first lexicographic maximizer among maximizing pairs (A5)",
+  "assignment_method_primary": "exact balanced k=2 assignment by sorting C_i1-C_i0 and taking n/2 smallest differences (R8)",
+  "assignment_method_crosscheck": "scipy.optimize.linprog(method='highs') on the transportation polytope (A7/R8)",
+  "coupling_row_sum": "1/n (R1)",
+  "coupling_col_sum": "1/k (R1)",
+  "cost": "squared Euclidean distance C_ij=||x_i-mu_j||^2 (R2)",
+  "centroid_update": "mu_{t+1}=k X F; for hard assignments this equals the assigned group mean (R3)",
+  "stopping_tol": "1e-8 Frobenius norm for optional full BalLOT runs (A6)",
+  "max_iter_one_step": "1 (C1)",
+  "max_iter_full_optional": "100 (A6)",
+  "recovery_permutations": "all k!=2 label permutations (R7/A8)",
+  "recovery_target": 0.95,
+  "threshold_estimator": "linear interpolation of empirical recovery fraction crossing 0.95 between adjacent Delta sweep points; report Wilson 95% intervals at each Delta",
+  "wilson_z": 1.96,
+  "relative_tolerance": "0.1 (contract tolerance)",
+  "primary_metric": "estimated_delta_threshold",
+  "smoke_n": 20,
+  "smoke_trials": 1,
+  "smoke_delta": 3.0
+ },
+ "steps": [
+  "Create the project skeleton and write src/config.py with all constants from the config block, including assumption ids.",
+  "Implement src/ball_model.py: sample rotational-invariant unit-ball noise, place k=2 centers at (-Delta/2,0) and (Delta/2,0), draw exactly n/k points per cluster, shuffle points while keeping planted labels, and return X, planted_labels, centers.",
+  "Implement src/bal_lot.py: compute exact diameter pair (convex-hull candidate pairs in d=2 with lexicographic tie-break), compute squared distances C_ij, build the k=2 exact balanced coupling by assigning the n/2 smallest C_i1-C_i0 differences to cluster 1, and construct F with row sums 1/n and column sums 1/k.",
+  "In the same module, implement the generic HiGHS linprog transportation solver for cross-checking, update_centroids via mu=k X F, a run_bal_lot(max_iter,tol) loop, and a partition_matches_up_to_permutation helper for k=2.",
+  "Implement src/experiments.py: for each Delta in the configured sweep, run n_trials_per_delta independent trials; in each trial generate data, initialize BalLOT at the diameter pair, perform exactly one assignment, and record whether the induced partition matches the planted partition up to label swap.",
+  "For each trial also record Delta*cos(theta), where theta is the angle between the diameter vector and the true center-separation vector, and aggregate the recovery fraction, Wilson interval, and mean diameter-pair cross-cluster indicator.",
+  "Estimate the empirical threshold by interpolating the first crossing of recovery fraction 0.95 over the Delta sweep; also report recovery at Delta=2*sqrt(2) and at all Delta>=2*sqrt(2).",
+  "Implement src/plots.py to save results/recovery_vs_delta.png with the theoretical 2*sqrt(2) vertical line.",
+  "Implement reproduce.py with --smoke, --quick, and default full modes; default writes results/metrics.json, including estimated_delta_threshold, theory value, relative error, pass/fail against 0.1 relative tolerance, per-Delta recovery table, and the assumption/config block.",
+  "Run the smoke test first and fix any data-flow, shape, coupling, or recovery-label-permutation issues before the full sweep.",
+  "Run the intermediate checks listed below, then execute the full default run and inspect results/metrics.json and the recovery plot."
+ ],
+ "smoke_test": "python reproduce.py --smoke runs n=20, k=2, d=2, Delta=3.0, one trial. It asserts X shape (20,2), planted cluster counts 10/10, coupling F shape (20,2), row sums approx 1/20, column sums approx 1/2, nonnegative entries, centroid update equals group means, recovery computed up to label swap, and writes results/smoke_metrics.json.",
+ "intermediate_checks": [
+  "Dataset balance: exactly n/2=1000 points per planted cluster for every generated trial, with labels shuffled only after cluster construction.",
+  "Noise support: every sampled noise vector has Euclidean norm <= 1+1e-12; in d=2 the mean squared radius is approximately 0.5.",
+  "Center separation: the two planted centers have Euclidean distance exactly Delta for every sweep value.",
+  "Diameter check: the returned diameter pair has one point from each planted cluster for Delta>2, and its distance is >= Delta (typically near Delta+2 in d=2).",
+  "Coupling check: F is nonnegative, row sums approx 1/n, column sums approx 1/k, and all nonzero entries are 1/n for the k=2 hard assignment.",
+  "LP cross-check: on a small instance (n=20, k=2), the sorting assignment and scipy.optimize.linprog HiGHS assignment give the same optimal cost and the same partition up to label swap.",
+  "Centroid check: for the one-step hard coupling, k X F equals the vector of assigned-group means.",
+  "Recovery-function check: partition_matches_up_to_permutation returns True for the planted labels and for their k=2 swap, and False for a deliberately corrupted partition.",
+  "Sanity baseline: Delta=4.0 should give recovery fraction >= 0.95, while a deliberately small separation such as Delta=1.0 should give visibly lower recovery.",
+  "Threshold estimator check: the interpolation routine returns a value inside the bracketing Delta interval when a 0.95 crossing exists and reports a clear failure flag otherwise."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 4-5 minutes to write and debug the small Python implementation, 1 minute for the smoke test and LP cross-check, and 6-8 minutes for the full sweep (about 1500 trials at n=2000, k=2, d=2; each trial uses an O(n log n) hull diameter plus an O(n log n) sorting assignment). Reserve 2 minutes for the recovery plot, metrics validation, and a second smoke run if needed; total stays under about 15 minutes on CPU."
+}

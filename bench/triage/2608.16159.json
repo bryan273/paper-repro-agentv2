@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Event-level detection on SWaT under clean DT view: SegDet = 35/35, Recall = 1.00, FPR = 1.38%, Reliability = 0.986",
+  "table_ref": "Table 1, SWaT Clean row",
+  "dataset": "SWaT"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code released and SWaT requires a signed request to iTrust/SUTD; the pipeline (2-layer LSTM, K=50, multi-horizon rollouts, GMM, CUSUM calibration) must be reimplemented from prose, and the exact 35/35 segment count depends on the authors' attack-segment definition and threshold calibration, so matching the cell is uncertain even after data access."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "SWaT is access-restricted (request form to iTrust, SUTD), not freely downloadable",
+  "Attack-segment definitions and CUSUM calibration details are underspecified, making exact 35/35 hard to match"
+ ],
+ "suitable": false,
+ "id": "2608.16159",
+ "title": "Digital Twin Degradation: Detecting Cyber Physical Attacks via Temporal Inconsistencies",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

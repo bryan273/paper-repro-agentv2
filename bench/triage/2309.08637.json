@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MIM trained on TEXTBIND achieves a CLIP Similarity of 0.673 on Turn-3 image generation in TEXTBINDEVAL, outperforming SDXL (0.608) and GILL (0.530).",
+  "table_ref": "Table 5",
+  "dataset": "TEXTBINDEVAL"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": null,
+  "basis": "Training MIM requires 8 A100 GPUs for 5 epochs on 12M image-caption pairs plus instruction tuning, and TEXTBINDEVAL is not publicly released; reproducing the target would need re-creating the dataset and full training."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "TEXTBINDEVAL dataset not publicly available",
+  "Requires 8 A100 GPUs for training",
+  "Needs 12M image-caption pairs for alignment stage"
+ ],
+ "suitable": false,
+ "id": "2309.08637",
+ "title": "TextBind: Multi-turn Interleaved Multimodal Instruction-following in the Wild",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

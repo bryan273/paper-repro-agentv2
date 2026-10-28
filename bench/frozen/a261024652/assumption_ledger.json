@@ -1,0 +1,192 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper names CrisisBench v1.0 English humanitarian files but gives no download URL, exact file names, checksum, or label-mapping table.",
+  "options": [
+   "Use the official CrisisBench v1.0 English humanitarian consolidated release",
+   "Reconstruct from the eight original source datasets",
+   "Use a third-party mirror"
+  ],
+  "chosen": "Use the official CrisisBench v1.0 English humanitarian consolidated release with its predefined Train, Development and Test splits.",
+  "rationale": "The paper cites CrisisBench [4] and reports the expected 87,455 records across predefined splits.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "This study utilises the CrisisBench v1.0 English humanitarian classification dataset.",
+  "page": 2
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Label ordering and whether Macro-F1 averages over all 11 labels or only labels present in each split are not specified.",
+  "options": [
+   "Average over all 11 fixed CrisisBench labels",
+   "Average only over labels present in y_true and y_pred"
+  ],
+  "chosen": "Use all 11 CrisisBench labels in a fixed order and compute Macro-F1 over all 11 labels.",
+  "rationale": "The paper states that all labels were retained and that each of the 11 labels contributed equally.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "All 11 labels were retained without merging.",
+  "page": 2
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "LinearSVC loss, penalty, dual setting, tolerance and maximum iterations beyond C and class_weight are not stated.",
+  "options": [
+   "Use scikit-learn LinearSVC defaults (squared_hinge, L2, default dual, tol=1e-4, max_iter=1000)",
+   "Force dual=True",
+   "Use Crammer-Singer multiclass mode"
+  ],
+  "chosen": "Use scikit-learn LinearSVC defaults for unspecified hyperparameters, including squared_hinge loss, L2 penalty and default multiclass one-vs-rest behaviour.",
+  "rationale": "The paper names LinearSVC and scikit-learn but reports only C and class_weight, so library defaults are the conventional choice.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "LinearSVC with word unigram–bigram TF-IDF, C=0.5 and balanced class weighting.",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact token pattern and tokenizer are not specified beyond saying no separate custom tokenisation was applied.",
+  "options": [
+   "Use scikit-learn TfidfVectorizer default token_pattern and preprocessor",
+   "Use a simple whitespace tokenizer",
+   "Use a Twitter-aware tokenizer"
+  ],
+  "chosen": "Use scikit-learn TfidfVectorizer default token_pattern and preprocessor.",
+  "rationale": "The paper explicitly says no separate custom tokenisation step was applied and uses scikit-learn.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "No stop-word filtering, stemming, lemmatisation or separate custom tokenisation step was applied.",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether TfidfVectorizer should lowercase again after the manual lowercase preprocessing step is unspecified.",
+  "options": [
+   "Manual lowercase plus TfidfVectorizer default lowercase=True",
+   "Manual lowercase with lowercase=False"
+  ],
+  "chosen": "Apply manual lowercase in preprocessing and leave TfidfVectorizer lowercase=True because it is harmless on already-lowercased text.",
+  "rationale": "The paper says the text was converted to lowercase and does not say the vectorizer lowercasing was disabled.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "the text was converted to lowercase.",
+  "page": 3
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The exact regular expressions for the initial RT marker, URLs, user mentions and hashtag characters are not given.",
+  "options": [
+   "Use robust case-insensitive regexes for leading RT, URLs and @mentions",
+   "Use only literal string replacements",
+   "Use a third-party tweet preprocessor"
+  ],
+  "chosen": "Remove a leading RT marker, replace case-insensitive URLs and @mentions with url and user, delete # characters while keeping following text, then normalise whitespace.",
+  "rationale": "This follows the stated preprocessing operations without adding stemming, stop-word removal or custom tokenisation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "URLs and user mentions were replaced with url and user; # characters were removed while retaining hashtag text",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The exact Macro-F1 implementation and zero-division policy are not stated.",
+  "options": [
+   "sklearn f1_score(average='macro', labels=all 11, zero_division=0)",
+   "sklearn f1_score(average='macro') with default zero_division",
+   "Custom macro-average over per-label F1"
+  ],
+  "chosen": "Use sklearn.metrics.f1_score with average='macro', labels set to all 11 labels, and zero_division=0.",
+  "rationale": "The paper uses scikit-learn and states that each of the 11 labels contributes equally.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "Macro-F1 was the primary measure because each of the 11 labels contributed equally",
+  "page": 4
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Random seeds and determinism controls are not reported.",
+  "options": [
+   "Run once with deterministic defaults and fixed random_state where supported",
+   "Run multiple seeds and average",
+   "Use no seed control"
+  ],
+  "chosen": "Run once with fixed random_state=42 for any stochastic component; LinearSVC and TF-IDF fitting are otherwise deterministic.",
+  "rationale": "The paper reports single-run values and describes the preprocessing as deterministic.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "The same deterministic preprocessing function was applied to the Train, Development and Test text fields.",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The exact meaning of balanced class weighting is not spelled out beyond the scikit-learn setting name.",
+  "options": [
+   "Use sklearn class_weight='balanced'",
+   "Manually weight classes to inverse frequency",
+   "Use no weighting in the final model"
+  ],
+  "chosen": "Use sklearn class_weight='balanced', which assigns weights inversely proportional to class frequencies.",
+  "rationale": "The locked configuration explicitly uses balanced class weighting and scikit-learn.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "The selected and locked configuration was LinearSVC with word unigram–bigram TF-IDF, C=0.5 and balanced class weighting.",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether the final Test evaluation is repeated across seeds or reported as a single deterministic run is not stated.",
+  "options": [
+   "Fit once on Train+Development and evaluate once on Test",
+   "Repeat with multiple seeds and report mean/std",
+   "Bootstrap the Test predictions"
+  ],
+  "chosen": "Fit once on Train+Development and evaluate once on Test, matching the no-further-tuning protocol.",
+  "rationale": "The paper reports a single locked Test result and no confidence interval or repeated-run spread.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "No further tuning was performed.",
+  "page": 5
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The exact event-string matching for tropical-cyclone subsets and the source of event labels are not fully specified.",
+  "options": [
+   "Case-insensitive event-field match for typhoon, hurricane and cyclone",
+   "Use only typhoon and hurricane",
+   "Use keyword matching on post text"
+  ],
+  "chosen": "Use case-insensitive event-field matching: strict contains typhoon or hurricane, broad additionally contains cyclone; train the specialist on the broad set.",
+  "rationale": "The paper defines strict and broad filters and says the broad definition was used for specialist training.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The broad filter additionally matched cyclone, producing 21,944 records",
+  "page": 4
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The timing boundaries and whether warm-up or repeated timing runs were used are not specified.",
+  "options": [
+   "Single timing run with Python perf_counter around vectorisation, fitting and prediction",
+   "Repeated runs with mean timing",
+   "Hardware-independent benchmark"
+  ],
+  "chosen": "Record single comparative timings with Python perf_counter around vectorisation, model fitting and prediction on the stated laptop.",
+  "rationale": "The paper says perf_counter was used and treats timings as comparative rather than hardware-independent benchmarks.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Vectorisation, model fitting and prediction times were measured using Python’s perf_counter",
+  "page": 3
+ }
+]

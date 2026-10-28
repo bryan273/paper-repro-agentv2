@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Eigenvalues ρ1=ρ2=1 and ρ3=ρ4=0 obtained by ICS with Moore-Penrose pseudo-inverse on the simulated data (1000 obs, 20 outliers, W1=I2, W2=diag(2,0))",
+  "table_ref": "Figure 2 caption (left panel)",
+  "dataset": "Simulated data from Section 2.3 (1000 observations, 20 outliers, W1=I2, W2=diag(2,0))"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/AuroreAA/ICS_PSD_Replication"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Simulated data with 1000x4 matrix; ICS with pseudo-inverse is a few matrix operations; R packages install quickly; total command time dominated by package installation."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2409.02258",
+ "title": "Generalized implementation of invariant coordinate selection with positive semi-definite scatter matrices",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

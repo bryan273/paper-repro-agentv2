@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "NeighborDiv AUC = 0.6166 on Cora (training-free, deterministic; also the Avg AUC 0.6465 across 7 datasets)",
+  "table_ref": "Table 1 (SDIT AUC), Cora column; Avg column",
+  "dataset": "Cora (plus YelpChi, Reddit, T-Finance, Tolokers, Disney, Questions for the Avg)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 90,
+  "basis": "Method is a few dozen lines (truncated SVD r=8, l1/l2 normalize, sample <=k neighbor pairs, cosine-similarity variance, median+z-score); cost is dominated by downloading 7 public benchmark graphs and running SVD on Cora (2708x1433) and T-Finance (39k nodes), all CPU-feasible in minutes."
+ },
+ "blockers": [
+  "No code released (no links in PDF); must reimplement from text",
+  "Exact dataset versions/preprocessing (feature normalization, anomaly labels, train/test splits) not fully specified, so exact AUC may not match",
+  "T-Finance/Disney/Questions require locating the correct public sources and label files"
+ ],
+ "suitable": true,
+ "id": "2605.20879",
+ "title": "NeighborDiv: Training-free Zero-shot Generalist Graph Anomaly Detection via Neighbor Diversity",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

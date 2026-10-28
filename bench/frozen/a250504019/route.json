@@ -1,0 +1,47 @@
+{
+ "route": "partial_release",
+ "why": "The cloned repo (LeonardoArrighi/DPG, v0.3.2) is the authors' general Decision Predicate Graph framework and it is healthy: Python 3.10-3.12, sklearn>=1.5, numpy 2.x, networkx, no dead frameworks, 42 py files, full test suite. But the paper's specific machinery — Isolation Forest DPG construction, class-weighted edges and the Inlier-Outlier Propagation Score (Eq. 2) — does not appear anywhere in the inspected tree or imports (no 'IOP' symbol, no iForest explainer; dpg/explainer.py only covers RandomForest/GB/AdaBoost/ExtraTree style ensembles), and the second cited repo (Math0097/DPG-iForest) was not cloned. Annthyroid and the two synthetic datasets are also absent (only datasets/custom.csv). So: keep the authors' DPG node/edge/predicate logic, rebuild the iForest path-traversal weighting and IOP-Score from the paper, download Annthyroid, and regenerate the synthetic sets from Section 4.1 / Tables 2 and 4.",
+ "repo": "https://github.com/LeonardoArrighi/DPG",
+ "entrypoints": [
+  "examples/run_dpg_standard.py",
+  "examples/quickstart.py",
+  "run_faithfulness_benchmark.py"
+ ],
+ "missing_artifacts": [
+  "IOP-Score (Eq. 2) implementation and Inlier-Outlier propagation over class-weighted edges — not present in the cloned DPG repo",
+  "Isolation Forest -> DPG construction (iForest split rules + training-sample traversals with model-output inlier/outlier labels)",
+  "Annthyroid dataset (UCI, 6 numerical features, 6,916 samples, ~3.61% anomalies) — must be downloaded and the binary features dropped",
+  "Synthetic dataset 1 generator (200 samples, 6 features, Sample 0 altered in F0/F3/F4/F5 per Table 2)",
+  "Synthetic dataset 2 generator (200 samples, 6 features, Samples 0-3 altered per Table 4)",
+  "github.com/Math0097/DPG-iForest — the paper's dedicated repo, cited but not included in this inspection"
+ ],
+ "blockers_seen": [
+  "cloned repo is the general DPG library, not the iForest extension: no iForest explainer, no IOP-Score, no Annthyroid/synthetic experiment scripts",
+  "exact predicate-pair (f,sigma) aggregation and edge class-weighting convention of Eq. 2 are only described in prose/tables, so a rebuild may reproduce the ranking (TSH > lowest, TSH <= highest) but not necessarily the 4-decimal values -0.2429 / -0.0282 / 0.0965",
+  "repository requires a Graphviz `dot` binary for rendering only (explanation numbers unaffected)"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "5-15 minutes of command time: ~3 min pip install (numpy/sklearn/networkx/pandas/matplotlib already pinned and wheel-available for Py3.12), ~1 min Annthyroid download, then a 200-tree IsolationForest fit on 6,916x6 plus full sample traversal and graph build in seconds; the only real cost is 2-3 iterations against Table 6 to pin down the Eq. 2 sign/weighting convention.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "200-tree sklearn IsolationForest on 6,916x6 Annthyroid plus traversal of all samples through the trees and a graph build over ~10^3-10^4 predicate edges is seconds of CPU work; the budget is dominated by dependency install and by rebuilding/validating the IOP-Score formula against Table 6."
+ },
+ "repo_info": {
+  "url": "https://github.com/LeonardoArrighi/DPG",
+  "cloned": true,
+  "n_files": 175,
+  "n_python": 42,
+  "python2_style_files": 0
+ }
+}

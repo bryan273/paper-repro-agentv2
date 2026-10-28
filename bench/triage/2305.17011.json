@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SOC (Video-Swin-T, trained from scratch) achieves 59.2 J&F on Ref-YouTube-VOS",
+  "table_ref": "Table 1",
+  "dataset": "Ref-YouTube-VOS"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 32,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 10080,
+  "gpu_speedup": 20,
+  "basis": "Training requires 8x32GB V100 GPUs for 30 epochs on Ref-YouTube-VOS (3978 videos), which is infeasible on a CPU-only laptop; even with a single GPU it would take days."
+ },
+ "blockers": [
+  "No code released (paper says 'Code will be available')",
+  "Requires 8x32GB V100 GPUs for training",
+  "Large-scale video dataset and long training schedule"
+ ],
+ "suitable": false,
+ "id": "2305.17011",
+ "title": "SOC: Semantic-Assisted Object Cluster for Referring Video Object Segmentation",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

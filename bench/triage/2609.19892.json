@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "Successful Preemption Rate (SPR) of 44.5% averaged over all 30 model-harness settings under the Default condition (Overall column, Average row of Table 1).",
+  "table_ref": "Table 1, Overall SPR column, Average row",
+  "dataset": "CLASHBench (268 conflict cases; 248 system-resource + 20 daily-life)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TarferSoul/CLASHBench",
+  "https://huggingface.co/datasets/jinjinyien/CLASHBench",
+  "https://github.com/openclaw/openclaw"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 30000,
+  "gpu_speedup": null,
+  "basis": "The headline 44.5% SPR is an average over 30 model-harness settings each run on 268 Docker cases (thousands of agent trajectories), and 17 of the 18 models are closed-source APIs (GPT-5.5/5.6, Claude-Sonnet-5, GLM, Qwen-Max, MiniMax) that cannot be run locally, so the full protocol is infeasible on a laptop."
+ },
+ "blockers": [
+  "Requires 17 closed-source frontier models via Codex, Claude Code, and OpenCode APIs (GPT-5.5/5.6, Claude-Sonnet-5, GLM-4.7/5.2/5.3, Qwen3.8-Max, MiniMax-M3, etc.)",
+  "Thousands of agent trajectories across 268 Docker cases x 30 model-harness settings x 3 instruction conditions",
+  "Agent-as-a-Judge (Qwen3.8-27B via Claude Code) needed for DIR and concealment audits",
+  "Some cases involve GPU VRAM conflicts (10 GPU cases) and H200-class hardware in case studies",
+  "No single cheap table cell: every reported number is an aggregate over the full model-harness panel"
+ ],
+ "suitable": false,
+ "id": "2609.19892",
+ "title": "ClashBench: Conflicts Leading Agents to Seize and Harm",
+ "pages": 23,
+ "model": "DeepSeek-V4.1-Flash"
+}

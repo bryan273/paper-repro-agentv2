@@ -1,0 +1,47 @@
+{
+ "route": "partial_release",
+ "why": "The repository contains only one 4.5 KB Python script and a README. The authors' KCC/ADMM logic is likely present, but the released code is not a complete experiment pipeline: no Lymphoma data, no preprocessing/tuning configuration, no requirements file, and no CLI/config entrypoint that reproduces Table 1. The right strategy is to keep the authors' kernel-convex-clustering implementation and rebuild the missing benchmark pipeline around it.",
+ "repo": "https://github.com/Shubhayan29/Kernel-Convex-Clustering",
+ "entrypoints": [
+  "KERNELCONVEXCLUSTERING.py"
+ ],
+ "missing_artifacts": [
+  "Lymphoma dataset file (96 instances, 4026 features, 9 classes)",
+  "Data preprocessing/loading code for ASU/KEEL benchmarks",
+  "Exact hyperparameter grids and selection protocol for sigma1, sigma2/6-NN weights, rho, and gamma",
+  "Requirements/environment file",
+  "Details/code for elbow-based cluster-number selection",
+  "Experiment driver that computes NMI for the Lymphoma setting"
+ ],
+ "blockers_seen": [
+  "No GPU on this machine; the paper used an RTX 3090, but the match target has n=96 so CPU execution is appropriate.",
+  "No benchmark data are bundled with the repository.",
+  "The single script has no visible CLI/config structure and may contain hard-coded paths or experimental defaults.",
+  "The ASU Feature Selection Repository may require checking availability; an alternative Lymphoma copy may be needed.",
+  "Python 3.12 environment requires installing torch/scipy/numpy/matplotlib; these should be available, but no requirements pin the authors' versions."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 5-15 minutes after dependencies are installed: download Lymphoma, build the 96x96 Gaussian kernel, run a small ADMM tuning grid, select k by elbow, and compute NMI.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1.5,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Lymphoma has only 96 samples, so the kernel matrix is 96x96 and repeated ADMM fits on CPU are cheap; the main cost is dependency installation, fetching the dataset, and searching a small hyperparameter grid."
+ },
+ "repo_info": {
+  "url": "https://github.com/Shubhayan29/Kernel-Convex-Clustering",
+  "cloned": true,
+  "n_files": 2,
+  "n_python": 1,
+  "python2_style_files": 0
+ }
+}

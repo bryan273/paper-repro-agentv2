@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "MSE for dynamic modeling on the Isaac3D dataset (observed time points) = 15.655e-3",
+  "table_ref": "Table 1, row 'Observed', column 'Isaac3D MSE'",
+  "dataset": "Isaac3D"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/weihaox/dynode_",
+  "https://github.com/weihaox/dynode_released"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 10,
+  "basis": "Requires StyleGAN2 generator, GAN inversion of frames, and training a neural ODE with 5000 steps; StyleGAN2 inference and inversion are GPU-bound, and the released code likely lacks the exact Isaac3D data and pretrained models."
+ },
+ "blockers": [
+  "Pretrained StyleGAN2 models for Isaac3D and other datasets are not provided in the repository",
+  "The exact Isaac3D video sequences used for evaluation are not released",
+  "GAN inversion of frames requires a GPU and is not included in the released code",
+  "The neural ODE training uses an adaptive DOPRI5 solver which is slow on CPU"
+ ],
+ "suitable": false,
+ "id": "2208.11197",
+ "title": "Modelling Latent Dynamics of StyleGAN using Neural ODEs",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

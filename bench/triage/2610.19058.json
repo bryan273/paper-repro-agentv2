@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "PIWR estimate of transmission rate α for COVID-19 SIDR model with 1% noise, achieving 0.124% error (Table 2, row α, column PIWR, noise level ε=0.01)",
+  "table_ref": "Table 2",
+  "dataset": "Synthetic COVID-19 SIDR data generated from the model with parameters (α,β,γ)=(0.191,0.05,0.0294), 100 samples on [0,500] days, 1% noise"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/Shaier/DINN",
+  "https://github.com/reconhub/",
+  "https://github.com/reconhub/outbreaks"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "The method is closed-form least squares on a small linear system (400x7); data generation and fitting take milliseconds, and the paper reports <1 ms per fit."
+ },
+ "blockers": [
+  "No code released for PIWR or the conformal pipeline; must implement from paper description",
+  "Data must be regenerated from model equations (no provided dataset)"
+ ],
+ "suitable": true,
+ "id": "2610.19058",
+ "title": "Conformalized Physics-Informed Weak Regression for Parameter Estimation in Epidemic Models",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

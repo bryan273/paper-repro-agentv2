@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "ContextVis generates a contextually coherent story script and word stickers for a unit of primary-school vocabulary using GPT-4 and SDXL+LoRA (case study demonstration)",
+  "table_ref": "None (no quantitative table; case study figures 2-6)",
+  "dataset": "Chinese primary school English textbook vocabulary (Grade 2 unit)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 12,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 120,
+  "gpu_speedup": 10,
+  "basis": "The paper is a system/demo paper with no code, no dataset release, and no quantitative result; reproducing the headline demonstration requires GPT-4 API access and SDXL+LoRA image generation, which is impractical on an 8-core CPU laptop."
+ },
+ "blockers": [
+  "No code or repository released",
+  "No dataset or vocabulary list released",
+  "Requires closed-source GPT-4 API",
+  "Requires SDXL + LoRA image generation (GPU)",
+  "No quantitative headline number exists to reproduce"
+ ],
+ "suitable": false,
+ "id": "2403.12768",
+ "title": "ContextVis: Envision Contextual Learning and Interaction with Generative Models",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,147 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper does not print the exact k used for the m=8192, n=1000 point; Figure 6 sweeps k.",
+  "options": [
+   "5.678 (theoretical k*=8192/1000*ln2)",
+   "5 (floor)",
+   "6 (nearest integer)",
+   "sweep all rational k"
+  ],
+  "chosen": "5.678 (floor=5, activation p=0.678)",
+  "rationale": "Eqn 2 defines the optimal rational k; the target asks for the Rational BF at m=8192, n=1000, so use the exact theoretical optimum.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "For a given n, the optimal number of hash functions k∗minimize pFP",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper says standard BF k must be integer but does not state which integer to use for m=8192, n=1000.",
+  "options": [
+   "5",
+   "6",
+   "both",
+   "nearest integer"
+  ],
+  "chosen": "6 (nearest integer to 5.678)",
+  "rationale": "A standard BF must round k*; nearest integer is the natural baseline and is likely the integer curve in Figure 6.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "require an approximation of the optimal number of hash functions with the next integer.",
+  "page": 4
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "MurmurHash version and seed are unspecified.",
+  "options": [
+   "MurmurHash3_x86_32 seed 0",
+   "MurmurHash2 seed 0",
+   "MurmurHash3_x64_128 truncated",
+   "SHA256"
+  ],
+  "chosen": "MurmurHash3_x86_32 with fixed seed 0",
+  "rationale": "The paper cites smhasher and says Murmur Hash; a fixed seed is required for deterministic activation.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "with a Murmur Hash using the hashing trick",
+  "page": 12
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact Kirsch-Mitzenmacher index formula is not stated for the RBF; Algorithm 2 shows a block-specific form.",
+  "options": [
+   "h_i = (h1 + i*h2) mod m",
+   "h_i = (h1 + (i+m_j)*h2) & (m_j-1)",
+   "fully independent hashes"
+  ],
+  "chosen": "h_i = (h1 + i*h2) mod m for RBF; activation source from H_floor(k)",
+  "rationale": "Section 3 endorses K&M double hashing; Algorithm 2's offset form is for VSBBF blocks and is not needed for power-of-two m=8192.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "gives an additional sufficient independent hash function by only an additional cheap multiplication and addition",
+  "page": 5
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Which existing hash supplies Hr(x) for activation is given only as an example.",
+  "options": [
+   "H_floor(k)(x)",
+   "h1(x) raw",
+   "separate hash"
+  ],
+  "chosen": "Hr(x)=H_floor(k)(x), the last always-applied hash index",
+  "rationale": "Algorithm 1 explicitly says no additional calculation is needed if Hr=H_floor(k).",
+  "source": "paper",
+  "risk": "low",
+  "quote": "No additional calculation needed if we, e.g., choose Hr(x) = H⌊k⌋(x)",
+  "page": 6
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The element domain and random generator are unspecified.",
+  "options": [
+   "uniform random 64-bit integers",
+   "random strings",
+   "sequential integers"
+  ],
+  "chosen": "uniform random 64-bit integers with fixed seed 42",
+  "rationale": "BFs support arbitrary hashable inputs; random integers avoid domain artifacts and fixed seed makes runs reproducible.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "Can be almost anything which can be hashed, e.g., strings",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The number of independent trials and whether to average is not stated.",
+  "options": [
+   "single fixed-seed run",
+   "average over 10 seeds",
+   "average over 30 seeds"
+  ],
+  "chosen": "single fixed-seed run matching the figure protocol",
+  "rationale": "Figure 6 shows single curves, and the paper gives no std; a fixed seed makes the run reproducible.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the filter was queried for 10,000 elements that had not been inserted",
+  "page": 12
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The FPR denominator is not written as a formula in the caption.",
+  "options": [
+   "false positives / 10,000",
+   "false positives / (false positives + true positives)"
+  ],
+  "chosen": "false positives / 10,000 non-inserted queries",
+  "rationale": "The caption says the filter was queried for 10,000 non-inserted elements; dividing false positives by 10,000 is the standard FPR definition for this protocol.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "To obtain the false positive rate, the filter was queried for 10,000 elements",
+  "page": 12
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether the foz=0.5±0.02 shadow is a filter criterion or only a visualization is not explicit.",
+  "options": [
+   "visualization only",
+   "use to select k"
+  ],
+  "chosen": "visualization only; use the k* formula for the target",
+  "rationale": "The caption says experiments in that foz range are shadowed grey, not that they are selected as the only valid runs.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Experiments with a fraction of zero of 0.5±0.02 are shadowed grey.",
+  "page": 12
+ }
+]

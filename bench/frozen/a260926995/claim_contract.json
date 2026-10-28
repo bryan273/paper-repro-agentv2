@@ -1,0 +1,164 @@
+{
+ "title": "Backtracking Candidate Elimination: A One-Pass Algorithm for the Chip Testing Problem",
+ "summary": "The paper studies the chip testing problem: n chips with a strict majority good, two-sided tests, adversarial bad chips, and the goal of identifying one guaranteed-good chip. It introduces Backtracking Candidate Elimination (BCE), a one-pass sequential algorithm that keeps a current candidate and a stack of retained chips, discarding the candidate and incoming chip on an inconsistent test and backtracking to the most recently retained chip. The paper proves that BCE returns a good chip using at most n−1 tests in O(n) time, illustrates it on GGBBBGG returning x7 after four tests, and relates it to Boyer–Moore majority voting.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "On the 7-chip instance with hidden types G,G,B,B,B,G,G in scan order, BCE returns the good chip x7 after exactly 4 two-sided tests.",
+   "metric": "number of tests to return x7",
+   "dataset": "GGBBBGG example instance",
+   "split": "single deterministic trace (Table 2)",
+   "value": 4,
+   "unit": "tests",
+   "higher_is_better": false,
+   "table_ref": "Table 2, row i=7, result column and Section 4 example",
+   "config_for_value": "Algorithm 1 without early termination; chips x1..x7 have types G,G,B,B,B,G,G; two-sided Test(p,xi); bad verdicts may be arbitrary but every test in this trace is inconsistent regardless of the bad chip's answer.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 ms (7 chips, 4 tests)",
+   "quote": "The candidate backtracks from x1 to the retained chip x2, and BCE returns the good chip x7 after four tests.",
+   "page": 4
+  },
+  {
+   "id": "C2",
+   "statement": "In Algorithm 1, each chip is tested at most once as the incoming chip; it may later be used as the candidate in further tests.",
+   "metric": "maximum number of times a chip is the incoming chip in a test",
+   "dataset": "all valid input sequences (theorem for arbitrary n)",
+   "split": "all n and all strict-majority type assignments",
+   "value": 1,
+   "unit": "incoming tests per chip (upper bound)",
+   "higher_is_better": false,
+   "table_ref": "Section 4, paragraph after Table 2",
+   "config_for_value": "Algorithm 1; loop over i=2..n; each xi is the incoming chip in at most the single Test(p,xi) call at iteration i.",
+   "reported_spread": null,
+   "est_compute": "CPU, exhaustive check for n<=8 in seconds to minutes",
+   "quote": "Each chip is tested at most once as the incoming chip, although it may later serve as the candidate in further tests.",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The central guarantee is the symbolic n−1 worst-case bound; C1 is the paper's only concrete end-to-end trace of that guarantee, exercising retain, discard/backtrack, and restart while returning x7 with 4 <= 7−1 tests. It is cheaper than exhaustive verification and still exercises the full Algorithm 1 control flow."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: a test count is an unbounded integer, so use 10% relative; 10% of 4 is 0.4 tests, which for an integer count means the implementation must use exactly 4 tests and return x7. Output identity x7 is categorical and must match."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Assume the input satisfies the strict-majority promise g > b; otherwise the correctness theorem does not apply and p=⊥ can expose a broken promise.",
+   "cite": "Section 2, promise (1); Remark 9",
+   "quote": "Given the promise that strictly more than n/2 of the chips are good",
+   "page": 1
+  },
+  {
+   "id": "R2",
+   "stmt": "Implement two-sided tests Test(x,y) that return an ordered pair of verdicts; a good chip's verdict is correct and a bad chip's verdict may be arbitrary and adaptive.",
+   "cite": "Section 2, Tests and Table 1",
+   "quote": "A good chip always reports correctly. A bad chip may report anything, and we assume the bad chips collude adversarially.",
+   "page": 1
+  },
+  {
+   "id": "R3",
+   "stmt": "Classify a test as consistent only when the returned pair is (G,G); every other pair is inconsistent.",
+   "cite": "Section 2, definition of consistent",
+   "quote": "We say a test is consistent if it returns (G, G) and inconsistent otherwise.",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "On a consistent Test(p,xi), retain xi by pushing it onto R and keep p as the candidate, using Fact 1 that consistent chips have the same type.",
+   "cite": "Section 4 Case 2 and Fact 1",
+   "quote": "If Test(p, xi) returns (G, G), then p and xi have the same type",
+   "page": 4
+  },
+  {
+   "id": "R5",
+   "stmt": "On an inconsistent Test(p,xi), discard both p and xi as a pair; Fact 2 guarantees the pair contains at least one bad chip.",
+   "cite": "Section 4 Case 3 and Fact 2",
+   "quote": "Otherwise, {p, xi} contains a bad chip, and both are discarded.",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "After discarding on an inconsistent test, backtrack: if R is nonempty, pop the most recently retained chip and make it the new candidate; otherwise set p=⊥.",
+   "cite": "Algorithm 1 lines 7-11; Section 4 Case 3",
+   "quote": "If R is nonempty, the most recently retained chip is popped and becomes the new candidate.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "If p=⊥ when a new chip arrives, make that chip the candidate without performing a test.",
+   "cite": "Algorithm 1 lines 3-4; Section 4 Case 1",
+   "quote": "Case 1. No candidate (p = ⊥). Make xi the candidate without testing it.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Initialize p=x1 and R empty, then scan i=2..n once from left to right.",
+   "cite": "Algorithm 1 lines 1-2; Section 4",
+   "quote": "Initially p = x1 and R is empty. When chip xi arrives:",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "After the scan, return the current candidate p; under the promise this chip is guaranteed good.",
+   "cite": "Algorithm 1 line 12; Theorem 5",
+   "quote": "At the end of the scan, BCE returns p.",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "Count tests as calls to Test(p,xi) only; perform at most one such call per loop iteration, giving at most n−1 tests total.",
+   "cite": "Theorem 7 and Remark 8",
+   "quote": "BCE performs at most n −1 tests and runs in O(n) time.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Maintain the two invariants used in the proof: all retained chips have the same type, and every discarded pair is bad-heavy (at least as many bad as good).",
+   "cite": "Lemmas 3 and 4; Theorem 5",
+   "quote": "the retained chips form a homogeneous set (Lemma 3), and discarded chips are bad-heavy (Lemma 4).",
+   "page": 2
+  },
+  {
+   "id": "R12",
+   "stmt": "If implementing the optional early-termination rule, after processing xi compute h=|Ci| and r=n−i; if h≥r and h≥1, stop and return p.",
+   "cite": "Proposition 10",
+   "quote": "If h ≥r and h ≥1, then every chip in Ci is good.",
+   "page": 6
+  },
+  {
+   "id": "R13",
+   "stmt": "If implementing the one-directional variant, ask the incoming chip about the top of the stack; push on a good verdict, otherwise pop and discard both; return the bottom chip.",
+   "cite": "Section 6.3",
+   "quote": "a stack-based scan still finds a good chip with at most n −1 directed tests.",
+   "page": 7
+  }
+ ],
+ "data": [
+  {
+   "name": "GGBBBGG trace",
+   "how_to_get": "Hard-code the seven chips in scan order as G,G,B,B,B,G,G and run Algorithm 1; Table 2 expects output x7 after four tests."
+  },
+  {
+   "name": "Exhaustive valid chip configurations",
+   "how_to_get": "For n=1..8, enumerate every length-n G/B string with more G than B; for each test, branch over every verdict pair allowed by Table 1, including adaptive bad-chip answers, and check the algorithm returns a good chip with at most n−1 tests on every branch."
+  },
+  {
+   "name": "No external dataset",
+   "how_to_get": "This is a theory paper; it provides no public dataset, benchmark split, repository, or trained weights."
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2609.26995",
+  "kind": "arxiv",
+  "arxiv_id": "2609.26995",
+  "url": "https://arxiv.org/abs/2609.26995",
+  "title": "Backtracking Candidate Elimination: A One-Pass Algorithm for the Chip Testing Problem",
+  "pages": 10
+ }
+}

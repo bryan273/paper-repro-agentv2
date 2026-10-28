@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "LayoutDiT achieves Ove = 0.0012 on the PKU annotated dataset in unconstrained generation, outperforming RALF (0.0069) and other baselines.",
+  "table_ref": "Table 3, row 'LayoutDiT(Ours)', column 'PKU annotated' -> 'Ove ↓'",
+  "dataset": "PKU (PosterLayout) annotated test split"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://yuli0103.github.io/LayoutDiT.github.io/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 5,
+  "basis": "Training a 49M-parameter diffusion transformer for 500 epochs on PKU (batch size 32) plus evaluation; on CPU this is feasible but slow, likely 10-15 hours, while a mid-range GPU would reduce it to 2-3 hours."
+ },
+ "blockers": [
+  "Code and data are linked but not directly provided in the paper; reproduction requires finding and downloading from the project page and external sources.",
+  "Training a diffusion model for 500 epochs is computationally intensive for a CPU-only laptop.",
+  "The exact train/val/test split (8:1:1) from RALF may need to be replicated, which could introduce variability."
+ ],
+ "suitable": true,
+ "id": "2407.15233",
+ "title": "LayoutDiT: Exploring Content-Graphic Balance in Layout Generation with Diffusion Transformer",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

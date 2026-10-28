@@ -1,0 +1,194 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The target FDR level q is not given a numeric value in the main text or figure captions.",
+  "options": [
+   "q=0.05",
+   "q=0.1",
+   "q=0.2"
+  ],
+  "chosen": "q=0.1",
+  "rationale": "A conventional BH target in multiple testing; the paper treats q as a fixed but unspecified level.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "We compare procedures returning rejection sets pR Ď rms that target FDR control at level q for each fixed setting of pθjqm j“1.",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The finite simulation dimension d is not explicitly stated when c=0.2 and m=1000.",
+  "options": [
+   "d=200 (round(c m))",
+   "d=1000",
+   "random d near c m"
+  ],
+  "chosen": "d=200",
+  "rationale": "The asymptotic regime sets c=d/m, so the natural finite proxy is d=c m=200.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "m, d,  ̃m Ñ 8 with d m Ñ c ě 0",
+  "page": 7
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The true unit direction v is unspecified for simulation.",
+  "options": [
+   "v=e1",
+   "v fixed random unit vector",
+   "v random per replication"
+  ],
+  "chosen": "v=e1",
+  "rationale": "The model is rotation invariant and the proofs explicitly rotate coordinates so that v=e1.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Without loss of generality rotate coordinates so that v “ e1.",
+  "page": 42
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The distribution of the random row permutation Π in BONuS is not numerically specified beyond Π~Sym(m+tilde m).",
+  "options": [
+   "uniform random permutation",
+   "fixed deterministic permutation",
+   "no permutation for the mean learner"
+  ],
+  "chosen": "uniform random permutation; for the mean learner it can be skipped because the learner is permutation invariant",
+  "rationale": "Sym indicates the symmetric group with uniform permutation; the mean learner is unaffected.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The synthetic null rows in BONuS must be drawn from the null distribution.",
+  "options": [
+   "N(0,I_d)",
+   "bootstrap from X",
+   "other null distribution"
+  ],
+  "chosen": "N(0,I_d)",
+  "rationale": "Algorithm 2 explicitly draws tilde X_k from N(0,I_d).",
+  "source": "paper",
+  "risk": "low",
+  "quote": " ̃ Xk „ Np0, Idq, k “ 1, . . . ,  ̃m;",
+  "page": 7
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The point-mass score has an additive constant and can be used as v^T X_j.",
+  "options": [
+   "use v^T X_j",
+   "use h v^T X_j - h^2/2",
+   "use full likelihood ratio"
+  ],
+  "chosen": "use v^T X_j",
+  "rationale": "All methods are invariant to monotone transformations, and Section 3.2 explicitly switches to v^T X_j.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we use the functional form TΛpXjq ” vJXj for the remainder of Section 3.2.",
+  "page": 9
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Empirical power aggregation across Monte Carlo replications is not described in full detail.",
+  "options": [
+   "average TPP across replications",
+   "pool all rejection sets",
+   "report median TPP"
+  ],
+  "chosen": "average TPP across 1000 independent replications",
+  "rationale": "The paper states Monte Carlo results are averaged over 1000 replications.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Monte Carlo results are averaged over 1000 independent replications.",
+  "page": 10
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "For π_aug=0.5, the exact finite tilde m must be chosen.",
+  "options": [
+   "tilde m=1000",
+   "tilde m=500",
+   "tilde m=2000"
+  ],
+  "chosen": "tilde m=1000",
+  "rationale": "π_aug=m/(m+tilde m)=0.5 with m=1000 gives tilde m=1000, matching the explicit Figure 14 setting.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we set  ̃m “ m “ 1000 for the augmentation methods (i.e., πaug “ 0.5)",
+  "page": 29
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Random seeds for reproducibility are not reported.",
+  "options": [
+   "fixed seed",
+   "no fixed seed",
+   "one seed per replication"
+  ],
+  "chosen": "fixed seed for each method and setting",
+  "rationale": "Needed to reproduce empirical power checks; does not change target.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The TPR_BH functional requires solving for the threshold t* at level q.",
+  "options": [
+   "bisection root finder",
+   "grid search",
+   "closed form not available"
+  ],
+  "chosen": "numerical bisection on t using normal survival functions",
+  "rationale": "The definition is a threshold condition on a continuous decreasing ratio, so bisection is straightforward.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "t ̊ ” inf t P R :  ̄G0ptq p1  ́ γq  ̄G0ptq ` γ  ̄G1ptq ď q",
+  "page": 9
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "How discrete empirical BONuS p-values should be handled near π_aug close to 1.",
+  "options": [
+   "standard empirical survival without continuity correction",
+   "add continuity correction",
+   "randomized p-values"
+  ],
+  "chosen": "standard empirical survival without continuity correction",
+  "rationale": "Algorithms 2 and 6 use the plain augmented empirical survival function; the paper discusses discreteness as a finite-sample effect.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The resulting empirical p-values are closely related to conformal p-values",
+  "page": 7
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The exact plotted empirical power at π_aug=0.5 is not tabulated in the text.",
+  "options": [
+   "read values from the published figure",
+   "regenerate from authors' code",
+   "evaluate the asymptotic formula only"
+  ],
+  "chosen": "regenerate from authors' code if possible; otherwise evaluate the Theorem 1 formula and use the figure only qualitatively",
+  "rationale": "The paper links all replication code and does not print the numeric power.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "All replication code is available at https://github.com/Katsevich-Lab/masking-power.",
+  "page": 10
+ }
+]

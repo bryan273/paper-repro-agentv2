@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "D2H-AD achieves the reported F1 score / ROC-AUC on the smallest benchmark dataset (one table cell from the main results table)",
+  "table_ref": "Main results table (F1/ROC-AUC across five ODDS datasets; exact table number not visible in provided text)",
+  "dataset": "Smallest ODDS benchmark dataset (e.g., Cardio, Breastw, or similar from ODDS library)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is released, so the full HDC encoding + density/distance scoring pipeline must be reimplemented from the paper's prose; datasets are small ODDS tables and HDC is binary/CPU-only, so runtime is modest but reimplementation and hyperparameter matching (D, K, dc percentile, threshold) dominate."
+ },
+ "blockers": [
+  "No code or configs released; method must be reimplemented from text",
+  "Several implementation details (exact density/distance formulas, threshold selection, feature selection) are only partially specified",
+  "Exact table values and dataset list not fully visible in provided text, complicating verification"
+ ],
+ "suitable": true,
+ "id": "2606.13754",
+ "title": "D2H-AD: A Hybrid Model Utilizing Hyperdimensional Computing for Advanced Anomaly Detection",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

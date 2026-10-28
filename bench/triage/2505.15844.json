@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Stacking ensemble (RF, XGBoost, LightGBM, SVC base models + logistic regression meta-learner) achieves 97.2% accuracy on the stroke prediction test set",
+  "table_ref": "Table 11 / Section 3.4 (Discussion: 97.2% accuracy, 97.15% F1, 0.9966 ROC-AUC)",
+  "dataset": "Full-Filled Brain Stroke Dataset (Kaggle, 4,981 records, 11 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Small tabular dataset (~4.3k rows after outlier removal) with sklearn/XGBoost/LightGBM on CPU; the whole pipeline (preprocess, SMOTE, 5-fold CV, stacking) runs in minutes, but the exact stacking recipe (base-model set per feature set, meta-learner inputs) is only partially specified, so some re-derivation is needed."
+ },
+ "blockers": [
+  "No code released; stacking ensemble composition and per-feature-set base-model choices are described inconsistently (text mentions DT/LightGBM/KNN/RF/MLP for one set, RF/XGBoost/LightGBM/SVC for the headline), so exact 97.2% may not be reproducible",
+  "Paper text is internally inconsistent (e.g., 'emotion classification in Bangla sentences' appears in results section), suggesting copy-paste errors that complicate faithful reproduction",
+  "Kaggle dataset requires a free account/API token to download"
+ ],
+ "suitable": true,
+ "id": "2505.15844",
+ "title": "Advancing Tabular Stroke Modelling Through a Novel Hybrid Architecture and Feature-Selection Synergy",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

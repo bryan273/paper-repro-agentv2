@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Coverage of nominal 95% intervals for the eight headline TMLE/AIPW estimators in the benign S1 regime (low-complexity Super Learner library, n=3000), e.g. TMLE coverage 0.928 and CF-AIPW coverage 0.936",
+  "table_ref": "Table 3 (S1 column)",
+  "dataset": "Simulated statin DGM (Zivich & Breskin 2021), S1 regime, n=3000, 2500 simulated datasets"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ehsanx/TMLE-variants-reproduction"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "2500 simulated datasets at n=3000 with 8 estimators, each requiring Super Learner fits with 5-fold inner CV plus outer cross-fitting; R-based, CPU-only, but the full protocol is many thousands of model fits, so a few hours on 8 cores is optimistic and a reduced replicate count would be needed to match the exact coverage cell."
+ },
+ "blockers": [
+  "Full 2500-replicate protocol is heavy for a laptop; exact coverage values require many replicates",
+  "Super Learner library and seed/partition scheme must be reconstructed from supplement (not in main text)",
+  "Saved results exist but regenerating Table 3 from scratch requires re-running all fits"
+ ],
+ "suitable": true,
+ "id": "2610.16192",
+ "title": "When Sample-Splitting Choices Matter in TMLE and AIPW: Cross-Fitting, Targeting, and Repetition",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

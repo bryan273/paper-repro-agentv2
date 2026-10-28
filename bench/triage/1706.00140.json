@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "FSRDCF achieves 11.4 fps on OTB-2013, more than twice the speed of SRDCF (5.7 fps).",
+  "table_ref": "Table 5",
+  "dataset": "OTB-2013"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; reimplementing the FSRDCF tracker in MATLAB/Python and running it on 50 OTB-2013 sequences to measure fps is a multi-hour effort, though feasible on CPU."
+ },
+ "blockers": [
+  "No code or implementation details released",
+  "Requires reimplementation of the tracker from the paper",
+  "Speed measurement depends on hardware and implementation efficiency"
+ ],
+ "suitable": false,
+ "id": "1706.00140",
+ "title": "Faster Spatially Regularized Correlation Filters for Visual Tracking",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

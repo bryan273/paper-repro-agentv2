@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "QAaP achieves 60.3 EM on TempQuestions (explicit subset) with gpt-3.5-turbo, vs 49.8 for CoT",
+  "table_ref": "Table 1",
+  "dataset": "TempQuestions (explicit subset, 297 samples)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TianHongZXY/qaap"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The method is a few-shot LLM pipeline (no training), but reproducing the 60.3 EM cell requires ~297 questions x multiple gpt-3.5-turbo calls (parse, generate background, extract per context, check, match) plus a Wikipedia search step; API cost/latency and the closed gpt-3.5-turbo backbone dominate, and the repo may not include the exact prompts/configs."
+ },
+ "blockers": [
+  "Requires OpenAI gpt-3.5-turbo API (closed model, paid, non-deterministic)",
+  "Reproduction depends on live Wikipedia search results which change over time",
+  "Exact prompt/configs may be missing or outdated in the repo"
+ ],
+ "suitable": false,
+ "id": "2305.14221",
+ "title": "Question Answering as Programming for Solving Time-Sensitive Questions",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

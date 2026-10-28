@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "SW test p-value for LOOCV Z-residuals on the kidney infection dataset (38 patients, 76 observations) fitted with a shared gamma frailty model, as reported in Figure A.13 (SW p-value = 0.32 after removing cases 42 and 20).",
+  "table_ref": "Figure A.13 (QQ plot, LOOCV, SW p-value = 0.32)",
+  "dataset": "Kidney infection dataset (McGilchrist & Aisbett, 1991), 38 patients, 76 observations"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code provided; must implement LOOCV Z-residual computation from scratch (76 model fits with coxph and Breslow estimator), plus data download and verification; all CPU-bound and small."
+ },
+ "blockers": [
+  "No code or implementation provided in the paper or links",
+  "Requires re-implementing the cross-validatory Z-residual algorithm from the paper's description"
+ ],
+ "suitable": true,
+ "id": "2303.09616",
+ "title": "Cross-validatory Z-Residual for Diagnosing Shared Frailty Models",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

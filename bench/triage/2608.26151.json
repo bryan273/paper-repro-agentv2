@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Logistic Regression AUC-ROC = 0.8411 on the held-out test set (n=1,409) of the IBM Telco Customer Churn benchmark, with SMOTE applied to the training partition only",
+  "table_ref": "Table 1, row 'Logistic Reg.', column AUC",
+  "dataset": "IBM Telco Customer Churn (7,043 records, 19 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "basis": "Small public CSV (7k rows); preprocessing + SMOTE + logistic regression + 4 tree models on 8 CPU cores takes seconds to a couple of minutes per run, dominated by pip installs and dataset download; exact AUC may differ slightly from the reported 0.8411 due to unspecified random seed and library versions."
+ },
+ "blockers": [
+  "No code or repository linked in the paper; pipeline must be re-implemented from the methodology text",
+  "Exact reproduction of 0.8411 is seed/version sensitive (SMOTE seed, train-test split seed, sklearn version) so the number may land within ~0.005 rather than exactly",
+  "Paper mentions a synthetic fallback generator but all reported results use the real IBM dataset, which is freely downloadable"
+ ],
+ "suitable": true,
+ "id": "2608.26151",
+ "title": "Explainable Artificial Intelligence for Customer Churn Prediction in Telecommunications: A Framework for CRM Integration",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "BOLIDE's estimated NDCC distribution on as-skitter (degree bins of powers of 1.2) matches the exact distribution with low RHAS distance (avg relative error ~0.80, Pearson ~0.73 per Table 6)",
+  "table_ref": "Table 6 (SK row) / Figure 1a",
+  "dataset": "as-skitter"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/CristianBold4/BOLIDE"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "as-skitter is ~1.7M edges; BOLIDE is a single-pass CPU streaming algorithm (Table 6 reports 7.4s runtime, 0.44GB memory), so the main cost is downloading the graph, building the repo, and running 10 repetitions plus exact ground truth."
+ },
+ "blockers": [
+  "Exact ground-truth clustering coefficients require a triangle enumeration step not clearly provided as a script",
+  "Repo may not include dataset download/preprocessing scripts or exact configs for the 1.2-power bins",
+  "10 independent repetitions needed to match reported averages"
+ ],
+ "suitable": true,
+ "id": "2609.23489",
+ "title": "Single-Pass Estimation of the Clustering Coefficient Distribution in Graph Streams",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

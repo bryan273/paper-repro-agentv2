@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "11 NUTS2 regions flagged as structural anomalies by at least 3 of 5 methods (Table 2), and per-method flagged counts (Table 1: z-scores 12, Mahalanobis 3, IF/LOF/OCSVM 15 each)",
+  "table_ref": "Table 1 and Table 2",
+  "dataset": "Eurostat NUTS2 2022 cross-section (nama_10r_2gdp, lfst_r_lfu3rt, demo_r_d3dens, edat_lfse_04), ~260 regions x 4 indicators"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/bogdanoancea/stat"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Tiny 260x4 table, four Eurostat API downloads, and scikit-learn anomaly detectors (IF/LOF/OCSVM/Mahalanobis) that run in seconds on CPU; main cost is installing packages and fetching data."
+ },
+ "blockers": [
+  "Code repo linked but not verified to contain the exact script/config; may need to reimplement the pipeline from the paper",
+  "Eurostat API dataset codes/units must be matched and 2022 values may have been revised since publication, so exact flagged counts may not reproduce bit-for-bit"
+ ],
+ "suitable": true,
+ "id": "2605.02884",
+ "title": "Unsupervised Machine Learning for Detecting Structural Anomalies in European Regional Statistics",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

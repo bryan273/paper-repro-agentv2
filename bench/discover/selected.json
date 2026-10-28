@@ -1,0 +1,1184 @@
+{
+ "n": 50,
+ "from_feasible": 120,
+ "papers": [
+  {
+   "id": "2506.06491",
+   "title": "When Tukey meets Chauvenet: a new boxplot criterion for outlier detection",
+   "published": "2025-06-06",
+   "cats": [
+    "stat.ME",
+    "stat.AP"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 5,
+   "release": "full",
+   "code_links": [
+    "https://github.com/tiejuntong/ChauBoxplot"
+   ],
+   "target": {
+    "statement": "With set.seed(1863) in R, for normal data with n=500 and two contaminated points (5 and 6), Tukey's boxplot labels 3 suspected outliers and the Chauvenet-type boxplot labels 2 suspected outliers.",
+    "table_ref": "Figure 2 caption / Section 4.1",
+    "dataset": "Simulated standard normal data with two contaminated points (5 and 6), n=500, seed=1863"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2506.06990",
+   "title": "Modified K-means Algorithm with Local Optimality Guarantees",
+   "published": "2025-06-08",
+   "cats": [
+    "cs.LG",
+    "math.OC",
+    "stat.ML"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 5,
+   "release": "full",
+   "code_links": [
+    "https://github.com/lmingyi/LO-K-means"
+   ],
+   "target": {
+    "statement": "Mean clustering loss of Min-D-LO on Iris with K=5 (random init) is 57.32",
+    "table_ref": "Table 1, Iris K=5 Min-D-LO row",
+    "dataset": "Iris (N=150, d=4)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2409.01635",
+   "title": "PMLBmini: A Tabular Classification Benchmark Suite for Data-Scarce Applications",
+   "published": "2024-09-03",
+   "cats": [
+    "cs.LG",
+    "cs.AI"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/RicardoKnauer/TabMini"
+   ],
+   "target": {
+    "statement": "Mean test AUC of logistic regression on the parity5 dataset (sample size 32, 5 features) is 0.17.",
+    "table_ref": "Table 3, row parity5, column 'Logistic regression'",
+    "dataset": "parity5 (from PMLBmini)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2607.05903",
+   "title": "K-ABENA: K-Adaptive Backpropagation with Error-based N-exclusion Algorithm : (Compensated Loss-Based Sample Exclusion with Unbiased Gradient Estimation)",
+   "published": "2026-07-07",
+   "cats": [
+    "cs.LG",
+    "cs.AI",
+    "cs.CL"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/Bonbhel/kabena-ml"
+   ],
+   "target": {
+    "statement": "Test accuracy of K-ABENA v3 (canonical compensated estimator) on Breast Cancer dataset, matching full-batch SGD baseline (0.9706) while saving 28.5% of backward passes.",
+    "table_ref": "Table 1, row 'LogReg / Breast Cancer', column 'v3 (canonical)'",
+    "dataset": "Breast Cancer (scikit-learn bundled, n=569)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2605.22740",
+   "title": "Ternary Decision Trees with Locally-Adaptive Uncertainty Zones",
+   "published": "2026-05-21",
+   "cats": [
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 15,
+   "release": "full",
+   "code_links": [
+    "https://github.com/smitswil/ternary_tree"
+   ],
+   "target": {
+    "statement": "Decided accuracy of the Margin method (probabilistic routing) on the OpenML-CC18 dataset 'credit-g' is 0.6808 (with boundary-uncertain rate 48.1%).",
+    "table_ref": "Table 5 (per-dataset results, credit-g row, Margin column)",
+    "dataset": "credit-g (OpenML-CC18, N=1000, d=20)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2607.26530",
+   "title": "When to Treeify Hash Table Buckets: A Reproducible C Study of List, Hybrid, and Red-Black Tree Chaining",
+   "published": "2026-07-29",
+   "cats": [
+    "cs.DS"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "full",
+   "code_links": [
+    "https://github.com/rbtreechainingforhashtable/project",
+    "https://github.com/rbtreechainingforhashtable/"
+   ],
+   "target": {
+    "statement": "Average comparisons per successful lookup for list chaining under forced-bucket stress (5×10^5 keys, 8 hot bins, seed 1) is ~31,250",
+    "table_ref": "Table 6",
+    "dataset": "synthetic forced-bucket keys (BBBB:seq:suffix), 5×10^5 keys, 8 hot bins"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2608.08576",
+   "title": "Exact Conditional Distributions of Chi-Square-Family Statistics for Two-Way Contingency Tables, by Cell-Separable Dynamic Programming",
+   "published": "2026-08-09",
+   "cats": [
+    "stat.ME",
+    "stat.AP",
+    "stat.CO"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "full",
+   "code_links": [
+    "https://doi.org/10.5281/zenodo.21831680",
+    "https://doi.org/10.5281/zenodo.21831681"
+   ],
+   "target": {
+    "statement": "Exact conditional moments (mean, variance, third cumulant) of the chi-square-family statistic for a 3x3 table with N=18 (406 tables on the margin fibre) agree with brute-force enumeration to max relative error 8.9e-15, computed in ~5.5 ms.",
+    "table_ref": "Section 2.2 (text; corresponds to Table 1 row 3x3)",
+    "dataset": "Simulated 3x3 contingency table, N=18, margins fixed (no external data)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2610.18740",
+   "title": "Selecting the 7th Smallest of 16 Elements Takes Exactly 28 Comparisons",
+   "published": "2026-10-13",
+   "cats": [
+    "cs.DS",
+    "math.CO"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "full",
+   "code_links": [
+    "https://github.com/JCremerr/selection-7-of-16",
+    "https://doi.org/10.5281/zenodo.23346948"
+   ],
+   "target": {
+    "statement": "V7(16) ≤ 28: there exists a comparison decision tree of depth 28 that selects the 7th smallest (0-based rank 6) of 16 distinct elements.",
+    "table_ref": "Table 3, row V7(16) ≤ 28 (also Theorem 1)",
+    "dataset": "none (combinatorial certificate; no external data)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2606.30702",
+   "title": "Accelerometry-Derived Digital Biomarkers for Cardiometabolic Risk: A Population-Representative Tabular Benchmark with Uncertainty Quantification",
+   "published": "2026-06-29",
+   "cats": [
+    "cs.LG",
+    "cs.AI",
+    "stat.ML"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "full",
+   "code_links": [
+    "https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark"
+   ],
+   "target": {
+    "statement": "TabPFN v2 achieves R2=0.383 on CRP prediction from accelerometry and lifestyle features (test set N=276).",
+    "table_ref": "Table 2, CRP row, TabPFN v2 column, R2",
+    "dataset": "NHANES Accelerometry Cardiometabolic Benchmark (N=1,381, derived from NHANES 2003-2006)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2607.21003",
+   "title": "ADABORD: a novel AdaBoost approach for ordinal classification",
+   "published": "2026-07-23",
+   "cats": [
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "full",
+   "code_links": [
+    "https://github.com/ayrna/adabord"
+   ],
+   "target": {
+    "statement": "ADABORD's MAE (or other headline metric) on the smallest TOC-UCO dataset (e.g., tae or newthyroid) as reported in the main results table.",
+    "table_ref": "Main results table (not fully shown in provided text; likely Table 2 or 3)",
+    "dataset": "TOC-UCO repository, smallest dataset (e.g., tae: 105 train, 46 test, 54 features, 3 classes)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2609.26839",
+   "title": "LWCal: Loss-Weighted Calibration for Tabular Classifiers with Noisy Calibration Labels",
+   "published": "2026-09-22",
+   "cats": [
+    "cs.LG",
+    "cs.AI"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "full",
+   "code_links": [
+    "https://github.com/ZemingL/lwcal"
+   ],
+   "target": {
+    "statement": "GATED-LWCal mean ECE = 0.122 (and NLL = 0.396) over 432 noisy random-forest cells, vs raw RF ECE 0.188",
+    "table_ref": "Table III",
+    "dataset": "Nine local scikit-learn/synthetic binary tabular tasks (Breast Cancer, Wine 0/2, Digits High/Even, Iris, 3 synthetic)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2303.17809",
+   "title": "Never a Dull Moment: Distributional Properties as a Baseline for Time-Series Classification",
+   "published": "2023-03-31",
+   "cats": [
+    "stat.ME",
+    "cs.LG",
+    "stat.AP"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/hendersontrent/mean-var-ts-classify"
+   ],
+   "target": {
+    "statement": "FTM (mean and standard deviation) linear SVM classifier achieves 100% accuracy on the GunPointOldVersusYoung dataset.",
+    "table_ref": "Figure 1 / Section 3.1",
+    "dataset": "GunPointOldVersusYoung (UCR Time Series Classification Repository)"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2504.20293",
+   "title": "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results",
+   "published": "2025-04-28",
+   "cats": [
+    "cs.LG"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/stefankober/radius-guided-kmeans"
+   ],
+   "target": {
+    "statement": "Post-merge median clustering success of 1.0 on FCPS Atom with k=20 (radius-based post-processing)",
+    "table_ref": "Table 2, row FCPS Atom",
+    "dataset": "FCPS Atom"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2512.05469",
+   "title": "How Ensemble Learning Balances Accuracy and Overfitting: A Bias-Variance Perspective on Tabular Data",
+   "published": "2025-12-05",
+   "cats": [
+    "cs.LG",
+    "cs.AI"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 20,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/zubair0831/ensemble-generalization-gap"
+   ],
+   "target": {
+    "statement": "SVM (RBF) test accuracy on Breast Cancer = 0.972 ± 0.008 (mean ± std across 5 seeds)",
+    "table_ref": "Table III, row 'Breast Cancer', column 'Test Acc'",
+    "dataset": "Breast Cancer Wisconsin (Diagnostic), UCI"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "Exact hyperparameter grid and CV fold details are not fully specified in the paper; reproducing the exact 0.972 may require guessing the grid or reading the repo.",
+    "Repo may be incomplete or outdated (only a link is given; no configs or exact seeds beyond the listed seeds)."
+   ]
+  },
+  {
+   "id": "2606.23767",
+   "title": "One Ruler: A Same-Hands Re-Evaluation of Bivariate Causal Direction on Tuebingen, with a Parameter-Free Compression Baseline",
+   "published": "2026-06-22",
+   "cats": [
+    "cs.LG"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 20,
+   "release": "partial",
+   "code_links": [
+    "stateoftheart.nl/causal"
+   ],
+   "target": {
+    "statement": "Weighted accuracy of the parameter-free sorted-conditional bz2 compression baseline on the 102-pair Tübingen CEP set (forced decision, no tuning) = 74.7%",
+    "table_ref": "Table 2, row 'Compression (ours, our 102 pairs)' (also §4.1)",
+    "dataset": "Tübingen Cause-Effect Pairs (CEP), 102 pairs with scalar cause/effect and >=50 samples, official pairmeta.txt weights"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "Code link is a bare project URL (stateoftheart.nl/causal) with no repository/DOI in the PDF, so the released scorer may not be directly retrievable",
+    "Exact 102-pair subset and weighting must be reconstructed from pairmeta.txt (paper says 102 pairs; literature varies 95-108)"
+   ]
+  },
+  {
+   "id": "2309.11450",
+   "title": "Distribution and volume based scoring for Isolation Forests",
+   "published": "2023-09-20",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/porscheofficial/distribution",
+    "https://github.com/porscheofficial/distribution_and_volume_based_isolation_forest"
+   ],
+   "target": {
+    "statement": "AUCROC of best PACα variant on the annthyroid dataset (91.47 at α=0.5)",
+    "table_ref": "Table I (appendix)",
+    "dataset": "annthyroid (ADBench)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "Code links may be incomplete or outdated (paper mentions custom implementation, not all scripts provided)",
+    "ADBench data download and preprocessing required"
+   ]
+  },
+  {
+   "id": "2405.04746",
+   "title": "SVD-AE: Simple Autoencoders for Collaborative Filtering",
+   "published": "2024-05-08",
+   "cats": [
+    "cs.IR",
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/seoyoungh/svd-ae"
+   ],
+   "target": {
+    "statement": "HR@10 of SVD-AE on ML-1M = 31.79",
+    "table_ref": "Table 2",
+    "dataset": "ML-1M"
+   },
+   "screen": 9.0,
+   "blockers": []
+  },
+  {
+   "id": "2608.16147",
+   "title": "When Single-Dataset Conclusions Fail: A 45-Task Study of Threshold Tuning and Resampling for Imbalanced Classification",
+   "published": "2026-08-17",
+   "cats": [
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "code/fraud_pipeline.py",
+    "code/multi_dataset_study.py",
+    "code/results_nested_cv/per_fold_metrics.csv",
+    "code/results_multi/per_run_metrics.csv"
+   ],
+   "target": {
+    "statement": "Random Forest with plain strategy (default 0.5 threshold) on credit-card fraud dataset attains F1 = 0.861 ± 0.021 under 5-fold nested CV",
+    "table_ref": "Table 1, row 'Random Forest / plain', column F1",
+    "dataset": "Kaggle credit-card fraud (Dal Pozzolo et al., 284,807 rows, 492 positives)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "Code links are relative paths in the PDF with no repository URL; the actual code/data release location is not given, so the harness may need to be re-implemented from the protocol description",
+    "Kaggle dataset requires a free Kaggle account/API token to download",
+    "Exact fold seeds and preprocessing details must be matched to hit 0.861 ± 0.021 precisely"
+   ]
+  },
+  {
+   "id": "2610.19058",
+   "title": "Conformalized Physics-Informed Weak Regression for Parameter Estimation in Epidemic Models",
+   "published": "2026-10-13",
+   "cats": [
+    "stat.ML",
+    "cs.LG",
+    "math-ph"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 5,
+   "release": "none",
+   "code_links": [
+    "https://github.com/Shaier/DINN",
+    "https://github.com/reconhub/",
+    "https://github.com/reconhub/outbreaks"
+   ],
+   "target": {
+    "statement": "PIWR estimate of transmission rate α for COVID-19 SIDR model with 1% noise, achieving 0.124% error (Table 2, row α, column PIWR, noise level ε=0.01)",
+    "table_ref": "Table 2",
+    "dataset": "Synthetic COVID-19 SIDR data generated from the model with parameters (α,β,γ)=(0.191,0.05,0.0294), 100 samples on [0,500] days, 1% noise"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released for PIWR or the conformal pipeline; must implement from paper description",
+    "Data must be regenerated from model equations (no provided dataset)"
+   ]
+  },
+  {
+   "id": "2609.26995",
+   "title": "Backtracking Candidate Elimination: A One-Pass Algorithm for the Chip Testing Problem",
+   "published": "2026-09-22",
+   "cats": [
+    "cs.DS",
+    "cs.DM"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "BCE returns a good chip using at most n-1 tests (worst-case test count bound, e.g. verified on the GGBBBGG example returning x7 after 4 tests, and/or exhaustive simulation confirming <= n-1 tests and correctness)",
+    "table_ref": "Table 2 (example trace) / Theorem 7 (cost bound)",
+    "dataset": "synthetic chip type assignments (no external dataset)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released, but algorithm is fully specified in pseudocode (Algorithm 1) so reimplementation is trivial",
+    "No real dataset; target is a theoretical/synthetic claim"
+   ]
+  },
+  {
+   "id": "2608.26151",
+   "title": "Explainable Artificial Intelligence for Customer Churn Prediction in Telecommunications: A Framework for CRM Integration",
+   "published": "2026-07-01",
+   "cats": [
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 20,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "Logistic Regression AUC-ROC = 0.8411 on the held-out test set (n=1,409) of the IBM Telco Customer Churn benchmark, with SMOTE applied to the training partition only",
+    "table_ref": "Table 1, row 'Logistic Reg.', column AUC",
+    "dataset": "IBM Telco Customer Churn (7,043 records, 19 features)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code or repository linked in the paper; pipeline must be re-implemented from the methodology text",
+    "Exact reproduction of 0.8411 is seed/version sensitive (SMOTE seed, train-test split seed, sklearn version) so the number may land within ~0.005 rather than exactly",
+    "Paper mentions a synthetic fallback generator but all reported results use the real IBM dataset, which is freely downloadable"
+   ]
+  },
+  {
+   "id": "2610.24652",
+   "title": "Lightweight Machine Learning for Classifying Disaster-Related Social Media Posts",
+   "published": "2026-10-17",
+   "cats": [
+    "cs.NI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 25,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "Locked balanced LinearSVC (word unigram-bigram TF-IDF, C=0.5) achieves Macro-F1 = 0.6578 on the held-out CrisisBench Test split",
+    "table_ref": "Table 6",
+    "dataset": "CrisisBench v1.0 English humanitarian task (87,455 records; 11 labels)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released; pipeline must be re-implemented from the paper's prose description",
+    "Exact preprocessing/vectoriser details must be matched to hit the reported number",
+    "CrisisBench download location not linked in the paper (must be found independently)"
+   ]
+  },
+  {
+   "id": "2502.02193",
+   "title": "Extending the Applicability of Bloom Filters by Relaxing their Parameter Constraints",
+   "published": "2025-02-04",
+   "cats": [
+    "cs.DS"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "none",
+   "code_links": [
+    "https://github.com/aappleby/smhasher"
+   ],
+   "target": {
+    "statement": "False positive rate of a Rational Bloom Filter with m=8192 bits and n=1000 elements, compared to standard Bloom filter, as shown in Figure 6 (top).",
+    "table_ref": "Figure 6 (top)",
+    "dataset": "synthetic random elements"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released for the Rational Bloom Filter or Variably-Sized Block Bloom Filter; only a link to a MurmurHash library is given.",
+    "The paper reports unexpected artifacts (local minima at integer k) that may be hard to reproduce exactly without the original implementation details."
+   ]
+  },
+  {
+   "id": "2505.15844",
+   "title": "Advancing Tabular Stroke Modelling Through a Novel Hybrid Architecture and Feature-Selection Synergy",
+   "published": "2025-05-18",
+   "cats": [
+    "q-bio.QM",
+    "cs.LG",
+    "stat.AP"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "Stacking ensemble (RF, XGBoost, LightGBM, SVC base models + logistic regression meta-learner) achieves 97.2% accuracy on the stroke prediction test set",
+    "table_ref": "Table 11 / Section 3.4 (Discussion: 97.2% accuracy, 97.15% F1, 0.9966 ROC-AUC)",
+    "dataset": "Full-Filled Brain Stroke Dataset (Kaggle, 4,981 records, 11 features)"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released; stacking ensemble composition and per-feature-set base-model choices are described inconsistently (text mentions DT/LightGBM/KNN/RF/MLP for one set, RF/XGBoost/LightGBM/SVC for the headline), so exact 97.2% may not be reproducible",
+    "Paper text is internally inconsistent (e.g., 'emotion classification in Bangla sentences' appears in results section), suggesting copy-paste errors that complicate faithful reproduction",
+    "Kaggle dataset requires a free account/API token to download"
+   ]
+  },
+  {
+   "id": "2510.18252",
+   "title": "Finding the Sweet Spot: Optimal Data Augmentation Ratio for Imbalanced Credit Scoring Using ADASYN",
+   "published": "2025-10-21",
+   "cats": [
+    "stat.AP",
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "ADASYN 1x augmentation achieves test AUC of 0.6778 (Gini 0.3557) on the Give Me Some Credit dataset, vs baseline AUC 0.6727",
+    "table_ref": "Table 2 / Table 5 (ADASYN 1x row)",
+    "dataset": "Give Me Some Credit (Kaggle), 97,243 obs after cleaning, 7.07% default rate"
+   },
+   "screen": 9.0,
+   "blockers": [
+    "No code released (paper promises a future GitHub repo but links none)",
+    "Kaggle dataset requires a free account/API token to download",
+    "Preprocessing caps/outlier rules are only loosely described, so exact AUC may not match to 4 decimals"
+   ]
+  },
+  {
+   "id": "2304.12332",
+   "title": "Analyzing categorical time series with the R package ctsfeatures",
+   "published": "2023-04-24",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 5,
+   "release": "full",
+   "code_links": [
+    "https://cran.r-project.org/package=ctsfeatures"
+   ],
+   "target": {
+    "statement": "Outlier detection on GeneticSequences: the two series with highest outlier scores (sum of distances based on total correlation and marginal probabilities) are identified as outliers, as shown in the boxplot.",
+    "table_ref": "Figure 7 (boxplot of outlier scores) and the preceding code block; no table number, but the result is the identification of two anomalous genetic sequences.",
+    "dataset": "GeneticSequences (32 DNA sequences, 4 categories)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2401.14359",
+   "title": "A Stability Framework for Parameter Selection in the Minimum Covariance Determinant Problem",
+   "published": "2024-01-25",
+   "cats": [
+    "stat.ME",
+    "stat.CO"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 5,
+   "release": "full",
+   "code_links": [
+    "https://github.com/qhengncsu/StableMCD"
+   ],
+   "target": {
+    "statement": "The integrated instability metric selects h=40 for the StarsCYG dataset, identifying 7 outliers.",
+    "table_ref": "Figure 4 (middle panel) / Section 5.1",
+    "dataset": "StarsCYG (47 observations, 2 variables)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2304.12251",
+   "title": "Ordinal time series analysis with the R package otsfeatures",
+   "published": "2023-04-24",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://cran.r-project.org/web/packages/otsfeatures/index.html"
+   ],
+   "target": {
+    "statement": "Adjusted Rand Index (ARI) of 0.6545303 for PAM clustering using distance dCC on SyntheticData2",
+    "table_ref": "Section 4.3.2 (text, not a table)",
+    "dataset": "SyntheticData2 (included in otsfeatures package)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2310.05468",
+   "title": "Enhancing Interpretability and Generalizability in Extended Isolation Forests",
+   "published": "2023-10-09",
+   "cats": [
+    "stat.ML",
+    "cs.LG",
+    "stat.AP"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/alessioarcudi/ExIFFI"
+   ],
+   "target": {
+    "statement": "Average Precision of EIF+ on the Bisect synthetic dataset (trained without anomalies), showing improvement over EIF",
+    "table_ref": "Table 2 (main AD results, 16 datasets)",
+    "dataset": "Bisect (synthetic, 2D, 1000 points)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2409.02258",
+   "title": "Generalized implementation of invariant coordinate selection with positive semi-definite scatter matrices",
+   "published": "2024-09-03",
+   "cats": [
+    "stat.ME"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/AuroreAA/ICS_PSD_Replication"
+   ],
+   "target": {
+    "statement": "Eigenvalues ρ1=ρ2=1 and ρ3=ρ4=0 obtained by ICS with Moore-Penrose pseudo-inverse on the simulated data (1000 obs, 20 outliers, W1=I2, W2=diag(2,0))",
+    "table_ref": "Figure 2 caption (left panel)",
+    "dataset": "Simulated data from Section 2.3 (1000 observations, 20 outliers, W1=I2, W2=diag(2,0))"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2410.17142",
+   "title": "Coniferest: a complete active anomaly detection framework",
+   "published": "2024-10-22",
+   "cats": [
+    "astro-ph.IM",
+    "cs.HC",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/snad-space/coniferest"
+   ],
+   "target": {
+    "statement": "Isolation forest prediction time for 10^6 samples with 2 features using coniferest 0.0.13 (single thread) on Apple M3 Pro, as shown in Figure 1.",
+    "table_ref": "Figure 1",
+    "dataset": "synthetic dataset of 10^6 samples with 2 features"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2601.07764",
+   "title": "Power of masking methods for adaptive testing in a multivariate normal means problem",
+   "published": "2026-01-12",
+   "cats": [
+    "math.ST",
+    "stat.ME"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/Katsevich-Lab/masking-power"
+   ],
+   "target": {
+    "statement": "Asymptotic power of BONuS under the point mass prior, as given by Theorem 1, evaluated at the default setting (γ=0.2, c=0.2, h=4, m=1000) and π_aug=0.5, compared to empirical power from simulation.",
+    "table_ref": "Figure 4 (top right panel) or Theorem 1",
+    "dataset": "Synthetic data generated from the two-groups multivariate normal model with point mass prior (Eq. 1-3)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2602.09704",
+   "title": "Extended Isolation Forest with feature sensitivities",
+   "published": "2026-02-10",
+   "cats": [
+    "stat.ME",
+    "stat.ML"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/elliot1776/AIF/tree/main"
+   ],
+   "target": {
+    "statement": "t-test p-value for Age comparing anomalies detected by EIF vs AIF(A3) on the Diabetes dataset",
+    "table_ref": "Table I, row Age, column AIF(A3)",
+    "dataset": "Diabetes dataset (Kaggle: mathchi/diabetes-data-set)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2606.24521",
+   "title": "ICSpyLab: A Python package for invariant coordinate selection",
+   "published": "2026-06-23",
+   "cats": [
+    "stat.ME"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "full",
+   "code_links": [
+    "https://github.com/cbecquart/ICSpyLab"
+   ],
+   "target": {
+    "statement": "ICS with S1='cov', S2='tcovAxis', algorithm='standard' on the RANDU dataset reveals the hyperplane structure on the last invariant component (Figure 1a), unlike PCA.",
+    "table_ref": "Figure 1(a)",
+    "dataset": "RANDU (synthetic, generated via generate_randu)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2606.26307",
+   "title": "Explainable Outlier Detection for Interval-valued Data",
+   "published": "2026-06-24",
+   "cats": [
+    "stat.ME",
+    "stat.ML"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "full",
+   "code_links": [
+    "https://github.com/catarinaploureiro/AIDA"
+   ],
+   "target": {
+    "statement": "Squared robust Interval-Mahalanobis distance and Shapley value decomposition for the Cars dataset (27 observations, 4 interval variables), reproducing the outlier flags and Shapley values shown in Figures 1-3.",
+    "table_ref": "Figures 1-3 (Cars dataset)",
+    "dataset": "Cars dataset (MAINT.Data R package, 27 observations, 4 interval-valued variables)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2512.06314",
+   "title": "The Bag-and-Whisker Plot: A New Bagplot for Bivariate Data",
+   "published": "2025-12-06",
+   "cats": [
+    "stat.ME"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 20,
+   "release": "full",
+   "code_links": [
+    "https://github.com/seanq31/BagWhiskerPlot"
+   ],
+   "target": {
+    "statement": "Toy example: the bag-and-whisker plot flags only z8=(19,20) as an outlier, with data-adaptive inflation factor λ=8 (max(λstat, λdata)) under FWER/FDR/PFER control",
+    "table_ref": "Section 4, Step 5 (toy example, n=8)",
+    "dataset": "Toy dataset of 8 bivariate points given in Section 4"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2610.04181",
+   "title": "Score-based confidence intervals for variance-covariance parameters in linear mixed models",
+   "published": "2026-10-03",
+   "cats": [
+    "stat.ME"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 20,
+   "release": "full",
+   "code_links": [
+    "https://github.com/koekvall/reconf-suppl"
+   ],
+   "target": {
+    "statement": "95% profile-score confidence interval for the intercept-slope covariance ψ2 in the autism socialization linear mixed model: (-34.566, -18.401)",
+    "table_ref": "Table 1, row ψ2 (Covariance), column 'Profile score'",
+    "dataset": "WWGbook autism socialization data (610 scores, 158 children)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Requires R and the reconf package (installable from GitHub); no GPU or large data needed"
+   ]
+  },
+  {
+   "id": "2512.00979",
+   "title": "An Approach to Variable Clustering: K-means in Transposed Data and its Relationship with Principal Component Analysis",
+   "published": "2025-11-30",
+   "cats": [
+    "stat.ML",
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 10,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/vsaquicela/PCA-K-means"
+   ],
+   "target": {
+    "statement": "Cluster contribution S_{2,PC1} = 1.662 (sum of absolute PCA loadings of Murder, Assault, Rape on PC1) for the USArrests dataset with K=2 clusters",
+    "table_ref": "Table IV",
+    "dataset": "USArrests (50 states, 4 variables)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Repo link in PDF is truncated ('PCA-') and may not resolve; code may need to be reimplemented from the algorithm description",
+    "K-means cluster assignment depends on random seed, so exact reproduction of the 2-cluster split may require matching the seed"
+   ]
+  },
+  {
+   "id": "2609.13928",
+   "title": "The Interconnectedness Coefficient: A Semi-Local Graph-Theoretic Measure for Connector Vertices between Cohesive Network Regions",
+   "published": "2026-09-12",
+   "cats": [
+    "cs.SI",
+    "math.CO",
+    "q-bio.MN"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "partial",
+   "code_links": [
+    "interconnectedness_coefficient.py (referenced as included in source package; no URL given in PDF)"
+   ],
+   "target": {
+    "statement": "IC value of the connector vertex x in the hub-extended bridge family Hp,q,r equals 2/3 (and x is the unique global maximizer)",
+    "table_ref": "Table 1",
+    "dataset": "synthetic graph family Hp,q,r (exact calibration graph)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Reference implementation file is mentioned but no repository/URL is linked in the PDF, so code must be re-written from the equations (straightforward)",
+    "The empirical HIM application (Table 2, Fig 7) depends on a 2009 dissertation dataset and is not the cheapest target"
+   ]
+  },
+  {
+   "id": "2610.01050",
+   "title": "Gradient-Guided Density Peak Clustering",
+   "published": "2026-10-01",
+   "cats": [
+    "math.ST",
+    "stat.ME",
+    "stat.ML"
+   ],
+   "difficulty": 1,
+   "ref_minutes": 15,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/zhangyk8/GGDPC"
+   ],
+   "target": {
+    "statement": "GGDPC clustering on the Old Faithful geyser data (n=272) with Gaussian KDE, producing the four-panel figure (graph, waterfall, decision diagram, dendrogram) and the resulting cluster partition; the headline qualitative result is that GGDPC recovers the two eruption-duration clusters.",
+    "table_ref": "Figure 1",
+    "dataset": "Old Faithful Geyser data (Azzalini and Bowman 1990), n=272, 2D"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2506.03657",
+   "title": "SubSearch: Robust Estimation and Outlier Detection for Stochastic Block Models via Subgraph Search",
+   "published": "2025-06-04",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 20,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/leobianco/robust_estim_sbm/"
+   ],
+   "target": {
+    "statement": "Estimation error of SubSearch on a synthetic SBM graph with n=200, K=2, Γ11=Γ22=0.65, Γ12=0.35, γ=0.3, reported as 0.05 (sum of absolute differences between true and estimated Γ).",
+    "table_ref": "Section 4.1, single-run experiment (Figure 2a)",
+    "dataset": "synthetic SBM graph (n=200, K=2, γ=0.3)"
+   },
+   "screen": 8.0,
+   "blockers": []
+  },
+  {
+   "id": "2502.18038",
+   "title": "Sequential Outlier Detection in Non-Stationary Time Series",
+   "published": "2025-02-25",
+   "cats": [
+    "math.ST",
+    "stat.ME"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/FlorianHeinrichs/outlier_detection"
+   ],
+   "target": {
+    "statement": "Empirical specificity of the proposed 'Ours (full)' method for IID errors, mean function μ1, n=50, standard normal errors (N), reported as 98.3%.",
+    "table_ref": "Table 1, Panel A, row 'Ours (full)', column n=50, N",
+    "dataset": "Synthetic simulation data generated from model (3) with μ1 and i.i.d. N(0,1) errors rescaled to sd 1/20, 1000 time series without outliers."
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Repository may not be fully reproducible out of the box (partial release); code may need debugging or reimplementation of the simulation and GEV fitting pipeline."
+   ]
+  },
+  {
+   "id": "2505.04019",
+   "title": "Extending Decision Predicate Graphs for Comprehensive Explanation of Isolation Forest",
+   "published": "2025-05-06",
+   "cats": [
+    "cs.AI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/LeonardoArrighi/DPG",
+    "https://github.com/Math0097/DPG-iForest"
+   ],
+   "target": {
+    "statement": "IOP-Score of the predicate 'TSH >' in the DPG of an iForest model trained on the Annthyroid dataset, reported as -0.2429.",
+    "table_ref": "Table 6",
+    "dataset": "Annthyroid"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Code may not be fully reproducible without specific hyperparameters (e.g., random seed, contamination) not stated in the paper."
+   ]
+  },
+  {
+   "id": "2509.21369",
+   "title": "Smart Routing for EV Charge Point Operators in Mega Cities: Case Study of Istanbul",
+   "published": "2025-09-22",
+   "cats": [
+    "cs.NE"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/oyenigun/RouteOptimization"
+   ],
+   "target": {
+    "statement": "Total distance of the optimized route for Configuration 2 (5 K-means clusters, 10 iterations, GA mutation rate 0.10, 100 GA iterations) is 308.49 km, compared to the sequential reference route distance of 417.53 km.",
+    "table_ref": "Table 4, row Config 2 (Total Distance = 308.49 km)",
+    "dataset": "100 EV charging stations in Istanbul (lat/lon coordinates)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "The GitHub repository may be incomplete or outdated; the exact random seeds and parameter settings for the GA are not fully specified, so exact reproduction of 308.49 km may require tuning.",
+    "The paper mentions using Google Maps API for driving distances, but the reported distances appear to be Euclidean; if the code uses the API, an API key would be needed."
+   ]
+  },
+  {
+   "id": "2511.05159",
+   "title": "A New Framework for Convex Clustering in Kernel Spaces: Finite Sample Bounds, Consistency and Performance Insights",
+   "published": "2025-11-07",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/Shubhayan29/Kernel-Convex-Clustering/tree/main"
+   ],
+   "target": {
+    "statement": "NMI score of KCC on the Lymphoma dataset is 0.778 (Table 1, row Lymphoma, column KCC).",
+    "table_ref": "Table 1",
+    "dataset": "Lymphoma (96 instances, 4026 features, 9 classes)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Hyperparameters (σ1, σ2, ρ, γ) are not fully specified in the paper; code may need tuning to match the reported NMI.",
+    "The exact preprocessing (standardization) and weight construction details are only partially described."
+   ]
+  },
+  {
+   "id": "2606.31253",
+   "title": "MNAR-$k$-means: A $k$-means Clustering for Data Missing Not at Random with Magnitude-Decaying Probability",
+   "published": "2026-06-30",
+   "cats": [
+    "stat.ML",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://github.com/GXguanxin/MNAR-k-means"
+   ],
+   "target": {
+    "statement": "CER of the proposed MNAR-k-means method on synthetic 2D Gaussian data (k=2, a=2, lambda*=0.1) is lower than k-POD and close to fully-observed k-means (Figure 2, one panel/cell).",
+    "table_ref": "Figure 2 (CER panel, k=2, a=2, log(lambda*)=-1)",
+    "dataset": "Synthetic 2D Gaussian mixture (n=100k, k=2, a=2), MNAR0 missingness with lambda*=0.1"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Code repo may be incomplete or not match paper (R/MATLAB mix for baselines)",
+    "Exact figure values not tabulated; only qualitative reproduction of the trend is feasible",
+    "Instability-based lambda selection and 100 initializations add implementation effort"
+   ]
+  },
+  {
+   "id": "2610.28337",
+   "title": "Beyond a Single Sentiment Score: Topical and Affective Dimensions of Emoji Meaning on Twitter",
+   "published": "2026-10-20",
+   "cats": [
+    "cs.CL",
+    "cs.AI",
+    "cs.SI"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "partial",
+   "code_links": [
+    "https://anonymous.4open.science/r/StableContextsMixedFeelings/",
+    "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji",
+    "https://pypi.org/project/emosent-py/"
+   ],
+   "target": {
+    "statement": "Spearman correlation between stability delta and Kralj Novak sentiment variance is ρ = +0.361 (Holm p = 0.015, n = 59 emojis)",
+    "table_ref": "Table 2, row 'Δ vs. Kralj Novak variance (primary)'",
+    "dataset": "Emoji Sarcasm Dataset (ESD) Twitter partition + Kralj Novak 2015 emoji sentiment lexicon"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "Code is only in an anonymous.4open.science repository (not a stable GitHub link); may be unavailable or incomplete",
+    "ESD is released for non-commercial research use only and may require manual download/acceptance",
+    "Kralj Novak lexicon accessed via emosent-py package; exact version/matching not pinned"
+   ]
+  },
+  {
+   "id": "2605.17245",
+   "title": "An Efficient Machine Learning-based Framework for Detection and Prevention of Frauds in Telecom Networks",
+   "published": "2026-05-17",
+   "cats": [
+    "cs.NI",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 20,
+   "release": "none",
+   "code_links": [
+    "https://github.com/jamesrawlins1000/Telecom-CDR-Dataset-"
+   ],
+   "target": {
+    "statement": "Random Forest accuracy of 99.9% on the Telecom CDR dataset (101,174 records, 17 attributes, 8,830 fraud cases) after missing-value removal, Min-Max scaling, and SMOTE balancing",
+    "table_ref": "Table II (RF column, Accuracy row)",
+    "dataset": "Telecom CDR Dataset (github.com/jamesrawlins1000/Telecom-CDR-Dataset-)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "No code released (only a dataset link); preprocessing/SMOTE/split details underspecified",
+    "Reported 99.9% accuracy with 0 false positives is implausible and likely reflects leakage (SMOTE before split) or a trivially separable dataset, so exact numbers may not be reproducible",
+    "Paper text is internally inconsistent (RF vs XGBoost rankings, confusion-matrix counts vs dataset size)"
+   ]
+  },
+  {
+   "id": "2309.15130",
+   "title": "Understanding the Structure of QM7b and QM9 Quantum Mechanical Datasets Using Unsupervised Learning",
+   "published": "2023-09-25",
+   "cats": [
+    "physics.chem-ph",
+    "cond-mat.mtrl-sci",
+    "cs.LG"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "Regression tree model predicting number of atoms from 14 original properties on QM7b test set: MSE = 0.1397, RMSE = 0.3737, MAE = 0.2451, R = 0.9906",
+    "table_ref": "Table II (QM7b, 14 original features)",
+    "dataset": "QM7b"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "No code or configuration provided; must reimplement preprocessing, UMAP, and regression tree pipeline",
+    "Exact random 90/10 split and tree hyperparameters unspecified, so exact metric values may not be reproducible"
+   ]
+  },
+  {
+   "id": "2512.05926",
+   "title": "BalLOT: Balanced $k$-means clustering with optimal transport",
+   "published": "2025-12-05",
+   "cats": [
+    "stat.ML",
+    "cs.DS",
+    "cs.IT"
+   ],
+   "difficulty": 2,
+   "ref_minutes": 30,
+   "release": "none",
+   "code_links": [],
+   "target": {
+    "statement": "BalLOT achieves one-step recovery (exact recovery of planted clusters) on synthetic data from the balanced stochastic ball model with k=2 and separation Δ > 2√2, using diameter initialization.",
+    "table_ref": "Corollary 11 / Experiment 19 (Figure 5 left)",
+    "dataset": "Synthetic balanced stochastic ball model (k=2, d=2, n=1000, Δ=3)"
+   },
+   "screen": 8.0,
+   "blockers": [
+    "No code released; must implement BalLOT (alternating LP and centroid update) from scratch",
+    "Requires an LP solver for the transportation problem (e.g., scipy or POT), but this is standard"
+   ]
+  }
+ ]
+}

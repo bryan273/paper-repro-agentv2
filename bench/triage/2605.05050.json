@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ANOVA eta-squared for gap-closing rate (v_rel) discriminating K=3 clusters of hard-braking events at -0.5 m/s2 threshold: eta2 = 0.715",
+  "table_ref": "Table 7, rank 1 (-0.5 m/s2, K=3)",
+  "dataset": "NGSIM (I-80, US-101, Lankershim, Peachtree)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "NGSIM is freely downloadable (~1-2 GB) and the pipeline (filtering, feature extraction, K-means with 50 restarts, ANOVA) is small classic ML on ~500 events, but no code is released so the entire preprocessing/event-detection/clustering pipeline must be reimplemented from prose, and exact reproduction of the 0.715 value depends on undocumented details (chunking, imputation, cluster init)."
+ },
+ "blockers": [
+  "No code or configs released; full pipeline must be reimplemented from text",
+  "NGSIM has documented measurement errors and requires careful filtering to match the 1,060,119-observation count",
+  "Exact eta2 depends on K-means initialization/restarts and imputation choices not fully specified"
+ ],
+ "suitable": true,
+ "id": "2605.05050",
+ "title": "Kinematic Discriminants of Deceleration Behavior Modes in Car-Following: Evidence from NGSIM Trajectory Data",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

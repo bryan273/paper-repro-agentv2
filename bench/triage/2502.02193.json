@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "False positive rate of a Rational Bloom Filter with m=8192 bits and n=1000 elements, compared to standard Bloom filter, as shown in Figure 6 (top).",
+  "table_ref": "Figure 6 (top)",
+  "dataset": "synthetic random elements"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/aappleby/smhasher"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The experiment is a small Bloom filter simulation with m=8192 bits and n=1000 elements, requiring only a few seconds of CPU time; the main effort is writing the RBF code from scratch since no implementation is provided."
+ },
+ "blockers": [
+  "No code released for the Rational Bloom Filter or Variably-Sized Block Bloom Filter; only a link to a MurmurHash library is given.",
+  "The paper reports unexpected artifacts (local minima at integer k) that may be hard to reproduce exactly without the original implementation details."
+ ],
+ "suitable": true,
+ "id": "2502.02193",
+ "title": "Extending the Applicability of Bloom Filters by Relaxing their Parameter Constraints",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "DROD achieves AUC 0.8330 on synthetic dataset D1 (clusterliers only), the best among 9 methods",
+  "table_ref": "Table V, row D1, column DROD",
+  "dataset": "D1 (synthetic, 1000 normal samples + 2 clusterliers of 100 points each, generated from base dataset C1)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/gordonlok/DROD",
+  "https://github.com/milaan9/Clustering-Datasets"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "basis": "DROD is a pure-Python k-d-tree / graph algorithm on ~1200 2-D points with T=60 samplings; the paper reports CPU-only runs (i7, 32GB), so a laptop finishes in minutes once the repo's D1 generator and scoring code are wired up, but the synthetic generator details (Gaussian means/variances for clusterliers) are only partially specified, so some re-implementation/verification is needed."
+ },
+ "blockers": [
+  "Synthetic D1 generation parameters (clusterlier Gaussian mean/variance) are only loosely described; exact reproduction of 0.8330 may require tuning",
+  "Repo may not ship the exact D1 generator/config used for Table V"
+ ],
+ "suitable": true,
+ "id": "2603.12847",
+ "title": "Hierarchical Reference Sets for Robust Unsupervised Detection of Scattered and Clustered Outliers",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

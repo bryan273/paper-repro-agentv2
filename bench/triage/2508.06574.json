@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "F1-score of 0.817 ± 0.007 for the Two-Phase (Ours) method on the DataCo dataset with 10% labeled data (10-fold CV)",
+  "table_ref": "Table I, row 'Two-Phase (Ours)', column 'F1-Score'",
+  "dataset": "DataCo Smart Supply Chain Dataset"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://colab.research.google.com/drive/1eIWYQbhuCgcaQ6p4JZJJ2BZhF6cQOC-z"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Paper reports ~143s training time on a free Colab CPU (12.7GB RAM) for the full pipeline; 10-fold CV with nested grid search over 16 SVM hyperparameter combos and up to 10 self-training iterations per fold, plus data download and preprocessing, should fit in a few hours on a laptop CPU."
+ },
+ "blockers": [
+  "Colab notebook link may be stale or incomplete (no GitHub repo, no explicit configs)",
+  "Exact preprocessing details (target encoding, imputation) are described but not provided as code, so reimplementation may not exactly match the reported 0.817",
+  "DataCo dataset requires manual download from Mendeley Data (free but not scripted)"
+ ],
+ "suitable": true,
+ "id": "2508.06574",
+ "title": "Semi-Supervised Supply Chain Fraud Detection with Unsupervised Pre-Filtering",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

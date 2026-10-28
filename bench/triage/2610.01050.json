@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "GGDPC clustering on the Old Faithful geyser data (n=272) with Gaussian KDE, producing the four-panel figure (graph, waterfall, decision diagram, dendrogram) and the resulting cluster partition; the headline qualitative result is that GGDPC recovers the two eruption-duration clusters.",
+  "table_ref": "Figure 1",
+  "dataset": "Old Faithful Geyser data (Azzalini and Bowman 1990), n=272, 2D"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/zhangyk8/GGDPC"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "The target is a 272-point 2D clustering with KDE and 1NN searches; the repository likely provides the implementation, and the dataset is built into R/Python, so a clean re-run is minutes of CPU work."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2610.01050",
+ "title": "Gradient-Guided Density Peak Clustering",
+ "pages": 91,
+ "model": "DeepSeek-V4.1-Flash"
+}

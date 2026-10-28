@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AAMSF-Opt (Market+GDELT+CN news, mixed IF-aware preprocessing) achieves test AUC-ROC 0.680",
+  "table_ref": "Table 3",
+  "dataset": "CSI 300 (2018-2023) with GDELT and Chinese news features"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code or data provided; must rebuild entire pipeline including data collection (GDELT, Chinese news, market data), feature engineering, Isolation Forest ensembles, and Ridge regression, with no guarantee of matching the exact data splits and preprocessing."
+ },
+ "blockers": [
+  "No code released",
+  "No data released",
+  "Chinese news corpus (17,619 articles) not publicly available",
+  "English news corpus (153,851 articles) not publicly available",
+  "Exact temporal splits and preprocessing details may be insufficient for exact replication"
+ ],
+ "suitable": false,
+ "id": "2607.23682",
+ "title": "Extreme Volatility Warning under Label Scarcity via Multi-Source Anomaly Fusion",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

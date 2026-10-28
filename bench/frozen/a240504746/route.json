@@ -1,0 +1,46 @@
+{
+ "route": "partial_release",
+ "why": "The authors' official repo is present and its entrypoint (main.py --dataset ml-1m --k 148) is exactly the pipeline behind C1, and k=148 matches the paper's gamma=0.04 x min(|U|,|I|)=3706. But it cannot run as released on this machine: requirements.txt pins torch==1.11.0+cu113, jax/jaxlib==0.3.25 and neural-tangents==0.6.1, none of which have wheels for Python 3.12, and the preprocessed data is a Google Drive zip that may not be fetchable. Since SVD-AE is a closed-form truncated SVD, the authors' model logic (symmetric normalization -> truncated SVD -> score) is a few dozen lines we can port to scipy/numpy or modern torch while keeping the authors' code path intact. The only real uncertainty is the exact train/validation/test split, which lives in the Google Drive archive.",
+ "repo": "https://github.com/seoyoungh/svd-ae",
+ "entrypoints": [
+  "main.py --dataset ml-1m --k 148",
+  "data.py (split/loader construction)",
+  "model.py (SVD-AE truncated-SVD forward)",
+  "eval.py (HR@10 / NDCG@10 / PSP@10 ranking)"
+ ],
+ "missing_artifacts": [
+  "data.zip preprocessed datasets (ML-1M/ML-10M/Gowalla/Yelp2018) hosted on Google Drive - availability not guaranteed",
+  "exact per-user train/validation/test split used for Table 2 (falls out of data.zip; otherwise must be regenerated and becomes a source of variance on HR@10 31.79)"
+ ],
+ "blockers_seen": [
+  "requirements.txt pins torch==1.11.0+cu113 (no Python 3.12 wheel)",
+  "jax==0.3.25 / jaxlib==0.3.25 pinned; no wheels for Python 3.12 on Windows",
+  "neural-tangents==0.6.1 is tied to the old jax version",
+  "preprocessed data only distributed via a Google Drive link, no in-repo data and no raw-data prep script for the paper's split",
+  "repo targets Python 3.9 / CUDA 11.4; GPU is irrelevant to the math but the pinned stack is not installable here"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes total: ~3-5 min to install a working modern stack (numpy/scipy/torch cpu) and skip the dead pins, ~2 min to obtain ML-1M and build the normalized 6040x3706 matrix (or ~10 s if data.zip downloads), under 1 min for the rank-148 truncated SVD, ~2-3 min for the full leave-one-out/held-out ranking evaluation over 6040 users, plus one clean re-run.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 3,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Closed-form rank-148 truncated SVD of a 6040x3706 sparse matrix plus full ranking evaluation on 6040 ML-1M users - seconds to a couple of minutes of CPU per run, dominated by install and data download."
+ },
+ "repo_info": {
+  "url": "https://github.com/seoyoungh/svd-ae",
+  "cloned": true,
+  "n_files": 12,
+  "n_python": 7,
+  "python2_style_files": 0
+ }
+}

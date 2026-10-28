@@ -1,0 +1,93 @@
+{
+ "approach": "The paper's exact system is the authors' own fastText C++ supervised trainer, and the repo ships classification-results.sh which downloads the Zhang et al. 8-dataset release and trains/evaluates every Table 1 row, so the plan is plumbing rather than re-implementation: get a working fasttext engine, get AG News in `__label__N` format, then run the authors' configuration `-dim 10 -wordNgrams 2 -epoch 5 -lr <lr> -thread 20`. A thin reproduce.py drives everything with the Python binding (fasttext-wheel on Windows, native build or `make` when a POSIX toolchain exists), reconstructs the missing validation split (10% of the 120k train set, assumption A4) to pick lr from {0.05, 0.1, 0.25, 0.5}, then retrains on the full training set and evaluates on the official 7.6k test set. The same driver also emits the no-bigram C2 row for free. Only results/metrics.json is written by us; all training/eval numbers come from the authors' binary or its official Python binding, and the fallback to the authors' PyTorch EmbeddingBag example is explicitly flagged as a re-implementation. Everything is CPU-only with 20 threads, matching the paper.",
+ "files": [
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint. Reads config.py, calls prepare_data.py to build data/ag_news.train(.full)/.valid/.test, installs/loads the fasttext engine, runs the lr grid on the validation split, retrains on the full train set with the selected lr, tests on the official test split for C1, repeats with -wordNgrams 1 for C2, and writes results/metrics.json (accuracy, tolerance check vs 92.5, config echo, timings, repo git hash, engine provenance).",
+   "requirement_ids": [
+    "R6",
+    "R7",
+    "R11",
+    "R9"
+   ]
+  },
+  {
+   "path": "config.py",
+   "purpose": "Single place for every hyperparameter with its source (h=10, bigrams, 5 epochs, lr grid, 20 threads, bucket, minCount, loss=softmax/hierarchical softmax, validation fraction, seed, paths).",
+   "requirement_ids": [
+    "R4",
+    "R6",
+    "R7",
+    "R8",
+    "R11"
+   ]
+  },
+  {
+   "path": "prepare_data.py",
+   "purpose": "Download AG News (first: URLs inside the authors' classification-results.sh; fallback: Zhang et al. CSV mirrors / HF fancyzhx/ag_news), convert rows to fastText format with lowercase + punctuation-removed whitespace tokens, and emit the fixed splits: 120k train, 7.6k test, plus a 10% validation holdout carved from train and a full 120k train file.",
+   "requirement_ids": [
+    "R1",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "fasttext_engine.py",
+   "purpose": "Thin wrapper that locates a usable engine and exposes train(input, output, **kwargs) / test(model, path): (1) existing `import fasttext`, (2) `pip install fasttext-wheel`, (3) authors' native build (`make` or `pip install .`) when g++/clang+make exist, (4) documented fallback to the authors' python/doc/examples/FastTextEmbeddingBag.py, recording that the verdict is then only partially_reproduced. Forward all args verbatim so no author code is rewritten.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "dim": "10 (paper: h = 10, Sec 3.1, Table 1)",
+  "wordNgrams": "2 (paper: with bigrams, C1 target; 1 for C2)",
+  "epoch": "5 (paper Sec 3.1)",
+  "lr": "selected on the validation split from lr_grid; A1 default 0.1",
+  "lr_grid": "[0.05, 0.1, 0.25, 0.5] (paper Sec 3.1)",
+  "lrUpdateRate": "100 (fastText default; implements the linear lr decay of R5/A6)",
+  "loss": "softmax (fastText's hierarchical-softmax loss = R4; fastText default)",
+  "thread": "20 (paper: 20 CPU threads, R11)",
+  "bucket": "10000000 (paper Sec 2.2 gives 10M bins for bigrams and 100M otherwise; A3 chose 100M, but dim=10 x 100M bins is ~4 GB for the input matrix, so run with 10M and log the deviation in metrics.json)",
+  "minCount": "1 (fastText supervised default)",
+  "minn": "0 (no character n-grams; features are words + bigrams only, R1)",
+  "maxn": "0",
+  "validation_fraction": "0.10 holdout from the 120k train set (assumption A4)",
+  "tokenization": "lowercase, strip punctuation, whitespace split, title+description concatenated (assumption A5, Zhang et al. protocol)",
+  "seed": "1 (fixed split/shuffle seed; fastText's internal RNG is not seedable)",
+  "data_files": "data/ag_news.train (108k lr-search), data/ag_news.full.train (120k final), data/ag_news.valid (12k), data/ag_news.test (7.6k)",
+  "smoke_subsample": "2000 train lines / 1000 test lines, epoch=1",
+  "target_accuracy": "92.5 (C1, Table 1, AG, h=10, bigram)",
+  "tolerance": "absolute 1.0 (contract tolerance)"
+ },
+ "steps": [
+  "Environment probe: print python version, os.cpu_count(), total RAM, and shutil.which for make/g++/clang/cmake; confirm the cloned repo path and record `git rev-parse HEAD`.",
+  "Read the authors' classification-results.sh and classification-example.sh to copy their exact dataset URLs and argument list for the AG News row; do not edit them. If a POSIX bash + make are available, running classification-results.sh directly is the preferred path and reproduce.py only parses/wraps its output.",
+  "Build/find the engine via fasttext_engine.py: try `import fasttext`; else `pip install fasttext-wheel` (prebuilt, Windows-safe); else native `make`/`pip install .`; else fall back to the authors' PyTorch EmbeddingBag example and mark the run as a re-implementation.",
+  "Download AG News with prepare_data.py (authors' URL first, then Zhang et al. CSV / HF mirror) and convert to `__label__1..4 <tokens>` lines; write data/ag_news.full.train (120k), data/ag_news.test (7.6k) and, with a fixed seed, data/ag_news.train (108k) + data/ag_news.valid (12k).",
+  "Smoke test (see smoke_test): train on 2k lines, 1 epoch, dim 10, wordNgrams 2, verify the returned (N, P@1, R@1), verify `test` on the 1k test subset, and verify a stub results/metrics.json round-trips.",
+  "Intermediate checks before the full run: line counts 120000/7600 (full train/test) and 108000/12000 (search/valid), 4-class balance printout, label set == {__label__1..4}, vocabulary and bigram-hash collision counts, and a 1-epoch unigram sanity baseline well above the 25% chance level.",
+  "lr search: for lr in {0.05, 0.1, 0.25, 0.5} run the authors' trainer on data/ag_news.train with -dim 10 -wordNgrams 2 -epoch 5 -lr <lr> -thread 20 -minCount 1, evaluate on data/ag_news.valid, keep all four validation accuracies.",
+  "Final C1 run: pick the argmax-lr and retrain on the full 120k data/ag_news.full.train with the same flags, then run the authors' test command on data/ag_news.test (7.6k) and record P@1 as a percentage.",
+  "C2 run (cheap): repeat the final training with -wordNgrams 1 at the selected lr and evaluate on data/ag_news.test.",
+  "Write results/metrics.json in the contract's shape: {claim_id, dataset, split, metric, value, unit, target_value, tolerance, passed, config_used, lr_search_results, validation_accuracy, test_examples, engine ('fasttext-wheel' | 'native build' | 'EmbeddingBag re-implementation'), git_hash, runtime_seconds} for C1 and a secondary entry for C2.",
+  "Report: the C1 accuracy with |acc - 92.5| <= 1.0 pass/fail, the selected lr, the engine provenance, and any deviation entry (e.g., bucket=10M instead of A3's 100M)."
+ ],
+ "smoke_test": "python reproduce.py --smoke  ->  builds a 2k-line train / 1k-line test subset from the converted AG News files, trains with dim=10, wordNgrams=2, epoch=1, lr=0.1, thread=4 via fasttext_engine.train(), then fasttext_engine.test() on the 1k subset; asserts that both calls return without error, that N matches the subset size, that P@1 is a float in [0,1], and that a stub results/metrics.json is written and reloadable. Runs in well under a minute.",
+ "intermediate_checks": [
+  "Data sizes: data/ag_news.full.train == 120000 lines, data/ag_news.test == 7600 lines, search/valid split from the same 120000 lines (108000/12000) with no overlap (verify by hashing the first token+label of each line).",
+  "Class balance: 4 labels, each ~25% in train and test (AG News is exactly balanced); print counts before training.",
+  "Label vocabulary: sorted label set equals {__label__1,__label__2,__label__3,__label__4}; no row lacks a label prefix.",
+  "Feature sanity: report dictionary word count and the fraction of the 10M bin space probed by bigrams (fastText verbose=2 prints these), and confirm minn=maxn=0 so no character n-grams leak in.",
+  "Sanity baseline: unigram fastText (wordNgrams=1, 1 epoch, lr=0.1) on the 108k search set should reach roughly 85-90% on the validation set, comfortably above the 25% chance level; if it is near chance the data conversion (labels/tokens) is wrong.",
+  "Engine provenance check: print fasttext module version/`./fasttext --help` banner and assert the model file exists after training; if the EmbeddingBag fallback is used, set verdict_ceiling='partially_reproduced' in metrics.json.",
+  "Memory check before the final run: est. input matrix = (|V| + bucket) * dim * 4 bytes; if the 100M-bin variant (A3) would exceed available RAM, stay at bucket=10M and log the deviation."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Of a ~45 min budget: 2 min environment probe + engine setup attempts (extended only if a native build is needed), 1-3 min data download/convert/verify, 1 min smoke test, 2 min intermediate checks plus the unigram baseline, 7-8 min for the 4-point lr grid (4 x 5 epochs on 108k ~ 10-20 s each plus validation eval), ~1 min for the final retrain on 120k and the 7.6k test pass, ~1 min for the no-bigram C2 run, 2-3 min to write results/metrics.json and the report. Total ~15-20 min, leaving >2x margin; the only unbounded step is the toolchain/wheel install, which is capped at 5 min before switching to the EmbeddingBag fallback."
+}

@@ -1,0 +1,240 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Random seed for the initial dataset shuffle is not reported.",
+  "options": [
+   "fixed seed 42",
+   "fixed seed 0",
+   "no shuffle"
+  ],
+  "chosen": "fixed seed 42 for shuffling and document it",
+  "rationale": "The paper shuffles but gives no seed; a fixed documented seed makes the run reproducible while preserving the stated operation.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "We shuffled all datasets and encoded all labels to {0, 1}.",
+  "page": 4
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Random seed and exact implementation of the stratified 3-fold CV split are not specified.",
+  "options": [
+   "sklearn StratifiedKFold shuffle=True random_state=42",
+   "shuffle=False",
+   "repeated CV with fixed seed"
+  ],
+  "chosen": "sklearn StratifiedKFold(n_splits=3, shuffle=True, random_state=42)",
+  "rationale": "This matches the paper's stratification and fold count while making the split reproducible.",
+  "source": "convention",
+  "risk": "high",
+  "quote": "using a stratified, 3-fold cross validation procedure to obtain mean test performances",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Inner CV details for nested λ tuning are not specified beyond nested stratified 3-fold.",
+  "options": [
+   "inner 3-fold stratified with same grid",
+   "inner 5-fold stratified",
+   "GridSearchCV default 5-fold"
+  ],
+  "chosen": "inner 3-fold stratified with the same λ grid and deviance scoring",
+  "rationale": "The paper explicitly mentions nested stratified 3-fold CV and deviance; using 3 inner folds is the closest reading.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Whether min-max scaling is fitted on the whole dataset or only within training folds is not specified.",
+  "options": [
+   "fit on training fold only",
+   "fit on full dataset before CV"
+  ],
+  "chosen": "fit min-max scaler on training fold only",
+  "rationale": "Fitting on the full dataset would leak test-fold information into preprocessing.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "We re-encode all labels to {-1, 1} and ”min-max” scale all features for logistic regression.",
+  "page": 4
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Table 3 reports λ* obtained on the whole data, but test AUC uses nested CV; the exact λ used per outer fold is not shown.",
+  "options": [
+   "report λ* from full-data CV and use nested CV for AUC",
+   "report λ* from outer training folds",
+   "use full-data λ* for all folds"
+  ],
+  "chosen": "use nested CV for test AUC and report λ* from full-data CV separately",
+  "rationale": "This follows the paper's separate statements about nested CV for evaluation and λ* on the whole data.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "For logistic regression, we also tracked the best L2-regularization hyperparameter value λ∗obtained on the whole data",
+  "page": 7
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The exact MOSEK/JuMP conic logistic-regression implementation is not provided in the paper, so a solver substitute may be needed.",
+  "options": [
+   "MOSEK/JuMP as paper",
+   "sklearn LogisticRegression lbfgs",
+   "liblinear"
+  ],
+  "chosen": "sklearn LogisticRegression(penalty='l2', solver='lbfgs', C=1/λ, max_iter=10000)",
+  "rationale": "An accessible L2 logistic-regression solver is likely close for this small dataset; MOSEK remains the faithful fallback.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "We used our logistic regression implementation with the default optimality gaps via MOSEK 10",
+  "page": 6
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Mapping from the paper's λ to sklearn's inverse regularization strength C is not stated.",
+  "options": [
+   "C=1/λ",
+   "C=λ",
+   "C=1/(2λ)"
+  ],
+  "chosen": "C=1/λ",
+  "rationale": "The standard sklearn convention is that C is the inverse of L2 regularization strength.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "How to average fold performance into mean test AUC is not explicitly defined.",
+  "options": [
+   "arithmetic mean of fold AUCs",
+   "AUC of pooled out-of-fold predictions"
+  ],
+  "chosen": "arithmetic mean of fold AUCs",
+  "rationale": "The paper repeatedly says mean test AUC from 3 folds, consistent with averaging fold scores.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Training AUC (mean test AUC) and λ∗across all 44 datasets",
+  "page": 16
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The PMLB dataset version or commit is not pinned.",
+  "options": [
+   "use TabMini repository snapshots",
+   "use latest PMLB",
+   "fetch OpenML by dataset name"
+  ],
+  "chosen": "use the TabMini repository's packaged PMLBmini datasets",
+  "rationale": "This best preserves the exact parity5 row and avoids PMLB revisions changing the data.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "We selected all binary classification datasets with sample sizes ≤500 from the curated benchmark suite with the largest number of small-sized datasets, PMLB",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The exact mapping of parity5's original labels to the logistic-regression {-1,1} encoding is not shown.",
+  "options": [
+   "map 0->-1, 1->1",
+   "map 0->1, 1->-1",
+   "keep {0,1}"
+  ],
+  "chosen": "map original {0,1} labels to {-1,1}",
+  "rationale": "The paper states labels are re-encoded to {-1,1} for logistic regression; this is the standard binary mapping.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We re-encode all labels to {-1, 1} and ”min-max” scale all features for logistic regression.",
+  "page": 4
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "For AutoGluon, exact per-fold time budget handling and preset internals are not detailed.",
+  "options": [
+   "time_limit=3600 per fold, presets='best_quality'",
+   "time_limit=3h total",
+   "default time limit"
+  ],
+  "chosen": "time_limit=3600 per fold with presets='best_quality'",
+  "rationale": "The paper gives a 3h mean-test budget, i.e., 1h per fold, and says AutoGluon used the best quality preset.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "the mean test AUC with a 3h runtime limit via a stratified, 3-fold cross-validation procedure (i.e., 1h per fold)",
+  "page": 7
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "For HyperFast, random seeds and ensemble-generation details are not specified.",
+  "options": [
+   "default seeds, 32 ensemble members",
+   "fixed seed 42",
+   "multiple seeds"
+  ],
+  "chosen": "default implementation seeds with 32 ensemble members",
+  "rationale": "The paper only specifies no fine-tuning and 32 ensemble members, so defaults are the least assumptive option.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "HyperFast 0.1.3 was used without fine-tuning of the main networks",
+  "page": 6
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Tiny parity5 folds could in principle yield a single-class test fold and undefined AUC.",
+  "options": [
+   "StratifiedKFold ensures both classes",
+   "skip undefined folds",
+   "use training labels to define AUC"
+  ],
+  "chosen": "use StratifiedKFold to ensure both classes in each fold",
+  "rationale": "The paper specifies stratified 3-fold CV, which is designed to preserve class proportions.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "using a stratified, 3-fold cross validation procedure to obtain mean test performances",
+  "page": 6
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Random seeds for AutoML and deep learning baselines are not reported.",
+  "options": [
+   "defaults",
+   "fixed seed 42",
+   "multiple seeds"
+  ],
+  "chosen": "defaults with a fixed seed where the implementation exposes one",
+  "rationale": "The paper reports default settings for AutoML and does not list seeds.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A15",
+  "by": "reader",
+  "gap": "Whether the 3-fold CV is repeated across multiple random splits is not stated.",
+  "options": [
+   "single 3-fold split",
+   "repeated 3-fold",
+   "leave-one-out"
+  ],
+  "chosen": "single stratified 3-fold split with a fixed seed",
+  "rationale": "The checklist says the mean test AUC is calculated from 3 folds, not repeated splits.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "We accounted for randomness by calculating the mean test AUC from 3 folds for each method per benchmark dataset.",
+  "page": 13
+ }
+]

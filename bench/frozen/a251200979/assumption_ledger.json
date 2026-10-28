@@ -1,0 +1,153 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Whether the PCA 'loadings' L are eigenvectors/rotation or variable-PC correlations.",
+  "options": [
+   "Absolute eigenvectors (R prcomp rotation) from PCA on the correlation matrix",
+   "Variable-PC correlations from PCA"
+  ],
+  "chosen": "Absolute eigenvectors (R prcomp rotation) from PCA on the correlation matrix",
+  "rationale": "Table II values such as Assault 0.583 and Murder 0.536 match prcomp rotation on scaled USArrests; correlations would be larger and would not sum to S_{2,PC1}=1.662.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "Values lij represent the correlation between variable i and principal component j.",
+  "page": 4
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The exact RNG seed and K-means nstart/initialization are not specified.",
+  "options": [
+   "R kmeans with set.seed(123), nstart=25",
+   "R kmeans with set.seed(42), nstart=25",
+   "scikit-learn KMeans with random_state=0, n_init=10"
+  ],
+  "chosen": "R kmeans with set.seed(123), nstart=25",
+  "rationale": "Reproduces the R ecosystem used by USArrests and Table II; the two-cluster structure is expected to be stable for this four-point transposed problem.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Once the number of clusters is defined, the K-means algorithm is run, ensuring reproducibility by setting a fixed value for the random seed.",
+  "page": 3
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether to restandardize variables-as-observations again after transposing Z.",
+  "options": [
+   "No further scaling; use ZT directly",
+   "Standardize rows of ZT again"
+  ],
+  "chosen": "No further scaling; use ZT directly",
+  "rationale": "Algorithm 1 transposes the already-scaled Z and directly calls K-means on ZT.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The objective of K-means is to partition the transposed data set ZT into K clusters",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The elbow method has no formal threshold for selecting K.",
+  "options": [
+   "Use reported K=2 for USArrests",
+   "Automatically select K from elbow/silhouette scans"
+  ],
+  "chosen": "Use reported K=2 for USArrests",
+  "rationale": "The target claim is explicitly for K=2 and the paper reports two USArrests clusters.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "In USArrests, two clusters were obtained by means of the elbow method",
+  "page": 5
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "PCA loading signs are arbitrary, and Table II reports all positive values despite discussing signs.",
+  "options": [
+   "Use absolute values for S/P and display absolute loadings",
+   "Keep raw prcomp signs"
+  ],
+  "chosen": "Use absolute values for S/P and display absolute loadings",
+  "rationale": "S_{k,j} is defined with |l_{ij}|, so signs do not affect the target; absolute display matches Table II.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "The sign of the value indicates the direction of the correlation (positive or negative).",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether the USArrests State identifier column is part of the analyzed data.",
+  "options": [
+   "Drop State identifier; use only the four numeric variables",
+   "Include State as a feature"
+  ],
+  "chosen": "Drop State identifier; use only the four numeric variables",
+  "rationale": "The paper defines USArrests as n=50 and p=4 variables Murder, Assault, UrbanPop, and Rape.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "In USArrests, (n = 50) and (p = 4).",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Which distance metric and centroid update rule K-means uses.",
+  "options": [
+   "Euclidean K-means (squared distances)",
+   "Manhattan K-means"
+  ],
+  "chosen": "Euclidean K-means (squared distances)",
+  "rationale": "The paper defines K-means by minimizing the sum of quadratic distances within clusters.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "minimizing the sum of the quadratic distances within each cluster",
+  "page": 3
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Whether PCA is computed on the covariance of raw data or the correlation matrix of scaled data.",
+  "options": [
+   "PCA on the correlation matrix (scale=TRUE)",
+   "PCA on covariance of raw data"
+  ],
+  "chosen": "PCA on the correlation matrix (scale=TRUE)",
+  "rationale": "The paper standardizes Z before PCA, and Table II matches PCA on scaled USArrests.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The scaled data becomes the input for the following phases.",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How many principal components to compute and report.",
+  "options": [
+   "Compute all p=4 PCs for the USArrests tables",
+   "Compute only PC1 and PC2"
+  ],
+  "chosen": "Compute all p=4 PCs for the USArrests tables",
+  "rationale": "Tables II, IV, and VI report PC1 through PC4 for a four-variable dataset.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "in the case of four principal components and four variables",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether to exclude outliers or impute missing values before the USArrests analysis.",
+  "options": [
+   "No removal or imputation for complete USArrests data",
+   "Apply outlier detection and remove flagged states"
+  ],
+  "chosen": "No removal or imputation for complete USArrests data",
+  "rationale": "The paper mentions preliminary inspection but gives no removal rule; USArrests is complete with no missing values.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "the identification of basic patterns and the detection of potential problems such as missing values or outliers.",
+  "page": 2
+ }
+]

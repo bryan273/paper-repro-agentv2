@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "FID score of CoSeR on ImageNet Test2000 (4x SR) is 19.41, compared to StableSR's 22.53",
+  "table_ref": "Table 1, row 'ImageNet Test2000', column 'FID↓'",
+  "dataset": "ImageNet Test2000 (2000 LR-HR pairs, 128x128 LR, 512x512 HR)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/VINHYU/CoSeR"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 32,
+  "disk_gb": 100,
+  "ref_minutes": 120,
+  "gpu_speedup": 20,
+  "basis": "Inference on 2000 images with a 200-step diffusion model and ControlNet requires GPU; on CPU it would take many hours, and the model weights are large."
+ },
+ "blockers": [
+  "Requires GPU for reasonable runtime (200-step diffusion per image)",
+  "Model weights (Stable Diffusion 2.1-base + CoSeR checkpoints) are large and may not be fully released",
+  "Test set construction requires Real-ESRGAN degradation pipeline and ImageNet data"
+ ],
+ "suitable": false,
+ "id": "2311.16512",
+ "title": "CoSeR: Bridging Image and Language for Cognitive Super-Resolution",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

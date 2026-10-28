@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Relative Frobenius norm error of the farness-reweighted IMCD covariance estimator (farness.IMCD) vs. classic estimator, for the smallest simulation cell (P=5, N=500, contamination ε=0.05, scenario 1: symmetric uniform latent variables, contamination in centers)",
+  "table_ref": "Figure 2 (boxplots of relative Frobenius error, scenarios 1,2,4,5); Appendix C Figures C.7-C.16",
+  "dataset": "Synthetic simulation data generated per Section 5.1 (multivariate normal centers/ranges, uniform or triangular latent microdata)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/catarinaploureiro/AIDA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Target is a synthetic simulation (no external data); the IMCD/MM algorithm and adjusted-boxplot/farness cutoffs must be re-implemented from the paper's pseudocode (Appendix B) and R-package dependencies (robustbase, cellWise), and reproducing a stable boxplot cell requires many of the 500 Monte Carlo replicates at P=5, N=500 — CPU-only, minutes-to-hours of command time."
+ },
+ "blockers": [
+  "No explicit code/config release verified for the exact simulation; algorithm (MM/IMCD, reweighting, farness cutoff) must be re-implemented from pseudocode",
+  "Depends on R packages (robustbase adjbox, cellWise transfo) whose exact behavior must be matched",
+  "Full headline figure needs 96 parameter combinations × 500 samples; only a single cell is cheap"
+ ],
+ "suitable": true,
+ "id": "2604.26769",
+ "title": "Minimum Covariance Determinant Estimator and Outlier Detection for Interval-valued Data",
+ "pages": 38,
+ "model": "DeepSeek-V4.1-Flash"
+}

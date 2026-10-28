@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "Ours (Full) achieves HMR 0.044 on the E.T. testset, outperforming E.T. (0.064) and DanceCam* (0.053).",
+  "table_ref": "Table 1, E.T. Testset, row 'Ours (Full)', column HMR ↓",
+  "dataset": "E.T. testset (SMPL-based, refined to 500 samples)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://yuli0103.github.io/AdaViewPlanner/"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 1000000,
+  "gpu_speedup": 50,
+  "basis": "The result depends on a two-stage 1B-parameter T2V/camera diffusion pipeline trained on 16 H800 GPUs using internal video/UE data, so reproducing it on an 8-core CPU laptop is not feasible."
+ },
+ "blockers": [
+  "No training code, weights, or configuration released",
+  "Base 1B T2V backbone is an internal research model not publicly available",
+  "Training requires 16 NVIDIA H800 GPUs",
+  "Requires large internal datasets (400k unfiltered videos, 10k curated videos, 100k internal UE videos) plus MultiCamVideo/HumanVid UE data",
+  "E.T. testset refinement, GVHMR/UE pipeline, and baseline DanceCam* reimplementation details are incomplete",
+  "MLLM/user-study metrics use Gemini 2.5 Pro and human raters, not reproducible automatically"
+ ],
+ "suitable": false,
+ "id": "2510.10670",
+ "title": "AdaViewPlanner: Adapting Video Diffusion Models for Viewpoint Planning in 4D Scenes",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

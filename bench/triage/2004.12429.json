@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Our model achieves BLEU F1 of 0.297 on DailyDialog, outperforming DialogWAE-GMP (0.273) and other baselines.",
+  "table_ref": "Table 1, row 'Our model', column 'BLEU F1'",
+  "dataset": "DailyDialog"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 720,
+  "gpu_speedup": 3,
+  "basis": "Estimate based on typical training time for a VAE-based dialogue model on DailyDialog (~10k dialogues) with 3 curriculum phases, each ~10 epochs, on CPU; includes data download, preprocessing, BM25 exemplar retrieval, and evaluation."
+ },
+ "blockers": [
+  "No code released",
+  "Complex model with three-phase curriculum training and WGAN components",
+  "Requires implementing BM25 retrieval for exemplars",
+  "Evaluation requires sampling 10 responses per context and computing multiple metrics"
+ ],
+ "suitable": false,
+ "id": "2004.12429",
+ "title": "Towards Multimodal Response Generation with Exemplar Augmentation and Curriculum Optimization",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

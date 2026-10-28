@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "DEI2N achieves AUC 0.7671 on the Alibaba.com dataset, outperforming all baselines.",
+  "table_ref": "Table 2, row DEI2N, column Alibaba.com AUC",
+  "dataset": "Alibaba.com"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/mengxiaozhibo/DEI2N"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 330,
+  "disk_gb": 500,
+  "ref_minutes": 600,
+  "gpu_speedup": 10,
+  "basis": "Training one epoch on 5.2M samples took 576 minutes on a 41-core CPU with 330 GB RAM and a V100 GPU; the Alibaba.com dataset is proprietary and not publicly available."
+ },
+ "blockers": [
+  "Alibaba.com dataset is proprietary and not released",
+  "Training requires large memory (330 GB) and a GPU (V100)",
+  "Even with data, one epoch takes ~10 hours on the paper's hardware"
+ ],
+ "suitable": false,
+ "id": "2401.07769",
+ "title": "Deep Evolutional Instant Interest Network for CTR Prediction in Trigger-Induced Recommendation",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

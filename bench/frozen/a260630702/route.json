@@ -1,0 +1,45 @@
+{
+ "route": "partial_release",
+ "why": "The repository contains the analytic CSV and the authors' analysis notebook, so the core CRP experiment is released. However, the target claim depends on TabPFN v2, whose weights/access require a manual Prior Labs license acceptance and personal token; the repo also ships notebooks rather than a runnable Python entrypoint and has no dependency lock/requirements file. The authors' logic can be kept, but the notebook path must be ported to a local script and TabPFN access supplied.",
+ "repo": "https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark",
+ "entrypoints": [
+  "nhanes_accel_SD4H_workshop_ICML_2026_clean.ipynb",
+  "nhanes_accel_SD4H_workshop_ICML_2026_orig.ipynb"
+ ],
+ "missing_artifacts": [
+  "TabPFN v2 model weights / Prior Labs access token and license acceptance",
+  "requirements.txt or environment specification for exact package versions",
+  "standalone Python script entrypoint (code is only in notebooks)",
+  "local-path adaptation for Colab Drive-mount/upload cells"
+ ],
+ "blockers_seen": [
+  "TabPFN v2 requires a one-time interactive license acceptance and personal TABPFN_TOKEN; without that token the target TabPFN claim cannot be run",
+  "The notebook is Colab-oriented and expects /content/data/nhanes_analytic.csv after a manual upload step",
+  "No Python .py files are present; code is embedded in large notebooks",
+  "No GPU on this machine, but the paper explicitly used CPU inference, so this is not a blocker"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes total if TabPFN access is already available: a few minutes to install, a few minutes for TabPFN v2 CPU inference on 828x18 data, and a short clean rerun. Model/package download dominates.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 15,
+  "gpu_speedup": 3,
+  "basis": "One TabPFN v2 in-context regression fit on a small 828-row, roughly 18-feature tabular dataset plus scaling and test evaluation; runtime is dominated by package/weight download and TabPFN setup, not model training."
+ },
+ "repo_info": {
+  "url": "https://github.com/felizzi/nhanes-accel-cardiometabolic-benchmark",
+  "cloned": true,
+  "n_files": 8,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

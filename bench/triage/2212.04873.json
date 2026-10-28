@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "5-way 5-shot classification accuracy of TRX^M (weighted average MPE) on HMDB51 = 86.3%",
+  "table_ref": "Table 1",
+  "dataset": "HMDB51"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 4320,
+  "basis": "Requires reimplementing TRX+CLIP+MORN from scratch (no code released), training 10000 episodes with CLIP ResNet-50 over 8-frame videos, which is far beyond a few CPU-hours on a laptop."
+ },
+ "blockers": [
+  "No code or configs released (empty code_links)",
+  "Training 10000 episodes with CLIP ResNet-50 video encoder is GPU-bound and multi-hour to multi-day",
+  "Requires reimplementing TRX, SE module, MPE module, and PRIDE from scratch",
+  "CLIP ResNet-50 backbone and CLIP text encoder weights must be downloaded and integrated"
+ ],
+ "suitable": false,
+ "id": "2212.04873",
+ "title": "Multimodal Prototype-Enhanced Network for Few-Shot Action Recognition",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

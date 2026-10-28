@@ -1,0 +1,191 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper gives W1=I2 and W2=diag(2,0) but does not explicitly state the total dimension p.",
+  "options": [
+   "p=4 (2 dimensions from W1 plus 2 from W2)",
+   "other dimension"
+  ],
+  "chosen": "p=4",
+  "rationale": "W1 is 2×2 and W2 is 2×2, so the block-diagonal model has four variables.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "W1 = I2 and W2 = diag(2, 0).",
+  "page": 5
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The exact 1,1,0,0 eigenvalues follow from theoretical scatter functionals, while Figure 2 is described as being on Xn.",
+  "options": [
+   "Use theoretical V1,V2 for eigenvalues",
+   "Use sample estimates from Xn",
+   "Report both"
+  ],
+  "chosen": "Use theoretical V1=diag(W1,0) and V2=diag(W1, εW2) for the exact eigenvalue claim; use sample data only for coordinate plots if needed.",
+  "rationale": "Only the theoretical scatter functionals yield exactly ρ1=ρ2=1 and ρ3=ρ4=0; sample estimates would differ due to sampling variability.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "with a theoretical “perfectly robust” scatter functional V1 = diag(W1, 0) and a theoretical “non-robust” scatter functional, the covariance of X, V2 = diag(W1, εW2).",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper says exactly 20 outliers but does not specify whether they are fixed by design or drawn from a Bernoulli mixture.",
+  "options": [
+   "Fix exactly 20 outlier rows",
+   "Sample outlier labels with ε=0.02"
+  ],
+  "chosen": "Fix exactly 20 outlier rows among n=1000.",
+  "rationale": "The wording is explicit: exactly 20 outliers.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we generate 1000 observations with exactly 20 outliers",
+  "page": 5
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "No random seed or outlier indices are given.",
+  "options": [
+   "Use a fixed seed",
+   "Use arbitrary randomness",
+   "Run many seeds"
+  ],
+  "chosen": "Use a fixed seed for reproducibility and, if sample estimates are used, repeat over several seeds to confirm the eigenvalue band.",
+  "rationale": "The exact theoretical eigenvalues do not depend on seed, but sample-based coordinates do.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The mixture proportion ε implied by exactly 20 outliers is not stated numerically.",
+  "options": [
+   "ε=20/1000=0.02",
+   "ε=0.5",
+   "other"
+  ],
+  "chosen": "ε=0.02",
+  "rationale": "Exactly 20 of 1000 observations are outliers.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The placement of W2=diag(2,0) in the extra dimensions is not explicitly numbered.",
+  "options": [
+   "First extra dimension variance 2, last variance 0",
+   "Other permutation"
+  ],
+  "chosen": "Third variable has variance 2 and fourth variable has variance 0.",
+  "rationale": "The paper's scatterplots show outliers only on the third variable and no observations on the fourth.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "no observations lie on the fourth one",
+  "page": 5
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "A numerical threshold for the pseudo-inverse rank r1 is not specified.",
+  "options": [
+   "Use exact rank 2 for theoretical matrices",
+   "Use a tolerance such as λ > 1e-8 λ1",
+   "Use another threshold"
+  ],
+  "chosen": "Use exact rank 2 for the theoretical eigenvalue check; for sample-based checks use a documented tolerance.",
+  "rationale": "The theoretical V1 has exactly two nonzero eigenvalues; sample data require a tolerance.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The paper defines decreasing eigenvalues but does not give tie-breaking for equal eigenvalues.",
+  "options": [
+   "Sort descending",
+   "Preserve eigensolver order",
+   "Sort ascending"
+  ],
+  "chosen": "Sort eigenvalues descending; for equal values any ordering within the tie is acceptable.",
+  "rationale": "The paper defines D with decreasing diagonal elements.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "D is a diagonal matrix with decreasing diagonal elements",
+  "page": 2
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The paper notes that with GINV one must choose whether to standardize the data or not, but the target example does not specify standardization.",
+  "options": [
+   "No standardization",
+   "Standardize variables",
+   "Report both"
+  ],
+  "chosen": "No standardization for the target original-data eigenvalue claim.",
+  "rationale": "The target is the original Xn example before the affine transformation discussion.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "an additional choice is required: standardize the data or not.",
+  "page": 9
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The numerical eigensolver for the non-symmetric matrix V1^+V2 is not prescribed.",
+  "options": [
+   "Use a general non-symmetric eigendecomposition",
+   "Symmetrize via V1^{+1/2}",
+   "Use a generalized eigensolver"
+  ],
+  "chosen": "Use a general non-symmetric eigendecomposition for V1^+V2, or the equivalent symmetric transform described in the proof.",
+  "rationale": "The paper explicitly reduces the GEP to a non-symmetric EVP for V1^+V2.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "non-symmetric eigenvalue problem (EVP)",
+  "page": 1
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "For sample-based checks, near-zero eigenvalues may be small numerical values rather than exact zeros.",
+  "options": [
+   "Require exact zero",
+   "Accept values within a numerical tolerance",
+   "Discard zero eigenvalues"
+  ],
+  "chosen": "For the theoretical target require exact zeros; for sample-based checks accept small values within the tolerance band and report them.",
+  "rationale": "The paper itself reports near-zero values such as 1.5e−15 and −2.5e−18 in related examples.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "the last two are associated with almost zero eigenvalues",
+  "page": 14
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The location estimator T(Xn) used to center coordinates in the illustrative figure is not specified for the theoretical GINV example.",
+  "options": [
+   "Use the mean",
+   "Use zero because the model mean is zero",
+   "Use a robust location"
+  ],
+  "chosen": "Use zero theoretical location for the eigenvalue check; use the sample mean only if plotting coordinates from generated data.",
+  "rationale": "The model has zero mean, and the target is the eigenvalue pattern, not coordinate values.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "T(Xn) denotes a location estimator, usually the one that goes along with V1.",
+  "page": 2
+ }
+]

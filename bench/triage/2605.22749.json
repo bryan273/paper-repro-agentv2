@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "GA + Extra Trees mean macro-F1 of 0.9212 over 5 runs on the pmu without status feature set",
+  "table_ref": "Table 3 (mean row) / Table 4",
+  "dataset": "MSU/ORNL Power System Attack Dataset (binary Attack vs Natural)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement preprocessing, GA feature selection (5 seeds, population/generations unspecified) and Extra Trees training on ~78k x 112 tabular data, which is CPU-feasible but the GA loop multiplies training runs."
+ },
+ "blockers": [
+  "No code or configs released; GA hyperparameters (population size, generations, crossover/mutation rates) not reported",
+  "Dataset must be obtained from MSU/ORNL (public but requires locating the exact binary CSV files)",
+  "Exact split seeds and threshold selection procedure not specified, so exact mean macro-F1 may not be matched"
+ ],
+ "suitable": true,
+ "id": "2605.22749",
+ "title": "Cyber-Physical Anomaly Detection in IoT-Enabled Smart Grids Using Machine Learning and Metaheuristic Feature Optimization",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

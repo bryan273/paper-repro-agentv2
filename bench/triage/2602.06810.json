@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average AUC-PR of CTAD (DRL) across 34 datasets = 0.7526 (or equivalently the average improvement of DRL from 0.7290 to 0.7526)",
+  "table_ref": "Table 7 (Average row) / Table 1 (DRL row)",
+  "dataset": "34 tabular datasets from OODS and ADBench"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement CTAD (K-means + OT via LP) plus 7 base detectors including deep models MCM and DRL, and run 34 datasets x 7 detectors x 2 metrics, which is far beyond a few hours even on CPU."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Requires reimplementing 7 detectors including deep MCM and DRL from scratch",
+  "34 datasets with full 7x34x2 protocol is a large multi-run sweep",
+  "Exact numbers depend on unspecified random splits/seeds"
+ ],
+ "suitable": false,
+ "id": "2602.06810",
+ "title": "Calibrating Tabular Anomaly Detection via Optimal Transport",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

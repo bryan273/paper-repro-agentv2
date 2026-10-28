@@ -1,0 +1,110 @@
+{
+ "approach": "We reproduce the only machine-checkable quantitative claim in the paper (C1) as a partial release: install the public coniferest package, substituting the unavailable coniferest 0.0.13 Cython wheel with the current Rust wheel, and benchmark IsolationForest.score_samples on a fixed-seed 10^6 x 2 uniform array with 100 trees and max_samples=256. Fitting is done once outside the timer; after one warm-up call we time three full-dataset score_samples calls under single-thread settings and report the median. We separately run a small black-box equivalence/sanity check against scikit-learn to confirm finite negative scores and the expected anomaly-score convention, then write results/metrics.json with measured times, version substitution, and pass/fail against the 350 s axis ceiling and the requirement that coniferest be faster than scikit-learn. Because the exact Figure-1 driver, the 0.0.13 cp312 wheel, and the reference hardware are missing, the verdict is capped at partially_reproduced; C2-C4 are not attempted.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Single source of truth for sample size, data distribution, forest hyperparameters, scikit-learn versions, thread-control environment variables, acceptance thresholds, and result paths.",
+   "requirement_ids": [
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "setup_env.py",
+   "purpose": "Create results directory; try pip install coniferest==0.0.13 and fall back to latest coniferest if the wheel is unavailable; install numpy, scipy, threadpoolctl, and scikit-learn 1.4.2; optionally install scikit-learn 1.3.2 in a separate venv; write results/environment.json.",
+   "requirement_ids": [
+    "R13"
+   ]
+  },
+  {
+   "path": "verify_isoforest_math.py",
+   "purpose": "Tiny black-box check: fit coniferest and scikit-learn IsolationForest on N=2000, compare score_samples shape/sign/correlation, verify native extension is loaded, and check the harmonic c(N) expansion used by the paper.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R13"
+   ]
+  },
+  {
+   "path": "benchmark_isoforest.py",
+   "purpose": "Generate the 10^6 x 2 uniform dataset, fit coniferest and scikit-learn forests once outside the timer, enforce single-thread mode, warm up once, time three full score_samples calls, and return medians, repeats, versions, and thread settings.",
+   "requirement_ids": [
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Orchestrate smoke/full modes, call the verification and benchmark modules, compute pass/fail against the 350 s ceiling and the coniferest-vs-sklearn ordering, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R12",
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "claim": "C1",
+  "n_samples": "1000000 (paper, Figure 1)",
+  "n_features": "2 (paper, Figure 1)",
+  "data_distribution": "uniform [0,1]^2 (assumption A6)",
+  "random_seed": "0 (assumption A3)",
+  "n_trees": "100 (assumption A1; scikit-learn default)",
+  "max_samples": "256 (assumption A2; scikit-learn 'auto' for n_samples > 256)",
+  "max_depth_formula": "floor(log2(max_samples)) = 8 for 256-sample trees (R4)",
+  "coniferest_package_spec": "try coniferest==0.0.13, then fall back to latest coniferest (route: 0.0.13 Cython wheel unavailable for CPython 3.12/Windows)",
+  "coniferest_n_jobs": "1 (assumption A5; single-thread mode)",
+  "sklearn_n_jobs": "1 (paper: scikit-learn is always single-threaded)",
+  "sklearn_versions": "['1.4.2', '1.3.2'] (route scale-down; 1.4.2 is primary, 1.3.2 optional)",
+  "thread_env": "OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1, MKL_NUM_THREADS=1, NUMEXPR_NUM_THREADS=1, RAYON_NUM_THREADS=1 (assumption A5)",
+  "timed_method": "score_samples on the full 10^6 x 2 array (assumptions A4 and A11)",
+  "warmup_repeats": "1 (assumption A4)",
+  "timed_repeats": "3 (assumptions A4 and A7)",
+  "aggregation": "median (assumption A7)",
+  "fit_in_timer": "false (assumption A4)",
+  "acceptance_ceiling_s": "350 (paper Figure 1 y-axis maximum; tolerance absolute 350)",
+  "acceptance_faster_than_sklearn": "true (paper Figure 1 ordering)",
+  "verification_n_samples": "2000",
+  "verification_n_trees": "100",
+  "verification_max_samples": "256",
+  "smoke_n_samples": "5000",
+  "smoke_n_trees": "10",
+  "smoke_timed_repeats": "1",
+  "results_dir": "results"
+ },
+ "steps": [
+  "Create results/ and inspect the Python environment: python --version must be 3.12; record platform, CPU count, and package manager.",
+  "Run python setup_env.py. It attempts pip install coniferest==0.0.13; if that fails (expected on CPython 3.12/Windows), it installs the latest coniferest wheel and records the substitution in results/environment.json. It installs numpy, scipy, threadpoolctl, and scikit-learn==1.4.2. Optional second baseline: create a side venv with scikit-learn==1.3.2.",
+  "Set thread-control variables at the very top of reproduce.py and benchmark_isoforest.py before importing numpy/coniferest: OMP_NUM_THREADS=1, OPENBLAS_NUM_THREADS=1, MKL_NUM_THREADS=1, NUMEXPR_NUM_THREADS=1, RAYON_NUM_THREADS=1; wrap scikit-learn calls with threadpoolctl.threadpool_limits(limits=1).",
+  "Inspect constructors with inspect.signature for coniferest.IsolationForest, coniferest.IsolationForest.score_samples, and sklearn.ensemble.IsolationForest. Confirm whether coniferest uses n_trees or n_estimators, random_seed or random_state, and n_jobs. Adapt only the keyword names, not the algorithm or packaged code.",
+  "Run the smoke test: python reproduce.py --smoke. It generates a 5,000 x 2 array, fits 10-tree coniferest and scikit-learn forests with max_samples=256, calls score_samples once, checks shape (5000,), finite values, and negative-score convention, and writes results/smoke_metrics.json.",
+  "Run the numerical sanity check: python verify_isoforest_math.py. Fit both libraries on 2,000 x 2 data with 100 trees and max_samples=256; require finite scores, both libraries return more negative scores for isolated points than for bulk points, and their score_samples vectors have positive correlation. Record the native extension file loaded by coniferest.",
+  "Run the full benchmark once as a dry run: python reproduce.py --full --dry-run. Check the 10^6 x 2 array shape and memory (about 16 MB), print model parameter summaries, and confirm score_samples is not accidentally returning all zeros or NaNs.",
+  "Run the full benchmark: python reproduce.py --full. Fit coniferest and scikit-learn once outside the timer, call score_samples once as warm-up, then time three full-dataset calls with time.perf_counter. Use n_jobs=1 for coniferest and n_jobs=1 for scikit-learn. Record every repeat and the median.",
+  "If time permits, run the optional scikit-learn 1.3.2 baseline in its side venv using the same benchmark script and append its result to results/metrics.json; otherwise record 'sklearn_versions_succeeded': ['1.4.2'] and note the partial version coverage.",
+  "Compute pass/fail: coniferest_median_s <= 350 and coniferest_median_s < sklearn_median_s. Write results/metrics.json with versions, hyperparameters, thread settings, repeats, medians, ratio, substitution notes, and the final 'pass' boolean. Print a compact summary to stdout."
+ ],
+ "smoke_test": "python reproduce.py --smoke generates a 5,000 x 2 fixed-seed uniform array, fits a 10-tree coniferest IsolationForest and a 10-tree scikit-learn IsolationForest with max_samples=256, calls score_samples once on each, checks output shape (5000,), all-finite values, and the expected negative-score convention, and writes results/smoke_metrics.json. This proves the full import-fit-score-time-JSON data flow before the 10^6-sample run.",
+ "intermediate_checks": [
+  "Confirm dataset shape is exactly (1000000, 2), dtype float64, and finite; report memory footprint (~16 MB).",
+  "Record exact versions: Python, coniferest.__version__ (or package metadata), sklearn.__version__, numpy, scipy, and whether coniferest loaded a compiled extension (.pyd/.so/.dll) rather than pure Python.",
+  "Inspect and print coniferest.IsolationForest and sklearn.ensemble.IsolationForest constructor signatures; if coniferest keyword names differ, adapt the call without editing installed package code.",
+  "Verify single-thread mode: n_jobs=1 is passed, OMP/RAYON environment variables are set before import, and a short CPU-time/wall-time ratio check on a scoring call is near 1 (not strongly multi-threaded).",
+  "Score sanity: score_samples must return shape (n_samples,), all finite, with a non-degenerate distribution (nonzero variance). For a tiny labeled sanity set, manually injected far-out points should receive more negative scores than bulk points in both libraries.",
+  "Cross-library sanity: on the 2,000-sample check, require positive correlation between coniferest and scikit-learn score_samples and agreement on the sign/ordering of the most isolated points; this is a black-box check of the Equation (1)-(3) scoring convention, not an exact tree-by-tree match.",
+  "Baseline plausibility: scikit-learn full-dataset scoring must take a measurable nonzero time; if coniferest time is implausibly tiny (<0.01 s), stop and inspect whether score_samples received the full array and used all trees.",
+  "Before the full run, confirm the coniferest-vs-sklearn comparison uses identical n_trees=100, max_samples=256, random seed 0, and single-thread settings; record any deviation explicitly in metrics.json."
+ ],
+ "entrypoint": "python reproduce.py --full",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 20 minutes total: 5-7 minutes for environment setup and pip installs (coniferest latest wheel plus scikit-learn 1.4.2, with an optional 1.3.2 side venv), 1-2 minutes for the smoke test and signature inspection, 1-2 minutes for the 2,000-sample numerical sanity check, 6-8 minutes for the full 10^6 x 2 benchmark including model fits and three timed scoring repeats, and 1-2 minutes to compute pass/fail and write results/metrics.json. The full sample size is retained because it is the quantity the claim is about; scale-down is achieved by using the current coniferest wheel instead of 0.0.13 and by making the second scikit-learn version optional."
+}

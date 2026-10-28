@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Attack success rate (ASR) of CatBack on the ACI dataset with FTT model, target label 1, epsilon=0.02, mu=1.0, beta=0.1, lambda=0.1",
+  "table_ref": "Table IV (ACI, FTT, target label 1, epsilon=0.02)",
+  "dataset": "Adult Census Income (ACI)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/catback-tabular/catback",
+  "https://github.com/bartpleiter/tabular-backdoors"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 30,
+  "gpu_speedup": 2.0,
+  "basis": "ACI is small (32k samples, 12 features); FTT training and trigger optimization on CPU should take minutes, and the paper's artifact appendix states experiments can finish in as little as 5 minutes on small datasets."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2511.06072",
+ "title": "CatBack: Universal Backdoor Attacks on Tabular Data via Categorical Encoding",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

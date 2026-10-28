@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MSE of 0.021 for PadInv on FFHQ face inversion (Table 1, 'Ours' row, Face MSE column)",
+  "table_ref": "Table 1",
+  "dataset": "FFHQ"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/bytedance/Hammer"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 2880,
+  "gpu_speedup": 10,
+  "basis": "Training a StyleGAN inversion encoder on 65k FFHQ images requires GPU compute; even with a mid-range GPU, training takes ~2 days, and CPU-only would be infeasible."
+ },
+ "blockers": [
+  "Training the encoder requires a GPU with sufficient VRAM (≥11GB) and takes ~2 days on a mid-range GPU.",
+  "The official code repository (Hammer) is a general toolkit; the specific PadInv implementation may not be directly provided, requiring significant adaptation.",
+  "Pre-trained StyleGAN generators for FFHQ are needed but not explicitly linked in the paper."
+ ],
+ "suitable": false,
+ "id": "2203.11105",
+ "title": "High-fidelity GAN Inversion with Padding Space",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "ActiveSetPageRank (Algorithm 1) returns an ACL ε-approximate PageRank vector with support volume ≤ 2/ε, matching the theoretical eO(1/√(αε)) bound; a concrete check is that the returned vector satisfies the ACL residue condition 0 ≤ r ≤ εd and support volume ≤ 2/ε on a small graph.",
+  "table_ref": "Theorem 1.2 (no empirical table; theoretical guarantee)",
+  "dataset": "any small undirected graph (e.g., a synthetic or standard SNAP graph) with a chosen seed, α, ε"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is released; the target requires implementing Algorithm 1 plus a working SDD solver (e.g., a Laplacian/PCG or combinatorial solver) from scratch, then validating the ACL residue/support-volume guarantee on a small graph — feasible on CPU but the SDD solver and correctness checks are the main effort."
+ },
+ "blockers": [
+  "No code or data links in the paper",
+  "Requires implementing an SDD linear-system solver as a black box",
+  "Theoretical result only; no empirical benchmark to reproduce"
+ ],
+ "suitable": false,
+ "id": "2609.12076",
+ "title": "Accelerating the Local Push Primitive for PageRank Computation",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

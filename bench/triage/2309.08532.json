@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "EVOPROMPT (DE) achieves 94.75% accuracy on SST-2 with Alpaca-7b, compared to 93.68% for manual instructions.",
+  "table_ref": "Table 1, row 'EVOPROMPT (DE)', column 'SST-2'",
+  "dataset": "SST-2"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/beeevita/EvoPrompt"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 480,
+  "gpu_speedup": 5,
+  "basis": "Requires running Alpaca-7b inference on SST-2 dev/test sets for multiple evolutionary iterations (population size N, iterations T) and 3 random seeds, plus GPT-3.5 API calls for prompt generation; 7B model inference on CPU is very slow, making GPU necessary for reasonable runtime."
+ },
+ "blockers": [
+  "Requires OpenAI GPT-3.5 API access (closed-source, paid) for evolutionary operators",
+  "Requires running Alpaca-7b (7B parameters) for evaluation, which is slow on CPU and needs GPU for practical runtime",
+  "Code repository may not include exact configs for SST-2 reproduction"
+ ],
+ "suitable": false,
+ "id": "2309.08532",
+ "title": "EvoPrompt: Connecting LLMs with Evolutionary Algorithms Yields Powerful Prompt Optimizers",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

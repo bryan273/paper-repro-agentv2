@@ -1,0 +1,280 @@
+{
+ "title": "A New Framework for Convex Clustering in Kernel Spaces: Finite Sample Bounds, Consistency and Performance Insights",
+ "summary": "Convex clustering fails on linearly non-separable or non-convex data, and a prior kernelized formulation lacked implementation and theory. The paper reparameterizes kernel convex clustering via the representer theorem, uses Cholesky decomposition K=Z^T Z to reduce it to ordinary convex clustering of an embedding Z, and solves the resulting problem with ADMM. Empirically KCC gives strong NMI on real benchmarks, including 0.778 on Lymphoma, while the paper proves finite-sample bounds and consistency under weight and fusion-penalty conditions.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "KCC attains NMI 0.778 on Lymphoma with the Gaussian kernel and 7 elbow-selected clusters.",
+   "metric": "NMI",
+   "dataset": "Lymphoma",
+   "split": "full dataset (96 instances, 4026 features; 9 annotated classes)",
+   "value": 0.778,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Lymphoma, column KCC (Ours); also Section 4.3",
+   "config_for_value": "Gaussian kernel; no standardization because features are discrete; 6-NN Gaussian weights symmetrized; σ1, σ2, ρ, γ tuned; k=7 from agglomerative dendrogram + SSE elbow.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (n=96, O(n^3))",
+   "quote": "The NMI value reported in this case is 0.778.",
+   "page": 11
+  },
+  {
+   "id": "C2",
+   "statement": "KCC attains NMI 0.851 on Orlraws10P with 11 elbow-selected clusters.",
+   "metric": "NMI",
+   "dataset": "Orlraws10P",
+   "split": "full dataset; table row reports 11 clusters",
+   "value": 0.851,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Orlraws10P, column KCC (Ours)",
+   "config_for_value": "Real benchmark from ASU/Keel repositories; Gaussian kernel; preprocessing per Section 4.4 (center/scale continuous, raw categorical); σ1, wij, ρ, γ tuned; k=11 from elbow.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (small n, O(n^3))",
+   "quote": "Orlraws10P 0.851 0.821 0.798 0.209 0.810 0.720 0.720 0.759 0.645 11",
+   "page": 9
+  },
+  {
+   "id": "C3",
+   "statement": "KCC attains NMI 0.804 on Lung with 4 elbow-selected clusters.",
+   "metric": "NMI",
+   "dataset": "Lung",
+   "split": "full dataset; table row reports 4 clusters",
+   "value": 0.804,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row Lung, column KCC (Ours)",
+   "config_for_value": "Real benchmark from ASU/Keel repositories; Gaussian kernel; preprocessing per Section 4.4; σ1, wij, ρ, γ tuned; k=4 from elbow.",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 min (small n, O(n^3))",
+   "quote": "Lung 0.804 0.729 0.594 0.018 0.433 0.328 0.769 0.682 0.321 4",
+   "page": 9
+  },
+  {
+   "id": "C4",
+   "statement": "KCC attains NMI 0.614 on a 500-point MNIST subset with 10 elbow-selected clusters.",
+   "metric": "NMI",
+   "dataset": "MNIST",
+   "split": "500-point subset: 50 images from each of 10 classes",
+   "value": 0.614,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 1, row MNIST, column KCC (Ours)",
+   "config_for_value": "500 MNIST points (50 per class); Gaussian kernel; σ1, wij, ρ, γ tuned; k=10 from elbow.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to minutes (n=500, O(n^3))",
+   "quote": "MNIST 0.614 0.062 0.553 0.047 0.486 0.421 0.329 0.496 0.425 10",
+   "page": 9
+  },
+  {
+   "id": "C5",
+   "statement": "KCC attains NMI 0.999 on the 400-point synthetic dataset with σ1=1, σ2=100, γ=1, ρ=0.001.",
+   "metric": "NMI",
+   "dataset": "Synthetic 400-point dataset",
+   "split": "generated dataset (400 points)",
+   "value": 0.999,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Table 2, row Kernel Convex Clustering, column NMI",
+   "config_for_value": "Synthetic 400-point dataset; Gaussian kernel σ1=1; weights σ2=100, 6-NN symmetrized; γ=1; ρ=0.001.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (n=400, O(n^3))",
+   "quote": "Method NMI Kernel Convex Clustering 0.999 Convex Clustering 0.259 Biconvex clustering 0.721",
+   "page": 10
+  },
+  {
+   "id": "C6",
+   "statement": "KCC attains NMI 1.0 on GLI85 with a Gaussian kernel and σ=0.001.",
+   "metric": "NMI",
+   "dataset": "GLI85",
+   "split": "full dataset (85 samples, 22283 continuous features)",
+   "value": 1.0,
+   "unit": "NMI (0–1)",
+   "higher_is_better": true,
+   "table_ref": "Section 2.1, text after Figure 1; Figure 1d",
+   "config_for_value": "GLI85 standardized; Gaussian kernel k(x,y)=e^{-||x-y||^2/(2σ^2)} with σ=0.001.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (n=85, O(n^3))",
+   "quote": "The NMI (Vinh et al., 2010) score was found to be 1 in this case, highlighting the utility of the kernels in the paradigm of convex clustering.",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint explicitly names Lymphoma/KCC/0.778, and this is a central real-data result that is cheap to run because n=96 and the kernel matrix is only 96x96."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: no std is reported, NMI is a bounded [0,1] metric on a small 96-point dataset, and the paper prints NMI as a fraction, so the tolerance is 0.02 absolute."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement the kernel convex clustering objective with a fit term and an L1 fusion penalty over centroids.",
+   "cite": "Section 2.2, Equation (2)",
+   "quote": "The second term is a penalisation term, to keep the number of distinct centroids in check.",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Use the representer theorem for this problem: each centroid lies in the span of the mapped data, so u_i = φ^T α_i.",
+   "cite": "Section 2.3",
+   "quote": "Thus u∗ i = φ⊤α∗ i for some α∗ i ∈Rn.",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "Compute a Cholesky factorization K=Z^T Z and transform z_i=Z e_i and a_i=Z α_i.",
+   "cite": "Section 2.4, Equation (3)",
+   "quote": "If we decompose K = Z⊤Z using Cholesky decomposition, and make the following transformations:",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Reduce KCC to ordinary convex clustering of the embedded points z_i, then recover the α_i and u_i.",
+   "cite": "Section 2.4, Equation (4)",
+   "quote": "which is the objective for the convex clustering of the n points, z1, . . . , zn (1).",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Use ADMM with auxiliary variables v_ij=a_i-a_j and Lagrange multipliers η_ij.",
+   "cite": "Section 2.5",
+   "quote": "In ADMM, we introduce auxiliary variables, vij = ai −aj, which act as constraints",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Initialize α_i=e_i, β_ij=e_i-e_j, and λ_ij before the ADMM loop.",
+   "cite": "Algorithm 1",
+   "quote": "Initialise αi = ei for all i = 1, . . . , n",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Use a Gaussian kernel, with the GLI85 motivating example using σ=0.001.",
+   "cite": "Section 2.1",
+   "quote": "In this context, we employed a Gaussian kernel in our implementation as k(x, y) = e−∥x−y∥2/2σ2 where σ was chosen to be 0.001.",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Construct weights from 6-nearest-neighbour Gaussian affinities.",
+   "cite": "Section 4.1",
+   "quote": "for every pair i̸ = j, wij = e−∥xi−xj∥2/2σ2 2 I[xj is one of the 6 nearest neighbours of xi].",
+   "page": 9
+  },
+  {
+   "id": "R9",
+   "stmt": "Symmetrize the nearest-neighbour weight matrix.",
+   "cite": "Section 4.1",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R10",
+   "stmt": "Apply agglomerative clustering to the learned centroids and build a dendrogram.",
+   "cite": "Section 2.6",
+   "quote": "This is carried out, first by applying agglomerative clustering on the centroids, followed by constructing a dendrogram.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Select the number of clusters by SSE_k elbow analysis over dendrogram cuts.",
+   "cite": "Section 2.6",
+   "quote": "After computing SSEk for every k, we construct the elbow plot of SSEk vs. k.",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "For continuous-covariate benchmarks, center and scale each feature before KCC.",
+   "cite": "Section 4.4",
+   "quote": "For datasets with continuous covariates, we scale the data by centering each of the datasets and dividing by the corresponding variance.",
+   "page": 12
+  },
+  {
+   "id": "R13",
+   "stmt": "Do not standardize Lymphoma because its features are discrete.",
+   "cite": "Section 4.3",
+   "quote": "Since the variables were all discrete, we did not standardise the dataset.",
+   "page": 11
+  },
+  {
+   "id": "R14",
+   "stmt": "For MNIST, sample 50 images from each of 10 classes, giving 500 points total.",
+   "cite": "Section 4.4",
+   "quote": "For MNIST, we randomly select 50 images from 10 classes and apply KCC on the overall 500 data points.",
+   "page": 12
+  },
+  {
+   "id": "R15",
+   "stmt": "Evaluate cluster quality with Normalized Mutual Information.",
+   "cite": "Section 4",
+   "quote": "We use Normalized Mutual Information (NMI) (Vinh et al., 2010) to evaluate the quality of clustering.",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "Lymphoma",
+   "how_to_get": "ASU Feature Selection Repository (Li et al., 2018), https://featureselection.asu.edu/datasets.php; 96 instances, 4026 features, 9 classes."
+  },
+  {
+   "name": "Orlraws10P",
+   "how_to_get": "ASU Feature Selection Repository (Li et al., 2018), https://featureselection.asu.edu/datasets.php; table row reports 11 clusters."
+  },
+  {
+   "name": "Yale",
+   "how_to_get": "ASU/Keel repositories; table row reports 14 clusters. See https://featureselection.asu.edu/datasets.php and https://sci2s.ugr.es/keel/datasets.php."
+  },
+  {
+   "name": "Lung",
+   "how_to_get": "ASU/Keel repositories; table row reports 4 clusters. See https://featureselection.asu.edu/datasets.php and https://sci2s.ugr.es/keel/datasets.php."
+  },
+  {
+   "name": "Zoo",
+   "how_to_get": "Keel repository, https://sci2s.ugr.es/keel/datasets.php; table row reports 4 clusters."
+  },
+  {
+   "name": "Housevotes",
+   "how_to_get": "Keel repository, https://sci2s.ugr.es/keel/datasets.php; table row reports 2 clusters."
+  },
+  {
+   "name": "Glass",
+   "how_to_get": "Keel repository, https://sci2s.ugr.es/keel/datasets.php; table row reports 9 clusters."
+  },
+  {
+   "name": "New Thyroid",
+   "how_to_get": "Keel repository, https://sci2s.ugr.es/keel/datasets.php; table row reports 5 clusters."
+  },
+  {
+   "name": "Glioma",
+   "how_to_get": "ASU/Keel repositories; table row reports 3 clusters. See https://featureselection.asu.edu/datasets.php and https://sci2s.ugr.es/keel/datasets.php."
+  },
+  {
+   "name": "MNIST",
+   "how_to_get": "Standard MNIST, http://yann.lecun.com/exdb/mnist/; paper samples 50 images from each of 10 classes (500 total)."
+  },
+  {
+   "name": "GLI85",
+   "how_to_get": "Biological dataset with 85 samples and 22283 continuous features; the paper does not state a repository or URL."
+  },
+  {
+   "name": "Synthetic 400-point dataset",
+   "how_to_get": "Generate exactly as Section 4.1: 4 central blobs of 50 points, R~U(0,0.45), θ~U(0,2π); outer circle of 200 points at radius 3 with N(0,0.01) noise."
+  }
+ ],
+ "code_links": [
+  "https://github.com/Shubhayan29/Kernel-Convex-Clustering/tree/main"
+ ],
+ "stated_compute": "We performed all experiments on an NVIDIA RTX GeForce 3090 GPU with 24 GB of memory and 64 GB of RAM.",
+ "paper_meta": {
+  "source": "2511.05159",
+  "kind": "arxiv",
+  "arxiv_id": "2511.05159",
+  "url": "https://arxiv.org/abs/2511.05159",
+  "title": "A New Framework for Convex Clustering in Kernel Spaces: Finite Sample Bounds, Consistency and Performance Insights",
+  "pages": 20
+ }
+}

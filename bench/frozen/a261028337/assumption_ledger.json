@@ -1,0 +1,160 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper never defines how the 'primary emoji' of a tweet is chosen when a tweet contains several emojis, yet this determines the per-emoji tweet sets T_e and hence every delta value.",
+  "options": [
+   "first emoji in the raw tweet (consistent with the placement analysis, which classifies by the first emoji)",
+   "last emoji in the tweet (sentence-final dominance)",
+   "most frequent / nearest-to-end emoji",
+   "one row per (tweet, emoji) pair, allowing multi-membership"
+  ],
+  "chosen": "first emoji in the raw tweet after canonicalisation",
+  "rationale": "Section 4.2 explicitly classifies placement by the position of the first emoji, so using the first emoji keeps the primary-emoji definition consistent with the rest of the paper.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "after emoji normalisation and primary-emoji extraction, the final analytical corpus contains 16,575 tweets",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The random draws (up to 100 tweets per emoji, 500 background tweets, bootstraps) need a random seed that the paper never states.",
+  "options": [
+   "fixed seed 42 for every draw",
+   "seed 0",
+   "average over several seeds"
+  ],
+  "chosen": "fixed seed 42 for the sampling draws and the bootstrap/permutation resampling",
+  "rationale": "42 is the only seed the paper prints (for the CV splits), so reusing it is the most defensible single choice; a single fixed seed must be recorded for exact reproducibility.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The variance of (p_neg, p_neu, p_pos) is not specified as population or sample variance.",
+  "options": [
+   "population variance (ddof = 0) over the three probabilities",
+   "sample variance (ddof = 1)"
+  ],
+  "chosen": "population variance (ddof = 0)",
+  "rationale": "The three probabilities are treated as the complete distribution for the emoji, not a sample of it; the subsequent Spearman test is rank-based so the choice barely moves rho.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "Kralj Novak sentiment variance: variance of (pneg, pneu, ppos).",
+  "page": 4
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "How per-emoji scalars should be read out of the emosent-py package (which column is the 'sentiment score', and how probabilities are ordered).",
+  "options": [
+   "use the package's published 'sentiment score' column directly",
+   "recompute score as p_pos - p_neg",
+   "use expected valence p_pos + 0.5 * p_neu"
+  ],
+  "chosen": "use the emosent-py package's per-emoji sentiment score and probability triple directly",
+  "rationale": "The paper states the lexicon is accessed via emosent-py, so the package's own fields are the intended source.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The exact key used to join the 62 ESD emojis to the lexicon (skin tones, variation selectors, multi-codepoint sequences).",
+  "options": [
+   "strip skin-tone modifiers and VS16 then match on the plain codepoint string",
+   "match on raw codepoint sequence including modifiers",
+   "match on emoji short codes"
+  ],
+  "chosen": "strip U+1F3FB-U+1F3FF and U+FE0F, then exact codepoint-string match",
+  "rationale": "Section 4.1 says presentation variants are normalised to one canonical form before any matching.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "skin-tone modifiers (U+1F3FB through U+1F3FF) and Variation Selector-16 (U+FE0F) are stripped",
+  "page": 3
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether tweets whose clean_text becomes empty after emoji removal (emoji-only tweets) are kept or dropped.",
+  "options": [
+   "keep and embed the empty string",
+   "drop them before computing deltas",
+   "drop them only from VADER scoring"
+  ],
+  "chosen": "keep them; MiniLM embeds the empty/residual string as-is",
+  "rationale": "16,859 raw -> 16,587 after the English filter -> 16,575 after emoji normalisation and primary-emoji extraction, i.e. only 12 tweets vanish, so emoji-only tweets are evidently retained.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Order of operations: is the 85% ASCII English test applied to the raw tweet or after URL/@mention/hashtag stripping?",
+  "options": [
+   "apply the ASCII test to the raw tweet text",
+   "apply it after stripping URLs, mentions and hashtag symbols"
+  ],
+  "chosen": "apply the ASCII test to the raw tweet text, then clean",
+  "rationale": "Section 4.1 presents the cleaning sentence first but states the filter removes 272 of the 16,859 raw inputs, implying the filter sees the raw corpus sized 16,859.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "removing 272 non-English tweets from the 16,859 raw inputs",
+  "page": 3
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Resample/permutation counts and seeds for the statistical battery beyond the stated 10,000.",
+  "options": [
+   "10,000 resamples with numpy default_rng(42), BCa via scipy.stats.bootstrap",
+   "10,000 resamples with a different seed per test",
+   "more resamples (e.g. 100,000) for stability"
+  ],
+  "chosen": "10,000 resamples/permutations, fixed RNG seed 42, BCa via scipy.stats.bootstrap",
+  "rationale": "The paper fixes 10,000 but not the seed; fixing one seed keeps reported CIs and p-values stable across reruns.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "seven-test statistical battery (10,000 resamples/permutations where applicable)",
+  "page": 10
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "GEMA's unspecified hyperparameters: MiniLM max sequence length, BiGRU hidden size, emoji-vocabulary size for the normalized count vector, and gate input dimensionality.",
+  "options": [
+   "BiGRU hidden 128, max_len 64 tokens, emoji count vector over the 62-emoji panel",
+   "BiGRU hidden 256, max_len 128, full emoji vocabulary",
+   "no truncation; pooled MiniLM sequence embedding only"
+  ],
+  "chosen": "BiGRU hidden 128, max_len 64 tokens, emoji counts over the retained emoji vocabulary",
+  "rationale": "Table 8 pins the optimizer, loss, batch size and epochs but not these dimensions; small defaults suit the ~2-hour CPU budget the authors report.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether the classifier text branches see emoji-free text or raw text containing emoji characters (the emoji signal is supposedly carried by the separate emoji branch).",
+  "options": [
+   "text branches consume emoji-free clean_text; emoji identity enters only via the emoji branch",
+   "text branches consume raw text including emoji characters"
+  ],
+  "chosen": "text branches consume emoji-free clean_text; emoji features enter only through the emoji branch",
+  "rationale": "Section 4.1 says clean_text is the input to all downstream NLP components and the architecture separates an emoji branch from the text branch.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "which has all emoji removed and serves as the input to all downstream NLP components",
+  "page": 3
+ }
+]

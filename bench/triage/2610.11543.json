@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "WebLoop (Refine) with Qwen3.5-9B reaches 41.5 Overall on WebRise",
+  "table_ref": "Table 1",
+  "dataset": "WebRise"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/WebLoop"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 43200,
+  "gpu_speedup": 500,
+  "basis": "The target is the trained WebLoop checkpoint evaluated after a full Generator-Critic-Refiner loop, which requires 9B-scale GRPO training on 3K executable web tasks plus browser-based execution, not a single inference run."
+ },
+ "blockers": [
+  "requires multi-GPU RL training of a 9B model with browser rollouts",
+  "training corpus (2,880 tasks), configurations, and data-construction assets are only promised upon acceptance",
+  "needs the WebRise/WebGen-Bench browser execution harness and Interaction Contract Graphs",
+  "no public trained WebLoop checkpoints are indicated in the paper"
+ ],
+ "suitable": false,
+ "id": "2610.11543",
+ "title": "Learning the Loop, Not Just the Page: Execution-Grounded Loop Learning for Web Generation",
+ "pages": 27,
+ "model": "DeepSeek-V4.1-Flash"
+}

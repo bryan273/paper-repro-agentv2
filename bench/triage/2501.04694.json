@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "EpiCoder's function-level synthetic data (380k samples) attains Halstead complexity of 10.66 unique operators, 44.32 unique operands, 56.98 total operators and 100.36 total operands, roughly doubling the strongest baseline (OSS-Instruct: 7.44 / 20.99 / 28.05 / 47.55; Code Alpaca: 4.83 / 8.22 / 10.66 / 15.89), i.e. the core claim that feature-tree synthesis yields far more complex code data.",
+  "table_ref": "Table 2 (Halstead complexity; related: Tables 11-14)",
+  "dataset": "EpiCoder function-level synthetic dataset (380k instructions) vs. Code Alpaca / CodeFeedback / Evol CodeAlpaca / OSS-Instruct"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/microsoft/EpiCoder",
+  "https://github.com/DeepLearnXMU/EpiCoder",
+  "https://huggingface.co/datasets/theblackcat102/evol-codealpaca-v1"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 25,
+  "ref_minutes": 75,
+  "gpu_speedup": null,
+  "basis": "The target is a static metric over released synthetic code: download a few-GB dataset plus baseline datasets, then run an off-the-shelf Halstead/metrics Python parser (e.g. 'halstead'/radon) over each function with multiprocessing; no training, no LLM inference, CPU-only."
+ },
+ "blockers": [
+  "The headline results (Table 1 Pass@1, Figure 4 XFileDep) require supervised fine-tuning of 6.7B-7B models on 380k+53k samples - multiple GPU-days, not laptop-feasible",
+  "Table 2's exact sample set, deduplication and parser configuration are not specified, so reproduced averages will drift from the reported values",
+  "The paper states 'code and data are publicly available' but no direct URL for the 380k function-level dataset appears in the provided links; hosting (GitHub vs. HuggingFace) must be verified before download",
+  "Tables 3/4/15 (diversity, LLM-judge complexity) depend on GPT-4o API calls and cannot be reproduced without a paid closed model"
+ ],
+ "suitable": true,
+ "id": "2501.04694",
+ "title": "EpiCoder: Encompassing Diversity and Complexity in Code Generation",
+ "pages": 38,
+ "model": "DeepSeek-V4.1-Flash"
+}

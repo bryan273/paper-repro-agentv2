@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SuperKMeans clustering build time (s) on the OpenAI dataset (999k vectors, 1536 dims, k=3997, 25 iterations) is 33.63 s vs FAISS 130.40 s, with matching recall@10/@100.",
+  "table_ref": "Table 4, OpenAI row (Build Time column)",
+  "dataset": "OpenAI embeddings (999,000 x 1536, ~6.14 GB)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/cwida/SuperKMeans"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 15,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires building the C++/SIMD SuperKMeans code (with tuned BLAS), downloading ~6 GB OpenAI embeddings, and running 25-iteration k-means with k~4000 on 8 cores; absolute times will differ from the paper's 32-core Granite Rapids machine, so only the relative speedup is checkable."
+ },
+ "blockers": [
+  "Paper's absolute timings depend on a 32-core Intel Granite Rapids CPU with IntelMKL; a laptop will not reproduce the exact seconds",
+  "Code is research-grade C++ with SIMD/BLAS tuning; may need fixes to build on a laptop",
+  "OpenAI embedding dataset must be located/downloaded (public but not bundled)"
+ ],
+ "suitable": true,
+ "id": "2603.20009",
+ "title": "A Super Fast K-means for Indexing Vector Embeddings",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

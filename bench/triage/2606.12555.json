@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AudioX-Turbo achieves an Inception Score (IS) of 8.24 on the VGGSound video-to-audio (V2A) task, matching or surpassing multi-step baselines while using only 4 sampling steps.",
+  "table_ref": "Table A.4 (Performance Evaluation on the AVVP Dataset, V2A row for AudioX-Turbo)",
+  "dataset": "VGGSound (test set)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 10080,
+  "gpu_speedup": 50,
+  "basis": "The target requires training a 2.7B-parameter MMDiT model from scratch on ~9.2M samples using three clusters of NVIDIA H800 GPUs (80GB each) for ~100k steps, followed by a distillation stage; this is far beyond the capability of a normal laptop with 8 CPU cores and 16GB RAM."
+ },
+ "blockers": [
+  "No code or model weights released (paper states code and datasets 'will be available' but no links provided).",
+  "Requires training a 2.7B-parameter model from scratch on ~9.2M samples.",
+  "Training conducted on three clusters of NVIDIA H800 GPUs (80GB each), totaling ~240GB VRAM.",
+  "Distillation stage requires the pretrained teacher model and additional training.",
+  "Even inference of the 2.7B model likely exceeds 16GB RAM and requires GPU for reasonable speed."
+ ],
+ "suitable": false,
+ "id": "2606.12555",
+ "title": "AudioX-Turbo: A Unified Framework for Efficient Anything-to-Audio Generation",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "The most anomalous certificate in the dataset (according to the trained Isolation Forest model) has CN=*.table.preprod.core.windows.net, issuer Microsoft Azure TLS Issuing CA 06, validity period 282 days, SAN count 52, wildcard count 52, average subdomains 7, extensions count 12, extension size 3206 bytes.",
+  "table_ref": "Section 4, bullet list (no table number)",
+  "dataset": "Random sample of 120,000 records from Google Xenon 2024 CT log"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code or data sample is released; reproducing requires writing a CT log scraper, parsing 120k certificates, implementing feature extraction, and running PyOD Isolation Forest, all CPU-only but with significant engineering and download time."
+ },
+ "blockers": [
+  "No code released",
+  "No data sample released; must scrape CT logs and parse certificates",
+  "Exact random sample from Xenon 2024 not reproducible, so the specific top anomalous certificate may differ"
+ ],
+ "suitable": false,
+ "id": "2405.05206",
+ "title": "Anomaly Detection in Certificate Transparency Logs",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

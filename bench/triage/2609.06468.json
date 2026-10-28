@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Mean initialization time (ms) for Sector-Mean on the A1 dataset (SIPU A1, N=3000, k=20) is 0.218 ms.",
+  "table_ref": "Table II, row 'A1 set', column 'Sector-Mean'",
+  "dataset": "SIPU A1"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The algorithm is a simple O(N) NumPy operation on 3000 2D points; the main effort is reimplementing the initialization and Lloyd's algorithm from the paper's pseudocode, plus downloading the SIPU A1 dataset."
+ },
+ "blockers": [
+  "No code repository linked; must reimplement Sector-Mean and baselines from pseudocode.",
+  "Timing values are hardware-dependent and may not match exactly."
+ ],
+ "suitable": true,
+ "id": "2609.06468",
+ "title": "Sector-Mean: Deterministic Initialization of K-Means Centroids via Angular Sector Partitioning",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

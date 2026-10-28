@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "t-test p-value for Age comparing anomalies detected by EIF vs AIF(A3) on the Diabetes dataset",
+  "table_ref": "Table I, row Age, column AIF(A3)",
+  "dataset": "Diabetes dataset (Kaggle: mathchi/diabetes-data-set)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/elliot1776/AIF/tree/main"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "Training 500 isolation trees on 768x8 tabular data and running t-tests takes seconds on a CPU; install and download add a few minutes."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2602.09704",
+ "title": "Extended Isolation Forest with feature sensitivities",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

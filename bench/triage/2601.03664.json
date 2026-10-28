@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SVEAD achieves an average AUC-ROC of 0.8538 across 45 benchmark datasets, outperforming all 12 baselines.",
+  "table_ref": "Table 4 (AUC-ROC results, Average row)",
+  "dataset": "ADBench 45-dataset benchmark (e.g., Pima, thyroid, wine, etc.)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/SVEAD-2B97/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "SVEAD is a simple CPU algorithm (linear time, no training), but reproducing the average requires downloading 45 ADBench datasets, implementing the method, and running 5 repeats with grid search over m for each dataset; the paper's code link is anonymous and may be incomplete."
+ },
+ "blockers": [
+  "Anonymous code link may not be permanently available or may lack full configuration files",
+  "45 datasets must be downloaded and preprocessed from ADBench",
+  "Grid search over m (2^1 to 2^8) and 5 repeats per dataset adds runtime"
+ ],
+ "suitable": true,
+ "id": "2601.03664",
+ "title": "Stochastic Voronoi Ensembles for Anomaly Detection",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

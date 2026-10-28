@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Mean β0 across the 22 OULAD courses (or a single course's mean β0, e.g. DDD_2013B = 29.8) computed via Union construction at ε = 1.5 over weekly z-standardized 10-feature activity profiles",
+  "table_ref": "Table 1 (β0 patterns across course types)",
+  "dataset": "OULAD (Open University Learning Analytics Dataset), 22 course presentations, N>22,000"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "OULAD is a small public CSV dataset (~10 VLE tables, a few hundred MB); the pipeline is weekly feature aggregation, z-scoring, Euclidean distance matrices and connected-component/union-find at ε=1.5 — all trivial on CPU; the main cost is re-implementing the Union Zigzag construction from the prose description since no code is linked."
+ },
+ "blockers": [
+  "No code or repository linked in the paper; Union Zigzag construction and ε=1.5 pipeline must be re-implemented from a prose description",
+  "Exact preprocessing details (which 10 VLE activity types, week alignment, handling of inactive learners) are underspecified, so exact numeric match to Table 1 is uncertain"
+ ],
+ "suitable": true,
+ "id": "2610.01738",
+ "title": "Participation-Sensitive Convergence and the Fragment First, Converge Later Pattern in Asynchronous Online Learning: A Topological Analysis Across 22 OULAD Courses",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

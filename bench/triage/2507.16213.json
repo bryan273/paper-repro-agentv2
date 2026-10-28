@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "MVP-LM (Swin-B, Phi-1.5) reaches 83.6 cIoU on RefCOCO val for referring expression segmentation, the paper's headline sentence-based RES result.",
+  "table_ref": "Table 4 (RefCOCO, val column, MVP-LM row)",
+  "dataset": "RefCOCO (val split)"
+ },
+ "release": "unknown",
+ "code_links": [
+  "https://github.com/xiangwentao666/MVP-LM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 32,
+  "disk_gb": 500,
+  "ref_minutes": 4320,
+  "gpu_speedup": 50,
+  "basis": "The metric comes only from the fully trained MVP-LM, which requires LLaVA-style two-stage training (Stage 2: 80k iters at batch 64, 1024x1024, joint COCO-Panoptic + RefCOCO + O365 + GoldG across ~2.7M samples) with a VLLM, Swin-B and multi-granularity decoder, so no number can be obtained without a multi-GPU-scale training run; on an 8-core/16 GB CPU laptop this would never finish in the allotted hours."
+ },
+ "blockers": [
+  "Requires full multi-dataset joint training (COCO-Panoptic, RefCOCO, O365 1.7M, GoldG 770K) at 1024x1024 for 80k iterations, far beyond a single laptop CPU",
+  "O365 + GoldG + CC3M datasets total hundreds of GB of images and annotations",
+  "No released checkpoints given; code promised only as 'will be available', so configs/weights/reproduction details are unverified",
+  "Training Phi-1.5 + Swin-B + OpenSeeD-style decoder realistically needs multiple high-VRAM GPUs"
+ ],
+ "suitable": false,
+ "id": "2507.16213",
+ "title": "Advancing Visual Large Language Model for Multi-granular Versatile Perception",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

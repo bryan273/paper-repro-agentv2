@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "MSE of 56.90 for gaze redirection on the Columbia Gaze dataset (Table 3, row 'Ours', column 'MSE')",
+  "table_ref": "Table 3",
+  "dataset": "Columbia Gaze"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Training a WGAN-GP with encoder, controller, decoder, and multiple losses (perceptual, distillation, cycle) on 5,880 images requires GPU; estimated 2 days on a mid GPU, ~40 days on CPU."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires training a complex GAN from scratch",
+  "Needs GPU for reasonable training time"
+ ],
+ "suitable": false,
+ "id": "2010.04513",
+ "title": "Controllable Continuous Gaze Redirection",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

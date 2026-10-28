@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "FID score of 58.43 for Cali-Sketch on the CUHK face sketch dataset (Table 1, 'Ours' row, FID column)",
+  "table_ref": "Table 1",
+  "dataset": "CUHK Face Sketch Database (CUFS)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 12,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Training two GANs (SCN and ISN) from scratch on 256x256 images for many epochs, plus generating four styles of human-like sketches, is a multi-day GPU task; no code is provided so the entire pipeline must be reimplemented."
+ },
+ "blockers": [
+  "No code or pretrained models released",
+  "Requires training two GANs from scratch (SCN and ISN) with a three-stage training strategy",
+  "Requires generating four different styles of human-like sketches using external methods (XDoG, Photoshop, photo-sketch, FDoG)",
+  "Training on CPU is infeasible within a few hours; needs a GPU"
+ ],
+ "suitable": false,
+ "id": "1911.00426",
+ "title": "Cali-Sketch: Stroke Calibration and Completion for High-Quality Face Image Generation from Human-Like Sketches",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

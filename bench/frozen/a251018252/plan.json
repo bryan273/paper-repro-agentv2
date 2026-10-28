@@ -1,0 +1,228 @@
+{
+ "approach": "Because no author code or bundled data exists, this is a paper-only reimplementation: acquire cs-training.csv via the Kaggle API (or manual placement after accepting rules), clean to the six listed predictors with the stated bounds, and reproduce the stratified 70/30 split. Implement ADASYN directly with k=5, adaptive majority-neighbor weights, and SMOTE-style interpolation, applied only to scaled training data; inverse-transform synthetic rows, round the three count variables, then re-scale. Train the fixed XGBoost configuration for baseline and ADASYN 1x, compute AUC/Gini on the untouched 29,173-row test set, and run a paired 1,000-iteration bootstrap for delta-AUC/p-value. The default entrypoint targets C1/C2 with a Table-1-matched N=72,817 run and also records an exact-doubling N=72,880 variant to cover the paper's textual discrepancy.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Install pandas, numpy, scikit-learn, xgboost, requests, tqdm; no local imports.",
+   "requirement_ids": []
+  },
+  {
+   "path": "config.py",
+   "purpose": "Central config for paths, feature list, cleaning bounds, split, ADASYN targets, XGBoost params, bootstrap settings, and output paths.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "data/__init__.py",
+   "purpose": "Package marker for data modules.",
+   "requirement_ids": []
+  },
+  {
+   "path": "data/download_gmsc.py",
+   "purpose": "Check for data/raw/cs-training.csv and, if missing, download the Kaggle GiveMeSomeCredit competition file using KAGGLE_USERNAME/KAGGLE_KEY or ~/.kaggle/kaggle.json.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "data/preprocess.py",
+   "purpose": "Load raw CSV, select target and six predictors, drop missing rows, apply domain bounds, audit cleaned N/default rate, create the stratified 70/30 split, and fit/apply StandardScaler on training data only.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R6",
+    "R7",
+    "R8",
+    "R15"
+   ]
+  },
+  {
+   "path": "adasyn_impl.py",
+   "purpose": "Custom ADASYN implementation: kNN majority-neighbor ratios, normalized weights, exact synthetic budget, SMOTE interpolation, and post-generation inverse-transform/rounding of discrete count columns.",
+   "requirement_ids": [
+    "R5",
+    "R9",
+    "R10",
+    "R15"
+   ]
+  },
+  {
+   "path": "modeling.py",
+   "purpose": "Train the fixed XGBoost classifier, compute dynamic scale_pos_weight from final training labels, and evaluate held-out test probabilities with AUC and Gini.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "metrics.py",
+   "purpose": "Compute AUC-ROC, Gini=2*AUC-1, paired 1,000-iteration bootstrap delta-AUC/delta-Gini, percentile 95% CI, and p-value as proportion of delta <= 0.",
+   "requirement_ids": [
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "smoke_data.py",
+   "purpose": "Generate a tiny in-memory or CSV synthetic dataset with the same schema for a no-Kaggle smoke test of the full data flow.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single orchestration entrypoint: download/load data, preprocess, split/scale, run baseline and ADASYN 1x variants, optionally run ADASYN 2x/3x, run bootstrap, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "raw_csv": "data/raw/cs-training.csv (Kaggle GiveMeSomeCredit; R1)",
+  "target_col": "SeriousDlqin2yrs (R2)",
+  "positive_label": 1,
+  "id_cols_to_drop": [
+   "id"
+  ],
+  "predictors": [
+   "age",
+   "MonthlyIncome",
+   "DebtRatio",
+   "NumberOfDependents",
+   "NumberOfOpenCreditLinesAndLoans",
+   "NumberRealEstateLoansOrLines"
+  ],
+  "discrete_predictors": [
+   "NumberOfDependents",
+   "NumberOfOpenCreditLinesAndLoans",
+   "NumberRealEstateLoansOrLines"
+  ],
+  "missing_policy": "drop rows with any missing target or predictor before capping (A1)",
+  "cleaning_bounds": {
+   "age": "[21, 85] (R4)",
+   "MonthlyIncome": "[0, 25000] (R4)",
+   "DebtRatio": "[0, 1.0] (A2; if cleaned N differs from 97243 by >50, audit candidates [1.0, 1.5, 2.0, 3.0, 5.0, 10.0] and record chosen cap)",
+   "NumberOfDependents": "[0, 10] (A2)",
+   "NumberOfOpenCreditLinesAndLoans": "[0, 50] (A2)",
+   "NumberRealEstateLoansOrLines": "[0, 20] (A2)"
+  },
+  "outlier_policy": "drop rows outside inclusive bounds; do not clip kept rows (A1/A2)",
+  "expected_clean_n": 97243,
+  "expected_default_rate": 0.0707,
+  "split": {
+   "test_size": "0.30 (R6)",
+   "stratify": "SeriousDlqin2yrs (R6)",
+   "random_state": "42 (R15/A11)",
+   "expected_train": "n=68070, positives=4810 (R6)",
+   "expected_test": "n=29173, positives=2061 (R6)"
+  },
+  "scaler": "StandardScaler fit on training set only; transform train and test (R7)",
+  "adasyn": {
+   "k_neighbors": "5 (A4)",
+   "run_on": "scaled training features only; test set never augmented (R8/A6)",
+   "target_minority_table1_match": 9557,
+   "synthetic_count_table1_match": 4747,
+   "target_minority_exact_double": 9620,
+   "synthetic_count_exact_double": 4810,
+   "postprocess": "inverse_transform synthetic rows, round discrete predictors to nearest integer, clip to cleaning bounds, transform back with training scaler (R5/A6)",
+   "random_state": "42 (R15)"
+  },
+  "xgboost": {
+   "max_depth": "6 (R11)",
+   "learning_rate": "0.1 (R11)",
+   "n_estimators": "100 (R11)",
+   "eval_metric": "auc (R11)",
+   "objective": "binary:logistic (A7)",
+   "scale_pos_weight": "n_majority/n_minority computed from final training labels after augmentation (R12/A8)",
+   "random_state": "42 (R15)",
+   "n_jobs": "default (A7)",
+   "tree_method": "default/auto (A7)"
+  },
+  "metrics": {
+   "auc": "roc_auc_score(y_test, predict_proba[:,1]) (R13/A10)",
+   "gini": "2*AUC - 1, no clipping (R13/A12)",
+   "bootstrap_iterations": "1000 (R14)",
+   "bootstrap_unit": "test-set rows with replacement; same resample for baseline and ADASYN (A9)",
+   "p_value": "proportion of bootstrap delta-AUC <= 0; no +1 correction (A9)",
+   "ci": "percentile 95% [2.5, 97.5] of bootstrap delta-AUC/delta-Gini (R14)"
+  },
+  "optional_extra_scenarios": {
+   "adasyn_2x_target_minority": "13995 (Table 1 N_train=77255)",
+   "adasyn_3x_target_minority": "18745 (Table 1 N_train=82005)"
+  },
+  "claim_tolerance": {
+   "type": "absolute",
+   "value": 0.01,
+   "target_claim": "C1",
+   "target_auc": 0.6778,
+   "target_gini": 0.3557
+  },
+  "outputs": {
+   "metrics": "results/metrics.json",
+   "smoke_metrics": "results/smoke_metrics.json"
+  }
+ },
+ "steps": [
+  "Install dependencies with `python -m pip install -r requirements.txt` (pandas, numpy, scikit-learn, xgboost, requests, tqdm).",
+  "Acquire the real dataset by running `python data/download_gmsc.py`; if data/raw/cs-training.csv is absent, use KAGGLE_USERNAME/KAGGLE_KEY or ~/.kaggle/kaggle.json to download the GiveMeSomeCredit cs-training.csv. If Kaggle returns 403, stop and report that the competition rules must be accepted and the file placed manually at data/raw/cs-training.csv.",
+  "Run `python data/preprocess.py --audit` to load cs-training.csv, select SeriousDlqin2yrs plus exactly the six predictors, drop rows with any missing value, apply the configured bounds, and print raw N, cleaned N, default rate, and missing counts.",
+  "Verify the cleaned dataset is N=97,243 with default rate ~7.07%; if N differs by more than 50, run the DebtRatio cap audit over the configured candidates and record the chosen cap in results/metrics.json before proceeding.",
+  "Create the stratified split with sklearn train_test_split(test_size=0.30, stratify=y, random_state=42); assert or print train n=68,070 (4,810 defaults) and test n=29,173 (2,061 defaults).",
+  "Fit StandardScaler on X_train only, transform X_train and X_test, and verify training means are ~0 and standard deviations ~1; keep the scaler for inverse-transform/re-transform of synthetic rows.",
+  "Train the baseline XGBoost with max_depth=6, learning_rate=0.1, n_estimators=100, objective='binary:logistic', eval_metric='auc', random_state=42, and scale_pos_weight=63260/4810; predict test probabilities and compute baseline AUC/Gini.",
+  "Run ADASYN 1x Table-1-matched on scaled X_train to target minority count 9,557 (add 4,747 synthetics); inverse-transform synthetic rows, round the three discrete predictors, clip to bounds, re-transform with the training scaler, then train XGBoost with scale_pos_weight computed from the final augmented labels and evaluate test AUC/Gini.",
+  "Run the exact-doubling ADASYN 1x variant to target minority count 9,620 (add 4,810 synthetics, N_train=72,880) and record its metrics separately as the paper-text variant and its deviation from Table 1's N=72,817.",
+  "Run the paired 1,000-iteration bootstrap on the test set using the same resampled indices for baseline and Table-1-matched ADASYN 1x; compute delta-AUC, delta-Gini, percentile 95% CIs, and p-value = mean(delta-AUC <= 0).",
+  "Optionally run `python reproduce.py --all-scenarios` to train ADASYN 2x and 3x using Table 1 target minority counts 13,995 and 18,745 for C3/C4 checks; this is not required for the C1 headline reproduction.",
+  "Write results/metrics.json with data audit, split counts, baseline metrics, ADASYN 1x Table-1 metrics, exact-doubling metrics, delta-AUC/delta-Gini, bootstrap CI/p-value, and within_tolerance flags against the 0.01 absolute band for C1/C2."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`. This bypasses Kaggle, creates a tiny 400-row synthetic CSV with the same columns and ~7% positives, runs cleaning, a 70/30 stratified split, ADASYN to a small target minority count, XGBoost with n_estimators=5, and 10 bootstrap iterations, then writes results/smoke_metrics.json and asserts finite AUC/Gini and the expected JSON keys.",
+ "intermediate_checks": [
+  "Raw data check: cs-training.csv loads with 150,000 rows and the expected columns including SeriousDlqin2yrs; MonthlyIncome and NumberOfDependents missing counts are printed.",
+  "Cleaned data check: after missing-row removal and bounds, N is close to 97,243, there are exactly six predictors, and the default rate is close to 7.07%; if not, report the DebtRatio cap audit before any training.",
+  "Split check: train has 68,070 rows and 4,810 positives; test has 29,173 rows and 2,061 positives. Do not touch the test set for augmentation.",
+  "Scaling check: StandardScaler is fit only on X_train; transformed training features have mean ~0 and std ~1; test is transformed with the same scaler.",
+  "ADASYN check: synthetic count equals target_minority - 4,810; no NaNs; discrete predictors are integer-valued after rounding; augmented training labels contain exactly the target minority count.",
+  "Model check: feature count is six; baseline scale_pos_weight is ~13.15; ADASYN 1x scale_pos_weight is ~6.62 for N=72,817 and ~6.58 for exact doubling; XGBoost trains without warnings that invalidate the run.",
+  "Sanity baseline: baseline test AUC should be roughly in the 0.65-0.70 range and ADASYN 1x should be near the paper's 0.6778; if far outside, inspect cleaning bounds, missing-row policy, and class-weight computation before accepting results.",
+  "Metrics check: Gini equals 2*AUC-1; bootstrap CI is ordered; p-value is in [0,1]; results/metrics.json contains both C1 and C2 fields plus the exact-doubling deviation record."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup and dependency install: 3-5 min. Data download/audit plus smoke test: 2-4 min. Full C1/C2 run (preprocess, baseline XGBoost, ADASYN 1x Table-1, exact-doubling variant, and 1,000 paired bootstrap iterations): 10-15 min. Optional 2x/3x scenarios add 5-10 min. Total should remain within roughly 20-30 min on CPU."
+}

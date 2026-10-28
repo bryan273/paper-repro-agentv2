@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Tuned SVR-RBF test R2 = 0.723 on California Housing (Table 6 / Table 8 rank 4)",
+  "table_ref": "Table 6 (Final SVR Model Performance) and Table 8 (Comparative Performance)",
+  "dataset": "California Housing (scikit-learn fetch_california_housing, 20,640 block groups)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "basis": "Dataset loads via scikit-learn; SVR is trained on a 3,000-sample subset with a 20-iteration RandomizedSearchCV (60 fits, ~9 s reported) plus 10-fold CV, all CPU-only and small; only the exact pipeline (10 derived features, 3-scaler ColumnTransformer, stratified split, seed 18942018/42) must be re-implemented from the paper text."
+ },
+ "blockers": [
+  "No code or configs released; pipeline must be rebuilt from prose (derived-feature formulas, scaler grouping, top-12 selection, stratified split)",
+  "Exact R2 may drift slightly due to unspecified details (feature-importance weighting, subset sampling order)"
+ ],
+ "suitable": true,
+ "id": "2605.08660",
+ "title": "Optimised Support Vector Regression for California Housing Price Prediction: The Critical Role of Feature Engineering and Hyperparameter Tuning",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

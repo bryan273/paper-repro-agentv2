@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Assessor360 achieves SRCC of 0.9802 on the OIQA dataset (Table 1, row Assessor360, column OIQA SRCC).",
+  "table_ref": "Table 1",
+  "dataset": "OIQA"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TianheWu/Assessor360"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 12,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Training a Swin Transformer base model for 300 epochs on 320 high-resolution ODIs with 15 viewports per image requires GPU acceleration; CPU-only training would take days, and the paper's 10 random splits further increase time."
+ },
+ "blockers": [
+  "Training Assessor360 from scratch requires a GPU; CPU-only training is impractical.",
+  "OIQA dataset consists of very high-resolution images (up to 13320x6660), requiring significant disk space and memory for preprocessing.",
+  "The paper reports median results over 10 random train-test splits, multiplying the training time by 10."
+ ],
+ "suitable": false,
+ "id": "2305.10983",
+ "title": "Assessor360: Multi-sequence Network for Blind Omnidirectional Image Quality Assessment",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "IDOL achieves MSE 0.008, PSNR 21.673, LPIPS 1.138 on the HuGe100K test set (full model).",
+  "table_ref": "Table 2",
+  "dataset": "HuGe100K"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": null,
+  "basis": "Training IDOL requires 32 H100 GPUs for ~1 day; even inference needs a GPU with large VRAM (Sapiens-1B encoder + 0.5B transformer)."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "HuGe100K dataset not publicly available",
+  "Training requires 32 H100 GPUs",
+  "Inference requires GPU with >40GB VRAM"
+ ],
+ "suitable": false,
+ "id": "2412.14963",
+ "title": "IDOL: Instant Photorealistic 3D Human Creation from a Single Image",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

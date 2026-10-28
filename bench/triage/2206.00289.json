@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MORE(CNN) achieves B3 F1 = 58.4 on the FewRel test set (16 relations, 1600 instances)",
+  "table_ref": "Table 1, row MORE(CNN), column F1",
+  "dataset": "FewRel (64 train relations, 16 test relations with 1600 instances)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/RenzeLou/MORE"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 180,
+  "gpu_speedup": 3,
+  "basis": "CNN encoder training on ~64 relations with RLL + VAT plus K-Means clustering is CPU-feasible, but the repo must be adapted to the paper's FewRel split and the exact F1 depends on clustering hyperparameters, so a clean re-run takes a few hours."
+ },
+ "blockers": [
+  "Repo may not include the exact FewRel split (64/16 relations) or the K-Means clustering script used for the reported F1",
+  "No pretrained checkpoints or configs for the CNN variant are guaranteed to be released",
+  "Reproducing the exact B3 F1 requires matching batch sampling, RLL hyperparameters (alpha_P=0.8, alpha_N=1.2, Tn=10) and clustering seed"
+ ],
+ "suitable": true,
+ "id": "2206.00289",
+ "title": "MORE: A Metric Learning Based Framework for Open-domain Relation Extraction",
+ "pages": 5,
+ "model": "DeepSeek-V4.1-Flash"
+}

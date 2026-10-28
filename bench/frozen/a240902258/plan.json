@@ -1,0 +1,133 @@
+{
+ "approach": "Use the authors' repository as the reference implementation, but make the entrypoint Python-only because the sandbox exposes no R runtime and only Python, pip, and git can be executed. For the matched claim C1/C2, the exact target is deterministic: reconstruct the theoretical scatter functionals V1=diag(I2,0) and V2=diag(I2, epsilon*diag(2,0)) with epsilon=20/1000, form V1^+ V2 using a spectral Moore-Penrose pseudo-inverse, and report the sorted eigenvalues. The simulation with n=1000 and exactly 20 outliers is generated only as a sample-level sanity check and optional plotting input; the exact 1,1,0,0 result comes from the theoretical matrices and is seed-independent. If Rscript happens to be available, reproduce.py will also invoke the authors' illustrative-example script for artifact generation, but it will never depend on R for results/metrics.json.",
+ "files": [
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for all constants: n=1000, n_outliers=20, p=4, W1, W2, epsilon=0.02, seed, pseudo-inverse rank tolerance, expected eigenvalues, tolerance, and file paths.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R5",
+    "R8",
+    "A1",
+    "A2",
+    "A3",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "A11"
+   ]
+  },
+  {
+   "path": "src/ginv.py",
+   "purpose": "Implement the Moore-Penrose pseudo-inverse GINV computation: spectral decomposition of V1, truncate zero eigenvalues, build V1^+, solve the non-symmetric EVP for V1^+ V2, sort eigenvalues descending, and document the null(V1)-null(V2) limitation.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R6",
+    "R7",
+    "R8",
+    "A7",
+    "A8",
+    "A10",
+    "A11"
+   ]
+  },
+  {
+   "path": "src/simulate.py",
+   "purpose": "Generate the Section 2.3 Gaussian mixture with exactly 20 outlier rows out of n=1000 and compute sample scatter matrices for optional sanity checks and plots.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R5",
+    "R9",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A9",
+    "A12"
+   ]
+  },
+  {
+   "path": "src/rank_criteria.py",
+   "purpose": "Optional helper implementing the paper's relative SVD rank criteria for C5/C6-compatible diagnostics; not required for the matched C1/C2 metric but documented as an equivalent R-to-Python mapping.",
+   "requirement_ids": [
+    "R12",
+    "A7"
+   ]
+  },
+  {
+   "path": "src/author_runner.py",
+   "purpose": "Locate the cloned repository and, only if Rscript exists, invoke the authors' R illustrative-example script; otherwise log that R is unavailable and continue with the Python equivalent for metrics.",
+   "requirement_ids": [
+    "R11"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin orchestration entrypoint: parse --smoke, load config, compute theoretical GINV eigenvalues for C1/C2, optionally run the author R script, run sanity checks, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R6",
+    "R7",
+    "R8",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "n": "1000 (paper, Sec 2.3 / R4)",
+  "n_outliers": "20 (paper, Sec 2.3 / R4 / A3)",
+  "p": "4 (A1; W1 is 2x2 and W2 is 2x2)",
+  "W1": "[[1,0],[0,1]] (paper, Sec 2.3 / R3)",
+  "W2": "[[2,0],[0,0]] (paper, Sec 2.3 / R3)",
+  "epsilon": "20/1000 = 0.02 (A5; implied by exactly 20 outliers)",
+  "simulation_mean": "zeros(p) (paper model has zero mean / A12)",
+  "seed": "12345 (A4; fixed seed for optional simulation only)",
+  "use_theoretical_scatter": "true for C1/C2 metrics (A2 / R5)",
+  "V1_theoretical": "diag(W1, 0) = diag(1,1,0,0) (paper, Sec 2.3 / R5)",
+  "V2_theoretical": "diag(W1, epsilon*W2) = diag(1,1,0.04,0) (paper, Sec 2.3 / R5 / A5)",
+  "ginv_operator": "V1^+ V2, with V1^+ computed from spectral decomposition of V1 (R1/R2/A10)",
+  "pinv_rank_tolerance": "1e-10 * max(eigenvalue_V1) for sample matrices; exact rank 2 for theoretical V1 (A7)",
+  "eigenvalue_order": "descending (paper defines D decreasing / A8)",
+  "expected_eigenvalues": "[1.0, 1.0, 0.0, 0.0] (C1/C2; paper Example 1)",
+  "C1_target": "rho1 = rho2 = 1.0 (C1)",
+  "C2_target": "rho3 = rho4 = 0.0 (C2)",
+  "tolerance": "relative 0.1 for finite target rho=1; absolute 0.1 for zero companion eigenvalues (claim contract)",
+  "R_script": "code/ICS_PSD_illustrative_example.R (repo entrypoint)",
+  "R_optional": "true; run only if Rscript is on PATH (R11; blocker documented)",
+  "metrics_path": "results/metrics.json",
+  "figures_dir": "results/figures"
+ },
+ "steps": [
+  "Clone or verify the authors' repository at https://github.com/AuroreAA/ICS_PSD_Replication into ./repo; confirm code/ICS_PSD_illustrative_example.R, code/ICS_PSD_illustrative_example_G.R, code/utilities.R, and renv.lock exist.",
+  "Create results/ and results/figures/; keep all generated outputs out of the cloned repository.",
+  "Implement src/config.py with the exact constants from the claim contract, especially n=1000, n_outliers=20, p=4, W1=I2, W2=diag(2,0), and epsilon=20/1000.",
+  "Implement src/ginv.py: (a) eigendecompose V1 with numpy.linalg.eigh; (b) retain eigenvalues greater than the configured rank tolerance; (c) build V1^+ = U diag(1/lambda_r) U^T; (d) form M = V1^+ @ V2; (e) use numpy.linalg.eig for the non-symmetric EVP; (f) discard numerical imaginary parts smaller than 1e-12 and sort real eigenvalues descending.",
+  "Implement src/simulate.py: create an n x p sample with first 980 rows from N(0, diag(W1,0)) and last 20 rows from N(0, diag(W1, 2, 0)); use the fixed seed; assert exactly 20 outliers and shape (1000,4).",
+  "Implement src/rank_criteria.py as an optional diagnostic only: compute SVD singular values and relative rank criteria lambda_i/lambda_1 < sqrt(nu), < max(n,p)*nu, and cumulative squared eigenvalues < 0.99; do not use it for the C1/C2 pass/fail.",
+  "Implement src/author_runner.py: use shutil.which('Rscript'); if found, run the authors' illustrative-example R script from the repository root and capture stdout/stderr; if not found, record 'R unavailable; Python equivalent used' in the log and continue.",
+  "Implement reproduce.py: load config, build theoretical V1 and V2, compute GINV eigenvalues, assert four eigenvalues, assert sorted descending, assert ranks rank(V1)=2 and rank(V2)=3, and compare to expected [1,1,0,0] with the configured C1/C2 tolerances.",
+  "In reproduce.py, compute pass_C1 = abs(rho1 - 1.0) <= 0.1 and abs(rho2 - 1.0) <= 0.1; compute pass_C2 = abs(rho3) <= 0.1 and abs(rho4) <= 0.1; overall pass is pass_C1 and pass_C2.",
+  "Write results/metrics.json containing claim_id, status, method, V1, V2, V1_pinv, V1_pinv_V2, eigenvalues, expected_eigenvalues, tolerance, pass flags, R_script_status, and the null-space limitation note from Remark 1.",
+  "Run the smoke mode first, then the full entrypoint: `python reproduce.py --smoke` followed by `python reproduce.py`.",
+  "Open results/metrics.json and verify the computed eigenvalues are numerically [1,1,0,0] (or within machine precision) and that the overall pass flag is true."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`. This constructs only the 4x4 theoretical V1 and V2, prints their shapes, ranks, V1^+ V2 matrix, and eigenvalues, and asserts that the sorted eigenvalues match [1,1,0,0] within 1e-12. It exercises the exact data flow used for C1/C2 without generating the full simulation.",
+ "intermediate_checks": [
+  "Assert V1 shape is (4,4), V2 shape is (4,4), and both are symmetric.",
+  "Assert rank(V1) = 2 and rank(V2) = 3 for the theoretical matrices.",
+  "Assert V1^+ V2 equals diag(1,1,0,0) up to machine precision.",
+  "Assert the four GINV eigenvalues are real up to 1e-12 and sorted in descending order.",
+  "Check that the first two eigenvalues are 1 and the last two are 0 within machine precision before applying the 0.1 tolerance.",
+  "For the optional simulation, assert the generated sample has shape (1000,4), exactly 20 outlier rows, and no NaN values.",
+  "Check that Rscript is either found or explicitly reported as unavailable; the metric must not depend on R.",
+  "Confirm metrics.json contains both C1 and C2 companion values, not only a single aggregate number."
+ ],
+ "entrypoint": "python reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total budget ~15 minutes. Setup and repository inspection: 4 minutes. Implement config, GINV, simulation, and reproduce.py: 4 minutes. Smoke test: 1 minute. Full run and metrics.json inspection: 1 minute. Buffer for environment/JSON checks and optional author R invocation attempt: 5 minutes. The numerical computation itself is under 1 second; the budget is dominated by setup and verification."
+}

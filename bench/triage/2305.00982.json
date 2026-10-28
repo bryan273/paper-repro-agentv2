@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "TPD COPOD achieves F1-score of 0.930 on the SWaT dataset",
+  "table_ref": "Table I",
+  "dataset": "SWaT"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The method is simple (ECOD + two COPOD models) and runs in seconds on CPU, but SWaT data requires a request form and approval, and no code is provided, so implementation and data acquisition add significant time."
+ },
+ "blockers": [
+  "SWaT dataset requires a signed request form and approval from iTrust, not freely downloadable",
+  "No code or implementation details (e.g., exact preprocessing, window size) are provided"
+ ],
+ "suitable": false,
+ "id": "2305.00982",
+ "title": "Two-phase Dual COPOD Method for Anomaly Detection in Industrial Control System",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

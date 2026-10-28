@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SPINE attains the highest mean accuracy (0.9110) across 17 benchmark datasets at matched budget under stratified 10-fold CV",
+  "table_ref": "Table 3 / Section 3.2 (mean accuracy over 17 datasets)",
+  "dataset": "17 KEEL/benchmark datasets (e.g., Iris, Wine, ... up to Letter, 20,000 obs)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/AdrienGuille/GrowingNeuralGas"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "The only linked repo is the GNG baseline, not SPINE; reproducing the headline mean accuracy requires reimplementing the full 5-phase SPINE method plus 7 baselines and running 10-fold CV over 17 datasets (up to 20k points), which is many CPU-hours of custom code."
+ },
+ "blockers": [
+  "SPINE implementation not released (only GNG baseline repo linked)",
+  "must reimplement 7 baselines (RSP3, SPOT, LVQ3, GLVQ, GNG, KMeans, Random) and the full multi-phase method",
+  "17 datasets x 10 folds x 8 methods is a large experimental campaign"
+ ],
+ "suitable": false,
+ "id": "2609.16170",
+ "title": "Skeletal Prototypes on Iterative Nerve Expansions",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

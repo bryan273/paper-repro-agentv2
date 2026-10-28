@@ -1,0 +1,204 @@
+{
+ "approach": "No author implementation is available, so rebuild the Table 1 computation in Python from the paper. Download the WWGbook autism data, apply the known age weights by multiplying Y, X and Z by 1/age, and fit the child-level random-intercept/random-age-slope LMM by REML with expected information. For each covariance parameter, profile the remaining parameters over the extended positive-definite marginal-covariance set, evaluate the modified profile-score statistic, and invert it by outward secant search. Compute all four intervals to cross-check C1-C4 but write the C1 psi2 endpoints as the primary metric; validate against the reported REML point estimates and the reported endpoints before the final run.",
+ "files": [
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker for src modules.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Central paths, model specification, optimizer/root-search tolerances, and Table 1 validation values.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Download/extract the WWGbook CRAN package, load the autism data, validate 610 rows/158 children, build age weights and the transformed Y, X and Z matrices.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "src/lmm.py",
+   "purpose": "Build the full marginal covariance, check positive definiteness, evaluate REML log-likelihood, score and expected information; fit the REML estimate using a trust-region optimizer with expected information as the Hessian proxy.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R4",
+    "R8",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/profile.py",
+   "purpose": "For a fixed covariance parameter, maximize REML over the remaining parameters on the extended positive-definite set and compute the modified profile-score statistic T.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7"
+   ]
+  },
+  {
+   "path": "src/intervals.py",
+   "purpose": "Invert T for each psi parameter by warm-started outward secant/regula-falsi search, handling covariance versus variance ranges and recording runtimes.",
+   "requirement_ids": [
+    "R7",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "smoke_test.py",
+   "purpose": "Tiny data-flow test on a subset of children: load data, fit REML, evaluate one profile statistic, and assert finite output and positive-definite covariance.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R5"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: load data, fit REML, compute all four intervals, validate C1, and write results/metrics.json.",
+   "requirement_ids": [
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "paper": "arXiv 2610.04181 (paper_only route; authors repository koekvall/reconf-suppl is unavailable)",
+  "target_claim": "C1: psi2 95% profile-score interval lower endpoint (-34.566, -18.401)",
+  "data": {
+   "cran_package": "WWGbook",
+   "cran_url_templates": [
+    "https://cran.r-project.org/src/contrib/WWGbook_1.0.2.tar.gz",
+    "https://cran.r-project.org/src/contrib/Archive/WWGbook/WWGbook_1.0.2.tar.gz",
+    "https://cran.r-project.org/src/contrib/WWGbook_1.0.1.tar.gz",
+    "https://cran.r-project.org/src/contrib/Archive/WWGbook/WWGbook_1.0.1.tar.gz"
+   ],
+   "rdata_readers": [
+    "pyreadr",
+    "rdata fallback"
+   ],
+   "dataset_object": "autism",
+   "outcome": "vsae",
+   "age": "age",
+   "group": "sicdegp",
+   "n_children_expected": "158 (paper, R10)",
+   "n_obs_expected": "610 (paper, R10)",
+   "age_values_expected": "2,3,5,9,13 years (paper Sec 5.1 / A1)",
+   "age_centering": "raw age in years, origin age=0 (A1, high risk)",
+   "missing_data": "use all observed rows, no imputation (A6)",
+   "group_coding": "treatment coding, first sorted group level as baseline (A2)"
+  },
+  "model": {
+   "fixed_effects": "Eq (13) as printed: intercept + age + age^2 + G dummies + age:G + age^2:G; if Eq (13) is unavailable, use the WWGbook autism convention vsae ~ age + age^2 + sicdegp + age:sicdegp + age^2:sicdegp with random (age|childid)",
+   "random_effects": "child-specific random intercept and random slope in age; Psi = [[psi1, psi2], [psi2, psi3]] (R8)",
+   "error": "psi4 I on the transformed scale; original error variance proportional to age^2 (R1, R9)",
+   "weights": "w_it = age_it^-2; multiply Y, X and Z by sqrt(w_it)=1/age_it (R9, A7)",
+   "likelihood": "restricted maximum likelihood (REML) (R2)",
+   "covariance_derivatives": "A1 = blockdiag(ones), A2 = blockdiag(ab'+ba') with a=1/age and b=1, A3 = blockdiag(ones), A4 = identity on the transformed scale (R1, R9)"
+  },
+  "reml_fit": {
+   "optimizer": "custom trust-region with expected information as Hessian proxy; fallback to scipy L-BFGS-B with multi-start if trust-region fails (R11, A4)",
+   "gradient_tolerance": "1e-8 (A4)",
+   "max_iterations": "500 (A4)",
+   "multi_start": "diagonal/moment starts plus small negative covariance starts; do not start from reported Table 1 endpoints (A8)",
+   "pd_check": "Cholesky of the full marginal covariance Sigma(psi) must succeed (A9)"
+  },
+  "profile": {
+   "nuisance_set": "extended set: maximize over all remaining psi with Sigma_i(psi) positive definite for every child; do not impose PSD on Psi itself (R5, A9)",
+   "nuisance_method": "exact restricted-likelihood profiling over the extended slice; one-step approximation only as documented fallback (R6, A3)",
+   "warm_start": "true; use previous slice optimum as start for next candidate (R12)",
+   "nuisance_tolerance": "1e-8 (A4)"
+  },
+  "test_statistic": {
+   "score": "S_a = -0.5 tr(P A_a) + 0.5 r' Sigma^{-1} A_a Sigma^{-1} r with P = Sigma^{-1} - Sigma^{-1}X(X'Sigma^{-1}X)^{-1}X'Sigma^{-1} (R3, R4)",
+   "expected_information": "I_ab = 0.5 tr(P A_a P A_b); do not use observed information (R3, R4)",
+   "T": "T_j(c) = S_j(c, eta_hat)^2 * (I(c, eta_hat)^{-1})_{jj}, where I is the expected REML information matrix at the profile nuisance optimum (R3, R4)",
+   "critical_value": "chi2.ppf(0.95, 1) = 3.841458820694124 (R7)",
+   "nominal_coverage": "0.95 (paper)"
+  },
+  "interval_search": {
+   "ranges": {
+    "psi1": "[0, +infinity) (variance, R7)",
+    "psi2": "(-infinity, +infinity) (covariance, R7)",
+    "psi3": "[0, +infinity) (variance, R7)",
+    "psi4": "[0, +infinity) (variance, R7)"
+   },
+   "method": "outward search from REML estimate; warm-started secant/regula falsi with bisection safeguard (R12, A5)",
+   "initial_step": "0.25 * max(abs(psi_hat_j), 1) (A5)",
+   "root_tolerance_T": "1e-6 (A5)",
+   "root_tolerance_parameter": "1e-6 (A5)",
+   "max_evaluations": "100 (A5)"
+  },
+  "validation": {
+   "table1_point_estimates": {
+    "psi1": 46.089,
+    "psi2": -24.727,
+    "psi3": 13.993,
+    "psi4": 2.521
+   },
+   "table1_profile_score_intervals": {
+    "psi1": [
+     31.465,
+     68.464
+    ],
+    "psi2": [
+     -34.566,
+     -18.401
+    ],
+    "psi3": [
+     10.941,
+     18.759
+    ],
+    "psi4": [
+     2.176,
+     2.994
+    ]
+   },
+   "point_estimate_tolerance": "abs error <= 0.05 for each REML estimate; if larger, diagnose fixed-effect specification, age origin, group coding and weights before proceeding",
+   "endpoint_tolerance_C1": "10% relative error on each endpoint's absolute magnitude (contract tolerance)"
+  },
+  "runtime": {
+   "reported_reconf_seconds": "0.5 s for four intervals (paper C5; not the target)",
+   "measure": "record wall time for the four profile-score intervals only"
+  }
+ },
+ "steps": [
+  "Create directories results/ and src/. Install dependencies with `python -m pip install --quiet pyreadr rdata requests numpy scipy`.",
+  "Implement src/config.py with the constants above, then implement src/data.py. Download the WWGbook source tarball using requests, extract with tarfile, locate the autism .rda/.RData file, and load it with pyreadr (fallback to rdata). Convert to a pandas DataFrame, validate 610 rows and 158 unique child IDs, and cache data/autism.csv.",
+  "Build the transformed design in src/data.py: sort by childid and age; create the Eq (13) fixed-effect matrix X (intercept, age, age^2, treatment-coded group dummies, age-by-group, age^2-by-group); set Z=[1, age] per child; multiply Y, every X column and both Z columns by sqrt(w)=1/age.",
+  "Implement src/lmm.py: assemble the 610x610 block-diagonal Sigma(psi)=Z Psi Z' + psi4 I from the transformed rows; implement a positive-definite check by Cholesky; implement REML log-likelihood, analytic score S, and expected information I_ab=0.5 tr(P A_a P A_b) using full 610x610 matrices.",
+  "Implement the REML fit in src/lmm.py using a custom trust-region optimizer with gradient=-S, Hessian=I and backtracking on objective increase or non-positive-definite Sigma. Use diagonal/moment multi-starts and fallback L-BFGS-B. Verify the fitted point estimates match Table 1 (46.089, -24.727, 13.993, 2.521) within 0.05; if not, diagnose age origin and fixed-effect design against Eq (13) before continuing.",
+  "Implement src/profile.py: for target parameter j and candidate c, fix psi_j=c, maximize REML over the other three parameters on the extended set where full Sigma is positive definite. Use warm starts, the same expected-information trust-region, and return eta_hat, S_j, I, and T_j(c)=S_j^2*(I^{-1})_{jj}.",
+  "Write validation checks: T at the REML estimate should be near zero; T at the reported psi2 endpoints -34.566 and -18.401 should be close to 3.84146. If the endpoints give T far from 3.84, check the weight transform, expected-information formula, extended-set handling and fixed effects.",
+  "Implement src/intervals.py: for each psi parameter, start at the REML estimate, step outward in the allowed range, bracket the first point where T>3.84146, then refine with warm-started secant/regula falsi and bisection safeguards until |T-q|<1e-6 or |c-c'|<1e-6. Record each interval and wall time.",
+  "Write smoke_test.py: load the full data, select about 30 children including every group level, fit REML on this subset, evaluate one T at psi2_hat-1, and assert finite T, positive-definite covariance and score norm below tolerance.",
+  "Write reproduce.py: run the full pipeline, compute all four intervals, write results/metrics.json with the psi2 interval, both endpoints, absolute/relative errors versus (-34.566,-18.401), the other three intervals, REML point estimates, T values at endpoints, runtimes, and pass/fail flags. Run `python reproduce.py` twice and confirm identical numbers within numerical tolerance."
+ ],
+ "smoke_test": "Run `python smoke_test.py`. It loads the WWGbook autism data, subsets to about 30 children including all expressive-language groups, builds the transformed Y/X/Z, fits the REML model, evaluates one profile statistic T(psi2_hat-1) with nuisance profiling, and asserts finite T, Cholesky success, and score norm <1e-5.",
+ "intermediate_checks": [
+  "Data check: exactly 610 observed rows, 158 unique child IDs, ages subset {2,3,5,9,13}, outcome vsae and group sicdegp present; report missingness before filtering.",
+  "Design check: transformed X has full column rank; each child has two random-effect columns [1/age, 1] after weighting; no zero or non-finite ages.",
+  "Model-spec check: REML point estimates match Table 1: psi1=46.089, psi2=-24.727, psi3=13.993, psi4=2.521 within 0.05 absolute. If not, test raw versus centered age and the Eq (13) fixed-effect terms; do not tune to endpoints.",
+  "Derivative check: analytic REML score matches finite differences of the REML log-likelihood at random interior psi values with relative error <1e-4.",
+  "Information check: expected information matrix is symmetric and positive definite; verify T at the REML estimate is <0.05.",
+  "Strong validation check: evaluate T at the reported psi2 endpoints -34.566 and -18.401; both should be within a few percent of 3.84146. Also check the reported psi1, psi3 and psi4 endpoints.",
+  "Extended-set check: at each nuisance optimum, full Sigma is positive definite (Cholesky succeeds) and the free-parameter score norm is <1e-5; verify Psi itself is allowed to be indefinite when Sigma is positive definite.",
+  "Smoke test must pass before the full run; abort if any Cholesky, optimizer, or profile evaluation fails."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total reference budget 30 min: 5 min environment and CRAN/data download, 3 min smoke test, 10 min full REML fit plus four interval searches (each interval is only a few seconds), 2 min metrics and repeat run, with 10 min reserved for diagnosing any Table 1 point-estimate mismatch. The numerical work itself is seconds; most budget is setup and validation."
+}

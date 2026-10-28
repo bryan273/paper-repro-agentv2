@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Correction-level F1 of BERT-Corrector trained on MCSCSet (80.49%)",
+  "table_ref": "Table 9",
+  "dataset": "MCSCSet"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/yzhihao/MCSCSet"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 720,
+  "gpu_speedup": 20,
+  "basis": "Training BERT-base on 157k samples for 20 epochs with batch size 64 requires GPU; on CPU it would take days, so the target is not feasible on a normal laptop within a few hours."
+ },
+ "blockers": [
+  "Training BERT-base on 157k samples for 20 epochs is computationally heavy and not feasible on CPU within a few hours.",
+  "The paper does not provide training code or pre-trained model weights; only the dataset is released.",
+  "Requires downloading and setting up a Chinese BERT model (e.g., from HuggingFace) and implementing the training pipeline from scratch."
+ ],
+ "suitable": false,
+ "id": "2210.11720",
+ "title": "MCSCSet: A Specialist-annotated Dataset for Medical-domain Chinese Spelling Correction",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

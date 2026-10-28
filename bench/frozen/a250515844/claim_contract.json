@@ -1,0 +1,250 @@
+{
+ "title": "Advancing Tabular Stroke Modelling Through a Novel Hybrid Architecture and Feature-Selection Synergy",
+ "summary": "The paper addresses stroke prediction from a small, highly imbalanced public tabular dataset (4,981 records, ~5% stroke prevalence), arguing that single classifiers and weak preprocessing limit clinical utility. It combines IQR outlier removal, Table-2 label encoding, correlation and Random-Forest feature selection, SMOTE on the training set only, GridSearchCV over ten classifiers, and soft-voting/stacking ensembles. The headline result is a stacking ensemble reported at 97.2% accuracy, 97.15% F1-score, and 99.66% ROC-AUC, versus 91.36% accuracy for the best single model, LightGBM.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The stacking ensemble (Random Forest, XGBoost, LightGBM, and SVC base models with logistic-regression meta-learner) achieves 97.2% accuracy on the stroke test set.",
+   "metric": "accuracy",
+   "dataset": "Full-Filled Brain Stroke Dataset; 4,337 after IQR removal; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 97.2,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Section 3.4 and Discussion (text); Table 11, Proposed Model row = 97.20%",
+   "config_for_value": "Final stack of Random Forest, XGBoost, LightGBM and SVC feeding a logistic-regression meta-learner; SMOTE-balanced training; 10-fold OOF meta-features",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10-30 min",
+   "quote": "the final stack (Random Forest, XGBoost, LightGBM and SVC feeding a logistic meta-learner) achieved 97.2% accuracy",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "The proposed stacking ensemble achieves 97.15% F1-score on the stroke test set.",
+   "metric": "F1-score",
+   "dataset": "Full-Filled Brain Stroke Dataset; 4,337 after IQR removal; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 97.15,
+   "unit": "% F1-score",
+   "higher_is_better": true,
+   "table_ref": "Abstract; Section 3.4; Discussion (text)",
+   "config_for_value": "Same final stack as C1: RF, XGBoost, LightGBM, SVC base models with logistic-regression meta-learner",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10-30 min",
+   "quote": "The proposed model achieved an accuracy rate of 97.2% and an F1-score of 97.15%",
+   "page": 1
+  },
+  {
+   "id": "C3",
+   "statement": "The proposed stacking ensemble achieves 99.66% ROC-AUC on the stroke test set.",
+   "metric": "ROC-AUC",
+   "dataset": "Full-Filled Brain Stroke Dataset; 4,337 after IQR removal; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 99.66,
+   "unit": "% ROC-AUC",
+   "higher_is_better": true,
+   "table_ref": "Section 3.4 (text); Discussion gives 0.9966 ROC-AUC",
+   "config_for_value": "Same final stack as C1: RF, XGBoost, LightGBM, SVC base models with logistic-regression meta-learner",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10-30 min",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C4",
+   "statement": "LightGBM is the strongest single model on the full-feature set, with 91.36% test accuracy.",
+   "metric": "accuracy",
+   "dataset": "Full-Filled Brain Stroke Dataset; full 10 predictors; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 91.36,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 8, row LightGBM, column Accuracy",
+   "config_for_value": "Full 10 features; SMOTE-balanced training; GridSearchCV-selected LightGBM (Table 7: 200 estimators, learning rate 0.2, max depth 7 for full features)",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2-5 min",
+   "quote": "LightGBM algorithm achieved the highest performance, yielding an accuracy of 91.36% and an F1-score of 91.89%",
+   "page": 12
+  },
+  {
+   "id": "C5",
+   "statement": "LightGBM is the strongest single model on the correlation-selected feature set, with 91.24% test accuracy.",
+   "metric": "accuracy",
+   "dataset": "Full-Filled Brain Stroke Dataset; 7 correlation-selected features; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 91.24,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 9, row LightGBM, column Accuracy",
+   "config_for_value": "Correlation-based 7-feature set; SMOTE-balanced training; GridSearchCV-selected LightGBM (200 estimators, learning rate 0.2, max depth 7)",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2-5 min",
+   "quote": "achieved the highest accuracy for LightGBM, which was 91.24%",
+   "page": 13
+  },
+  {
+   "id": "C6",
+   "statement": "LightGBM is the strongest single model on the Random-Forest-selected feature set, with 90.32% test accuracy.",
+   "metric": "accuracy",
+   "dataset": "Full-Filled Brain Stroke Dataset; 7 Random-Forest-selected features; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 90.32,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Table 10, row LightGBM, column Accuracy",
+   "config_for_value": "Random-Forest-based 7-feature set; SMOTE-balanced training; GridSearchCV-selected LightGBM",
+   "reported_spread": null,
+   "est_compute": "CPU, ~2-5 min",
+   "quote": "We obtained the highest accuracy for LightGBM, which was 90.32%",
+   "page": 13
+  },
+  {
+   "id": "C7",
+   "statement": "The stacking ensemble built on Random-Forest-selected features achieves 95.56% test accuracy.",
+   "metric": "accuracy",
+   "dataset": "Full-Filled Brain Stroke Dataset; 7 Random-Forest-selected features; 868-example test set",
+   "split": "independent 20% stratified test set (random_state=42)",
+   "value": 95.56,
+   "unit": "% accuracy",
+   "higher_is_better": true,
+   "table_ref": "Section 3.4 (Random Forest-based feature ensemble text)",
+   "config_for_value": "RF-based 7 features; base models Decision Tree, KNN, Gradient Boosting, Logistic Regression/SVC, and MLP; stacking meta-learner",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10-20 min",
+   "quote": "accuracy: 95.56%, ROC-AUC Score of 98.95%, and F1-score of 95.65%",
+   "page": 13
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "C1 is the paper's headline and the user's target: a CPU-cheap stacking model on ~5k tabular rows. It is not a side ablation; C2/C3 come from the same run, while C4-C7 are weaker baselines or alternate feature sets."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 2.0,
+  "why": "Rule 3: no std is reported for the 97.2% accuracy; accuracy is a bounded score and the test set is 868 examples (<2,000), with the paper printing percent, so the band is ±2.0 absolute percentage points."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use the public Full-Filled Brain Stroke Dataset with 4,981 patient records and 11 columns (10 predictors plus binary stroke target).",
+   "cite": "Section 2.1 Dataset Acquisition; Table 1",
+   "quote": "The dataset contains records of several potential risk factors for stroke and has the target variable stroke",
+   "page": 2
+  },
+  {
+   "id": "R2",
+   "stmt": "Encode categorical variables with the exact integer mapping in Table 2, not scikit-learn's default alphabetical LabelEncoder ordering.",
+   "cite": "Section 2.3.1 Categorical Feature Encoding; Table 2",
+   "quote": "We employed LabelEncoder from the scikit-learn library, which assigns an integer value to each unique category.",
+   "page": 4
+  },
+  {
+   "id": "R3",
+   "stmt": "Remove outliers from numerical features using IQR bounds Q1 - 1.5*IQR and Q3 + 1.5*IQR, reducing the dataset to 4,337 records.",
+   "cite": "Section 2.3.2 Outlier Detection and Removal; Table 3",
+   "quote": "After outlier removal, the dataset was reduced from 4,981 to 4,337 records",
+   "page": 6
+  },
+  {
+   "id": "R4",
+   "stmt": "Create three feature sets: all 10 predictors, 7 correlation-selected features, and 7 Random-Forest-selected features.",
+   "cite": "Section 2.4 Feature Selection method; Tables 4-5",
+   "quote": "Full Features (all 10 predictors), Correlation-based Features (7 features selected via correlation thresholding), and Random Forest-based Features (7 features chosen based on tree-based importance)",
+   "page": 8
+  },
+  {
+   "id": "R5",
+   "stmt": "Split each feature set 80/20 with stratification using random_state=42; the resulting test set has 868 examples.",
+   "cite": "Section 2.5 Dataset Preparation; Table 5",
+   "quote": "Each set was split into training (80%) and testing (20%) using stratified sampling to preserve stroke prevalence",
+   "page": 8
+  },
+  {
+   "id": "R6",
+   "stmt": "Fit StandardScaler on the training set and apply it to numerical features only.",
+   "cite": "Section 2.5.1 Standardization; Equation 11",
+   "quote": "where μ and σ represent the mean and standard deviation of each feature from the training set.",
+   "page": 8
+  },
+  {
+   "id": "R7",
+   "stmt": "Apply SMOTE only to the training data with k=5, balancing classes to 3,312 each, and leave the test set untouched.",
+   "cite": "Section 2.6 Addressing Class Imbalance; Table 6",
+   "quote": "We applied SMOTE to the training data only, ensuring that the test data remained representative of the real-world class distribution.",
+   "page": 8
+  },
+  {
+   "id": "R8",
+   "stmt": "Tune hyperparameters with stratified 5-fold GridSearchCV, optimizing ROC-AUC.",
+   "cite": "Section 2.9.2 Hyperparameter Optimization Using GridSearchCV",
+   "quote": "We conducted comprehensive grid searches utilizing stratified 5-fold cross-validation, focusing on optimizing for ROC-AUC to address class imbalance.",
+   "page": 11
+  },
+  {
+   "id": "R9",
+   "stmt": "The final reported stack must use Random Forest, XGBoost, LightGBM, and SVC as base models with logistic regression as meta-learner.",
+   "cite": "Abstract; Discussion",
+   "quote": "which included Random Forest, XGBoost, LightGBM, and a support-vector classifier, with logistic regression acting as a meta-learner",
+   "page": 1
+  },
+  {
+   "id": "R10",
+   "stmt": "Build stacking meta-features from 10-fold stratified out-of-fold probability predictions to avoid leakage.",
+   "cite": "Section 2.9.3 Voting and Stacking Ensemble Implementation; Equation 38",
+   "quote": "meta-features were built using 10-fold stratified out-of-fold (OOF) predictions to generalize well",
+   "page": 11
+  },
+  {
+   "id": "R11",
+   "stmt": "Use predicted class probabilities, not hard class labels, as the stacking meta-features.",
+   "cite": "Section 2.9.3; Equation 38",
+   "quote": "the out-of-fold (OOF) prediction from model j for instance i",
+   "page": 12
+  },
+  {
+   "id": "R12",
+   "stmt": "Evaluate on the untouched 20% test set with accuracy, precision, recall, F1-score, and ROC-AUC.",
+   "cite": "Section 2.8 Cross-Validation Framework",
+   "quote": "For each algorithm and feature set combination, we evaluated multiple metrics",
+   "page": 11
+  },
+  {
+   "id": "R13",
+   "stmt": "For the final full-feature stack, use the GridSearchCV optimal settings in Table 7 for LightGBM/XGBoost (200 estimators, learning rate 0.2, max depth 7), not the illustrative Section 2.7.2 settings.",
+   "cite": "Section 2.9.2; Table 7",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R14",
+   "stmt": "For SVC use C=1.0, RBF kernel, gamma='scale', class_weight='balanced', and probability=True.",
+   "cite": "Section 2.7.3 Support Vector Classifier",
+   "quote": "Our implementation used C = 1.0, an RBF kernel, gamma = scale (automatically adjusted based on feature variance), and class weight balancing to handle data imbalance.",
+   "page": 10
+  },
+  {
+   "id": "R15",
+   "stmt": "Retain the stated class-imbalance handling in the base models (balanced class weight for RF/LightGBM, scale_pos_weight for XGBoost).",
+   "cite": "Sections 2.7.1-2.7.2",
+   "quote": "a balanced class weight to address the imbalanced distribution of stroke versus non-stroke cases",
+   "page": 9
+  }
+ ],
+ "data": [
+  {
+   "name": "Full-Filled Brain Stroke Dataset (Kaggle)",
+   "how_to_get": "Public Kaggle dataset cited as [12]: https://www.kaggle.com/datasets/zzettrkalpakbal/full-fi-lled-brain-stroke-dataset"
+  }
+ ],
+ "code_links": [],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2505.15844",
+  "kind": "arxiv",
+  "arxiv_id": "2505.15844",
+  "url": "https://arxiv.org/abs/2505.15844",
+  "title": "Advancing Tabular Stroke Modelling Through a Novel Hybrid Architecture and Feature-Selection Synergy",
+  "pages": 17
+ }
+}

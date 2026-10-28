@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "AP-FAE clustering accuracy (ACC) on the BasicMotions dataset (D=6, 4 classes), reported as 0.807 (mean over 50 repetitions)",
+  "table_ref": "Table 2, BasicMotions row, AP-FAE ACC column",
+  "dataset": "BasicMotions (UEA archive, 80 six-channel recordings, 4 classes, 100 time points)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/APFAE-418C/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": 3,
+  "basis": "Tiny dataset (80 curves x 6 channels x 100 points) and a small model (J=20, K=16, r=q=4, MLP width 32), but the protocol is 50 repetitions x 1500 epochs plus 20 K-means restarts, and the anonymous code link must be verified/adapted; CPU-only feasible but slow."
+ },
+ "blockers": [
+  "Anonymous 4open.science repo may be expired or incomplete (no configs/scripts confirmed in text)",
+  "50-repetition protocol multiplies runtime; exact epoch/optimizer settings only in appendix",
+  "Baseline comparison (full Table 2) would require reimplementing FAE, FAEclust, SRC, JPCCA, SrvfRegNet, Funclust, funHDDC"
+ ],
+ "suitable": true,
+ "id": "2609.34207",
+ "title": "Functional Autoencoders for Amplitude-Phase Representation Learning",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

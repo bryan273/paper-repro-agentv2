@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "SynGen enhanced model achieves F1 score of 74.02 on Triplet Extraction for the 14res dataset (Table 1, 'Ours' row, 14res Triplet column).",
+  "table_ref": "Table 1",
+  "dataset": "14res (SemEval-2014 Restaurants, refined by Peng et al. [14])"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 180,
+  "gpu_speedup": 10,
+  "basis": "No code released; reproducing requires reimplementing the full SPAN-BART + SynGen architecture (BART encoder/decoder, GAT syntactic channel, gate mechanism, pointer decoder) and training for 200 epochs on 14res, which the paper reports takes ~1 hour on a 24GB RTX3090 GPU."
+ },
+ "blockers": [
+  "No code or model checkpoints released",
+  "Requires reimplementing a complex dual-channel BART+GAT architecture from scratch",
+  "Training 200 epochs on BART-base is impractical on CPU within a few hours",
+  "Exact data preprocessing (Peng et al. refined triplets) must be reconstructed"
+ ],
+ "suitable": false,
+ "id": "2302.13032",
+ "title": "SynGen: A Syntactic Plug-and-play Module for Generative Aspect-based Sentiment Analysis",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

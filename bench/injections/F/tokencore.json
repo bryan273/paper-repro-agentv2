@@ -1,0 +1,10 @@
+[
+ {
+  "at": "planner->implementer",
+  "type": "false_info",
+  "path": "config.subword_to_word_pooling",
+  "value": "element-wise mean over the subword vectors of the word (paper Eq. 1, R2)",
+  "marker": "INJ-F3",
+  "what": "pooling is mean; the paper says element-wise max"
+ }
+]

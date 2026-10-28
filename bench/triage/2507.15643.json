@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average computational time per sample for Local-DIFFI is 0.293 s (vs 5.955 s for SHAP).",
+  "table_ref": "Section 3, paragraph after Table 1",
+  "dataset": "BlueBikes January 2023 station-level aggregated data"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/elnurisg/anomaly_detection_for_shared_mobility"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Isolation Forest and DIFFI on a one-month station-level dataset are lightweight; the paper reports running on a 6-core i7 laptop with 16 GB RAM, so a few tens of minutes of compute plus data download and setup is realistic."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated (only a GitHub link given, no configs described)",
+  "Requires assembling multiple public data sources (BlueBikes, Meteostat, MBTA, Boston GIS) with non-trivial preprocessing"
+ ],
+ "suitable": true,
+ "id": "2507.15643",
+ "title": "Towards Explainable Anomaly Detection in Shared Mobility Systems",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "WID11 achieves 88.8 accuracy on SST-2 after task-agnostic distillation and fine-tuning",
+  "table_ref": "Table 2, row WID11, column SST-2",
+  "dataset": "SST-2 (GLUE)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/wutaiqiang/WID-NAACL2024"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 40,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 2400,
+  "gpu_speedup": 50,
+  "basis": "The paper reports 64 hours on 8 A100 GPUs for 400k distillation steps; even the 100k-step variant takes 16 hours on 8 A100s, far beyond a CPU-only laptop."
+ },
+ "blockers": [
+  "Requires 8 A100 GPUs for the reported 400k-step distillation; even reduced-step runs need multi-GPU",
+  "Pre-training corpus (Wikipedia + BookCorpus) is large and must be downloaded and preprocessed",
+  "No released distilled checkpoints for WID11; must re-run the full task-agnostic distillation"
+ ],
+ "suitable": false,
+ "id": "2305.09098",
+ "title": "Weight-Inherited Distillation for Task-Agnostic BERT Compression",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,40 @@
+{
+ "route": "paper_only",
+ "why": "No author repository or code link is provided, so there is no released implementation to run or repair. The experiment is nonetheless a small classical NLP pipeline (TF-IDF plus LinearSVC) that can be reimplemented directly from the paper and claim contract on this CPU-only machine.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Author code/implementation: no repository, archive, or code link is provided.",
+  "CrisisBench v1.0 English humanitarian Train/Development/Test split files: described in the paper but no direct URL or checksum is given.",
+  "Exact label mapping and tropical-cyclone subset construction details needed to match C6/C7 exactly."
+ ],
+ "blockers_seen": [
+  "No author code was released or linked.",
+  "The dataset acquisition path is underspecified in the paper; CrisisBench v1.0 must be located manually.",
+  "No GPU is available, but this is not a blocker for sparse TF-IDF and LinearSVC."
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-20 minutes of command time, dominated by obtaining/preparing CrisisBench and fitting a few sparse TF-IDF plus LinearSVC models; the reported vectorization and fitting times are only a few seconds per model.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 3,
+  "ref_minutes": 12,
+  "gpu_speedup": null,
+  "basis": "The target is one sparse word TF-IDF fit on about 70k short texts plus a LinearSVC fit, with reported sub-5-second vectorization/training times; runtime is dominated by dataset download and preparation, not model computation."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "FID score of DCM2IT for multi-domain translation on the Season dataset (quantitative comparison against StarGAN/DosGAN/ComboGAN)",
+  "table_ref": "Table 3/4 (quantitative comparison on Season dataset; exact table number not visible in provided text)",
+  "dataset": "Season (Alps, ~6000 images, 4 domains)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix (only a baseline/data link, not the paper's own code)"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 8,
+  "ram_gb": 16,
+  "disk_gb": 30,
+  "ref_minutes": 4320,
+  "gpu_speedup": 20,
+  "basis": "No official code exists; the full DCM2IT framework (two-stage training: domain-style extractor pre-training + multi-domain disentangled GAN with MMD, AdaIN, LSGAN) must be reimplemented from scratch and trained on ~6000 images at 216x216, which is a multi-hour-to-multi-day GPU training run."
+ },
+ "blockers": [
+  "No official implementation released (only a CycleGAN baseline repo is linked)",
+  "Full method must be reimplemented from the paper text",
+  "GAN training on CPU is impractically slow (many hours to days)",
+  "Season dataset requires scraping/curating from Flickr (original Anoosheh et al. collection)"
+ ],
+ "suitable": false,
+ "id": "1911.00622",
+ "title": "Unsupervised Multi-Domain Multimodal Image-to-Image Translation with Explicit Domain-Constrained Disentanglement",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

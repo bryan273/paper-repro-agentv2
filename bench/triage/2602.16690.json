@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SynthBH achieves empirical power (detection rate) on the Shuttle outlier-detection benchmark comparable to or higher than BH(real) while keeping FDP near α=10% (Figure 1, Shuttle panel)",
+  "table_ref": "Figure 1 (shuttle panel)",
+  "dataset": "Shuttle (UCI/OpenML), n=500 inliers, N=2500 contaminated synthetic samples, m=1000 test points"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Meshiba/synth-bh"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "Shuttle is ~58k rows x 9 features; Isolation Forest (100 trees) plus conformal p-values and SynthBH over 100 random splits is pure CPU sklearn work, a few minutes per split at most."
+ },
+ "blockers": [
+  "Code repo may not include exact configs/scripts for the Shuttle figure; may need to reimplement the trimming + conformal pipeline from Appendix D.1",
+  "100 random splits needed to match reported averages"
+ ],
+ "suitable": true,
+ "id": "2602.16690",
+ "title": "Synthetic-Powered Multiple Testing with FDR Control",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

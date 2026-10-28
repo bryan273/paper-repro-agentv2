@@ -1,0 +1,254 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The exact learning rate used for AG News is not stated; the paper only says it is selected on a validation set from a grid.",
+  "options": [
+   "0.05",
+   "0.1",
+   "0.25",
+   "0.5"
+  ],
+  "chosen": "0.1",
+  "rationale": "0.1 is the common fastText default and lies in the paper's validation grid.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "with a learning rate selected on a valida-\ntion set from {0.05, 0.1, 0.25, 0.5}",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Word/n-gram embedding dimension is not explicitly separated from the hidden dimension h.",
+  "options": [
+   "embedding dim = h = 10",
+   "embedding dim = 100 independent of h",
+   "other"
+  ],
+  "chosen": "embedding dim = h = 10",
+  "rationale": "Figure 1 ties the lookup table A to the hidden variable, and fastText implementations typically set embedding size equal to hidden size.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "the computational complexity is O(kh)\nwhere k is the number of classes and h the di-\nmension of the text representation.",
+  "page": 2
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Number of hashing bins for the unigram+bigram feature set is described only conditionally.",
+  "options": [
+   "10M bins",
+   "100M bins",
+   "2M bins (later fastText default)"
+  ],
+  "chosen": "100M bins",
+  "rationale": "The paper says 10M bins if only bigrams are used, and 100M otherwise; the target uses unigrams plus bigrams.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "and 10M\nbins if we only used bigrams, and 100M otherwise.",
+  "page": 2
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "How the validation set for learning-rate selection is formed is not specified for AG News.",
+  "options": [
+   "hold out 10% of training data",
+   "use an official validation split if present",
+   "select on the test set"
+  ],
+  "chosen": "hold out 10% of training data",
+  "rationale": "The Zhang et al. AG News release has train/test only, so the paper must have carved out validation data.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "with a learning rate selected on a valida-\ntion set from {0.05, 0.1, 0.25, 0.5}",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Tokenization and lowercasing are not stated for the sentiment datasets.",
+  "options": [
+   "lowercase whitespace tokens with punctuation removed",
+   "raw case and punctuation",
+   "exactly Zhang et al. (2015) preprocessing"
+  ],
+  "chosen": "lowercase whitespace tokens with punctuation removed",
+  "rationale": "This is common for AG News and consistent with the cited Zhang et al. protocol.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Form of the linear learning-rate decay is not fully specified.",
+  "options": [
+   "linear decay to zero over the 5 epochs",
+   "constant rate",
+   "step decay"
+  ],
+  "chosen": "linear decay to zero over the 5 epochs",
+  "rationale": "The paper says only that the learning rate decays linearly.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "using stochastic gradient descent and a\nlinearly decaying learning rate.",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Weight initialization for matrices A and B is not described.",
+  "options": [
+   "small random uniform initialization",
+   "zeros",
+   "Xavier/Glorot"
+  ],
+  "chosen": "small random uniform initialization",
+  "rationale": "Standard for embedding-like lookup tables and linear output layers when the paper is silent.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "where xn is the normalized bag of features of the n-\nth document, yn the label, A and B the weight matri-\nces.",
+  "page": 2
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "SGD minibatch size is not specified.",
+  "options": [
+   "1",
+   "32",
+   "larger minibatch"
+  ],
+  "chosen": "1",
+  "rationale": "fastText's asynchronous SGD is typically described as per-example updates; the paper does not state a batch size.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "This model is trained asynchronously on mul-\ntiple CPUs using stochastic gradient descent",
+  "page": 2
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Number of epochs for tag prediction is stated only as 5, but the stopping rule is not otherwise pinned down.",
+  "options": [
+   "5 epochs",
+   "more epochs",
+   "early stopping on validation"
+  ],
+  "chosen": "5 epochs",
+  "rationale": "The paper explicitly says fastText is run for 5 epochs on YFCC100M.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "We\nrun fastText for 5 epochs and compare it\nto Tagspace for two sizes of the hidden layer.",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Bigram construction details are not fully specified.",
+  "options": [
+   "adjacent word pairs within each document only",
+   "skip bigrams",
+   "bigrams crossing sentence boundaries"
+  ],
+  "chosen": "adjacent word pairs within each document only",
+  "rationale": "The paper describes bag of n-grams as capturing partial local word order without crossing document context.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Instead, we use a bag of\nn-grams as additional features to capture some par-\ntial information about the local word order.",
+  "page": 2
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "How the Huffman tree is built from labels is not detailed beyond citing hierarchical softmax work.",
+  "options": [
+   "Huffman tree built from training label frequencies",
+   "balanced binary tree",
+   "random tree"
+  ],
+  "chosen": "Huffman tree built from training label frequencies",
+  "rationale": "The paper cites Huffman coding-tree hierarchical softmax from Goodman (2001) and Mikolov et al. (2013).",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we use a hierarchical soft-\nmax (Goodman, 2001) based on the Huffman cod-\ning tree (Mikolov et al., 2013).",
+  "page": 2
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "AG News class setup and label mapping are not restated in the paper.",
+  "options": [
+   "standard 4-class AG News split",
+   "merge world/business classes",
+   "use 5 classes"
+  ],
+  "chosen": "standard 4-class AG News split",
+  "rationale": "Zhang et al. (2015) defines the standard AG News 4-class dataset used by the paper.",
+  "source": "cited_work",
+  "risk": "low",
+  "quote": "We\nemploy\nthe\nsame\n8\ndatasets\nand\nevaluation\nprotocol\nof Zhang et al. (2015).",
+  "page": 2
+ },
+ {
+  "id": "A13",
+  "by": "implementer",
+  "gap": "The Zhang et al. (2015) AG News release used by the paper has only train (120k) and test (7.6k); the paper says the learning rate is selected on a validation set from {0.05,0.1,0.25,0.5} but the validation split is not part of the release.",
+  "chosen": "Carve a 10% holdout (12,000 lines) out of the 120k training set with a fixed shuffle seed, group byte-identical duplicate articles together so the two parts share no text, select lr by mean validation accuracy over 3 fastText seeds, then retrain on the full 120k and evaluate on the untouched 7,600-line test split.",
+  "rationale": "Keeps the official test split untouched (no test-set tuning) and follows the paper's grid search protocol; duplicate grouping removes leakage from the 135 duplicate lines present in AG News.",
+  "risk": "low",
+  "options": [
+   "10% holdout of train",
+   "use Zhang et al. test split as validation (would leak)",
+   "author's fixed lr choice without search"
+  ],
+  "quote": "with a learning rate selected on a valida-\ntion set from {0.05, 0.1, 0.25, 0.5}",
+  "page": 3
+ },
+ {
+  "id": "A14",
+  "by": "implementer",
+  "gap": "Engine: the host is Windows 11 with no make/g++/clang/cmake, so the authors' Makefile / `pip install .` native build path (setup.py hard-codes -O3 -funroll-loops -pthread -march=native) is unavailable.",
+  "chosen": "Use fasttext-wheel 0.9.2, a prebuilt binary wheel of the same facebookresearch/fastText 0.9.2 C++ trainer + official Python binding; reproduce.py still tries an importable fasttext module, then the wheel, then the native build, and only then the EmbeddingBag re-implementation (which would downgrade the verdict).",
+  "rationale": "Same upstream source and same src/args.cc options as the CLI used in the paper; no author code is modified and every hyperparameter is forwarded verbatim.",
+  "risk": "low",
+  "options": [
+   "fasttext-wheel prebuilt wheel",
+   "MSVC/MinGW native build of repo/setup.py",
+   "EmbeddingBag re-implementation (would be partially_reproduced)"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A15",
+  "by": "implementer",
+  "gap": "Section 2.2 says to use 10M hashing bins \"if only bigrams are used\" and 100M otherwise; the paper's Table 1 rows use bigrams, but the author script uses a single -bucket 10000000 for all datasets.",
+  "chosen": "bucket = 10,000,000, matching the authors' own classification-results.sh; the paper's alternative 100M-bin setting is not used because 100M bins x dim 10 x 4 B = ~4 GB for the input matrix alone on a 15.4 GB machine that also holds the C++ training copies and the test set. The deviation is logged in results/metrics.json.",
+  "rationale": "The authors' released Table 1 reproduction script uses 10M bins, so this matches the code that produced the published numbers; memory is also a constraint.",
+  "risk": "low",
+  "options": [
+   "bucket=10M (author script)",
+   "bucket=100M (paper Section 2.2 alternative)"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A16",
+  "by": "implementer",
+  "gap": "The paper reports one number per configuration and fastText's asynchronous multi-threaded SGD with 20 threads is not run-to-run deterministic (~0.1-0.3% spread); a single run would not distinguish method noise from a reproduction gap.",
+  "chosen": "Report C1/C2 as the mean over 5 fastText RNG seeds (per-seed values and std in results/metrics.json) and average each lr-grid point over 3 seeds when selecting lr.",
+  "rationale": "Quantifies run-to-run noise so the verifier can judge the gap from the paper's value; also makes the lr selection stable instead of a coin flip between 0.1 and 0.25.",
+  "risk": "low",
+  "options": [
+   "single run (paper protocol)",
+   "mean over several seeds",
+   "deterministic single-thread run"
+  ],
+  "quote": null,
+  "page": null
+ }
+]

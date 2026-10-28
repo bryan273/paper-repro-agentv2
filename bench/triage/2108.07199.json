@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "HVISNet achieves sMOTSA of 52.1 on the HVIS validation set",
+  "table_ref": "Table III",
+  "dataset": "HVIS"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/HVISNet"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 20,
+  "basis": "Training HVISNet for 12 epochs on the HVIS dataset (805 videos) requires a GPU; the paper used an RTX 2080 Ti (11GB VRAM). On a CPU-only laptop, training would be impractically slow (estimated >12 hours), and even inference on the validation set would take hours. The code and data are linked but may not be fully available or up-to-date."
+ },
+ "blockers": [
+  "Training requires a GPU (paper used RTX 2080 Ti)",
+  "HVIS dataset may not be publicly downloadable",
+  "Code repository may be incomplete or outdated"
+ ],
+ "suitable": false,
+ "id": "2108.07199",
+ "title": "Real-time Human-Centric Segmentation for Complex Video Scenes",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

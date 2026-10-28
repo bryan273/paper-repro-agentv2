@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "XGBoost on original hybrid features achieves 0.9747 accuracy (and 0.9716 F1) on CICMalDroid2020 with a 70/30 stratified split",
+  "table_ref": "Table II, row 'Original / XGBoost', column Accuracy",
+  "dataset": "CICMalDroid2020"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": 3,
+  "basis": "The paper gives no code and no exact preprocessing script; the 564-dim hybrid feature CSV must be rebuilt from the raw CICMalDroid2020 JSON logs (variance threshold 0.1, L2 norm, label mapping) before a few minutes of XGBoost training on ~13k x 564 data."
+ },
+ "blockers": [
+  "No code or configs released; feature extraction pipeline (50621->301 static, 470->263 dynamic, variance threshold, L2 normalization) must be reimplemented from prose",
+  "Raw CICMalDroid2020 JSON logs must be downloaded and parsed; exact split seed and label encoding unspecified so exact 0.9747 may not be bit-reproducible",
+  "Class distribution described inconsistently (text says SMS-dominant, figure caption says balanced)"
+ ],
+ "suitable": true,
+ "id": "2602.00058",
+ "title": "Comparison of Multiple Classifiers for Android Malware Detection with Emphasis on Feature Insights Using CICMalDroid 2020 Dataset",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

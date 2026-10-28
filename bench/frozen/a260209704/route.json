@@ -1,0 +1,42 @@
+{
+ "route": "full_release",
+ "why": "The repository ships the complete algorithm (aif_alg.py, self-contained with only numpy/random imports), the experiment notebook that produces Table I, and the exact Diabetes data (data/diabetes.csv) used in the claims. No weights or external downloads are needed, and the procedure is pure CPU on 768 rows, so the authors' entrypoint should run as-is with at most a numpy/scipy/jupyter install.",
+ "repo": "https://github.com/elliot1776/AIF",
+ "entrypoints": [
+  "experiments.ipynb",
+  "aif_alg.py"
+ ],
+ "missing_artifacts": [
+  "requirements.txt / pinned environment (not provided, but only numpy, scipy, pandas, jupyter are implied)",
+  "fixed random seeds for the reported Table I numbers (likely set in the notebook, to be confirmed on inspection)"
+ ],
+ "blockers_seen": [
+  "No dependency manifest; environment must be inferred (numpy/scipy/pandas/jupyter)",
+  "experiments.ipynb is ~828 KB (carries large embedded outputs), which can be slow to load but does not block execution",
+  "No GPU on this machine, but the workload is CPU-only so this is not a blocker"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Under 5 minutes for the match target (C1): one EIF forest + one AIF(A3) forest (500 trees, subsample 128, 768 rows) and a t-test. Full Table I (EIF + A3/A4/A5 across ~8 features) is around 10-15 minutes including installs.",
+  "fits_budget": true,
+  "scale_down_plan": "None needed. If the notebook turns out to run many extra unrelated experiments, restrict execution to the Diabetes Table I cells (EIF vs A3/A4/A5); this does not change the reported numbers.",
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 25,
+  "gpu_speedup": null,
+  "basis": "500-tree isolation forests on 768x8 tabular data with subsample 128 is a sub-second-to-few-second fit per forest, so the Table I protocol (a handful of forests plus t-tests) is ~10-15 min of command time, dominated by environment install and notebook startup."
+ },
+ "repo_info": {
+  "url": "https://github.com/elliot1776/AIF",
+  "cloned": true,
+  "n_files": 5,
+  "n_python": 1,
+  "python2_style_files": 0
+ }
+}

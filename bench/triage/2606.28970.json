@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "RGLD mean AUROC of 77.50 across 47 ADBench tabular datasets (single headline number; cheapest meaningful proxy is RGLD's AUROC on one small ADBench dataset, e.g. thyroid or WBC)",
+  "table_ref": "Table 1 (main benchmark); per-dataset AUROC in Table 7",
+  "dataset": "ADBench (47 tabular datasets; smallest e.g. thyroid, WBC, WPBC)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "RGLD is a lightweight CPU statistical method (0.22 s avg runtime, no training), but the code is only promised 'upon acceptance' with no link, so an agent must reimplement the full pipeline (QMC random features, multi-scale KDE, sampled-reference kNN, rank aggregation) and download ADBench; reproducing the 47-dataset mean is the real target and requires running all datasets plus 23 baselines."
+ },
+ "blockers": [
+  "No code link in paper; code only promised upon acceptance",
+  "Headline number is a 47-dataset mean requiring all datasets and 23 baselines to be run",
+  "Exact hyperparameters/configs only in appendix/supplemental, not linked"
+ ],
+ "suitable": true,
+ "id": "2606.28970",
+ "title": "RGLD: Randomized Global-Local Density Estimation for Tabular Anomaly Detection",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

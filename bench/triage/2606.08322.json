@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Silhouette coefficient of 0.523 for k=3 in 3D-PC space (Table 4, 3D-PC column, k=3 row)",
+  "table_ref": "Table 4",
+  "dataset": "US airline profitability data 1995-2020 (26 annual observations, 7 variables)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "Tiny dataset (26x7); PCA and k-means with 100 inits on 26 points run in seconds on CPU; data must be manually extracted from the cited 2023 paper."
+ },
+ "blockers": [
+  "No code or data files provided; data must be manually transcribed from Renold et al. (2023) paper"
+ ],
+ "suitable": true,
+ "id": "2606.08322",
+ "title": "Orthogonality and Dimensionality in Airline Cluster Analysis using PCA and Kernel PCA",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

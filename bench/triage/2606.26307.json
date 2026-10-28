@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Squared robust Interval-Mahalanobis distance and Shapley value decomposition for the Cars dataset (27 observations, 4 interval variables), reproducing the outlier flags and Shapley values shown in Figures 1-3.",
+  "table_ref": "Figures 1-3 (Cars dataset)",
+  "dataset": "Cars dataset (MAINT.Data R package, 27 observations, 4 interval-valued variables)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/catarinaploureiro/AIDA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Tiny 27x4 interval dataset; IMCD + closed-form Shapley values run in seconds in R; only package install and data load dominate."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2606.26307",
+ "title": "Explainable Outlier Detection for Interval-valued Data",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "HSCJN achieves Distinct-1 of 0.075 on 1-turn response generation on DailyDialog",
+  "table_ref": "Table 1, DailyDialog Corpus, HSCJN row, Distinct-1 column",
+  "dataset": "DailyDialog"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 2880,
+  "gpu_speedup": 5,
+  "basis": "No code released; must reimplement HRED-based HSCJN (GRU 500/1000, LSTM 500, 25K vocab, batch 8, beam 5) and train on 10,712 DailyDialog conversations, which is a multi-hour to multi-day CPU training run."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Requires reimplementing HRED + prediction network + max-entropy regularizer from scratch",
+  "Training on 10k dialogues with 500-1000 dim RNNs is slow on CPU"
+ ],
+ "suitable": false,
+ "id": "1912.00380",
+ "title": "HSCJN: A Holistic Semantic Constraint Joint Network for Diverse Response Generation",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

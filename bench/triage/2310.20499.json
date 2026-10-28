@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "GPT-4 achieves a Win rate of 0.33 as the spy in SpyGame (Table 4)",
+  "table_ref": "Table 4",
+  "dataset": "SpyGame keyword set (50 pairs, 100 games)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Skytliang/SpyGame"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 300,
+  "gpu_speedup": null,
+  "basis": "Requires 100 multi-agent games with GPT-4 and GPT-3.5-Turbo API calls; each game involves multiple rounds of speaking, reasoning, and voting, totaling thousands of API calls, which is time-consuming and costly, and the keyword set may not be fully released."
+ },
+ "blockers": [
+  "Requires GPT-4 and GPT-3.5-Turbo API access (closed-source models)",
+  "Keyword set may not be publicly available",
+  "High API cost and time for 100 games"
+ ],
+ "suitable": false,
+ "id": "2310.20499",
+ "title": "Leveraging Word Guessing Games to Assess the Intelligence of Large Language Models",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

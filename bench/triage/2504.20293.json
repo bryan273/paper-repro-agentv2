@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Post-merge median clustering success of 1.0 on FCPS Atom with k=20 (radius-based post-processing)",
+  "table_ref": "Table 2, row FCPS Atom",
+  "dataset": "FCPS Atom"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/stefankober/radius-guided-kmeans"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "FCPS Atom is a tiny 2D dataset; k-means with k=20 and graph-based merging run in seconds on CPU, and the paper's code is available (though possibly incomplete)."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2504.20293",
+ "title": "Radius-Guided Post-Clustering for Shape-Aware, Scalable Refinement of k-Means Results",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

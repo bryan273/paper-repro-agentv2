@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "cDPO with Llama-3-8B achieves 67.9% accuracy on GSM8K, outperforming baselines.",
+  "table_ref": "Table 3, row '+ cDPO (Ours)', column 'GSM8K', sub-column 'Llama-3 8B'",
+  "dataset": "GSM8K"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/chenzhiling9954/Critical-Tokens-Matter"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 1440,
+  "gpu_speedup": 20,
+  "basis": "Requires training multiple 8B models (positive, negative, cDPO) with LoRA on GSM8K, which is infeasible on CPU and needs significant GPU memory and time."
+ },
+ "blockers": [
+  "needs GPU with at least 80GB VRAM for training 8B models",
+  "requires training multiple models (positive, negative, cDPO) and sampling 64 rollouts per problem",
+  "no CPU-only path; training and inference of 8B models on CPU would take weeks"
+ ],
+ "suitable": false,
+ "id": "2411.19943",
+ "title": "Critical Tokens Matter: Token-Level Contrastive Estimation Enhances LLM's Reasoning Capability",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

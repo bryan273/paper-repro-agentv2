@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "STaR-DURA MRR on WN18RR (best over n in {200,400,500})",
+  "table_ref": "Table 2, WN18RR MRR column, STaR-DURA row",
+  "dataset": "WN18RR"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 900,
+  "gpu_speedup": 3,
+  "basis": "No code released; must reimplement STaR (ComplEx matrix + translation offset) with DURA regularizer and full filtered link-prediction evaluation, then train 5 runs at n=500 on WN18RR (86k train triples, 40k entities) on CPU."
+ },
+ "blockers": [
+  "no code or configs released",
+  "must reimplement model, DURA regularizer, and filtered evaluation protocol from scratch",
+  "5-run averaging at n=500 on CPU is slow"
+ ],
+ "suitable": true,
+ "id": "2202.07130",
+ "title": "STaR: Knowledge Graph Embedding by Scaling, Translation and Rotation",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

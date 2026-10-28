@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MSDE achieves mean AUC-ROC of 0.925 across 46 ADBench datasets (averaged over 4 anomaly types and 3 seeds, zero noise).",
+  "table_ref": "Table 4 (AUC-ROC, MSDE column)",
+  "dataset": "ADBench (46 tabular datasets)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/Fraud-Detection-"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "No MSDE code is released (only a placeholder GitHub link); the agent must reimplement the full MSDE pipeline (UMAP fuzzy graph, binary-search radius, multi-radius weights, iterative weighted mean-shift with NN-Descent) and run it over 46 datasets x 4 anomaly modes x 3 seeds, plus download ADBench data and baselines; the paper's own runtime on a 285k-sample dataset was ~281 s per run, so the full 46-dataset sweep is hours of CPU work."
+ },
+ "blockers": [
+  "No code released for MSDE (GitHub link is a placeholder/empty org)",
+  "Full ADBench protocol requires 46 datasets x 4 anomaly modes x 3 seeds",
+  "Reimplementation of UMAP fuzzy graph + NN-Descent + mean-shift from paper text only"
+ ],
+ "suitable": false,
+ "id": "2602.03293",
+ "title": "Anomaly Detection via Mean Shift Density Enhancement",
+ "pages": 41,
+ "model": "DeepSeek-V4.1-Flash"
+}

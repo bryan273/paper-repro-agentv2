@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Average ROC AUC of DAO_MLE on synthetic datasets with cluster c2 intrinsic dimension 8 (i.e., both clusters have ID 8), compared to LOF, SLOF, and kNN.",
+  "table_ref": "Figure 1 (point at x=8)",
+  "dataset": "Synthetic two-cluster datasets (30 realizations of the template with c2 ID=8)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/homarques/DAO/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The synthetic data generator and all four outlier detection algorithms (DAO, LOF, SLOF, kNN) are provided in the repository; each dataset has 1600 points in 32 dimensions, and the paper reports runtimes of ~0.1s per method per dataset, so 30 datasets with hyperparameter search over k=5..100 should finish in minutes on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2401.05453",
+ "title": "Dimensionality-Aware Outlier Detection: Theoretical and Experimental Analysis",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

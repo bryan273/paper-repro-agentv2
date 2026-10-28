@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "GPT-5.4 thinking achieves 26.5% strict all-rubric task pass rate (Overall) on the 102-task MMCL-Bench.",
+  "table_ref": "Table 2, Overall column for GPT-5.4 thinking",
+  "dataset": "MMCL-Bench (102 multimodal context-learning tasks)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The paper reports about 2–3 hours of API execution per model over 102 tasks using 8 workers (App. A.7), but no benchmark assets or code are linked, and the target requires the closed GPT-5.4 thinking API."
+ },
+ "blockers": [
+  "Benchmark code and task assets are not released; the paper only says a future public release will include a license summary",
+  "Target requires closed-source GPT-5.4 thinking API access",
+  "Evaluation depends on rubric files and an LLM-as-judge protocol, which are not available",
+  "The benchmark has 102 multimodal tasks spanning images, manuals, screenshots, videos, and frame sequences, making independent reconstruction of the exact number infeasible"
+ ],
+ "suitable": false,
+ "id": "2605.12703",
+ "title": "MMCL-Bench: Multimodal Context Learning from Visual Rules, Procedures, and Evidence",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

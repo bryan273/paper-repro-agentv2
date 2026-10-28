@@ -1,0 +1,224 @@
+{
+ "approach": "This is a partial-release reproduction: clone the authors' repository, keep their KCC/ADMM implementation behind a thin adapter, and rebuild the missing Lymphoma benchmark pipeline around it. Download and parse the ASU Lymphoma dataset, skip standardization because the features are discrete, construct a Gaussian kernel and 6-NN Gaussian weights, Cholesky-embed the kernel, run ADMM over a small log grid for sigma1, sigma2, gamma and rho, and evaluate NMI at the paper's k=7 while also recording the elbow-selected k. Cache all kernels/weights and ADMM outputs so the full run is cheap at n=96. If the single author script lacks an importable function, use a validated fallback that implements Algorithm 1 exactly and check it against the author demo on a tiny synthetic input.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin minimal CPU dependencies: numpy, scipy, pandas, scikit-learn, matplotlib, requests, tqdm. No torch/GPU is needed for n=96.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "src/data_lymphoma.py",
+   "purpose": "Robustly download/extract the ASU Lymphoma dataset, parse .mat/.csv/.data variants, expose X and y, assert 96 instances, 4026 features, 9 classes, and apply no standardization for Lymphoma. Include a generic center/scale preprocessing helper for other benchmarks but keep it disabled for C1.",
+   "requirement_ids": [
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "src/kcc_core.py",
+   "purpose": "Core KCC utilities: pairwise distances, Gaussian kernel K, Cholesky K=Z^T Z with jitter, 6-NN Gaussian weight matrix W, symmetrization, edge list, ADMM updates for A/V/eta, centroid extraction, and diagnostics. This is the fallback implementation if the author script is not callable.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/authors_adapter.py",
+   "purpose": "Load vendor/Kernel-Convex-Clustering/KERNELCONVEXCLUSTERING.py via importlib. Prefer the authors' KCC/ADMM function; if the script is top-level only, patch only an import guard or invoke its core function while preserving equations. Fall back to kcc_core if no callable API exists, and verify both agree on a 5-point synthetic case.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+   ]
+  },
+  {
+   "path": "src/elbow.py",
+   "purpose": "Agglomerative clustering on learned centroids with average linkage and Euclidean distance, SSE_k curve for k=2..12, Kneedle/max-distance-to-line elbow selection, and dendrogram/SSE diagnostics.",
+   "requirement_ids": [
+    "R10",
+    "R11",
+    "R9"
+   ]
+  },
+  {
+   "path": "src/metrics.py",
+   "purpose": "NMI computation using sklearn normalized_mutual_info_score with arithmetic normalization, plus metric JSON schema helpers.",
+   "requirement_ids": [
+    "R15"
+   ]
+  },
+  {
+   "path": "src/run_lymphoma.py",
+   "purpose": "Experiment driver: load data, build kernels/weights for each sigma1/sigma2, run coarse and refined ADMM grids, compute NMI at k=7 and at the elbow-selected k, select the best C1 configuration, and write results/metrics.json with all diagnostics.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single command entrypoint. Supports --smoke and full modes, calls src/run_lymphoma.py, prints the selected NMI and writes results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "claim_id": "C1",
+  "scope": "Lymphoma only; R14/MNIST is out of scope for this match target",
+  "dataset": {
+   "name": "Lymphoma",
+   "expected_n": 96,
+   "expected_d": 4026,
+   "expected_classes": 9,
+   "source": "ASU Feature Selection Repository https://featureselection.asu.edu/datasets.php",
+   "download_strategy": "requests page parse for hrefs containing Lymphoma; also try https://featureselection.asu.edu/datasets/Lymphoma.zip, /Lymphoma.mat, /Lymphoma.csv; extract zip in Python and parse .mat with scipy.io if present",
+   "standardize": false,
+   "standardize_reason": "R13: Lymphoma variables are all discrete, so the paper does not standardize"
+  },
+  "kernel": {
+   "type": "Gaussian k(x,y)=exp(-||x-y||^2/(2*sigma1^2))",
+   "sigma1_grid": "median pairwise Euclidean distance * [0.1,0.25,0.5,1.0,2.0,4.0,8.0] (A1; median computed on unstandardized X)",
+   "jitter": 1e-06,
+   "jitter_reason": "A5: numerical Cholesky stability"
+  },
+  "weights": {
+   "neighbors": 6,
+   "sigma2_grid": "median pairwise Euclidean distance * [0.1,0.25,0.5,1.0,2.0,4.0] (A2,A3)",
+   "formula": "w_ij=exp(-||x_i-x_j||^2/(2*sigma2^2))*1[j in 6NN(i)]",
+   "symmetrization": "W = maximum(W, W.T) (A2; fallback to mean symmetrization if smoke check shows degenerate degrees)",
+   "drop_self": true
+  },
+  "admm": {
+   "max_iter": 1000,
+   "coarse_max_iter": 300,
+   "tol": 0.0001,
+   "rho_grid": [
+    0.0001,
+    0.001,
+    0.01,
+    0.1
+   ],
+   "gamma_grid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0
+   ],
+   "alpha_init": "alpha_i=e_i (R6)",
+   "beta_init": "beta_ij=e_i-e_j (R6)",
+   "lambda_init": 0.0,
+   "lambda_init_reason": "A7",
+   "dedup_tolerance": 1e-06,
+   "dedup_reason": "A12"
+  },
+  "clustering": {
+   "k_primary": 7,
+   "k_range": [
+    2,
+    12
+   ],
+   "linkage": "average",
+   "distance": "euclidean",
+   "elbow_rule": "Kneedle/maximum distance to line joining endpoints of normalized SSE_k vs k (A8)",
+   "linkage_reason": "A9"
+  },
+  "nmi": {
+   "function": "sklearn.metrics.normalized_mutual_info_score",
+   "average_method": "arithmetic",
+   "reason": "A10"
+  },
+  "selection": {
+   "primary_metric": "NMI at k=7",
+   "protocol": "Prefer runs whose elbow-selected k equals 7; among those maximize NMI at k=7. If no run yields elbow_k=7, maximize NMI at k=7 and record elbow_k and nmi_at_elbow for transparency. Tie-break by lower final primal residual.",
+   "reported_value": 0.778,
+   "tolerance_absolute": 0.02
+  },
+  "seed": 42,
+  "runtime": {
+   "device": "CPU",
+   "expected_n": 96,
+   "expected_ram_gb": 4,
+   "expected_disk_gb": 1.5
+  }
+ },
+ "steps": [
+  "Clone the authors' repository into vendor/Kernel-Convex-Clustering with git; inspect KERNELCONVEXCLUSTERING.py to identify callable KCC/ADMM functions and any hard-coded demo path. If import executes a demo, add only an import guard or use importlib with runpy in a controlled way, leaving the algorithm unchanged.",
+  "Install dependencies with pip install -r requirements.txt. Confirm Python 3.12 and that numpy/scipy/sklearn/requests are importable.",
+  "Download Lymphoma with requests: first fetch https://featureselection.asu.edu/datasets.php and parse links containing 'Lymphoma'; then try known candidate URLs. Extract in Python, locate the data file, and parse scipy.io.loadmat keys such as X/Y or fall back to CSV/whitespace parsing with label-column inference. Save data/lymphoma_X.npy and data/lymphoma_y.npy.",
+  "Implement src/data_lymphoma.py and assert X.shape==(96,4026), y has 9 unique classes, no NaN/inf. Do not standardize for C1.",
+  "Implement src/kcc_core.py: compute pairwise squared distances D; build K=exp(-D/(2*sigma1^2)); add jitter and Cholesky K=Z^T Z; build 6-NN Gaussian W from sigma2; symmetrize W; build edge list (i<j, W_ij>0); implement ADMM initialization A=Z, V_ij=z_i-z_j, eta=0, and the A/V/eta updates. Normalize returned centroids to shape (n, n) with rows corresponding to original points.",
+  "Implement src/authors_adapter.py: import the authors' script; expose solve_kcc(X, sigma1, sigma2, gamma, rho, ...). If no callable API exists, call src/kcc_core.solve_kcc. Validate author and fallback solvers on a 5-point synthetic Gaussian-kernel case for identical objective and centroid distances within 1e-5.",
+  "Implement src/elbow.py: run agglomerative clustering on the n learned centroids, compute SSE_k for k=2..min(12,n-1), select elbow by Kneedle/max-distance-to-line, and return labels, SSE curve, and elbow_k.",
+  "Implement src/metrics.py: compute NMI with arithmetic normalization and write JSON with claimed value, measured value, k, elbow_k, nmi_at_k7, nmi_at_elbow, selected hyperparameters, and pass/fail relative to 0.02 absolute tolerance.",
+  "Run a coarse grid: for each sigma1 and sigma2, cache K and W; loop over gamma and rho with coarse_max_iter=300; for each run compute centroids, elbow_k, NMI at k=7, NMI at elbow, final primal residual, and number of unique centroids. Cache results to results/coarse_grid.csv.",
+  "Select the top 10 coarse configurations by the selection protocol, rerun them with max_iter=1000 and tol=1e-4, and keep the best. Verify ADMM residuals are finite and centroids contain no NaN.",
+  "Write results/metrics.json with the selected configuration and primary NMI at k=7. Print a concise summary and exit nonzero only for infrastructure failures, not for a tolerance miss; record tolerance pass/fail in the JSON."
+ ],
+ "smoke_test": "Run python reproduce.py --smoke. It loads Lymphoma, takes the first 20 samples, builds a 20x20 Gaussian kernel and 6-NN weight matrix for one sigma1/sigma2, runs 10 ADMM iterations with gamma=1 and rho=0.001, and asserts: K is finite and symmetric, Cholesky succeeds with jitter, W is symmetric/nonnegative, ADMM residuals are finite, agglomerative clustering at k=3 returns labels, and NMI is in [0,1]. It also runs the author adapter versus the fallback on a 5-point synthetic kernel and checks centroid distances agree to 1e-5.",
+ "intermediate_checks": [
+  "Lymphoma X shape is (96,4026); y has 9 classes; no missing/inf values; per-class counts sum to 96.",
+  "Kernel K is 96x96, symmetric, finite, and positive definite after jitter; record condition number.",
+  "Symmetrized W is 96x96, nonnegative, symmetric, with zero diagonal; each node degree is roughly 6-12 and total edges are plausible for 6-NN symmetrization.",
+  "ADMM run check: objective finite, primal/dual residuals decrease on at least one representative configuration, and centroids have no NaN/inf.",
+  "Fusion sanity check: as gamma increases over a small path, the number of unique centroids should decrease or stay flat.",
+  "Elbow diagnostics: for the top coarse runs record SSE_k for k=2..12 and confirm the elbow-selected k is close to the paper's k=7; record discrepancy if not.",
+  "Baseline sanity: compute NMI at k=7 for agglomerative clustering on raw X; the KCC NMI should be at least as plausible as the baseline, but the C1 pass/fail uses KCC.",
+  "Author-script check: if KERNELCONVEXCLUSTERING.py has a demo, run it once and confirm it executes; compare adapter output on a tiny case."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 22 minutes total on CPU: 5-7 min setup (clone, pip install, download/parse Lymphoma), 2 min smoke test, 8 min coarse grid (roughly 7 sigma1 x 6 sigma2 x a few gamma/rho at 300 iterations; cache K/W), 5 min refinement of top 10 runs at 1000 iterations, and 2 min final report. If wall-clock exceeds 20 minutes, reduce the grid to 5 sigma1 x 4 sigma2 x 3 gamma x 2 rho and coarse_max_iter=200, then refine fewer configurations."
+}

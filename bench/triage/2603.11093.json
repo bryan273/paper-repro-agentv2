@@ -1,0 +1,44 @@
+{
+ "target": {
+  "statement": "No original quantitative result exists to reproduce: the paper is a survey whose contributions are conceptual (a three-level Cognitive Hierarchy and a taxonomy of seven reasoning challenges). The only numbers are third-party benchmark metadata copied into Table 2, e.g. DriveLM-Bench (19,200 frames / 20,498 QA pairs) or OmniDrive (486 GitHub stars); these are descriptive counts, not experimental results of this work.",
+  "table_ref": "Table 2 (Benchmark Taxonomy) / Table 1 (Methods Taxonomy)",
+  "dataset": "N/A - no dataset introduced or used by the paper"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/DLUT-LYZ/CODA-LM",
+  "https://github.com/LRP-IVC/STSBench",
+  "https://github.com/NVlabs/OmniDrive",
+  "https://github.com/OpenDriveLab/DriveLM",
+  "https://github.com/OpenGVLab/DriveMLM",
+  "https://github.com/PurdueDigitalTwin/LaMPilot",
+  "https://github.com/Robertwyq/Drivingdojo",
+  "https://github.com/XiandaGuo/Drive-MLLM",
+  "https://github.com/ayesha-ishaq/DriveLMM-o1",
+  "https://github.com/fudan-zvg/reason2drive",
+  "https://github.com/georg3tom/RoadtextVQA",
+  "https://github.com/qiantianwen/NuScenes-QA"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 0,
+  "gpu_speedup": null,
+  "basis": "The paper is a review with no experiments, models, code or data of its own; every link it lists points to a third-party benchmark repository, so the only 'target' (a Table 1/Table 2 cell) is quoted metadata that requires no execution."
+ },
+ "blockers": [
+  "Survey paper: no original experiments, no released artifact, no training or evaluation pipeline to re-run",
+  "The paper's headline claims (cognitive hierarchy, seven reasoning challenges) are qualitative and cannot be validated by a single number",
+  "All 12 listed repositories belong to cited third-party benchmarks, not to this work, so reproducing one of them would not reproduce this paper's contribution",
+  "Any real target here (e.g. DriveLM-Bench or NuScenes-QA) would require driving datasets of tens-to-hundreds of GB plus multi-GPU VLM training, far beyond the laptop budget and irrelevant to the survey"
+ ],
+ "suitable": false,
+ "id": "2603.11093",
+ "title": "A Survey of Reasoning in Autonomous Driving Systems: Open Challenges and Emerging Paradigms",
+ "pages": 41,
+ "model": "DeepSeek-V4.1-Flash"
+}

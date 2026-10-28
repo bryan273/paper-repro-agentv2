@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "PCA baseline on SMD with Grid Search threshold, point-adjustment: average F1 = 0.930 (P=0.945, R=0.935)",
+  "table_ref": "Section 3 text (page 11), PCA GS results",
+  "dataset": "Server Machine Dataset (SMD), 28 machines"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/NetManAIOps/OmniAnomaly",
+  "https://github.com/NetManAIOps/OmniAnomaly/tree/master/ServerMachineDataset",
+  "https://github.com/yzhao062/pyod"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "PCA via PyOD on 28 small SMD machines (~1.4M points, 38 dims) plus POT thresholding is seconds-to-minutes of CPU; the paper's own code is not released, so the PCA+POT+GS pipeline must be re-implemented from the equations, but it is simple and deterministic."
+ },
+ "blockers": [
+  "Paper's own code/configs not released (only OmniAnomaly repo and PyOD are linked)",
+  "PCA anomaly-score formula (Eq. 9) and POT sign convention must be re-implemented from text",
+  "Exact GS threshold grid for PCA is only loosely specified (linearly spaced to match OmniAnomaly count)"
+ ],
+ "suitable": true,
+ "id": "2603.18985",
+ "title": "Revisiting OmniAnomaly for Anomaly Detection: performance metrics and comparison with PCA-based models",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Mean 5-fold CV AUROC of the monotonic variant of NND (1-distance) on the ai4i2020 dataset = 0.922 (vs ordinary 0.823)",
+  "table_ref": "Table 1, ai4i2020 row, NND M column",
+  "dataset": "ai4i2020 (UCI, 10,000 records, 6 attributes, 339 anomalies)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://liacs.leidenuniv.nl/~lenzou/code/lenz-2026-monotonic.tar.gz"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (10k x 6) with kNN-based NND and 5-fold CV; the only real work is downloading UCI data, installing scikit-learn/numpy, and running the provided code or reimplementing the asymmetric distance."
+ },
+ "blockers": [
+  "Code tarball link may be dead/outdated (hosted on a personal university page)",
+  "Need to confirm exact monotonic attribute subset and normalisation (semi-interquartile range) from code"
+ ],
+ "suitable": true,
+ "id": "2410.23158",
+ "title": "Monotonic anomaly detection",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

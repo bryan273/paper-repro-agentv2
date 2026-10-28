@@ -1,0 +1,192 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The exact integer size h of the approximately 75% IMCD subset for n=27 is not specified.",
+  "options": [
+   "h=20 by floor(0.75*27)",
+   "h=21 by ceil(0.75*27)",
+   "h=20 by round(0.75*27)"
+  ],
+  "chosen": "h=20 by floor(0.75*27)",
+  "rationale": "The paper says approximately 75%; floor is the usual FastMCD-style convention and keeps the subset below the full sample.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "with a subset of approximately 75% of the total observations and a farness cutoff of 0.9",
+  "page": 10
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The number of random starts and random seed for the IMCD search are not reported.",
+  "options": [
+   "Fixed seed plus many random starts",
+   "Default FastMCD starts",
+   "All possible subsets for n=27"
+  ],
+  "chosen": "Fixed seed plus many random starts, rerunning if the best determinant is unstable",
+  "rationale": "IMCD is randomized in the FastMCD style; a fixed seed makes the reproduction deterministic, while many starts reduce the chance of a poor local optimum.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "the sample barycenter and covariance matrix were estimated using the reweighted IMCD algorithm",
+  "page": 10
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether the same 0.9 farness cutoff is used both for IMCD reweighting and for final outlier flagging is not separated in the text.",
+  "options": [
+   "Use 0.9 for both reweighting and flagging",
+   "Use a different reweighting cutoff",
+   "Use no reweighting cutoff"
+  ],
+  "chosen": "Use 0.9 for both reweighting and flagging",
+  "rationale": "The Cars description pairs the reweighted IMCD subset with a 0.9 farness cutoff and then uses 0.9 to flag outliers.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "with a subset of approximately 75% of the total observations and a farness cutoff of 0.9",
+  "page": 10
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The logarithm base for the Price transformation is not stated.",
+  "options": [
+   "Natural logarithm",
+   "Base-10 logarithm"
+  ],
+  "chosen": "Natural logarithm",
+  "rationale": "The paper labels the transformed variable lnPrice, which conventionally means natural log.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "applying a logarithmic transformation to the Price variable (denoted as lnPrice)",
+  "page": 10
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The exact moments of the latent uniform variables are not tabulated in the Cars example.",
+  "options": [
+   "Use U_j independent Uniform[-1,1], so E(U_j)=0 and E(U_j^2)=1/3",
+   "Estimate the latent moments from data",
+   "Use another zero-mean symmetric distribution"
+  ],
+  "chosen": "Use U_j independent Uniform[-1,1], so E(U_j)=0 and E(U_j^2)=1/3",
+  "rationale": "The paper explicitly assumes a continuous uniform distribution when microdata are unavailable.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "assuming a continuous uniform distribution for the latent variables",
+  "page": 10
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether variables are additionally scaled after the Price log transform is not stated.",
+  "options": [
+   "No additional standardization",
+   "Standardize all interval variables",
+   "Scale only ranges"
+  ],
+  "chosen": "No additional standardization",
+  "rationale": "The paper only mentions the Price log transform; the symbolic covariance is intended to handle scale, so adding z-scoring would change the reported Shapley values.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "applying a logarithmic transformation to the Price variable",
+  "page": 10
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Whether the cutoff comparison uses a strict greater-than or greater-than-or-equal rule is not specified.",
+  "options": [
+   "Score > 0.9",
+   "Score >= 0.9"
+  ],
+  "chosen": "Score > 0.9",
+  "rationale": "The paper phrases flagging as an outlier score exceeding the threshold.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "observations with an outlier score exceeding this threshold are flagged as outliers",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The exact farness implementation details, including robust Yeo-Johnson parameter fitting, are delegated to cited work.",
+  "options": [
+   "Implement the described farness steps directly",
+   "Use an existing farness package implementation",
+   "Approximate with a Normal tail probability only"
+  ],
+  "chosen": "Implement the described farness steps directly, following the cited Raymaekers et al. description",
+  "rationale": "The paper describes standardization, robust Yeo-Johnson, restandardization, and CDF scoring but not every numerical detail.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "the robust Yeo-Johnson transformation (Yeo and Johnson, 2000; Raymaekers and Rousseeuw, 2024) is applied to account for skewness",
+  "page": 6
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The paper does not print numerical Shapley values for Cars, only bars, signs, and rankings.",
+  "options": [
+   "Compare only signs and variable rankings against Figures 2-3",
+   "Digitize the figures to recover approximate values",
+   "Require exact numeric equality to hidden values"
+  ],
+  "chosen": "Compare only signs and variable rankings against Figures 2-3",
+  "rationale": "No numeric Shapley table is reported, so exact numeric equality cannot be checked from the paper text.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "A barplot of the Shapley value decomposition for the six observations with the largest distances is presented in Figure 2a.",
+  "page": 11
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The top-six display includes a non-outlier, so the selection rule must be by distance rather than by outlier flag.",
+  "options": [
+   "Take the six largest squared distances regardless of flag",
+   "Take only flagged outliers",
+   "Take the first six alphabetical labels"
+  ],
+  "chosen": "Take the six largest squared distances regardless of flag",
+  "rationale": "Figure 2a includes Bmwserie7, which the text says is not flagged, because it has a large distance but stabilizing Shapley contributions.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "only the six observations with the largest distances are shown, ordered from greatest to smallest distance",
+  "page": 12
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "A numerical tolerance for the Shapley efficiency check is not specified.",
+  "options": [
+   "1e-8 absolute",
+   "1e-6 absolute",
+   "No numerical check"
+  ],
+  "chosen": "1e-8 absolute or relative to the squared distance",
+  "rationale": "The efficiency identity is exact mathematically; a tight tolerance catches implementation errors without affecting reported signs or rankings.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "the sum of the Shapley values of all variables equals the squared Interval-Mahalanobis distance of the observation to the barycenter",
+  "page": 8
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "The class labels and car-model labels must be read from the packaged data, but the paper does not give an explicit label mapping.",
+  "options": [
+   "Use MAINT.Data labels as-is",
+   "Reconstruct labels from the figure axis",
+   "Normalize punctuation in labels"
+  ],
+  "chosen": "Use MAINT.Data labels as-is and preserve exact strings from the paper for the five reported outliers",
+  "rationale": "The paper says the data come from MAINT.Data and is included in AIDA; using package labels avoids transcription errors.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "The Cars dataset is originally available from the MAINT.Data R package (Duarte Silva and Brito, 2026).",
+  "page": 10
+ }
+]

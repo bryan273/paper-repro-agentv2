@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "On the management collection (2,004 documents), the two layers carry largely complementary information: 7.4% of neighbour pairs are neighbours in both layers, and the correlation between the two similarities on random pairs is 0.17.",
+  "table_ref": "Section 4.1 (text; no table number)",
+  "dataset": "Management collection: 2,063 WoS articles (1985-2025) using bibliometric/scientometric methods in management; 2,004 analysed"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/massimoaria/bibliometrix (branch feature/multiplex)",
+  "https://doi.org/10.5281/zenodo.23392228"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "basis": "Paper reports the full pipeline (layers, null model with B=99 curveball randomisations, QAP, consensus clustering) runs in ~29 s on 2,000 documents on a 14-core M4 Pro; on 8 CPU cores expect a few minutes of compute, dominated by installing R/bibliometrix and loading the bundled dataset.",
+  "gpu_speedup": null
+ },
+ "blockers": [
+  "Keyword cleaning lists (synonyms/remove.terms) are in the replication material but the exact cleaned topic layer may differ slightly, shifting the 7.4%/0.17 numbers",
+  "Development branch of bibliometrix must be installed from GitHub; may be outdated or moved",
+  "Root naming optionally queries OpenAlex API (not needed for this target)"
+ ],
+ "suitable": true,
+ "id": "2610.21858",
+ "title": "Multiplex coupling: Connecting the intellectual base and the topics of a research field",
+ "pages": 65,
+ "model": "DeepSeek-V4.1-Flash"
+}

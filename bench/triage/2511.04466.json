@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Selective p-value (direction-conditioned, Theorem 1) for testing equality of slopes between two k-means-selected groups in a simulated panel, e.g. the Type I error / power cell for DGP1 at (N,T)=(60,15) or (120,25)",
+  "table_ref": "Section 6 simulation tables (DGP1, K0=3)",
+  "dataset": "synthetic panel data generated from DGP1 (Su et al. 2016 / Liu et al. 2020 style)"
+ },
+ "release": "partial",
+ "code_links": [
+  "R package TestHomoPanel (named in abstract; no URL given in PDF)"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "Target is a simulation cell requiring re-implementing the k-means-on-initial-estimates clustering, the quadratic-inequality truncation set S, and truncated chi-square p-values from scratch (no code link in PDF), then running hundreds of replications; all CPU, small N*T data."
+ },
+ "blockers": [
+  "No code URL in the PDF; only a named R package TestHomoPanel whose availability/location is unverified",
+  "Core algorithm (truncation set S, quadratic inequality coefficients in Lemmas 1-2) must be re-implemented from the math",
+  "Monte Carlo less-conditioned p-value (Section 4) adds further implementation burden"
+ ],
+ "suitable": true,
+ "id": "2511.04466",
+ "title": "Conditional Selective Inference for the Selected Groups in Panel Data",
+ "pages": 74,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,175 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The distance metric d(.,.) for nearest-neighbor token scoring is only given as an example ('e.g., Euclidean distance'); cosine or other metrics would change the scores and the AUROC values.",
+  "options": [
+   "Euclidean (L2) distance",
+   "cosine distance",
+   "negative inner product / dot product"
+  ],
+  "chosen": "Euclidean (L2) distance on unnormalized BERT embeddings",
+  "rationale": "Euclidean is the only metric the paper names explicitly in Eq. (2) discussion, and it is the default in the arXiv PatchCore-style nearest-neighbor scoring the method adapts.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "d(·, ·) denotes the distance metric (e.g., Euclidean distance)",
+  "page": 3
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Whether the memory bank stores every normal training token embedding or is subsampled (PatchCore uses greedy coreset subsampling), which changes both runtime and AUROC.",
+  "options": [
+   "Full memory bank of all normal training tokens",
+   "Random subsample of tokens",
+   "Greedy coreset subsampling as in PatchCore"
+  ],
+  "chosen": "Full memory bank of all normal training token embeddings",
+  "rationale": "The paper states the bank has exactly N entries equal to the total number of normal training tokens and never mentions coreset selection, subsampling or FAISS/approximate search being used in the experiments.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Which BERT representations are used: the paper only says 'BERT-base-uncased embeddings' without specifying the hidden layer or whether layers are summed/averaged.",
+  "options": [
+   "Last hidden layer output",
+   "Average of the last four hidden layers",
+   "Concatenation of several layers"
+  ],
+  "chosen": "Last hidden layer output per subword token",
+  "rationale": "Standard convention for BERT feature extraction and the simplest reading of 'BERT-base-uncased embeddings'.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "we first obtain contextualized representations using pre-trained language models such as BERT",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "How special tokens and punctuation are handled: whether [CLS]/[SEP] and punctuation are stored in the memory bank and scored as tokens, since token-level ground truth only covers words.",
+  "options": [
+   "Exclude [CLS]/[SEP] and punctuation from memory bank and scoring",
+   "Include all WordPiece-derived word units, only excluding [CLS]/[SEP]",
+   "Score only tokens that carry gold labels"
+  ],
+  "chosen": "Exclude [CLS]/[SEP]; keep punctuation-attached word units consistent with the word-level tokenization used for labels",
+  "rationale": "Token-level annotation is word-level, so scoring must be restricted to word units aligned with the annotation; otherwise the AUROC denominators change.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "we need to aggregate subword embeddings to obtain word-level representations for alignment with token-level annotations",
+  "page": 3
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "How token-level AUROC is aggregated: pooled over all test tokens across documents, or computed per document and averaged, which can shift the reported value substantially under extreme class imbalance.",
+  "options": [
+   "Pool all test tokens of all test documents into one ranking",
+   "Average per-document AUROC",
+   "Micro-average weighted by document length"
+  ],
+  "chosen": "Pool all test tokens of all test documents into one ranking (micro over tokens)",
+  "rationale": "The paper stresses extreme token-level class imbalance and reports a single per-dataset token-level number without describing per-document averaging.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The SMS_Spam corruption protocol is only described qualitatively: how many messages are corrupted, how much of each message is replaced, the injected sequence length, and the random seed are not specified, so the exact anomaly rate of 8.7% cannot be reconstructed deterministically.",
+  "options": [
+   "Reproduce the released corrupted split from the HuggingFace dataset",
+   "Re-run the described injection with a fixed seed targeting 393/4,518 anomalous documents",
+   "Re-run with random seed and accept rate drift"
+  ],
+  "chosen": "Use the released annotated split if available; otherwise re-run injection with a fixed seed calibrated to 393 anomalous of 4,518 documents (8.7%)",
+  "rationale": "Only the target counts (393/4,518, 8.7%) are pinned down in the paper, so the sampling must be calibrated to those counts to be comparable.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "we randomly select portions of normal messages and inject meaningless character sequences such as ‘jasdhnjsdb’",
+  "page": 2
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The Restaurant Review dataset was collected by the authors from Google Maps and no download link is given, so the Review results (0.8271 token / 0.9594 document AUROC) may not be reproducible from public data.",
+  "options": [
+   "Obtain the released Review split from the TokenCore GitHub repository",
+   "Substitute a different public review/anomaly corpus",
+   "Drop the Review claims from the reproduction"
+  ],
+  "chosen": "Obtain the released Review data from the TokenCore repository (https://github.com/charles-cao/TokenCore); if unavailable, mark Review claims as not reproducible",
+  "rationale": "The paper claims 'All the codes and data are publicly available' at that URL, which is the only plausible public source for this private collection.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "This dataset targets semantic anomalies within customer reviews, specifically focusing on negative sentiment expressions embedded in review text.",
+  "page": 2
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "Which 50% of the normal documents form the training set, and with what seed, is not stated; under small datasets (Grammar has only 300 documents) the split randomness changes AUROC appreciably.",
+  "options": [
+   "Fixed seed (e.g., 0/42) with one split",
+   "Multiple random splits averaged",
+   "Stratified split by anomaly rate"
+  ],
+  "chosen": "Fixed seed with a single random split, repeated over a few seeds to report spread if budget allows",
+  "rationale": "The paper reports a single number per cell with no std, implying one split; a fixed seed makes the run reproducible.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Whether embeddings are L2-normalized before nearest-neighbor search (which matters for Euclidean vs cosine equivalence) is never stated.",
+  "options": [
+   "No normalization (raw BERT hidden states)",
+   "L2-normalize each token embedding before scoring"
+  ],
+  "chosen": "No normalization; raw BERT hidden states with Euclidean distance",
+  "rationale": "The paper describes nearest-neighbor distance in the embedding space with no preprocessing step mentioned.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "How the document-level baselines are defined: whether LOF/iForest/ECOD/DeepSVDD/AE/LUNAR are run on document-level mean-pooled embeddings, or on the same token-level scores aggregated by mean as for TokenCore.",
+  "options": [
+   "Run each detector on document-level embeddings",
+   "Aggregate token-level detector scores by mean as in Eq. (3)"
+  ],
+  "chosen": "Aggregate token-level detector scores by mean (uniform scoring and aggregation for all methods)",
+  "rationale": "The paper states all methods operate on the same BERT-base-uncased + max pooling representations and TokenCore's document score is a mean of token scores, implying a single shared pipeline.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "All the methods operate on BERT-base-uncased embeddings with max pooling aggregation.",
+  "page": 3
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Which 270 correct and 30 incorrect sentences were selected for the Grammar benchmark (source Kaggle set is larger) and how they were sampled is unspecified.",
+  "options": [
+   "Use the released Grammar split from the TokenCore repository",
+   "Randomly sample 270/30 from the Kaggle grammar-correction pairs with a fixed seed"
+  ],
+  "chosen": "Use the released split if available; otherwise sample 270 correct / 30 incorrect with a fixed seed",
+  "rationale": "Only the final counts (270/30) are stated; sampling must match those counts to reproduce the reported AUROC.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "We construct our evaluation set by selecting 270 correct sentences as normal samples and 30 incorrect sentences as anomalous samples",
+  "page": 2
+ }
+]

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "GER achieves Recall@64 of 85.65 on the ZESHEL test set, outperforming BLINK's 83.98.",
+  "table_ref": "Table 2",
+  "dataset": "ZESHEL"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 480,
+  "gpu_speedup": 10,
+  "basis": "Training GER on ZESHEL requires 5 epochs on 4 A100 GPUs (0.8h total), which is infeasible on a CPU-only laptop; even with a single mid-range GPU, training would take several hours, plus data preprocessing and evaluation."
+ },
+ "blockers": [
+  "No code or model weights released",
+  "Requires GPU for training (4 A100s used in paper)",
+  "Complex pipeline: SPO triplet extraction, hierarchical graph construction, HGAN implementation"
+ ],
+ "suitable": false,
+ "id": "2211.10991",
+ "title": "Modeling Fine-grained Information via Knowledge-aware Hierarchical Graph for Zero-shot Entity Retrieval",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,171 @@
+{
+ "approach": "No authors' repository is available, so this is a paper-only reimplementation of the match target C1. The plan downloads the public Tübingen CEP bundle, filters the 102 eligible scalar-cause/scalar-effect pairs with at least 50 samples, and implements the frozen sorted-conditional bz2 scorer exactly from the contract: 256-level min-max quantization, stable argsort, int8 first difference, bz2 level 9 compressed length, marginal normalization, and a forced sign decision. Accuracy is the official pairmeta-weighted accuracy over all 102 pairs, with the unweighted 68/102 count also reported. The scorer is deterministic and untuned; bootstrap/split-half diagnostics use fixed seeds only as auxiliary checks.",
+ "files": [
+  {
+   "path": "src/config.py",
+   "purpose": "Central frozen settings: 256 levels, bz2 level 9, 8000-point subsampling cap, score/sign conventions, paths, and diagnostic seeds.",
+   "requirement_ids": [
+    "R3",
+    "R7",
+    "R8",
+    "R9",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/download_cep.py",
+   "purpose": "Download and cache the Tübingen CEP files (pairmeta.txt, desc.txt, pair####.txt), with archive and per-file fallbacks; no R toolchain needed.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "src/cep_data.py",
+   "purpose": "Parse pairmeta.txt, identify pair ids/cause/effect columns/official weights, filter to scalar cause/effect and >=50 samples, and load pair arrays in natural column order.",
+   "requirement_ids": [
+    "R1",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/compression.py",
+   "purpose": "Implement quantization, linear subsampling, stable argsort, int8 differencing, bz2 code lengths, marginal normalization, and the signed causal score.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "src/evaluate.py",
+   "purpose": "Convert scores to forced X->Y / Y->X decisions, count ties as wrong, compute weighted and unweighted accuracy, and emit per-pair records.",
+   "requirement_ids": [
+    "R2",
+    "R11"
+   ]
+  },
+  {
+   "path": "src/diagnostics.py",
+   "purpose": "Optional fixed-seed bootstrap CI and split-half diagnostics; never used to select settings or tune the scorer.",
+   "requirement_ids": [
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: ensure data exists, load the 102 pairs, score them, evaluate, write results/metrics.json, print the headline and tolerance check.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R6",
+    "R11",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": {
+   "source": "https://webdav.tuebingen.mpg.de/cause-effect/ (paper data ref [1])",
+   "cache_dir": "data/cep",
+   "min_samples": 50,
+   "require_scalar_cause_and_effect": true,
+   "pairmeta_weight": "last column of pairmeta.txt (A1)",
+   "expected_eligible_pairs": 102
+  },
+  "download": {
+   "primary_pairmeta_url": "https://webdav.tuebingen.mpg.de/cause-effect/pairmeta.txt",
+   "primary_pair_url_template": "https://webdav.tuebingen.mpg.de/cause-effect/pair{id:04d}.txt",
+   "archive_fallbacks": [
+    "https://webdav.tuebingen.mpg.de/cause-effect/CEP.zip",
+    "https://webdav.tuebingen.mpg.de/cause-effect/cause-effect.zip"
+   ],
+   "request_timeout_sec": 30,
+   "retries": 3
+  },
+  "quantization": {
+   "levels": 256,
+   "method": "linear min-max scaling to [0,255]: np.floor((v-min)/(max-min)*255 + 1e-12).clip(0,255) (R3; reader convention)",
+   "constant_series": "map to all zeros and continue (A3)",
+   "forbid_standardization": true,
+   "forbid_rank_transform": true
+  },
+  "subsampling": {
+   "max_points": 8000,
+   "method": "if n>8000: np.linspace(0,n-1,8000).round().astype(int) (R7, A6)"
+  },
+  "compression": {
+   "compressor": "bz2",
+   "compresslevel": 9,
+   "forbid_lzma": true,
+   "payload": "np.diff(sequence).astype(np.int8).tobytes() (R4,R8,A4,A5)",
+   "first_difference_padding": "none; output length n-1 (A5)"
+  },
+  "scoring": {
+   "conditional_code": "C(a|b)=len(bz2(diff(q_a[stable_argsort(q_b)]),9))/max(len(bz2(diff(q_a),9)),1) (R4,R5)",
+   "score": "s = C(X|Y) - C(Y|X) so s>0 means X->Y (R6)",
+   "stable_argsort": "np.argsort(..., kind='stable') (R4)",
+   "tie_rule": "s == 0 counts as wrong (R2)"
+  },
+  "orientation": {
+   "natural_variable_order": "X = lower-index column, Y = higher-index column; never reorder by pairmeta before scoring (A8)",
+   "ground_truth": "cause_col -> effect_col from pairmeta; correct if sign(s) matches (cause_col < effect_col ? s>0 : s<0)"
+  },
+  "evaluation": {
+   "decision_forced": true,
+   "abstention": false,
+   "weighted_accuracy": "sum(w_i * correct_i) / sum(w_i) over all 102 pairs (A1)",
+   "report_unweighted_count": true,
+   "expected_unweighted_correct": "about 68/102 (R11)",
+   "tolerance_absolute_pct_points": 2.0,
+   "tolerance_range": [
+    72.7,
+    76.7
+   ]
+  },
+  "diagnostics": {
+   "bootstrap_n": 1000,
+   "bootstrap_seed": 12345,
+   "split_half_repeats": 200,
+   "split_half_seed": 12345,
+   "used_for_tuning": false
+  },
+  "determinism": {
+   "scorer_rng": null,
+   "point_estimate_reproducible_bit_for_bit": true,
+   "rng_only_in_diagnostics": true
+  }
+ },
+ "steps": [
+  "Create src/, data/cep/, and results/ directories; put all frozen constants in src/config.py.",
+  "Implement src/download_cep.py using requests: first try pairmeta.txt and pair0001.txt..pair0108.txt directly; if directory access fails, try the configured archive URLs and extract with zipfile/tarfile; cache everything under data/cep/ and fail with a clear message if no source is reachable.",
+  "Implement src/cep_data.py: read pairmeta.txt, skip comments, locate pair id, cause column, effect column, and last-column weight; filter to pairs where cause and effect are scalar and the loaded pair has >=50 rows; assert exactly 102 selected pairs. Keep pair files in natural column order for scoring.",
+  "Implement src/compression.py: for each pair, select the two scalar columns, optionally subsample to 8000 points using linspace, quantize each variable independently to 256 integer levels by min-max scaling, map constant series to zeros, compute marginal bz2 lengths dc(q), compute C(X|Y) and C(Y|X) with stable argsort, int8 first difference, bz2 level 9 byte length, and max(dc,1) normalization, then return s = C(X|Y) - C(Y|X).",
+  "Implement src/evaluate.py: for each pair decide X->Y if s>0 and Y->X if s<0, count s==0 as wrong, compare against pairmeta ground-truth orientation, and accumulate weighted correct mass and unweighted correct count. Verify the weighted formula on a tiny synthetic example.",
+  "Implement optional src/diagnostics.py using the same per-pair correctness and weights: fixed-seed bootstrap CI over pairs and a fixed-seed split-half check; these diagnostics must not feed back into scorer settings.",
+  "Implement reproduce.py with arguments --limit (for smoke), --output (default results/metrics.json), and --no-diagnostics; the default full run loads all 102 pairs, scores them, writes metrics.json, prints weighted accuracy, unweighted count, tie count, and whether the value is within [72.7, 76.7].",
+  "Run the smoke test on 3 pairs, then run a clean full pass on all 102 pairs and write results/metrics.json. Re-run once more to confirm identical per-pair scores/decisions and headline value.",
+  "If the headline misses tolerance, debug data parsing, orientation, bz2 payload, normalization, or quantization implementation; do not tune levels, compressor, subsampling, quantization, or sign rule against benchmark accuracy."
+ ],
+ "smoke_test": "Run `python reproduce.py --limit 3 --output results/smoke_metrics.json` (or score pair0001.txt directly through src.compression). It must download/load three eligible pairs, print quantized sequence lengths, marginal code lengths, conditional code lengths, signed scores, decisions, and a 3-pair weighted accuracy; assert all scores are finite and every pair receives a decision.",
+ "intermediate_checks": [
+  "Pairmeta parse check: 108-style source table is read with pair ids, cause/effect columns, and positive official weights; filtering yields exactly 102 eligible pairs with sum(weights) > 0.",
+  "Per-pair data check: every selected pair has scalar cause/effect and at least 50 rows; columns are loaded in natural order and pairmeta is used only for ground-truth orientation, never to reorder inputs before scoring.",
+  "Quantization check: qx and qy are integer arrays with values in [0,255], min maps to 0, max maps to 255, and no standardization or rank transform is applied; constant series are handled as all zeros.",
+  "Subsampling check: series <=8000 are untouched; series >8000 become length 8000 via the frozen linspace indices; only a minority of pairs should be affected.",
+  "Code-length check: every marginal and conditional bz2 length is positive; denominators use max(dc,1); no lzma import or substitute is present.",
+  "Decision sanity check: report the number of exact ties (expected 0), the number of X->Y and Y->X decisions, and a random-sign baseline near 50% weighted accuracy.",
+  "Weighted-metric check: validate sum(w_i*correct_i)/sum(w_i) against a synthetic two-pair example before trusting the real result.",
+  "Headline check: full run should give weighted accuracy in [72.7,76.7] and an unweighted correct count around 68/102; if not, inspect implementation errors rather than tuning frozen settings.",
+  "Determinism check: re-run scoring from scratch and compare per-pair scores/decisions bit-for-bit; no RNG should be used in the point-estimate path.",
+  "Diagnostics check: bootstrap CI with seed 12345 should be centered near the headline and the split-half estimate should be close to the reported 74.8%; these are reported only as auxiliary evidence."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "12-minute reference budget: about 2 minutes for environment setup and CEP download/caching, 2 minutes for parser and scorer implementation/validation, 1 minute for the 3-pair smoke test, 2 minutes for the full 102-pair run plus a clean deterministic re-run, and 5 minutes contingency for webdav/archive or pairmeta-format issues. Actual scoring is sub-second CPU; most budget is data acquisition and implementing/checking the small deterministic scorer."
+}

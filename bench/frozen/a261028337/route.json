@@ -1,0 +1,42 @@
+{
+ "route": "paper_only",
+ "why": "The inspected repository is the original Emoji Sarcasm Dataset release (jsubram/Sarcasm-Detection-Using-Emoji), not the analysis code for this paper. It supplies the Twitter CSV needed for C1 but contains no implementation of stability delta, emosent matching, permutation/BCa inference, or the four-test Holm family. The paper's own code link (anonymous.4open.science/r/StableContextsMixedFeelings) was not cloned/available in the inspection, so the C1 pipeline must be reimplemented from the paper's equations and the claim contract.",
+ "repo": "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji",
+ "entrypoints": [],
+ "missing_artifacts": [
+  "Paper analysis code (anonymous.4open.science link not inspected/available)",
+  "emosent-py package / Kralj Novak lexicon",
+  "Ferre 2025 Emoji-Dis data, Czestochowska ambiguity data and EmojiNet data for the four-test Holm family",
+  "all-MiniLM-L6-v2 weights (downloadable)"
+ ],
+ "blockers_seen": [
+  "Inspected repo is a dataset release, not the paper's analysis code",
+  "No GPU on this machine; C1 is CPU-only anyway",
+  "emosent-py is not installed and must be checked on Python 3.12",
+  "Exact background-tweet sampling seed and cleaning details are not specified, so rho may differ slightly"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 8-12 minutes: install/download packages and MiniLM (~4 min), embed about 16k short tweets on CPU (~2-4 min), compute deltas and 10k permutations/BCa on 59 points (<1 min).",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 10,
+  "gpu_speedup": 3,
+  "basis": "C1 is only MiniLM embeddings of about 16k short tweets plus a 59-point Spearman with 10k permutations and BCa; no model training. Estimate assumes package/model download on an 8-core CPU laptop."
+ },
+ "repo_info": {
+  "url": "https://github.com/jsubram/Sarcasm-Detection-Using-Emoji",
+  "cloned": true,
+  "n_files": 15,
+  "n_python": 6,
+  "python2_style_files": 0
+ }
+}

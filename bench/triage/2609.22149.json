@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Projected JSD for the Amazon rating–text boundary case: Stilt (text-permutation control) = 0.1017, compared to real reference 0.0000",
+  "table_ref": "Table II",
+  "dataset": "Amazon Reviews (6,064 records after preprocessing)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/privacy-enhancing-technologies/SynEval",
+  "https://zenodo.org/records/21786626"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 45,
+  "gpu_speedup": 2,
+  "basis": "The target only needs SBERT embeddings of ~6k short texts (all-MiniLM-L6-v2 runs on CPU in a few minutes), k-means with K=20, quantile binning, and a 2D contingency-table JSD; the permutation control is a simple shuffle, and the released repo plus Zenodo archive should provide the pipeline, though the Amazon subset may need to be reconstructed from the public source."
+ },
+ "blockers": [
+  "The exact 6,064-record Amazon preprocessing subset may need to be reconstructed from the public Amazon Reviews source if the repo does not ship the processed split",
+  "The paper's LLM baselines use an internal eBay GPT-5.2 deployment; the released code substitutes GPT-4o-mini, but the target (Stilt) does not require any LLM"
+ ],
+ "suitable": true,
+ "id": "2609.22149",
+ "title": "Beyond the Stitching Assumption: A Unified Framework for Multimodal Synthetic Data Evaluation via Semantic Quantization",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

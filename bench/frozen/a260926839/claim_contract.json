@@ -1,0 +1,281 @@
+{
+ "title": "LWCAL: Loss-Weighted Calibration for Tabular Classifiers with Noisy Calibration Labels",
+ "summary": "The paper studies post-hoc probability calibration for tabular classifiers when the held-out calibration labels are noisy, which breaks the clean-calibration-label assumption of Platt, isotonic, and beta calibration. It proposes LWCAL, a CPU-only weighted isotonic calibrator that down-weights calibration points by a median/MAD-normalized noisy-label loss, and GATED-LWCAL, which backs off toward raw scores when apparent label-model contradiction is high. In the 432-cell random-forest study, GATED-LWCAL reduces mean ECE from 0.188 to 0.122 and NLL from 0.438 to 0.396, while pure LWCAL achieves the lowest ECE at 0.113.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "GATED-LWCAL mean ECE is 0.122 over the 432 noisy random-forest cells.",
+   "metric": "ECE",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.122,
+   "unit": "ECE (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row Gated-LWCal, column ECE down",
+   "config_for_value": "Random forests with 160 trees, minimum leaf size 2, square-root feature subsampling; GATED-LWCAL; 432 noisy cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C2",
+   "statement": "GATED-LWCAL mean NLL is 0.396 over the 432 noisy random-forest cells.",
+   "metric": "NLL",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.396,
+   "unit": "NLL (lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row Gated-LWCal, column NLL down",
+   "config_for_value": "Random forests with 160 trees, minimum leaf size 2, square-root feature subsampling; GATED-LWCAL; 432 noisy cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C3",
+   "statement": "LWCAL mean ECE is 0.113 over the 432 noisy random-forest cells, the lowest average ECE.",
+   "metric": "ECE",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.113,
+   "unit": "ECE (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row LWCal, column ECE down",
+   "config_for_value": "Random forests with 160 trees, minimum leaf size 2, square-root feature subsampling; LWCAL; 432 noisy cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C4",
+   "statement": "Raw random-forest mean ECE is 0.188 over the 432 noisy cells.",
+   "metric": "ECE",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.188,
+   "unit": "ECE (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row Raw RF, column ECE down",
+   "config_for_value": "Raw random forest scores with 160 trees, minimum leaf size 2, square-root feature subsampling; 432 noisy cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": "The raw random forest has ECE 0.188 and NLL 0.438.",
+   "page": 3
+  },
+  {
+   "id": "C5",
+   "statement": "Standard isotonic calibration achieves mean ECE 0.147 over the 432 noisy cells.",
+   "metric": "ECE",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.147,
+   "unit": "ECE (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row Isotonic, column ECE down",
+   "config_for_value": "Isotonic regression trained on the noisy calibration split; random forests with 160 trees, min leaf 2, sqrt features; 432 cells.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": "Isotonic improves ECE to 0.147 and NLL to 0.424, but it still treats all calibration labels equally.",
+   "page": 3
+  },
+  {
+   "id": "C6",
+   "statement": "GATED-LWCAL mean Brier score is 0.125 over the 432 noisy random-forest cells.",
+   "metric": "Brier score",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; aggregate over 432 noisy calibration cells excluding clean eta=0",
+   "value": 0.125,
+   "unit": "Brier (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table III, row Gated-LWCal, column Brier down",
+   "config_for_value": "Random forests with 160 trees, minimum leaf size 2, square-root feature subsampling; GATED-LWCAL; 432 noisy cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "C7",
+   "statement": "Under symmetric label noise, LWCAL reduces mean ECE from 0.191 for raw to 0.080.",
+   "metric": "ECE",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; symmetric-noise random-forest cells",
+   "value": 0.08,
+   "unit": "ECE (fraction, lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table V, row Symmetric, column ECE down, LWCal",
+   "config_for_value": "LWCAL under symmetric corruption; random forests with 160 trees, min leaf 2, sqrt features; noisy calibration cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": "LWCAL is excellent under symmetric noise, reducing ECE from 0.191 to 0.080 and NLL from 0.448 to 0.367.",
+   "page": 4
+  },
+  {
+   "id": "C8",
+   "statement": "Under asymmetric missed-positive noise, GATED-LWCAL mean NLL is 0.410, below raw 0.428, isotonic 0.414, and LWCAL 0.450.",
+   "metric": "NLL",
+   "dataset": "Nine local binary tabular tasks; main random-forest study",
+   "split": "Clean test labels; asymmetric-noise random-forest cells",
+   "value": 0.41,
+   "unit": "NLL (lower better)",
+   "higher_is_better": false,
+   "table_ref": "Table V, row Asymmetric, column NLL down, G-LWCal",
+   "config_for_value": "GATED-LWCAL under asymmetric corruption; random forests with 160 trees, min leaf 2, sqrt features; noisy calibration cells; clean test labels.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~6 min full experiment on 96-thread Linux host (paper).",
+   "quote": "GATED-LWCAL is designed for exactly this case: its NLL is 0.410, below raw (0.428), isotonic (0.414), and pure LWCAL (0.450)",
+   "page": 4
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest primary aggregate: one random-forest run over the 432 noisy cells yields the headline GATED-LWCAL ECE, and NLL is computed from the same predictions. It avoids the extra robustness sweeps and base-learner variants."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: ECE is a bounded [0,1] score with no repeated-run std for the target aggregate; the paper prints 0.122 as a fraction, so use 0.02 absolute (2 points)."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Fit the base probabilistic classifier on noisy training labels and freeze it before any calibration; do not retrain it during calibration.",
+   "cite": "Table I Step 1; Section III-A",
+   "quote": "Fit any probabilistic base classifier fθ on noisy Dtrain and freeze it.",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Use a separate noisy calibration split and expose only calibration probabilities plus noisy labels to the calibrator; no clean labels, true noise rate, or trusted subset.",
+   "cite": "Section III-A",
+   "quote": "It does not see the clean labels, the true noise rate, or a trusted subset.",
+   "page": 2
+  },
+  {
+   "id": "R3",
+   "stmt": "For each calibration point compute the noisy-label loss l_i = -log(y_tilde_i p_i + (1-y_tilde_i)(1-p_i)), then median m and MAD s.",
+   "cite": "Section III-B, Eq. (1)-(2); Table I Step 3",
+   "quote": "Compute noisy-label losses by Eq. (1); compute median m, median absolute deviation s, and bounded reliability weights wi by Eq. (2).",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Set bounded reliability weights w_i = clip(sigmoid(-(l_i - m)/(1.4826 s + eps)), 0.05, 1), using median/MAD normalization.",
+   "cite": "Section III-B, Eq. (2)",
+   "quote": "where m is the median calibration loss and s is the median absolute deviation.",
+   "page": 1
+  },
+  {
+   "id": "R5",
+   "stmt": "Fit a nondecreasing weighted isotonic map g by weighted least squares with weights w_i; this is LWCAL.",
+   "cite": "Section III-B, Eq. (5); Table I Step 4",
+   "quote": "Fit a weighted isotonic map g by Eq. (5); this is LWCAL.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "For GATED-LWCAL, output (1-rho) g(p) + rho p, mixing the LWCAL map with the raw score.",
+   "cite": "Section III-C, Eq. (3)",
+   "quote": "GATED-LWCAL therefore mixes the weighted isotonic output with the raw score using Eq. (3).",
+   "page": 2
+  },
+  {
+   "id": "R7",
+   "stmt": "Compute d_hat as the fraction of calibration points where the base 0.5 decision disagrees with the noisy label.",
+   "cite": "Section III-C, Eq. (6)",
+   "quote": "where ˆd is the fraction of calibration points whose noisy label disagrees with the base model’s 0.5 decision.",
+   "page": 1
+  },
+  {
+   "id": "R8",
+   "stmt": "Use gate rho = clip((d_hat - 0.29)/0.12, 0, 1) with fixed constants 0.29 and 0.12 chosen before the final run.",
+   "cite": "Section III-C, Eq. (3)",
+   "quote": "The thresholds in Eq. (3) are fixed constants",
+   "page": 2
+  },
+  {
+   "id": "R9",
+   "stmt": "Report ECE with 15 equal-width bins as the primary calibration metric, plus adaptive equal-mass ECE, Brier, NLL, AUC, and macro-F1.",
+   "cite": "Section IV-B",
+   "quote": "We report expected calibration error with 15 equal-width bins, adaptive ECE with equal-mass bins, Brier score [15], negative log likelihood, AUC, and macro-F1.",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Aggregate the main result over all noisy cells, excluding clean eta=0 rows from the headline.",
+   "cite": "Section IV-B",
+   "quote": "The main result aggregates all noisy cells, excluding the clean η = 0 rows from the headline.",
+   "page": 3
+  },
+  {
+   "id": "R11",
+   "stmt": "Use paired bootstrap intervals over matched dataset/seed/noise-mode/noise-rate cells for comparisons.",
+   "cite": "Section IV-B; Table VI",
+   "quote": "Confidence intervals are paired bootstrap intervals over matched dataset/seed/noise-mode/ noise-rate cells.",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "Make the pipeline deterministic with a fixed seed list and expose a one-command reproduction script.",
+   "cite": "Section IX",
+   "quote": "The script is deterministic up to the fixed seed list in the source.",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "Log m, s, d_hat, rho, and every calibration weight for auditability.",
+   "cite": "Table I Step 6",
+   "quote": "Log m, s, ˆd, ρ, and all calibration weights so operators can audit which labels influenced the map.",
+   "page": 3
+  },
+  {
+   "id": "R14",
+   "stmt": "Corrupt training and calibration labels independently and keep test labels clean for evaluation only.",
+   "cite": "Section III-A; Section IV-A",
+   "quote": "Training and calibration labels are corrupted independently; test labels remain clean.",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "Breast Cancer",
+   "how_to_get": "scikit-learn load_breast_cancer; scripts/trimcal_eval.py creates the stratified local split."
+  },
+  {
+   "name": "Wine Class 0 and Wine Class 2",
+   "how_to_get": "scikit-learn load_wine with one-vs-rest binarization for the named class; scripts/trimcal_eval.py builds splits."
+  },
+  {
+   "name": "Digits High and Digits Even",
+   "how_to_get": "scikit-learn load_digits with digit>=5 or digit parity binarization; scripts/trimcal_eval.py builds splits."
+  },
+  {
+   "name": "Iris Versicolor",
+   "how_to_get": "scikit-learn load_iris with Versicolor as positive class; scripts/trimcal_eval.py builds splits."
+  },
+  {
+   "name": "Synthetic Overlap / Sparse / Imbalance",
+   "how_to_get": "Generated locally by scripts/trimcal_eval.py; exact generator parameters are not stated in the paper."
+  },
+  {
+   "name": "Main result CSVs",
+   "how_to_get": "Artifact at https://github.com/ZemingL/lwcal: data/main_results.csv, data/paired_deltas.csv, data/oracle_results.csv."
+  }
+ ],
+ "code_links": [
+  "https://github.com/ZemingL/lwcal"
+ ],
+ "stated_compute": "On the current 96-thread Linux host the full experiment takes about six minutes.",
+ "paper_meta": {
+  "source": "2609.26839",
+  "kind": "arxiv",
+  "arxiv_id": "2609.26839",
+  "url": "https://arxiv.org/abs/2609.26839",
+  "title": "LWCAL: Loss-Weighted Calibration for Tabular Classifiers with Noisy Calibration Labels",
+  "pages": 8
+ }
+}

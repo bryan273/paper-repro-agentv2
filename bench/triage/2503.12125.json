@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "AUROC of RiForest on the Glass dataset (0.7086)",
+  "table_ref": "Table 3",
+  "dataset": "Glass (from ODDS)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code released; must implement RiForest from Algorithm 1 and run 20 repetitions on Glass (214 samples, 9 features) with 100 trees, subsample 256, plus data download and environment setup."
+ },
+ "blockers": [
+  "No code or hyperparameter details beyond the paper; implementation from scratch required",
+  "Exact reproduction of the 20-run average may be sensitive to random seeds and implementation details"
+ ],
+ "suitable": true,
+ "id": "2503.12125",
+ "title": "Robust Isolation Forest using Soft Sparse Random Projection and Valley Emphasis Method",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

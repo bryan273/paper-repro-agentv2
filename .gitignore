@@ -59,3 +59,14 @@ test-results/
 pnpm-lock.yaml
 *.pyc
 __pycache__
+
+# from paper-repro-agent (v1)
+.env.*
+!.env.example
+.venv/
+__pycache__/
+runs/
+workspaces/
+.cache/
+.vercel/
+bench/logs/

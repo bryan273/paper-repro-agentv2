@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Mean ROC-AUC of the kth-NN algorithm across all 49 datasets (after excluding 3) is 0.769, as reported in the 'Mean AUC' column of Table 3.",
+  "table_ref": "Table 3",
+  "dataset": "49 real-world multivariate tabular datasets (from ODDS, ADBench, ELKI, etc.)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/RoelBouman/outlierdetection",
+  "https://github.com/lukasruff/Deep-SVDD-PyTorch"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "The target requires running kth-NN (a simple distance-based method) on 49 datasets, many of which are small to medium (largest ~286k samples). The code and data are provided, but the full pipeline includes data loading, preprocessing, and evaluation across all datasets; on a CPU laptop this is feasible but may take a few hours due to the number of datasets and hyperparameter settings (k=5..30)."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2305.00735",
+ "title": "Unsupervised anomaly detection algorithms on real-world data: how many do we need?",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

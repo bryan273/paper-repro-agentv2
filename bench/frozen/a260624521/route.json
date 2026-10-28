@@ -1,0 +1,41 @@
+{
+ "route": "full_release",
+ "why": "The authors' repository is cloned and complete: the icspylab package (ics.py, scatter.py, distributions.py with generate_randu), the exact example script for the target result (examples/randu.py), and only ordinary pip dependencies (numpy, pandas, scikit-learn, scipy, numba, seaborn, matplotlib). No weights or external data files are needed because the RANDU dataset is generated on the fly inside the package, and the match target is a single unsupervised fit with explicit hyperparameters. Only small environment work is required (pip install, and optionally skipping the R/rpy2 comparison tests, which are irrelevant to C1).",
+ "repo": "https://github.com/cbecquart/ICSpyLab",
+ "entrypoints": [
+  "examples/randu.py",
+  "icspylab/distributions.py::generate_randu",
+  "icspylab/ics.py::ICS"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "environment.yml is UTF-16 encoded and pins python=3.11 plus rpy2/r-ics; it should be ignored in favour of requirements.txt / pip install -e .",
+  "tests/comparisons/test_python_vs_r.py requires an R installation with the ICS package via rpy2; not needed for C1 and can be deselected",
+  "numba JIT (used by tcov/tcovAxis) needs a version supporting Python 3.12 (numba >= 0.59); first-call compilation adds a few seconds",
+  "no GPU on this machine; irrelevant since the target run is a 3-dimensional problem"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 3-6 minutes of command time: ~2-3 min pip install of the scientific stack (a pip install of icspylab or pip install -e . from the clone), then examples/randu.py runs in well under a minute including Numba JIT warm-up for tcovAxis. Plotting the ICS vs PCA panels adds a few seconds.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 6,
+  "gpu_speedup": null,
+  "basis": "One 3-variable RANDU sample of a few thousand points, one ICS fit (a Tyler/tcovAxis iteration plus one eigendecomposition) and one PCA fit, so the whole cost is pip installing numpy/scipy/scikit-learn/numba/seaborn/matplotlib plus a sub-minute script; the estimate is dominated by installation, not computation."
+ },
+ "repo_info": {
+  "url": "https://github.com/cbecquart/ICSpyLab",
+  "cloned": true,
+  "n_files": 97,
+  "n_python": 38,
+  "python2_style_files": 0
+ }
+}

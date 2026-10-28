@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "WCSP identifies 143 candidate hazard clusters (61 hard, 82 soft), of which 106 are merged into a final repair plan totaling 1,997.4 m, covering 100% of potholes (138/138) and 91.6% of cracks (404/441), capturing 93.6% (542/579) of total hazard benefit.",
+  "table_ref": "Section 5 / Abstract key findings (no numbered table given in excerpt)",
+  "dataset": "PaveDistress (S315 highway, China)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 5,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Algorithm is O(n log n) over 4,922 images and runs in under one second per the paper; the real cost is downloading the PaveDistress image collection and re-implementing the clustering/padding/decision pipeline from the paper's equations, since no code is linked."
+ },
+ "blockers": [
+  "No code repository linked; pipeline must be re-implemented from equations",
+  "Dataset download size and availability of exact deduplicated file set must be verified",
+  "Exact reproduction of 143/61/82 cluster counts depends on precise chainage parsing and dedup rules"
+ ],
+ "suitable": true,
+ "id": "2610.06989",
+ "title": "Repair Lot Skyline: A Weighted Constraint Satisfaction Approach to Pavement Repair Optimization from Geospatial Hazard Density",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

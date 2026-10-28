@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Average correct classification (CC) rate of Boundary Peeling (BP) on unimodal and bimodal simulated data with no outliers (n=50, d=100), reported as 97.928 in Table 1.",
+  "table_ref": "Table 1, Average row, BP column",
+  "dataset": "Synthetic data generated as described in Section 3 (multivariate normal, t, lognormal, Wishart; unimodal and bimodal; correlations 0, 0.5, 0.75; no outliers)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/yzhao062/pyod"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code for BP/EBP is provided; the agent must implement the peeling algorithm from the paper and run 1000 simulations per scenario (24 scenarios in Table 1) with OCSVM, which is CPU-bound and may take a few hours on 8 cores."
+ },
+ "blockers": [
+  "No official implementation of Boundary Peeling or Ensembled Boundary Peeling is linked; only PyOD is referenced for baselines.",
+  "The exact simulation code and random seeds are not provided, so reproducing the exact average may require re-implementing the data generation and peeling procedure."
+ ],
+ "suitable": true,
+ "id": "2309.05630",
+ "title": "Boundary Peeling: Outlier Detection Method Using One-Class Peeling",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

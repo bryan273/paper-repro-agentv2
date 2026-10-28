@@ -1,0 +1,27 @@
+{
+ "target": {
+  "statement": "AUC of iForest on the mammography dataset without DP is 74% (Table 1, row 'mammography', column 'Without Privacy', metric 'AUC').",
+  "table_ref": "Table 1",
+  "dataset": "mammography"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "iForest on 11k rows with 6 features is trivial; the main cost is implementing the pipeline (grid search, SHAP) and downloading the small ODDS dataset."
+ },
+ "blockers": [
+  "No code released; must reimplement the full pipeline (grid search, SHAP, DP noise) from the paper description."
+ ],
+ "suitable": true,
+ "id": "2404.06144",
+ "title": "Differential Privacy for Anomaly Detection: Analyzing the Trade-off Between Privacy and Explainability",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

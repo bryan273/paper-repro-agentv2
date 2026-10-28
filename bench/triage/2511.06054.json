@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Avg Precision of Ellipse-IF on the Wine dataset (Scenario II, Normal threshold distribution) = 0.81",
+  "table_ref": "Table 3",
+  "dataset": "Wine (ODDS)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/anonymous2532/FuBIF"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Wine is 129x13; fitting an Ellipse-IF forest and averaging 10 runs is seconds of CPU, dominated by pip install and ODDS download; main risk is that the anonymous repo may be incomplete or the exact protocol (10-run averaging, Scenario II inlier-only training, normal threshold) must be re-derived from text."
+ },
+ "blockers": [
+  "anonymous repo may be missing/outdated or lack exact configs for Scenario II + Normal threshold",
+  "exact 10-run averaging and preprocessing details must be inferred from paper text"
+ ],
+ "suitable": true,
+ "id": "2511.06054",
+ "title": "Function Based Isolation Forest (FuBIF): A Unifying Framework for Interpretable Isolation-Based Anomaly Detection",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "CatBoost churn prediction achieves F1-score of 0.6366 on the held-out test set",
+  "table_ref": "Table VIII",
+  "dataset": "IBM Telco Customer Churn (Kaggle)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (7k rows), gradient boosting on CPU, randomized search with 5-fold CV; no code provided so pipeline must be reimplemented from paper description."
+ },
+ "blockers": [
+  "No code repository linked (paper says 'contact us')",
+  "Exact hyperparameter search space and random seeds not fully specified",
+  "Threshold optimization details (Algorithm 1) may be ambiguous"
+ ],
+ "suitable": true,
+ "id": "2607.10260",
+ "title": "Data-Driven Telecom Marketing Optimization: A Machine Learning-Based Churn Prediction and Customer Segmentation Framework",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

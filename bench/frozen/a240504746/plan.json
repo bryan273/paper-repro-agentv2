@@ -1,0 +1,111 @@
+{
+ "approach": "Use the official seoyoungh/svd-ae repository as the primary path: fetch its preprocessed ML-1M data.zip, run `main.py --dataset ml-1m --k 148` under a modern CPU Python 3.12 stack without the dead requirements.txt pins, and parse HR@10. If the Google Drive archive or the old code path is unavailable, port only the exact closed-form SVD-AE math into a small fallback module: build D_U^{-1/2} R D_I^{-1/2}, take a rank-148 randomized truncated SVD, form R_hat=R~B, and evaluate with the authors' eval.py semantics. The fallback preserves R1-R13 and uses the official split when possible; otherwise it builds the standard ML-1M leave-one-out split. `reproduce.py` is a thin orchestrator that tries the author path first and writes results/metrics.json with the C1 value and pass/fail against the 1.0 tolerance.",
+ "files": [
+  {
+   "path": "fetch_data.py",
+   "purpose": "Download and unzip the authors' Google Drive data.zip if available; otherwise download raw ML-1M, parse ratings.dat, binarize interactions, build the ML-1M leave-one-out train/validation/test split, and validate expected counts.",
+   "requirement_ids": [
+    "R8",
+    "R10"
+   ]
+  },
+  {
+   "path": "svdae_core.py",
+   "purpose": "Fallback implementation of the exact SVD-AE math: symmetric degree normalization, rank-m randomized truncated SVD, closed-form B and R_hat scoring, and HR@10/NDCG@10/PSP@10 evaluation copied from the authors' eval.py protocol.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R5",
+    "R6",
+    "R7",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "fallback_svdae.py",
+   "purpose": "CLI wrapper that loads ML-1M, runs svdae_core with k=148, prints metrics, and can run a tiny synthetic smoke test.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R5",
+    "R6",
+    "R7",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: ensure data, attempt `python main.py --dataset ml-1m --k 148`, parse author stdout if successful, otherwise call fallback_svdae, then write results/metrics.json with C1 HR@10 and tolerance check.",
+   "requirement_ids": [
+    "C1",
+    "R8",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "ML-1M (C1)",
+  "claim_id": "C1",
+  "metric": "HR@10",
+  "target_value": "31.79 (paper Table 2, C1)",
+  "tolerance": "1.0 absolute percentage point (claim contract Rule 2)",
+  "gamma": "0.04 (paper Sec 4.1 / R4, optimal for all datasets)",
+  "rank_m": "round(0.04 * min(6040, 3706)) = 148 (R3/A6; author CLI --k 148)",
+  "normalization": "R_tilde = D_U^{-1/2} R D_I^{-1/2} with D_U=diag(R 1), D_I=diag(1^T R) (R1)",
+  "zero_degree_handling": "clamp zero degrees to 1 before inverse square root (A4)",
+  "svd_backend": "sklearn.utils.extmath.randomized_svd on sparse R_tilde, n_components=148, n_iter=4, random_state=0 (R12/A5); scipy.sparse.linalg.svds fallback if needed",
+  "closed_form": "B = R_tilde^+ R = V Sigma^{-1} U^T R; score = R_tilde B = U_m U_m^T R (R5/R6)",
+  "training": "none; closed-form only, no iterative loop (R7)",
+  "regularizer": "none; no EASE-style L2 or diagonal constraint (R13/A7)",
+  "split": "authors' data.zip split if downloaded (R8); else ML-1M leave-one-out by timestamp: last item test, second-last item validation, rest train (A1/A10)",
+  "implicit_feedback": "all observed ratings are positive (R9/A10)",
+  "preprocessing": "use published ML-1M 5-core data; no extra core filtering if official data.zip is present (R10)",
+  "candidate_set": "full ranking over all items, excluding training items; mirror authors' eval.py (R11/A2/A3)",
+  "tie_break": "score descending, then item id ascending (A11)",
+  "metrics": [
+   "HR@10",
+   "NDCG@10",
+   "PSP@10"
+  ],
+  "k": 10,
+  "device": "cpu",
+  "dtype": "float64 for matmul/SVD accumulation, float32 acceptable for scoring if memory pressure",
+  "seed": 0,
+  "validation_gamma_grid": "[0.01, 0.02, 0.03, 0.04, 0.05] if validation sweep is run (R4)",
+  "author_entrypoint": "python main.py --dataset ml-1m --k 148",
+  "data_source_primary": "Google Drive data.zip id 1cuhQw1aR9BEwutK3svKtL_-CGmcIPOiX from the official README",
+  "data_source_fallback": "https://files.grouplens.org/datasets/movielens/ml-1m.zip",
+  "output": "results/metrics.json"
+ },
+ "steps": [
+  "Work in the official repo root; inspect main.py, data.py, model.py, eval.py, parse.py, and README to record the exact CLI, expected data filenames, metric print format, candidate masking, and tie-breaking. Do not edit author .py files.",
+  "Set up a Python 3.12 CPU environment with the preinstalled modern stack; pip-install only missing helpers such as gdown and h5py. Do not install requirements.txt because torch==1.11.0+cu113, jax==0.3.25, jaxlib==0.3.25, and neural-tangents==0.6.1 are incompatible with Python 3.12 here.",
+  "Run fetch_data.py: try gdown/requests for the authors' data.zip id, unzip it, and verify data/ml-1m exists. If the archive is unavailable, download raw ML-1M, parse ratings.dat, binarize all ratings as positive, and build the leave-one-out split by timestamp.",
+  "Validate ML-1M counts before modeling: 6,040 users, 3,706 items, 1,000,209 interactions if official data is used; check train/validation/test user coverage and zero-degree user/item counts.",
+  "Compute and assert rank m = round(0.04 * min(6040, 3706)) = 148, matching the author CLI `--k 148` and R3/A6.",
+  "Run the smoke test: `python fallback_svdae.py --smoke` on a 40x25 synthetic binary matrix with rank 2; assert normalized matrix shape, SVD factor shapes, finite score matrix, and HR@2 computation. Also run `python main.py --help` or import main/data/model/eval to catch dependency errors.",
+  "Attempt the official author path first: run `python main.py --dataset ml-1m --k 148` with CPU only, capture stdout/stderr to results/author_stdout.txt, and parse HR@10/NDCG@10/PSP@10 if the script succeeds.",
+  "If the official path fails or its output cannot be parsed, run `python fallback_svdae.py --dataset ml-1m --k 148`; use authors' eval.py functions if importable, otherwise replicate its full-ranking candidate masking and metric formulas exactly from the repo.",
+  "If time permits, run the validation sweep over gamma [0.01,0.02,0.03,0.04,0.05] by validation HR@10 to confirm gamma=0.04, but keep the final C1 run at k=148 (A1: final model fit on train only).",
+  "Write results/metrics.json with the achieved HR@10, target 31.79, absolute difference, tolerance 1.0, pass/fail, method used (official vs fallback), additional metrics, and the full config. Then run `python reproduce.py` once cleanly to confirm the same number is reproducible.",
+  "Save logs for data acquisition, SVD shape/rank checks, and the final command output; report any residual risk from using the fallback split if data.zip was unavailable."
+ ],
+ "smoke_test": "Run `python fallback_svdae.py --smoke`: build a 40x25 synthetic binary interaction matrix, hold out one item per user, normalize with symmetric degrees, compute a rank-2 randomized truncated SVD, form U_m U_m^T R, assert all shapes and finiteness, and compute HR@2/NDCG@2 on the synthetic held-out items. Separately run `python main.py --help` or import main/data/model/eval to verify that the author modules at least import before attempting the full ML-1M run.",
+ "intermediate_checks": [
+  "Repo is the official seoyoungh/svd-ae code and no author .py files were modified.",
+  "Data counts match ML-1M expectation: 6,040 users, 3,706 items, 1,000,209 interactions (or report actual official data.zip counts if different).",
+  "Every user has train, validation, and test data in the fallback split; zero-degree user/item counts are zero after clamping or reported.",
+  "Rank m is exactly 148 from gamma=0.04 and min(6040,3706); the author CLI uses --k 148.",
+  "Truncated SVD returns 148 singular values, all positive; score matrix has shape 6040x3706 and contains no NaNs/infs.",
+  "Evaluation candidate set excludes training items per user; the held-out test item is present and not in train; tie-breaking is deterministic by score desc then item id asc.",
+  "A trivial popularity baseline HR@10 is lower than SVD-AE, catching an inverted or leaky evaluation.",
+  "Official `main.py` stdout contains a parseable HR@10 before trusting the author path; otherwise fallback metrics are used and logged as such."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 20-25 minutes total: 0-5 min inspect repo and set up modern Python 3.12 CPU dependencies without the dead pins; 5-12 min download/unzip data.zip or build the raw ML-1M fallback split; 12-15 min smoke test and shape/rank checks; 15-20 min run the official main.py attempt or fallback SVD + full ranking evaluation; 20-23 min write/verify results/metrics.json and do one clean reproduce.py rerun; keep 2-5 min buffer for Google Drive failures or parser fixes."
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Neural Network accuracy (CA) of 0.76 (reported as 78.57% in text) on Pima Indians Diabetes dataset, stratified 5-fold CV",
+  "table_ref": "Table II",
+  "dataset": "Pima Indians Diabetes (UCI, 768 instances)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Tiny 768-row tabular dataset; standard sklearn MLP/classifiers with 5-fold CV run in seconds on CPU, but no code is released so the pipeline (preprocessing, feature selection, hyperparameters) must be re-implemented from a vague description."
+ },
+ "blockers": [
+  "No code released despite paper claiming open-source",
+  "Preprocessing/feature-selection/hyperparameter details underspecified, so exact 0.76 may not be hit",
+  "Inconsistent numbers between abstract (78.57%) and tables (0.76)"
+ ],
+ "suitable": true,
+ "id": "2506.10180",
+ "title": "A Comparative Study of Machine Learning Techniques for Early Prediction of Diabetes",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

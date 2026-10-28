@@ -1,0 +1,34 @@
+{
+ "target": {
+  "statement": "ZEN mean AUROC (×100) over the 47 ADBench datasets in the contaminated regime = 79.7",
+  "table_ref": "Table 1 (contaminated AUROC column, ZEN row)",
+  "dataset": "ADBench (47 classical tabular datasets)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Maximilianb1/zen-focus-tabular-anomaly-detection",
+  "https://github.com/PriorLabs/tabpfn-extensions"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 600,
+  "gpu_speedup": 20,
+  "basis": "ZEN requires ~3,750 s of A100 time per seed for 47 datasets (Table 17: 850 s + 2,904 s), i.e. ~5 GPU-hours per seed and ~25 GPU-hours for 5 seeds; on a CPU-only laptop TabPFN forward passes are ~10-20x slower, pushing the full protocol to many hours to days, and the paper itself states both ZEN and FOCUS 'need a GPU'."
+ },
+ "blockers": [
+  "Paper explicitly states ZEN/FOCUS need a GPU; TabPFN-3 forward passes over 10-fold leave-one-out x 6 feature subsets x 47 datasets x 5 seeds are far too slow on 8 CPU cores",
+  "Full headline number averages over 47 datasets and 5 seeds, not a single small run",
+  "TabPFN-3 checkpoint (tabpfn 8.1.0) is large and must be downloaded; CPU inference is the bottleneck",
+  "Reproducing the exact 79.7 requires the full ADBench pipeline with the authors' leak fix and per-dataset configs"
+ ],
+ "suitable": false,
+ "id": "2610.06693",
+ "title": "Adapting prior-data fitted networks for tabular anomaly detection",
+ "pages": 33,
+ "model": "DeepSeek-V4.1-Flash"
+}

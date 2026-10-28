@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "The IQR-based commercial anomaly detection layer identifies 1,351 price anomalies, of which 1,288 (net weight >= 1.0 kg) are forwarded to the Customs Review queue.",
+  "table_ref": "Section 3.1 (text; no numbered table)",
+  "dataset": "UN Comtrade ODS-related trade records 2020-2022 (~100,000 rows)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is released, so the whole ingestion/cleaning/K-Means/IQR pipeline must be re-implemented from prose; the raw Comtrade extract (specific HS codes, reporters, years, filters) is not specified, so exact reproduction of the 1,351/1,288 counts is unlikely even though the compute itself is trivial on 100k rows."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Exact Comtrade query (HS codes, reporters, period, filters) not specified, so the 100k-row dataset cannot be reconstructed exactly",
+  "Counts depend on undocumented cleaning and per-HS-code IQR choices"
+ ],
+ "suitable": false,
+ "id": "2512.07864",
+ "title": "Pattern Recognition of Ozone-Depleting Substance Exports in Global Trade Data",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

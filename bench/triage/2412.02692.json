@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "IBQ with codebook size 16,384 and code dimension 256 achieves 1.37 rFID on ImageNet 50k validation set",
+  "table_ref": "Table 1",
+  "dataset": "ImageNet 256x256"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/TencentARC/SEED-Voken"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 14400,
+  "gpu_speedup": 100,
+  "basis": "Training the tokenizer requires 330 epochs on ImageNet with 8 A6000 GPUs (3h40min/epoch per Table 10), which is infeasible on a CPU-only laptop within a few hours."
+ },
+ "blockers": [
+  "Requires training a VQGAN-style tokenizer for 330 epochs on ImageNet, needing GPU compute (8 A6000 GPUs for ~3.7 hours per epoch).",
+  "No pre-trained model checkpoint is provided for the exact configuration (16,384 codebook, 256 dim) to directly evaluate rFID.",
+  "Evaluation requires generating reconstructions for the entire ImageNet 50k validation set and computing rFID, which is computationally heavy."
+ ],
+ "suitable": false,
+ "id": "2412.02692",
+ "title": "Scalable Image Tokenization with Index Backpropagation Quantization",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

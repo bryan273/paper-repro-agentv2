@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "VideoReward achieves 61.26% overall accuracy with ties on VideoGen-RewardBench.",
+  "table_ref": "Table 2",
+  "dataset": "VideoGen-RewardBench"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 100000,
+  "gpu_speedup": 100,
+  "basis": "Reproducing the reward-model cell requires training Qwen2-VL-2B on 182k human-annotated video-preference triplets; the paper uses 8 NVIDIA A800 80GB GPUs and does not link code or data."
+ },
+ "blockers": [
+  "No code, configs, or dataset links in the paper",
+  "Requires proprietary large-scale human preference annotations and 108k generated videos",
+  "Reward model training used 8 NVIDIA A800 80GB GPUs",
+  "Video alignment/Flow-DPO experiments use an internal research-purpose video generation model and 16 NVIDIA A800 80GB GPUs",
+  "Cannot be reproduced on an 8-core CPU / 16GB RAM laptop within a few hours"
+ ],
+ "suitable": false,
+ "id": "2501.13918",
+ "title": "Improving Video Generation with Human Feedback",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

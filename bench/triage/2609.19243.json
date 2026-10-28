@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Runtime of SCCP (partial SVD) on the Newsgroups 3x5 matrix (2811x198) is 0.053 s, vs 0.13 s for full-SVD SCC",
+  "table_ref": "Table II, row 'Newsgroups 3 x 5', column SCCP",
+  "dataset": "20 Newsgroups (TF-IDF word-document matrix, 2811x198, 3 doc clusters / 5 word clusters)"
+ },
+ "release": "partial",
+ "code_links": [
+  "github.com/mazdarani/randomized-spectral-co-clustering"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Paper code is MATLAB (needs reimplementation in Python), data is public 20 Newsgroups, matrices are tiny (2811x198) so runs take seconds; most time is downloading data, building TF-IDF matrices, and reimplementing the four methods plus 20-seed averaging."
+ },
+ "blockers": [
+  "Code is MATLAB, not runnable as-is on a typical laptop without MATLAB license; must be reimplemented",
+  "Word cluster labels are proxy labels from GloVe clustering, not provided; exact reproduction of CAcc/C-ARI needs the same proxy construction",
+  "Exact runtime numbers depend on MATLAB BLAS/LAPACK and hardware, so absolute seconds will not match"
+ ],
+ "suitable": true,
+ "id": "2609.19243",
+ "title": "Randomized SVD Approximations for Spectral Co-Clustering of Word-Document Matrices",
+ "pages": 6,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Accuracy of Random Forest with entropy-based features on CIC-IDS2017 (0.9248 ± 0.0003), compared to baseline 0.9047 ± 0.0005",
+  "table_ref": "Fig. 4 / Section IV-C",
+  "dataset": "CIC-IDS2017"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "CIC-IDS2017 (~1.7 GB CSV, 2.8M rows) is public; Random Forest on CPU is feasible, but the entropy feature construction (sliding-window joint entropy over multiple features) and 15-fold CV must be re-implemented from a vague description, and the paper reports ~77 min per run, so a clean re-run plus implementation is a few hours."
+ },
+ "blockers": [
+  "No code released; entropy feature (window size w, feature pairs, binning) underspecified",
+  "15-fold CV over 2.8M rows with sliding-window joint entropy is slow on CPU (~4600 s reported per run)",
+  "Exact reproduction of reported means/std depends on unspecified preprocessing and binning choices"
+ ],
+ "suitable": true,
+ "id": "2607.15379",
+ "title": "On the Impact of Entropy-based Features",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "ICELUT achieves 25.27 dB PSNR on the MIT-Adobe FiveK dataset (expert C), as reported in Table 4.",
+  "table_ref": "Table 4",
+  "dataset": "MIT-Adobe FiveK"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Stephen0808/ICELUT"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 240,
+  "gpu_speedup": 5,
+  "basis": "Training a tiny pointwise CNN for 400 epochs on 4500 480p images is feasible on CPU but slow; GPU would speed up significantly. Data download and preprocessing add time."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2403.19238",
+ "title": "Taming Lookup Tables for Efficient Image Retouching",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

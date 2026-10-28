@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Test R² of the final XGBoost model (Model 2) for compressive strength prediction, reported as 0.94 in Table 8.",
+  "table_ref": "Table 8, Compressive strength, Model 2, Testing, R2",
+  "dataset": "UHPC compiled database (1,201 data points from 19 literature sources, 17 input features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "The dataset is not public (available only on request) and must be reconstructed from 19 papers via plot digitization; the ML training itself (XGBoost on ~1200 rows) takes seconds on CPU, so the estimate is dominated by data collection and cleaning."
+ },
+ "blockers": [
+  "Dataset not released: 'Data will be made available on request'",
+  "No code repository or configuration files provided",
+  "Data must be manually extracted from 19 literature sources using WebPlotDigitizer",
+  "Exact train/test split and random seed not specified, so exact R² cannot be guaranteed even with data"
+ ],
+ "suitable": false,
+ "id": "2512.21610",
+ "title": "A Data-Driven Multi-Objective Approach for Predicting Mechanical Performance, Flowability, and Porosity in Ultra-High-Performance Concrete (UHPC)",
+ "pages": 21,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,39 @@
+{
+ "route": "partial_release",
+ "why": "The authors' code is present and complete (train_FEGNN.py, FEGNN_model.py, utils.py, FEGNN_params.csv with the per-dataset best hyper-parameters) AND all eight datasets are already shipped in the repo (chameleon.npz, squirrel.npz, and processed/raw PyG data for cora, citeseer, pubmed, Photo, Computers, actor). Nothing essential is missing as an artifact. What is broken is the environment contract: the repo pins Python 3.8.8 / torch==1.9.1 / torch_geometric==2.0.1, which cannot be installed on this Windows 11 + Python 3.12 machine, and there is no GPU (the script defaults to --cuda 2). So the authors' logic, data and hyper-parameters can be kept verbatim, but the torch/PyG/OGB stack must be ported to modern versions and the run forced to CPU. That is exactly a partial_release: keep the logic, rebuild/port the environment.",
+ "repo": "https://github.com/sajqavril/Feature-Extension-Graph-Neural-Networks",
+ "entrypoints": [
+  "train_FEGNN.py --dataset chameleon (README Step 2; repo default runs=10, seed=42, and FEGNN_params.csv is auto-applied via set_best_train_args(), giving K=3, nl=700, lr=0.01, weight_decay=0.0005, nhid=64, warmup=50, patience=200, poly='gpr')",
+  "FEGNN_model.py (FE-GNN model: feature-subspace flattening + structural principal components)",
+  "utils.py (set_best_train_args / dataset loading / splits)"
+ ],
+ "missing_artifacts": [
+  "No pre-trained weights (not needed: the claim is a from-scratch training accuracy, and the repo never ships checkpoints)",
+  "No GPU on this machine (authors used an NVIDIA 3090)",
+  "No Python 3.8 environment; pinned torch 1.9.1 / torch_geometric 2.0.1 / ogb 1.3.3 wheels do not exist for Python 3.12 on Windows",
+  "No multi-seed driver: the README/arg parser only exposes --seed 42 with --runs 10, so the paper's '100 runs on 10 random seeds' protocol is not directly executable as released"
+ ],
+ "blockers_seen": [
+  "requirements.txt pins python 3.8.8 + torch==1.9.1 + torch_geometric==2.0.1 + ogb==1.3.3: not installable on Python 3.12 (no cp312 wheels; torch 1.9.1 predates Python 3.10)",
+  "No CUDA device; train_FEGNN.py defaults to --cuda 2 and must be run with --no_cuda (CPU path exists in the code, so this is a flag change, not a rewrite)",
+  "torch.load of PyG processed/data.pt under torch>=2.6 defaults to weights_only=True and will raise; needs weights_only=False or PyG>=2.4 (PyG handles this itself)",
+  "Old ogb 1.3.3 imports (from ogb.nodeproppred import Evaluator) break against modern pandas/numpy and will need to be neutralised or the import guarded, since none of the 8 requested datasets actually need OGB",
+  "Windows: any DataLoader num_workers>0 in the train loop can hang/deadlock; must run single-process",
+  "The '100 runs on 10 seeds' split protocol differs from the repo default of 10 runs on one seed; matching the exact CI (±0.35) requires more compute than the budget, so the run must be scaled down",
+  "Potential API drift in torch_geometric 2.x (gcn_norm/gcn_conv signatures, torch_sparse removal) may require small edits in FEGNN_model.py"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "Chameleon is small (2277 nodes, ~31k edges), so CPU-only training is viable: on the authors' 3090 the README shows 10 runs ≈ 41 s wall clock (≈4 s/run, ~252 epochs); on 22 CPU cores with no GPU expect roughly 30-90 s per run after a one-time ~10-20 s SVD/eigen prep of the structural matrix. Repo-default protocol (runs=10, seed=42) therefore lands at roughly 8-18 minutes total, comfortably inside the ~90 minute budget. The full paper protocol (100 runs across 10 seeds) would be roughly 1.5-3 hours and does not fit.",
+  "fits_budget": true,
+  "scale_down_plan": "Run the authors' own released configuration rather than the paper's full protocol: python train_FEGNN.py --dataset chameleon --no_cuda with the repo defaults (runs=10, seed=42, all other hyper-parameters taken unmodified from FEGNN_params.csv via set_best_train_args()). This is exactly the configuration whose output the README already reports as 'Average Test acc for chameleon: 0.7332', i.e. the target 73.33. If time remains after the environment port, extend by wrapping the entrypoint over the remaining 9 seeds (10 runs each) up to the budget limit. Expected effect on the number: the point estimate should stay within a few tenths of a percent of 73.33 (Chameleon's seed-to-seed std is small), but the reported spread will be wider than the claimed ±0.35 CI because it averages fewer runs; also the CPU float/op ordering differs slightly from cuDNN, which can shift the last digit. Treat the deliverable as mean test accuracy over 10 runs (and, if achieved, 10 seeds) compared against 73.33 ± tolerance, not as an exact CI match.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "repo_info": {
+  "url": "https://github.com/sajqavril/Feature-Extension-Graph-Neural-Networks",
+  "cloned": true,
+  "n_files": 71,
+  "n_python": 3,
+  "python2_style_files": 0
+ }
+}

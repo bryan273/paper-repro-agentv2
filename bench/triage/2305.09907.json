@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "AUC of IForest ASD with incremental learning on the credit card fraud detection dataset (0.611)",
+  "table_ref": "Table 2",
+  "dataset": "Credit card Churn prediction dataset (Kaggle, 10,000 samples, 13 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code released; the streaming protocol (PySAD, 30:70 static/stream split, incremental partial-fit for 7 models) must be reimplemented from scratch, and the exact Kaggle dataset variant and preprocessing are ambiguous, so matching the reported AUC is unlikely without significant reverse-engineering."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Exact Kaggle dataset variant/preprocessing unspecified",
+  "Incremental streaming protocol details (window size, partial-fit epochs) not given",
+  "Reported AUCs near 0.5 suggest fragile/ambiguous setup hard to replicate"
+ ],
+ "suitable": false,
+ "id": "2305.09907",
+ "title": "Incremental Outlier Detection Modelling Using Streaming Analytics in Finance & Health Care",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

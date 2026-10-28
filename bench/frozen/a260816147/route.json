@@ -1,0 +1,43 @@
+{
+ "route": "paper_only",
+ "why": "The paper names three artifacts (code/fraud_pipeline.py, code/multi_dataset_study.py, code/results_nested_cv/per_fold_metrics.csv) but gives no repository URL, no DOI-linked archive, and the repository inspection found nothing cloned. Nothing executable was released, so the Study A nested-CV pipeline (scaler + RF + inner 80/20 split + fold-averaged F1) has to be rebuilt from the protocol description in §3 and the config_for_value fields. The pipeline itself is ordinary scikit-learn work, so the rebuild is small; the only external dependency is the Kaggle creditcard.csv, which is publicly documented but requires a Kaggle account/API token or an equivalent mirror.",
+ "repo": null,
+ "entrypoints": [],
+ "missing_artifacts": [
+  "code/fraud_pipeline.py (Study A entrypoint; named in the Reproducibility section, no URL)",
+  "code/multi_dataset_study.py (Study B, resumable; not released)",
+  "code/results_nested_cv/per_fold_metrics.csv (85 rows; filename truncated in the PDF)",
+  "code/results_multi/per_run_metrics.csv (2,025 rows)",
+  "creditcard.csv from Kaggle 'mlg-ulb/creditcardfraud' (not bundled; needs Kaggle credentials or a public mirror)"
+ ],
+ "blockers_seen": [
+  "no repository URL anywhere in the provided material; code_links are bare file paths with truncated filenames",
+  "Kaggle dataset download requires authentication (kaggle.json / API token); a mirror or manual download is needed",
+  "no GPU on this machine, but the paper states CPU-only and sklearn RandomForest cannot use one anyway",
+  "hyperparameters are only partially specified (n_estimators=100, max_depth=16 are given; random_state, min_samples_*, bootstrap defaults are not), so a rebuild must fix seeds and leave sklearn defaults otherwise"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "About 10-15 minutes of command time: ~2 min install (scikit-learn, imbalanced-learn, pandas, numpy, scipy), ~3-6 min to obtain and load the 144 MB creditcard.csv, ~3-5 min for the 5 outer-fold Random Forest fits (100 trees, max_depth 16, 227k x 30 rows each) with the inner 80/20 split, seconds for the fold-averaged F1. The paired threshold-tuning contrast (C2) adds ~1 min. The full Study B (2,025 fits on small datasets) would add ~8-12 min if time allowed.",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 6,
+  "disk_gb": 2,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "5 outer folds x (one inner 80/20 split + one Random Forest of 100 trees, max_depth 16 on ~227k x 30 float features) — roughly 20-40 s per fit on 8 CPU cores — plus a 2-6 min download and load of the 144 MB Kaggle CSV, all CPU-bound scikit-learn with no GPU path; the authors' own claim is ~9 min for the entire 85-fit Study A."
+ },
+ "repo_info": {
+  "url": null,
+  "cloned": false,
+  "n_files": null,
+  "n_python": null,
+  "python2_style_files": null
+ }
+}

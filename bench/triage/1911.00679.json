@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "PSNR of 32.03 dB for image restoration (chromatic aberration removal) on CelebAMask-HQ, reported as 'Ours' in Table 2 (and Table 1 'CA Re' row)",
+  "table_ref": "Table 2 (also Table 1, CA Re row)",
+  "dataset": "CelebAMask-HQ"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/CSAILVision/semantic-segmentation-pytorch",
+  "https://github.com/kazuto1011/deeplab-pytorch",
+  "https://github.com/zllrunning/face-parsing.PyTorch"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 11,
+  "ram_gb": 16,
+  "disk_gb": 60,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "No authors' code is released (only third-party segmentation repos are linked), so the two GANs (SGAda refinement + EGSyn restoration), the 3-stage cooperative training, and the chromatic-aberration degradation pipeline must all be re-implemented and trained from scratch on 30k 512x512 CelebAMask-HQ images; GAN training of this scale is infeasible on a CPU-only laptop."
+ },
+ "blockers": [
+  "No official code release (paper only promises 'will be publicly available')",
+  "Full method (SGAda + EGSyn GANs) must be re-implemented from the text",
+  "3-stage cooperative GAN training on 30k images requires GPU compute",
+  "Degradation/exemplar pipeline details (chromatic aberration shifts, hyperparameters) not fully specified"
+ ],
+ "suitable": false,
+ "id": "1911.00679",
+ "title": "Cooperative Semantic Segmentation and Image Restoration in Adverse Environmental Conditions",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

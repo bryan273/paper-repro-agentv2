@@ -1,0 +1,225 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper says only 'regression tree models' and does not specify software, pruning, depth, min samples per leaf, or whether a single tree or an ensemble was used.",
+  "options": [
+   "single CART regression tree (scikit-learn defaults)",
+   "Weka M5P/REPtree-style tree",
+   "random forest or boosted-tree ensemble",
+   "tuned single tree with pruning"
+  ],
+  "chosen": "single CART-style regression tree with default scikit-learn-like settings; tune only if needed to match the reported nbrOfRules.",
+  "rationale": "Table II reports nbrOfRules, which suggests a single interpretable tree/rule model, but no hyperparameters are given.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "was made with regression tree models using a random 90%/10% training/testing split.",
+  "page": 6
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The random 90%/10% split has no stated seed or exact partition.",
+  "options": [
+   "fixed seed 0",
+   "fixed seed 42",
+   "multiple random splits averaged",
+   "use the paper's unspecified split"
+  ],
+  "chosen": "fixed seed 0 with a single random 90/10 split; record split indices for reproducibility.",
+  "rationale": "A fixed seed is required to reproduce a single test-set number; the paper gives none.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "using a random 90%/10% training/testing split.",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "It is not stated whether z-scores are fitted on the full dataset before splitting or only on the training set.",
+  "options": [
+   "fit z-scores on full dataset before split",
+   "fit z-scores on training set only"
+  ],
+  "chosen": "fit z-scores on the full dataset before the split, as the paper describes dataset preprocessing before methods.",
+  "rationale": "The preprocessing paragraph presents z-scoring as a dataset-level step before the ML methods.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The target 'number of atoms' could mean total atoms including hydrogens or heavy atoms only.",
+  "options": [
+   "total atoms including hydrogens",
+   "heavy atoms only",
+   "molecular formula atom count excluding hydrogens"
+  ],
+  "chosen": "total atoms including hydrogens, since QM7b is described as up to 23 atoms including 7 heavy atoms.",
+  "rationale": "QM7b explicitly includes hydrogens in the atom count description.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "all molecules of up to 23 atoms (including 7 heavy atoms C, N, O, and S)",
+  "page": 2
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Table II labels QM9 as '14 original', but Section II says QM9 has 19 electronic properties.",
+  "options": [
+   "use 19 original QM9 properties",
+   "use first 14 QM9 properties",
+   "treat the 14-original label as a typo and use 19"
+  ],
+  "chosen": "use 19 original QM9 properties and flag the table's '14 original' label as a likely inconsistency.",
+  "rationale": "The dataset description is explicit that QM9 has 19 properties; the table label conflicts with it.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "The molecules are characterized by Nv = 19 electronic properties",
+  "page": 2
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The paper reports R but does not define whether it is Pearson correlation, R^2, or coefficient of determination.",
+  "options": [
+   "Pearson correlation coefficient",
+   "squared Pearson R^2",
+   "coefficient of determination"
+  ],
+  "chosen": "Pearson correlation coefficient.",
+  "rationale": "The values near 1.0 and the prose 'high correlations' are most consistent with Pearson R, not R^2.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "as evidenced by the low error measures, the high correlations",
+  "page": 7
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "It is unclear whether the target atom count is z-scored or kept in raw atom units.",
+  "options": [
+   "raw atom counts",
+   "z-scored atom counts"
+  ],
+  "chosen": "raw atom counts.",
+  "rationale": "The target is described as the number of atoms, and no target standardization is mentioned.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "using the number of atoms in the molecule as the target.",
+  "page": 7
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "UMAP hyperparameters (n_neighbors, min_dist, metric, random_state) are not specified.",
+  "options": [
+   "UMAP defaults with fixed seed",
+   "tune UMAP hyperparameters",
+   "use a cited implementation's defaults"
+  ],
+  "chosen": "UMAP defaults (n_neighbors=15, min_dist=0.1) with a fixed random seed, followed by PCA to 2 dimensions.",
+  "rationale": "The paper gives only the canonical UMAP composition, not its hyperparameters.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "The final transformation is given by the function composition φ = (U ◦P)",
+  "page": 3
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The exact alpha/perplexity schedule across the 100 tree-SNE levels is not given.",
+  "options": [
+   "linear schedule",
+   "logarithmic schedule",
+   "tree-SNE defaults with stated endpoints"
+  ],
+  "chosen": "use tree-SNE defaults with 100 levels and stated perplexity endpoints 365 to 1.06.",
+  "rationale": "Only the endpoints and number of levels are stated.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "a relatively higher value (365, because of the large size of the molecule dataset), to a small value (1.06)",
+  "page": 4
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The 1.5*IQR rule is not specified as one-sided or two-sided on the SUOD score distribution.",
+  "options": [
+   "one-sided upper tail only",
+   "two-sided outside [Q1-1.5IQR, Q3+1.5IQR]",
+   "use a hard threshold at 0.77 only"
+  ],
+  "chosen": "two-sided 1.5*IQR rule on the empirical SUOD score distribution, then report the resulting 0.77 threshold.",
+  "rationale": "The text says scores above/under the threshold are outlier/inliner, implying a two-sided cut.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "a threshold of 0.77 was set using the 1.5∗InterquartileRange rule",
+  "page": 5
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "SUOD base-detector hyperparameters and random projections are not given.",
+  "options": [
+   "use SUOD defaults",
+   "tune each base detector",
+   "use the cited SUOD paper defaults"
+  ],
+  "chosen": "use SUOD defaults for all base detectors and the ensemble.",
+  "rationale": "No detector-specific settings are reported.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "OD was performed with the SUOD approach",
+  "page": 4
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "'nbrOfRules' is not defined: it could mean leaves, root-to-leaf rules, or trees in an ensemble.",
+  "options": [
+   "number of terminal leaves",
+   "number of root-to-leaf rules",
+   "number of trees in an ensemble"
+  ],
+  "chosen": "report the number of terminal leaves/rules produced by the chosen tree implementation.",
+  "rationale": "A single regression tree has leaves that are commonly reported as rules.",
+  "source": "guess",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Regression trees predict continuous leaf means, but atom counts are integers; the paper does not say whether predictions are rounded.",
+  "options": [
+   "keep continuous predictions",
+   "round predictions to nearest integer"
+  ],
+  "chosen": "keep continuous predictions for MSE/RMSE/MAE/R, since rounding would change the metrics.",
+  "rationale": "The reported very low errors are consistent with continuous regression-tree outputs.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "using the number of atoms in the molecule as the target.",
+  "page": 7
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "The exact feature set for '2 generated' is not fully specified beyond the 2D UMAP/PCA embedding.",
+  "options": [
+   "2D canonical UMAP coordinates",
+   "first two PCA components of original properties",
+   "two generated UMAP features after PCA"
+  ],
+  "chosen": "use the 2D canonical UMAP coordinates (U then PCA) as the 2 generated features.",
+  "rationale": "The paper describes the generated embedding spaces as the 2D UMAP mapping.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "the embedding spaces of Fig. 1 have only two features",
+  "page": 6
+ }
+]

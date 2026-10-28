@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Annual seasonal strength (Wang-Smith-Hyndman) exceeds weekly seasonal strength for 96.8% of institutions (median annual strength 0.83 vs weekly medians 0.34-0.49), computed on the n_bytes metric at 1-day aggregation.",
+  "table_ref": "Figure 9 / Technical Validation text (page 11)",
+  "dataset": "CESNET-TimeSeries26 institutions part (285 institutions, 1-day aggregation)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/CESNET/cesnet-tszoo",
+  "https://doi.org/10.5281/zenodo.21945629"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 20,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "Downloading only the 285 institution 1-day CSVs (small subset of the 141 GB archive) plus a straightforward STL/seasonal-strength computation per series; the main cost is download and install time, not compute."
+ },
+ "blockers": [
+  "Full Zenodo archive is 141 GB compressed / 473.7 GB uncompressed, so must selectively fetch only the institutions/agg_1_day files",
+  "Seasonal-strength implementation (Wang-Smith-Hyndman) is not provided as a script; agent must write it",
+  "Outage masking requires parsing outages.csv"
+ ],
+ "suitable": true,
+ "id": "2610.14799",
+ "title": "CESNET-TimeSeries26: A Multi-Year Network Traffic Time Series Dataset for Annual Seasonality, Concept Drift, and Long-Term Anomaly Detection",
+ "pages": 24,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "AUROC of MGBOD on the smallest UCI dataset (e.g., Lymphography) as reported in the main comparison table",
+  "table_ref": "Table 2 (main AUROC comparison)",
+  "dataset": "Lymphography (UCI)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Xiaofeng-Tan/MGBOD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Algorithm 1 is O(|A||U|^2) per view and Algorithm 3 is O(|A||U|^2 log|U|); Lymphography has ~148 samples and 18 attributes, so a CPU run takes seconds to minutes; the main cost is installing dependencies and downloading the small UCI dataset."
+ },
+ "blockers": [
+  "Code repository may be incomplete or outdated (only a GitHub link is given; no explicit configs or data scripts mentioned in the paper)",
+  "Some datasets in the paper are derived by downsampling classes from larger public datasets, so the exact preprocessing may need to be re-implemented"
+ ],
+ "suitable": true,
+ "id": "2501.02975",
+ "title": "Fuzzy Granule Density-Based Outlier Detection with Multi-Scale Granular Balls",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,206 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Tie-breaking for the depth median: Section 3.1 says coordinate-wise median of the deepest points, while Remark 5 says center of gravity/arithmetic mean.",
+  "options": [
+   "coordinate-wise median of deepest points",
+   "center of gravity (arithmetic mean) of deepest points"
+  ],
+  "chosen": "center of gravity (arithmetic mean) of deepest points",
+  "rationale": "The toy median is unique, so no effect there; Remark 5 is the more specific computational rule and is stated as consistent with Rousseeuw et al.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "when the set of deepest points contains more than one observation, we define the depth median as the center of gravity of this subset.",
+  "page": 19
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Halfspace depth algorithm: exact computation vs finite-direction approximation and the number of directions.",
+  "options": [
+   "exact halfspace depth",
+   "aplpack finite-direction approximation (180/360 directions)",
+   "another O(n log n) halfspace depth implementation"
+  ],
+  "chosen": "aplpack finite-direction approximation using aplpack defaults",
+  "rationale": "The paper explicitly says the implementation follows aplpack’s direction iteration; exact depth is not required for the toy example but matters for simulations.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "we adopt the same approximation method used in the aplpack package in R, which iterates over a fixed set of directions",
+  "page": 19
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Bag construction when no depth contour contains exactly 50% of points.",
+  "options": [
+   "convex hull of deepest floor/ceiling(n/2) points",
+   "aplpack internal interpolation routine",
+   "custom depth-contour interpolation"
+  ],
+  "chosen": "aplpack internal interpolation routine",
+  "rationale": "The paper says the implementation relies on aplpack internals for non-trivial 50% bag construction.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "our implementation relies on the internal routines of the aplpack package in R to compute the bag.",
+  "page": 20
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "MCD subset size h and random-start handling.",
+  "options": [
+   "MASS cov.mcd defaults",
+   "explicit h≈n/2",
+   "h=floor((n+p+1)/2)"
+  ],
+  "chosen": "MASS cov.mcd defaults with h≈n/2 intent",
+  "rationale": "The paper specifies cov.mcd and h≈n/2 but not the exact h or random seed; MASS cov.mcd is the cited implementation.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The MCD estimator (Rousseeuw, 1984) is defined by the mean and covariance of the subset of h observations (typically h ≈n/2)",
+  "page": 19
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether to apply MCD consistency scaling.",
+  "options": [
+   "raw MCD covariance",
+   "consistency-scaled MCD covariance"
+  ],
+  "chosen": "consistency-scaled MCD covariance",
+  "rationale": "Remark 6 says the raw covariance is multiplied by a consistency scaling factor and that cov.mcd includes it.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we utilize this algorithm, including the necessary consistency scaling, via the cov.mcd function available in the MASS package in R.",
+  "page": 20
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Reference distribution for p-values: asymptotic χ²₂ or Hardin-Rocke scaled F.",
+  "options": [
+   "asymptotic χ²₂",
+   "scaled F with Monte Carlo calibration"
+  ],
+  "chosen": "asymptotic χ²₂ as the default for the target; scaled F optional",
+  "rationale": "The toy example uses χ²₂ and the paper says the asymptotic χ² reference is the default due to computational cost.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Given the computational cost we adopt the asymptotic χ2 reference as the default.",
+  "page": 12
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Which multiple-testing procedures instantiate FWER, FDR, and PFER.",
+  "options": [
+   "Holm-Bonferroni for FWER; BH for FDR; p≤q/n for PFER",
+   "Bonferroni for FWER; BH for FDR; other PFER",
+   "all three via generic adjusted p-values"
+  ],
+  "chosen": "Holm-Bonferroni for FWER; BH for FDR; p≤q/n for PFER",
+  "rationale": "These are the exact procedures used in the toy example.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Using the Holm-Bonferroni method (Holm, 1979) at a level of q = 0.1",
+  "page": 17
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "PFER threshold definition.",
+  "options": [
+   "reject if p≤q/n",
+   "reject if p≤q",
+   "other PFER calibration"
+  ],
+  "chosen": "reject if p≤q/n",
+  "rationale": "The toy example explicitly gives tadj=q/n for PFER.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "we reject any hypothesis where the p-value is less than or equal to q/n.",
+  "page": 17
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Rejection boundary equality and strictness.",
+  "options": [
+   "reject if p_i≤tadj",
+   "reject if p_i<tadj"
+  ],
+  "chosen": "reject if p_i≤tadj",
+  "rationale": "The paper states the rejection rule with ≤.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Any hypothesis H0i with pi ≤tadj will be rejected.",
+  "page": 11
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "How to magnify the bag polygon to form the fence.",
+  "options": [
+   "radial scaling from μ by λ",
+   "scale about the bag centroid",
+   "ellipse defined only by Mahalanobis contour"
+  ],
+  "chosen": "radial scaling from μ by λ",
+  "rationale": "The paper defines λdata using rays from μ to points and the bag boundary, implying radial magnification from μ.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "This factor is then used to construct the outer fence by magnifying the bag.",
+  "page": 12
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Edge case when λdata is undefined because all points are rejected or a point equals μ.",
+  "options": [
+   "set λdata=0 and use λstat",
+   "set λdata=1",
+   "raise an error"
+  ],
+  "chosen": "ignore zero-distance points; if S is empty set λdata=0, so λ=λstat",
+  "rationale": "The paper does not define the maximum over an empty set; this choice preserves the statistical fence.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Whisker gradient and layering details.",
+  "options": [
+   "whiskers below points with gradient transparent at bag to solid at point",
+   "uniform-opacity lines",
+   "no whiskers"
+  ],
+  "chosen": "whiskers below points with gradient transparent at bag to solid at point",
+  "rationale": "The paper specifies both background layering and a transparency gradient from bag to point.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "each whisker features a transparent gradient along its length, being most transparent at its origin on the bag’s boundary",
+  "page": 14
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "Random seed for MCD random starts and simulation examples.",
+  "options": [
+   "fixed documented seed",
+   "no seed",
+   "multiple replicates and report variation"
+  ],
+  "chosen": "fixed documented seed for reproducibility; multiple replicates optional for simulations",
+  "rationale": "The paper gives no seed; fixing one prevents nondeterministic differences in the toy MCD and simulations.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ }
+]

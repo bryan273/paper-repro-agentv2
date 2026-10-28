@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "MSMixer achieves MSE 0.406 on ETTm1 at horizon 96 (Table 2, row ETTm1 H=96, column MSMixer MSE)",
+  "table_ref": "Table 2",
+  "dataset": "ETTm1"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "basis": "Paper reports CPU training times of ~115s per configuration; reproducing one cell requires implementing the model from scratch (no code released), downloading ETTm1, and training for up to 15 epochs with early stopping, plus baseline comparisons if needed."
+ },
+ "blockers": [
+  "No code released (only 'available upon reasonable request')",
+  "ETTm training data capped at 17,420 steps, which may affect reproducibility",
+  "Single seed results, no variance reported"
+ ],
+ "suitable": true,
+ "id": "2605.02689",
+ "title": "MSMixer: Learned Multi-Scale Temporal Mixing with Complementary Linear Shortcut for Long-Term Time Series Forecasting",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Test RMSE of 66.556 for MLPRegressor with custom preprocessing pipeline",
+  "table_ref": "Table I, Custom pipeline, MLPRegressor row",
+  "dataset": "OWID COVID-19 India subset (1,680 records)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/dassangita844/Preprocessing_COVID-19_Dataset_India"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Paper states full notebook runs in ~1 hour on Colab CPU; dataset is small (1,680 records) and models are standard sklearn regressors."
+ },
+ "blockers": [
+  "Code repository may not include exact data snapshot or preprocessing scripts; OWID data is updated continuously, so exact reproduction may require historical data version.",
+  "Hyperparameter tuning details and random seeds may be missing, causing slight variations."
+ ],
+ "suitable": true,
+ "id": "2408.08142",
+ "title": "Impact of Comprehensive Data Preprocessing on Predictive Modelling of COVID-19 Mortality",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

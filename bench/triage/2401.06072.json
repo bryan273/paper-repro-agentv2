@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Llama-2-7b-CoH achieves Hits@1 of 0.527 on the YAGO dataset under the raw setting (Table 3).",
+  "table_ref": "Table 3",
+  "dataset": "YAGO"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 32,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Fine-tuning Llama-2-7b with LoRA on YAGO (161k training instances) and evaluating on 20k test queries requires a GPU; on CPU it would be prohibitively slow, and the paper itself uses 4x RTX 4090."
+ },
+ "blockers": [
+  "No code or data links provided in the paper",
+  "Requires implementing the full pipeline (history construction, LoRA fine-tuning, beam search inference) from scratch",
+  "Fine-tuning a 7B LLM is not feasible on a CPU-only laptop within a few hours"
+ ],
+ "suitable": false,
+ "id": "2401.06072",
+ "title": "Chain of History: Learning and Forecasting with LLMs for Temporal Knowledge Graph Completion",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

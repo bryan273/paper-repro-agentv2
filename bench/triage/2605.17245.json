@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Random Forest accuracy of 99.9% on the Telecom CDR dataset (101,174 records, 17 attributes, 8,830 fraud cases) after missing-value removal, Min-Max scaling, and SMOTE balancing",
+  "table_ref": "Table II (RF column, Accuracy row)",
+  "dataset": "Telecom CDR Dataset (github.com/jamesrawlins1000/Telecom-CDR-Dataset-)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/jamesrawlins1000/Telecom-CDR-Dataset-"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Only a ~100k-row tabular dataset with 17 features; RF/XGBoost + SMOTE on 8 CPU cores finishes in minutes, but no training code is released so the pipeline (split order, SMOTE placement, hyperparameters) must be re-implemented from prose."
+ },
+ "blockers": [
+  "No code released (only a dataset link); preprocessing/SMOTE/split details underspecified",
+  "Reported 99.9% accuracy with 0 false positives is implausible and likely reflects leakage (SMOTE before split) or a trivially separable dataset, so exact numbers may not be reproducible",
+  "Paper text is internally inconsistent (RF vs XGBoost rankings, confusion-matrix counts vs dataset size)"
+ ],
+ "suitable": true,
+ "id": "2605.17245",
+ "title": "An Efficient Machine Learning-based Framework for Detection and Prevention of Frauds in Telecom Networks",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

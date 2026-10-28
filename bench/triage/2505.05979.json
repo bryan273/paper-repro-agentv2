@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "BIC value of the cSALCWM with G=2 on the AIS dataset (Table 9, row cSALCWM, column G=2)",
+  "table_ref": "Table 9",
+  "dataset": "AIS (Australian Institute of Sport) dataset"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/arnootto/ALCWM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "The AIS dataset is small (202 rows, 6 variables) and the ECM algorithm is implemented in the linked R package; fitting a 2-component model on a laptop should take minutes, with most time spent installing R and the package."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2505.05979",
+ "title": "Mixtures of multivariate linear asymmetric Laplace regressions with multiple asymmetric Laplace covariates",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

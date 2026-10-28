@@ -1,0 +1,128 @@
+{
+ "approach": "We target C1 only: reproduce the FTM accuracy on GunPointOldVersusYoung. Because the repository's analysis is in R and data/ is absent, we clone the authors' repo, download the single UCR dataset, and port only the paper's FTM protocol to scikit-learn: per-series mean and sample standard deviation, train-only z-scoring, a linear SVM, and the designated split plus 29 seeded stratified resamples. The repo's stored classification-models/results/GunPointOldVersusYoung.csv is used only as an audit of the expected value. Final mean accuracy and all diagnostics are written to results/metrics.json and checked against 100 +/- 2 percentage points.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Minimal Python dependencies: numpy, pandas, scikit-learn, requests; aeon optional fallback for dataset loading.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for all paths, hyperparameters, seeds, resampling settings, tolerance, and output location.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/download_data.py",
+   "purpose": "Download and unzip GunPointOldVersusYoung from timeseriesclassification.com into data/, or reuse existing data; optional aeon fallback.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/ts_loader.py",
+   "purpose": "Robustly parse UCR .ts train/test files into X, y without normalizing individual series.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/ftm.py",
+   "purpose": "Compute the two FTM features per series: mean and sample standard deviation (ddof=1); no per-series z-normalization.",
+   "requirement_ids": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "path": "src/protocol.py",
+   "purpose": "Create the designated train/test split and 29 seeded stratified resamples with original train/test sizes and class proportions.",
+   "requirement_ids": [
+    "R5"
+   ]
+  },
+  {
+   "path": "src/model.py",
+   "purpose": "Fit train-set StandardScaler, fit sklearn linear SVC with C=1, predict, and compute accuracy; handle zero-variance features.",
+   "requirement_ids": [
+    "R3",
+    "R4",
+    "R6"
+   ]
+  },
+  {
+   "path": "src/audit_repo.py",
+   "purpose": "Load the authors' stored classification-models/results/GunPointOldVersusYoung.csv and extract the FTM result for audit only.",
+   "requirement_ids": []
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Orchestrate download/load/feature extraction/protocol/model/audit, support --smoke, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "GunPointOldVersusYoung",
+  "repo_url": "https://github.com/hendersontrent/mean-var-ts-classify.git",
+  "repo_dir": "mean-var-ts-classify",
+  "data_dir": "data/GunPointOldVersusYoung",
+  "dataset_zip_url": "https://timeseriesclassification.com/aeon-toolkit/GunPointOldVersusYoung.zip",
+  "download_fallback": "aeon.datasets.load_classification if direct zip fails (log aeon version)",
+  "series_normalization": "none; keep raw measurement scale (R2)",
+  "features": "mean and sample standard deviation per series, np.nanmean and np.nanstd(ddof=1) (R1, A2)",
+  "n_features": "2 (R1)",
+  "feature_scaling": "StandardScaler fit on train only; transform test with train statistics (R4); zero-variance train feature maps to 0 (A6)",
+  "classifier": "sklearn.svm.SVC(kernel='linear') (R3)",
+  "C": "1.0 (A1; paper states C=1 for case study, assumed for UEA/UCR)",
+  "shrinking": "True (default; A1)",
+  "class_weight": "None for UEA/UCR (A1; balanced weights only stated for case study, R11)",
+  "tol": "0.001 (sklearn default; A1)",
+  "max_iter": "-1 (sklearn default; A1)",
+  "probability": "False (default)",
+  "multiclass_strategy": "one-vs-one via SVC/libsvm (A5; irrelevant for binary GunPointOldVersusYoung)",
+  "metric": "classification accuracy (R6)",
+  "resamples_total": "30: designated split + 29 resamples (R5)",
+  "resample_seed_base": "12345; seeds 12345..12373 (A3)",
+  "resampling_scheme": "A4: pool train+test, StratifiedShuffleSplit with train_size=n_train_original and test_size=n_test_original; confirm against fit-models.R and mirror if different",
+  "summary_statistic": "mean accuracy across 30 resamples; also report sample SD, min, max (A7)",
+  "designated_split": "use original archive train/test files for run 0",
+  "expected_accuracy_percent": "100.0 (C1)",
+  "tolerance_absolute_percent": "2.0",
+  "pass_rule": "abs(mean_accuracy - 100.0) <= 2.0",
+  "repo_audit_csv": "mean-var-ts-classify/classification-models/results/GunPointOldVersusYoung.csv",
+  "smoke_resamples": "2",
+  "smoke_max_train": "20",
+  "smoke_max_test": "20",
+  "random_seed": "12345",
+  "output_metrics": "results/metrics.json",
+  "output_smoke_metrics": "results/smoke_metrics.json",
+  "download_timeout_seconds": "60"
+ },
+ "steps": [
+  "Clone the authors' repository with git if not already present; do not modify any author files. Inspect README.md, classification-models/fit-models.R, and feature-calculations/calculate-features.R to confirm the exact resampling and feature code; record any divergence from assumption A4/A2 in the run log.",
+  "Run `python -m pip install -r requirements.txt`. Keep scikit-learn and numpy versions in results/metrics.json for auditability.",
+  "Run `python src/download_data.py`: first check for existing data/GunPointOldVersusYoung train/test .ts files; otherwise download the aeon-toolkit zip from timeseriesclassification.com with requests, unzip in Python, and verify two .ts files exist. If the download fails, fall back to aeon.datasets.load_classification and log the fallback.",
+  "Run `python src/ts_loader.py` or call it from reproduce.py to parse the train and test .ts files. Support UCR colon-separated label:value format and whitespace/comma fallbacks. Log n_train, n_test, series_length, label counts, missing-value counts, and raw value ranges; assert exactly two classes and nonempty arrays.",
+  "Compute FTM with src/ftm.py: for every series compute np.nanmean and np.nanstd(ddof=1). Assert shape (n, 2), all finite, and that per-series raw values were not z-normalized before feature extraction (R2).",
+  "Build splits with src/protocol.py: run 0 is the designated train/test split; runs 1..29 use seeds 12345..12373 and stratified resampling preserving original train/test sizes and class proportions per A4. Print the label counts for run 0 and the first resample.",
+  "Run the smoke test `python reproduce.py --smoke`: use at most 20 train and 20 test examples (minimum 2 per class) and 2 resamples, fit scaler and linear SVC, predict, and write results/smoke_metrics.json. Confirm shapes, no NaNs, and no train/test leakage.",
+  "Run the full protocol with `python reproduce.py`: for each of the 30 splits, fit StandardScaler on that split's train set only, transform train/test, fit SVC(kernel='linear', C=1.0), predict test, and store accuracy. Collect all 30 accuracies and compute mean, sample SD, min, and max.",
+  "Run src/audit_repo.py to read the authors' stored results CSV for GunPointOldVersusYoung; identify the FTM row/column by inspecting headers and log the stored FTM mean/SD if present. This is an audit only; the final number must come from the Python re-run.",
+  "Write results/metrics.json with claim_id C1, dataset, mean_accuracy, sd_accuracy, min/max, per_resample_accuracies, n_resamples, config snapshot, repo_audit_value if found, pass/fail against 100 +/- 2, and timestamps. Print a concise console summary. If the mean is below 98, inspect resampling vs fit-models.R, ddof for feature SD, train-only scaling, and SVC settings before concluding."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` uses at most 20 train and 20 test examples (or all if smaller), 2 stratified resamples, and seeds 12345/12346. It must print X_ftm shape (n,2), scaler mean/scale shapes, one fitted SVC, test accuracy, and write results/smoke_metrics.json in under 10 seconds.",
+ "intermediate_checks": [
+  "Dataset files exist and parse: log n_train, n_test, series length, number of classes, and class counts; assert exactly two classes.",
+  "Class balance: print train and test label distributions for the designated split and at least one resample; confirm resampling preserves proportions.",
+  "No per-series z-normalization: inspect raw series means and SDs; they should not all be 0 and 1. FTM features should vary across series.",
+  "Feature matrix shape: X_ftm must have exactly 2 columns; SVM coefficient vector must have length 2 after fitting.",
+  "Scaling leakage check: scaler.mean_ and scaler.scale_ come only from the current train split; test data must be transformed, never used to fit.",
+  "Sanity baseline: majority-class accuracy on the designated test split; FTM accuracy should be at or near 100 given the claim.",
+  "Repo audit: inspect classification-models/results/GunPointOldVersusYoung.csv headers and extract the stored FTM accuracy before the full run; compare after."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 15 minutes total: 0-4 min clone repo, install dependencies, inspect R scripts; 4-7 min download and parse GunPointOldVersusYoung; 7-8 min smoke test; 8-10 min full 30-resample run; 10-15 min audit against the authors' stored CSV and write/print results/metrics.json. The full 30 fits are seconds; most time is download and validation."
+}

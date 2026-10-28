@@ -1,0 +1,35 @@
+{
+ "target": {
+  "statement": "ICG-based evaluation detects 16/25 injected state-related defects (64.0% detection rate), compared with 8/25 under WG-broad and 1/25 under WG-strict.",
+  "table_ref": "Table 4",
+  "dataset": "25 injected state-related defects on GT-validated WebRISE pages"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/",
+  "https://github.com/QwenLM/Qwen3.6",
+  "https://huggingface.co/moonshotai/Kimi-K2.6"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 360,
+  "gpu_speedup": null,
+  "basis": "Even the smallest headline meta-evaluation requires the unpublished WebRISE benchmark, GT-validated pages, ICG contracts, browser agent, and DOM/VLM judges; 25 defect runs would be CPU/API-bound but no public harness or data is linked."
+ },
+ "blockers": [
+  "No public code or data release for the WebRISE benchmark or ICG evaluator",
+  "Requires the paper's MLLM browser agent and VLM/DOM judges, typically closed proprietary APIs",
+  "Defect-injection target depends on GT-validated WebRISE pages and ICG contracts that are not provided",
+  "Full benchmark contains 442 tasks, 5 modalities, 5,495 transitions and 12,441 assertions, so even re-running the meta-evaluation needs substantial unpublished infrastructure"
+ ],
+ "suitable": false,
+ "id": "2606.03220",
+ "title": "WebRISE: Requirement-Induced State Evaluation for MLLM-Generated Web Artifacts",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

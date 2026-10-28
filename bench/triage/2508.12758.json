@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "CCC ring entropy (bits) = 1.017 on synthetic circular data (500 points, std=1.0), vs 1.169 for KMeans/GMM/Agglomerative",
+  "table_ref": "Table I, row CCC, Std 1.0, Ring Entropy column",
+  "dataset": "Synthetic isotropic Gaussian circular data, 500 points, std=1.0 (generated in-paper)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Data is synthetic (500 2D points) and all methods are classic CPU clustering; the only real work is re-implementing the CCC constrained-centroid update and the ring/sector/joint entropy pipeline from the paper's equations, then matching the exact entropy values."
+ },
+ "blockers": [
+  "No code released; CCC algorithm and entropy binning (number of rings/sectors, S value, k) must be reverse-engineered from prose",
+  "Exact entropy numbers depend on unspecified details (random seed, ring/sector counts, S threshold, k=4), so exact cell match is unlikely without guessing"
+ ],
+ "suitable": true,
+ "id": "2508.12758",
+ "title": "Constrained Centroid Clustering: A Novel Approach for Compact and Structured Partitioning",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

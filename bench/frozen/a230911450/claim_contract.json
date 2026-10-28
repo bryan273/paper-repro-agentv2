@@ -1,0 +1,263 @@
+{
+ "title": "Distribution and volume based scoring for Isolation Forests",
+ "summary": "The paper generalizes Isolation Forest in two independent places: it replaces the mean-over-trees aggregation with an α-parametrized family hα, and it replaces depth-based per-tree scores with a hypervolume-based score φPAC. It motivates both variants on synthetic data and evaluates IFα and PACα with 100 estimators on 34 ADBench datasets using AUCROC. IFα slightly improves over IF on average for small α, while PACα is worse on average but much better on selected datasets, including annthyroid with AUCROC 91.47 at α=0.5 versus 82.12 for IF/SOTA.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "The best PACα variant on annthyroid reaches AUCROC 91.47 at α=0.5.",
+   "metric": "AUCROC",
+   "dataset": "ADBench annthyroid",
+   "split": "ADBench test split as provided by [3]",
+   "value": 91.47,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row annthyroid, column best PACα",
+   "config_for_value": "PACα with α=0.5, n=100 estimators, custom implementation; best PACα column for ADBench annthyroid",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 100 trees on annthyroid (7,200 points)",
+   "quote": "annthyroid 82.12 (0) 91.47 (0.5) 82.12 (IForest)",
+   "page": 7
+  },
+  {
+   "id": "C2",
+   "statement": "On annthyroid, the best IFα (α=0) and the best SOTA algorithm (IForest) both score 82.12 AUCROC.",
+   "metric": "AUCROC",
+   "dataset": "ADBench annthyroid",
+   "split": "ADBench test split as provided by [3]",
+   "value": 82.12,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row annthyroid, columns best IFα and best SOTA",
+   "config_for_value": "IFα with α=0 (standard IF), n=100 estimators; best SOTA IForest also 82.12",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 100 trees on annthyroid (7,200 points)",
+   "quote": "annthyroid 82.12 (0) 91.47 (0.5) 82.12 (IForest)",
+   "page": 7
+  },
+  {
+   "id": "C3",
+   "statement": "The best PACα variant on thyroid reaches AUCROC 98.85 at α=0.",
+   "metric": "AUCROC",
+   "dataset": "ADBench thyroid",
+   "split": "ADBench test split as provided by [3]",
+   "value": 98.85,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row thyroid, column best PACα",
+   "config_for_value": "PACα with α=0, n=100 estimators, custom implementation; best PACα column for ADBench thyroid",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 100 trees on thyroid (3,772 points)",
+   "quote": "thyroid 97.84 (0.5) 98.85 (0) 97.83 (IForest)",
+   "page": 7
+  },
+  {
+   "id": "C4",
+   "statement": "The best PACα variant on wine reaches AUCROC 92.59 at α=0.5.",
+   "metric": "AUCROC",
+   "dataset": "ADBench wine",
+   "split": "ADBench test split as provided by [3]",
+   "value": 92.59,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row wine, column best PACα",
+   "config_for_value": "PACα with α=0.5, n=100 estimators, custom implementation; best PACα column for ADBench wine",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds to ~1 min for 100 trees on wine (178 points)",
+   "quote": "wine 76.4 (0.5) 92.59 (0.5) 91.36 (HBOS)",
+   "page": 7
+  },
+  {
+   "id": "C5",
+   "statement": "The best PACα variant on Waveform reaches AUCROC 86.88 at α=0.",
+   "metric": "AUCROC",
+   "dataset": "ADBench Waveform",
+   "split": "ADBench test split as provided by [3]",
+   "value": 86.88,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row Waveform, column best PACα",
+   "config_for_value": "PACα with α=0, n=100 estimators, custom implementation; best PACα column for ADBench Waveform",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 100 trees on Waveform (3,443 points)",
+   "quote": "Waveform 69.49 (1) 86.88 (0) 75.03 (COPOD)",
+   "page": 7
+  },
+  {
+   "id": "C6",
+   "statement": "The best PACα variant on landsat reaches AUCROC 66.24 at α=0.",
+   "metric": "AUCROC",
+   "dataset": "ADBench landsat",
+   "split": "ADBench test split as provided by [3]",
+   "value": 66.24,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row landsat, column best PACα",
+   "config_for_value": "PACα with α=0, n=100 estimators, custom implementation; best PACα column for ADBench landsat",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1 min for 100 trees on landsat (4,435 points)",
+   "quote": "landsat 48.79 (1) 66.24 (0) 63.61 (SVDD)",
+   "page": 7
+  },
+  {
+   "id": "C7",
+   "statement": "The best IFα variant on cover reaches AUCROC 96.58 at α=∞.",
+   "metric": "AUCROC",
+   "dataset": "ADBench cover",
+   "split": "ADBench test split as provided by [3]",
+   "value": 96.58,
+   "unit": "% AUCROC",
+   "higher_is_better": true,
+   "table_ref": "Table I, row cover, column best IFα",
+   "config_for_value": "IFα with α=∞, n=100 estimators, custom implementation; best IFα column for ADBench cover",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5-10 min for 100 trees on cover (286,048 points)",
+   "quote": "cover 96.58 (∞) 92.57 (∞) 93.73 (PCA)",
+   "page": 7
+  },
+  {
+   "id": "C8",
+   "statement": "In the d=10 toy cube experiment, IF∞ reaches mean AUCROC 0.98 over 100 runs, versus 0.78 for standard IF.",
+   "metric": "AUCROC",
+   "dataset": "Generated toy cube dataset (Fig. 2)",
+   "split": "100 repeated runs, d=10",
+   "value": 0.98,
+   "unit": "AUCROC (fraction)",
+   "higher_is_better": true,
+   "table_ref": "Fig. 2 text, final sentence",
+   "config_for_value": "N=128 points, 127 inliers uniform in d=10 unit cube, one outlier at (1.05,0.5,...,0.5), n=100 estimators, 100 repetitions, IF∞ vs standard IF",
+   "reported_spread": null,
+   "est_compute": "CPU, ~1-2 min for 100 repetitions with N=128 and 100 trees",
+   "quote": "average AUCROC score of 0.78 for the IF algorithm, as opposed to 0.98 when using IF∞",
+   "page": 3
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Directly matches the requested metric, dataset, and α=0.5; it is the cheapest single-dataset run that still demonstrates the paper's PACα contribution, requiring one 100-tree forest on annthyroid rather than a 34-dataset sweep."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "Rule 2: no standard deviation is reported for the target value; AUCROC is printed as a percentage on ADBench's annthyroid test split, which has 2,000+ examples under the ADBench protocol, so use a 1.0 absolute AUCROC-point band."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Fit standard isolation trees: each node uses a random feature/split, growing until a leaf is pure/singleton or a maximum depth is reached.",
+   "cite": "Sec I, AIF definition",
+   "quote": "each tree is grown randomly until either a leaf node contains only a single point",
+   "page": 1
+  },
+  {
+   "id": "R2",
+   "stmt": "Use the depth-based per-estimator score φIF = d_i(x)/c_|Y| for the standard IF and IFα baselines.",
+   "cite": "Sec I, φIF equation",
+   "quote": "where di(x) equals the depth of the leaf node associated to point x",
+   "page": 1
+  },
+  {
+   "id": "R3",
+   "stmt": "Implement the hα aggregation from fα and hα(x)=2^{-fα(x)} for the paper's α grid.",
+   "cite": "Sec II-A, fα/hα definitions",
+   "quote": "This leads to the corresponding aggregation functions for α ≥0, hα(x) = 2−fα(x)",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Ensure α=0 reproduces the standard Isolation Forest aggregation 2^{-mean(φ)}.",
+   "cite": "Sec II-A, property 1",
+   "quote": "interpolate between the standard IF aggregation function on the one end (α = 0)",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Implement the PAC per-tree score φPAC = (|L(x)|/|Y|)·(V(Y)/V(L(x))).",
+   "cite": "Sec II-B, Eq. (1)",
+   "quote": "the first of the two factors in the RHS of (1) constitutes a density estimate",
+   "page": 4
+  },
+  {
+   "id": "R6",
+   "stmt": "Define V(L) as the volume of the axis-aligned leaf hyperrectangle and V(Y) as a bounding-volume hyperparameter containing Y.",
+   "cite": "Sec II-B, Eq. (1) definitions",
+   "quote": "V (Y) denotes some bounding volume that contains all points in Y but whose total size is a hyperparameter of the algorithm.",
+   "page": 4
+  },
+  {
+   "id": "R7",
+   "stmt": "Use exactly 100 estimators for every IF/PAC variant.",
+   "cite": "Sec III-A, Setup",
+   "quote": "For the isolation forest and its variants, we used 100 estimators",
+   "page": 4
+  },
+  {
+   "id": "R8",
+   "stmt": "Sweep α over {0,0.5,1,2,∞} and report the best α per dataset.",
+   "cite": "Sec III-A, Setup; Table I caption",
+   "quote": "for the values α ∈ {0, 0.5, 1, 2, ∞}",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Evaluate on the 34 ADBench datasets for which AUCROC is not None, using ADBench code for data/benchmark.",
+   "cite": "Sec III-A and footnote 5",
+   "quote": "We ran the experiments on 34 datasets, using the code provided in [3]",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "Compute AUCROC from continuous anomaly scores, with higher scores indicating anomalies.",
+   "cite": "Sec III-A and Sec I",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R11",
+   "stmt": "Report best α (and best SOTA algorithm) in parentheses next to each AUCROC in Table I.",
+   "cite": "Table I caption",
+   "quote": "The best value of α and best SOTA algorithm are given in parentheses behind the AUCROC value.",
+   "page": 7
+  },
+  {
+   "id": "R12",
+   "stmt": "Use the authors' custom implementation of the new scoring and aggregation methods, not only ADBench's IF implementation.",
+   "cite": "Sec III-A and Sec I-C",
+   "quote": "using a custom implementation of the above methods",
+   "page": 4
+  },
+  {
+   "id": "R13",
+   "stmt": "Orient the final aggregated score so that anomalies receive higher scores.",
+   "cite": "Sec I",
+   "quote": "anomalies correspond to points with higher anomaly score",
+   "page": 1
+  }
+ ],
+ "data": [
+  {
+   "name": "ADBench benchmark datasets (annthyroid, cover, landsat, thyroid, Waveform, wine, WPBC, and the other datasets with non-None AUCROC)",
+   "how_to_get": "Use the ADBench code/data release referenced as [3], e.g. https://github.com/Minqi824/ADBench; follow its preprocessing and splits for the 34 datasets with an AUCROC value."
+  },
+  {
+   "name": "Generated toy cube dataset for Fig. 2",
+   "how_to_get": "Generate N=128 points in d=10: 127 inliers uniform in the unit cube and one outlier at (1.05,0.5,...,0.5), as described in Sec II-A."
+  },
+  {
+   "name": "Generated toy sphere dataset for Fig. 3",
+   "how_to_get": "Generate N=127 points uniformly on a (d-1)-sphere with Gaussian noise plus one outlier at the origin, as described in Sec II-B."
+  }
+ ],
+ "code_links": [
+  "https://github.com/porscheofficial/distribution",
+  "https://github.com/porscheofficial/distribution_and_volume_based_isolation_forest"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2309.11450",
+  "kind": "arxiv",
+  "arxiv_id": "2309.11450",
+  "url": "https://arxiv.org/abs/2309.11450",
+  "title": "Distribution and volume based scoring for Isolation Forests",
+  "pages": 7
+ }
+}

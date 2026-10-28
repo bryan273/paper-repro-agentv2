@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Random Forest 5-fold stratified cross-validation accuracy of 97.5% ± 1.6% for predicting placement category from 40 binary item responses (n=198)",
+  "table_ref": "Table 4 / Table 5",
+  "dataset": "40-item mathematics placement exam, 198 students, 7 terms (Summer 2022–Fall 2024), ECSU institutional data"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 10,
+  "gpu_speedup": null,
+  "basis": "The analysis is tiny (198x40 binary matrix, RF/GB/SVM/MLP with 5-fold CV) and would run in seconds on CPU; the only real cost is writing the pipeline, but the raw student response data is not public."
+ },
+ "blockers": [
+  "Raw item-level student response data (198x40 binary matrix) is institutional data from ECSU, not released",
+  "No code or data links in the paper",
+  "Exact CV fold seeds and preprocessing not specified, so exact 97.5% ± 1.6% cannot be matched even with data"
+ ],
+ "suitable": false,
+ "id": "2511.04667",
+ "title": "Multi-Method Analysis of Mathematics Placement Assessments: Classical, Machine Learning, and Clustering Approaches",
+ "pages": 28,
+ "model": "DeepSeek-V4.1-Flash"
+}

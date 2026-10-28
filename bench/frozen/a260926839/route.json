@@ -1,0 +1,39 @@
+{
+ "route": "full_release",
+ "why": "The authors shipped a single deterministic, self-contained script (scripts/trimcal_eval.py) that regenerates every table and figure from local scikit-learn datasets, plus the cached CSVs used in Table III. No private data, no weights, no GPU, no downloads beyond pip packages. The only plausible issue is the aggressively pinned requirements.txt (numpy 2.4.4 / pandas 3.0.2 / scipy 1.17.1 / scikit-learn 1.8.0 / matplotlib 3.10.9) which may not resolve on Python 3.12; relaxing those pins is a small environment fix, so the authors' entrypoint is run as released. One full run over the 432 noisy random-forest cells yields C1 (GATED-LWCAL ECE 0.122), and NLL/Brier/raw/isotonic/LWCAL-all-cells values from the same table can be cross-checked against the same run.",
+ "repo": "https://github.com/ZemingL/lwcal",
+ "entrypoints": [
+  "scripts/trimcal_eval.py --skip-compile",
+  "scripts/trimcal_eval.py --quick --skip-compile"
+ ],
+ "missing_artifacts": [],
+ "blockers_seen": [
+  "requirements.txt pins numpy==2.4.4, pandas==3.0.2, scipy==1.17.1, scikit-learn==1.8.0, matplotlib==3.10.9; some of these may not be installable on Python 3.12 without relaxing the pins",
+  "runs on Windows 11 here; the script shells out only for optional LaTeX compile (skipped with --skip-compile), so no POSIX-only blocker",
+  "results are deterministic only at rounded table level; exact CSV bytes may differ slightly from cached data"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~8-12 minutes for the full --skip-compile run on 22 cores (paper reports ~7 min on a 96-thread host; this workload is small-data/sklearn, so it is only weakly core-bound), plus ~3-5 minutes to create the venv and install dependencies",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 2,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "One CPU-only script: 9 local sklearn datasets x 4 noise conditions x 4 noise rates x noise-model variants = 432 random-forest cells (160 trees, min leaf 2, sqrt features) with isotonic/Platt/beta/LWCAL/gated fits on top; authors report ~7 min full run on a 96-thread host, so ~10-12 min on an 8-core laptop, plus ~5 min install and a clean re-run."
+ },
+ "repo_info": {
+  "url": "https://github.com/ZemingL/lwcal",
+  "cloned": true,
+  "n_files": 46,
+  "n_python": 1,
+  "python2_style_files": 0
+ }
+}

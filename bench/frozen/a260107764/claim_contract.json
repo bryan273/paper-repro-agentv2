@@ -1,0 +1,272 @@
+{
+ "title": "Power of masking methods for adaptive testing in a multivariate normal means problem",
+ "summary": "The paper studies how the power of masking-based adaptive multiple-testing procedures compares in a stylized two-groups multivariate normal means model with an unknown one-dimensional signal direction. It derives unified asymptotic power expressions for Split BH, BONuS one-to-many null augmentation, and an oracle In-sample BH benchmark, using a mean learner for the point-mass prior and a PCA learner for the subspace prior. The main conclusions are that BONuS is asymptotically more powerful than Split BH under matched learning quality and can approach the in-sample oracle as the number of null samples grows sublinearly, with the refined approximation suggesting an optimal null-sample count of order square-root m.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "For the requested BONuS point-mass comparison at π_aug=0.5, the paper's explicit setting is tilde m=m=1000; the paper gives the Theorem 1 power functional and plots empirical power but does not print a numeric power value at this setting.",
+   "metric": "π_aug (augmentation fraction); target power is TPR_BH from Theorem 1, not numerically tabulated",
+   "dataset": "synthetic two-groups multivariate normal means, point-mass prior",
+   "split": "Monte Carlo simulation, 1000 independent replications",
+   "value": 0.5,
+   "unit": "π_aug",
+   "higher_is_better": true,
+   "table_ref": "Figure 14 caption and Appendix D.3; cf. Theorem 1 and Figure 4/6",
+   "config_for_value": "γ=0.2, c=0.2, h=4, m=1000, d=200 implied by c=0.2, tilde m=1000, π_aug=0.5, point-mass prior, mean learner, BH at unspecified q",
+   "reported_spread": null,
+   "est_compute": "CPU, ~minutes for theorem evaluation; ~1000 BONuS simulations at m=1000, d=200, ~minutes to hours",
+   "quote": "we set  ̃m “ m “ 1000 for the augmentation methods (i.e., πaug “ 0.5)",
+   "page": 29
+  },
+  {
+   "id": "C2",
+   "statement": "The empirical power-maximizing number of null samples for BONuS grows with log-log slope 0.45, close to the conjectured square-root scaling.",
+   "metric": "OLS slope of log tilde m_opt versus log m",
+   "dataset": "synthetic two-groups multivariate normal means, point-mass prior",
+   "split": "simulation grid over m, 5000 replications per tilde m estimate",
+   "value": 0.45,
+   "unit": "log-log slope",
+   "higher_is_better": false,
+   "table_ref": "Section 4.2, Figure 7 left panel",
+   "config_for_value": "point-mass prior, default-like settings, m in 50 log-spaced values between 500 and 2500, 5000 replications per TPR estimate",
+   "reported_spread": "confidence interval [0.41, 0.49]",
+   "est_compute": "CPU, 50 m values x 5000 replications x grid search over tilde m; likely hours",
+   "quote": "it has a slope of 0.45 (confidence interval [0.41, 0.49]).",
+   "page": 16
+  },
+  {
+   "id": "C3",
+   "statement": "The default simulation setting used throughout the main figures is γ=0.2, c=0.2, h=4, m=1000 with 1000 Monte Carlo replications.",
+   "metric": "γ (non-null proportion), default setting component",
+   "dataset": "synthetic two-groups multivariate normal means",
+   "split": "Monte Carlo simulation, 1000 independent replications",
+   "value": 0.2,
+   "unit": "γ",
+   "higher_is_better": true,
+   "table_ref": "Section 3.2, sentence before Figure 3",
+   "config_for_value": "default setting (γ,c,h,m)=(0.2,0.2,4,1000), 1000 independent replications",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes to hours depending on method and number of tuning values",
+   "quote": "Unless stated otherwise, all figures use the default setting pγ, c, h, mq “ p0.2, 0.2, 4, 1000q, and Monte Carlo results are averaged over 1000 independent replications.",
+   "page": 10
+  },
+  {
+   "id": "C4",
+   "statement": "For the In-sample BH oracle benchmark in the point-mass case, the paper uses B=50,000 Monte Carlo resamples to approximate null p-values.",
+   "metric": "number of Monte Carlo resamples B",
+   "dataset": "synthetic two-groups multivariate normal means, point-mass prior, Case 1",
+   "split": "In-sample BH null calibration",
+   "value": 50000,
+   "unit": "resamples",
+   "higher_is_better": true,
+   "table_ref": "Appendix F.2, paragraph on Figures 4, 9, 10, 11, 12, 13",
+   "config_for_value": "Case 1 point-mass prior, default setting and other simulation figures",
+   "reported_spread": null,
+   "est_compute": "CPU, 1000 replications x 50,000 null draws per In-sample BH calibration; hours",
+   "quote": "For Case 1, we use B “ 50,000 resamples.",
+   "page": 32
+  },
+  {
+   "id": "C5",
+   "statement": "For the In-sample BH oracle benchmark in the default subspace-prior case, the paper uses B=10,000 Monte Carlo resamples.",
+   "metric": "number of Monte Carlo resamples B",
+   "dataset": "synthetic two-groups multivariate normal means, one-dimensional subspace prior, Case 2",
+   "split": "In-sample BH null calibration",
+   "value": 10000,
+   "unit": "resamples",
+   "higher_is_better": true,
+   "table_ref": "Appendix F.2, paragraph on Figures 4, 9, 10, 11, 12, 13",
+   "config_for_value": "Case 2 subspace prior, default setting",
+   "reported_spread": null,
+   "est_compute": "CPU, 1000 replications x 10,000 null draws with SVD learning; hours",
+   "quote": "For Case 2, we use B “ 10,000 resamples for the default setting",
+   "page": 32
+  },
+  {
+   "id": "C6",
+   "statement": "The empirical search for the optimal BONuS null-sample count estimates TPR with 5,000 replications.",
+   "metric": "number of simulation replications",
+   "dataset": "synthetic two-groups multivariate normal means, point-mass prior",
+   "split": "Monte Carlo simulation for Figure 7",
+   "value": 5000,
+   "unit": "replications",
+   "higher_is_better": true,
+   "table_ref": "Appendix F.1, Figure 7 left subplot procedure",
+   "config_for_value": "point-mass prior, m grid between 500 and 2500, tilde m search starting at 10 and increasing by 1",
+   "reported_spread": null,
+   "est_compute": "CPU, 50 m values x many tilde m values x 5000 replications; hours",
+   "quote": "the TPR is estimated by simulating the BONuS procedure using 5,000 replications.",
+   "page": 31
+  },
+  {
+   "id": "C7",
+   "statement": "A higher-dimensional robustness setting uses aspect ratio c=1 with γ=0.2 and h=5 at m=1000.",
+   "metric": "c (aspect ratio d/m)",
+   "dataset": "synthetic two-groups multivariate normal means",
+   "split": "Monte Carlo simulation, 1000 independent replications",
+   "value": 1.0,
+   "unit": "c",
+   "higher_is_better": false,
+   "table_ref": "Appendix B.3, higher-dimensional setting, Figures 10 and 11",
+   "config_for_value": "(γ,c,h,m)=(0.2,1,5,1000), point-mass and subspace priors",
+   "reported_spread": null,
+   "est_compute": "CPU, 1000 replications per tuning value; hours",
+   "quote": "considering a higher-dimensional setting with pγ, c, hq “ p0.2, 1, 5q and m “ 1000",
+   "page": 22
+  },
+  {
+   "id": "C8",
+   "statement": "A sparse robustness setting uses non-null proportion γ=0.05 with c=0.2 and h=8 at m=1000.",
+   "metric": "γ (non-null proportion)",
+   "dataset": "synthetic two-groups multivariate normal means",
+   "split": "Monte Carlo simulation, 1000 independent replications",
+   "value": 0.05,
+   "unit": "γ",
+   "higher_is_better": true,
+   "table_ref": "Appendix B.3, sparse setting, Figures 12 and 13",
+   "config_for_value": "(γ,c,h,m)=(0.05,0.2,8,1000), point-mass and subspace priors",
+   "reported_spread": null,
+   "est_compute": "CPU, 1000 replications per tuning value; hours",
+   "quote": "We set pγ, c, hq “ p0.05, 0.2, 8q and m “ 1000",
+   "page": 24
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "This is the cheapest claim matching the user's hint: it pins the explicit π_aug=0.5 BONuS setting (tilde m=m=1000) and points to Theorem 1 / Figures 4 and 6. Because the paper does not print a numeric power at the default point-mass setting, the reproduction must evaluate the Theorem 1 TPR_BH formula and compare it with the BONuS simulation."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: the target is a bounded TPP/power fraction on m=1000 hypotheses, which is fewer than 2,000 examples, and the paper reports no standard deviation for the target power. Use 0.02 in the [0,1] fraction scale."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Generate m independent d-dimensional summary statistics X_j from N(θ_j, I_d).",
+   "cite": "Section 2.1, equation (1)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R2",
+   "stmt": "Draw θ_j i.i.d. from the two-groups mixture with non-null proportion γ and alternative prior Λ.",
+   "cite": "Section 2.1, equation (2)",
+   "quote": "θj i.i.d. „ p1  ́ γq  ̈ δ0 ` γ  ̈ Λ, j “ 1, . . . , m,",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "For the point-mass prior use Λ=δ_{h v} with h≥0 and a unit direction v; the subspace alternative is not needed for the target.",
+   "cite": "Section 2.1, equation (3)",
+   "quote": "Λ ” δhv or Λ ” Np0, h2vvT q, where h ě 0, v P Rd, }v}2 “ 1.",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Use the point-mass score T_Λ(X_j)=v^T X_j after dropping the monotone term -h^2/2.",
+   "cite": "Section 3.2, equation (9)",
+   "quote": "TΛpXjq “ hvJXj  ́ 1 2h2, or vJXj after monotonic transformation.",
+   "page": 9
+  },
+  {
+   "id": "R5",
+   "stmt": "Learn the direction with the mean learner: the normalized average of the rows of X_learn.",
+   "cite": "Section 3.2, equation (10)",
+   "quote": "since ErXjs “ γhv, we consider a learner based on the average of Xj, similar to that employed by Kim & Ramdas (2024):",
+   "page": 9
+  },
+  {
+   "id": "R6",
+   "stmt": "For BONuS, stack the m original rows with tilde m synthetic null rows and apply a random row permutation to form X_learn; X_score remains the original X.",
+   "cite": "Algorithm 2, Steps 0-2; Section 2.2",
+   "quote": "BONuS augments the original data X with  ̃m P N null samples  ̃ Xk and then scrambles the rows with a random permutation Π (Steps 0-1)",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "Compute BONuS empirical p-values from the null-sample scores with the augmented empirical survival function.",
+   "cite": "Algorithm 2, Steps 5-6",
+   "quote": "The null distribution for TˆΛpXscore j q is constructed based on the empirical distribution of the scores of the null samples",
+   "page": 7
+  },
+  {
+   "id": "R8",
+   "stmt": "Apply Benjamini-Hochberg at level q to the p-values and return the rejection set.",
+   "cite": "Algorithm 2, Step 7; Section 2.2",
+   "quote": "which are passed through BH correction to obtain the rejection set pR (Step 7).",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "Evaluate power as the true positive proportion: rejected non-nulls divided by total non-nulls.",
+   "cite": "Section 2.1, paragraph on TPP",
+   "quote": "we define the true positive proportion as TPPp pRq ” | pR X H1|{|H1|}.",
+   "page": 5
+  },
+  {
+   "id": "R10",
+   "stmt": "Compare asymptotics in the regime d/m→c and m/(m+tilde m)→π_aug with h and γ fixed.",
+   "cite": "Section 3, equation (5)",
+   "quote": "h, γ fixed, m, d,  ̃m Ñ 8 with d m Ñ c ě 0, m m `  ̃m Ñ πaug P r0, 1s.",
+   "page": 7
+  },
+  {
+   "id": "R11",
+   "stmt": "For the point-mass prior, compute the Theorem 1 asymptotic BONuS power as TPR_BH(N(0,1), N(μ_bonus,1), γ).",
+   "cite": "Theorem 1, equation (15); Proposition 2",
+   "quote": "TPPp pRq pÑ TPRBHpNp0, 1q, Npμpγ, c, hq, 1q, γq.",
+   "page": 11
+  },
+  {
+   "id": "R12",
+   "stmt": "Use the BONuS point-mass signal strength μ_bonus=h^2 γ / sqrt(h^2 γ^2 + c/π_aug).",
+   "cite": "Section 3.2, equation (14)",
+   "quote": "the product of the alignment of ˆv with v and the signal strength in Xscore:",
+   "page": 9
+  },
+  {
+   "id": "R13",
+   "stmt": "Use the default simulation parameter values unless a figure or appendix states otherwise.",
+   "cite": "Section 3.2, simulation paragraph",
+   "quote": "Unless stated otherwise, all figures use the default setting pγ, c, h, mq “ p0.2, 0.2, 4, 1000q",
+   "page": 10
+  },
+  {
+   "id": "R14",
+   "stmt": "Average empirical power over 1000 independent Monte Carlo replications in the main figures.",
+   "cite": "Section 3.2, simulation paragraph",
+   "quote": "Monte Carlo results are averaged over 1000 independent replications.",
+   "page": 10
+  },
+  {
+   "id": "R15",
+   "stmt": "For the explicit π_aug=0.5 augmentation comparison, set tilde m=m=1000.",
+   "cite": "Figure 14 caption; Appendix D.3",
+   "quote": "we set  ̃m “ m “ 1000 for the augmentation methods (i.e., πaug “ 0.5)",
+   "page": 29
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic two-groups multivariate normal means model",
+   "how_to_get": "Generate in simulation from equations (1)-(3) with fixed γ,c,h,m and point-mass prior; no external data file is needed."
+  },
+  {
+   "name": "Replication code repository",
+   "how_to_get": "https://github.com/Katsevich-Lab/masking-power"
+  }
+ ],
+ "code_links": [
+  "https://github.com/Katsevich-Lab/masking-power"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2601.07764",
+  "kind": "arxiv",
+  "arxiv_id": "2601.07764",
+  "url": "https://arxiv.org/abs/2601.07764",
+  "title": "Power of masking methods for adaptive testing in a multivariate normal means problem",
+  "pages": 90
+ }
+}

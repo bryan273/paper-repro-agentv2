@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Zero-P-to-3 reaches 18.14 PSNR in the invisible region on Objaverse, the paper's key claim for partial-view reconstruction.",
+  "table_ref": "Table 1, row 'Zero-P-to-3 (Ours)', column 'Invisible Region PSNR'",
+  "dataset": "Objaverse"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 4320,
+  "gpu_speedup": 25,
+  "basis": "Even though the method is training-free, reproducing the metric needs Era3D multi-view diffusion, DiffBIR restoration, 50-step DDIM sampling over many rotated views, and iterative 3DGS optimization (3,000 steps per iteration) on 90-image partial observations; on an 8-core CPU this is days of runtime, not hours."
+ },
+ "blockers": [
+  "No code release or implementation link in the paper",
+  "Requires GPU inference for Era3D multi-view diffusion and DiffBIR restoration",
+  "Iterative refinement uses 3,000 3DGS optimization steps per iteration over many rotated views",
+  "Evaluation protocol, object list, renders, masks, and exact Objaverse split are unspecified",
+  "Multi-prior fusion and rotated-view hyperparameters are underspecified for exact reproduction"
+ ],
+ "suitable": false,
+ "id": "2505.23054",
+ "title": "Zero-P-to-3: Zero-Shot Partial-View Images to 3D Object",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

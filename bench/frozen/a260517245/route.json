@@ -1,0 +1,44 @@
+{
+ "route": "paper_only",
+ "why": "The linked repository contains NO code at all — only the Call Details-Data.csv file (8.2 MB) and a README describing the columns. There is no preprocessing script, no SMOTE/no-model fitting code, no configs, no weights and no dependency file, so there is nothing of the authors' logic to run or port. The one thing genuinely released is the dataset itself (101,174 x 17 CDR records), which means the reimplementation is cheap and well-grounded: load the CSV, drop missing rows, Min-Max scale, SMOTE, 80/20 split, fit RandomForest (and XGBoost for C6/C7) with scikit-learn, and score accuracy/precision/recall/F1/ROC AUC. Everything must be rebuilt from the paper's description.",
+ "repo": "https://github.com/jamesrawlins1000/Telecom-CDR-Dataset-",
+ "entrypoints": [],
+ "missing_artifacts": [
+  "All model / experiment code (no .py, .ipynb or config files in the repo)",
+  "Preprocessing script (missing-value removal, Min-Max scaling Eq. 1, SMOTE balancing, 80/20 split, seed)",
+  "Random Forest and XGBoost hyperparameters (n_estimators, max_depth, learning_rate, etc. are not reported)",
+  "requirements/environment file (scikit-learn, imbalanced-learn, xgboost versions)",
+  "Baseline implementations (DBSCAN, RoBERTa, K-means) — not required for the match target C1",
+  "Note: the reported RF confusion matrix (26,127 + 273,871 + 0 + 2 = 300,000 predictions) is numerically impossible for a 101,174-record test split, so C8 cannot be matched literally"
+ ],
+ "blockers_seen": [
+  "No author code exists; the 'code link' is a dataset-only repository",
+  "Exact RF/XGBoost hyperparameters and random seed are unreported, so 99.9% is a target value rather than a deterministic rerun",
+  "SMOTE-before-split (as the paper describes) leaks synthetic minority points into test, so a leak-free split will likely give a lower but more honest number — both should be reported",
+  "Paper's confusion-matrix counts (300,000 predictions) are inconsistent with the 101,174-record dataset (C8)"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~10-20 minutes of compute: ~1 min to load/clean/scale the 101,174x17 CSV, a few seconds per SMOTE pass, ~30-120 s per RandomForest fit (500 trees) and ~1-2 min per XGBoost fit, times ~5 seeds for both models; no GPU used or needed",
+  "fits_budget": true,
+  "scale_down_plan": null,
+  "verdict_ceiling": "reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "Two classic tree ensembles (RandomForest, XGBoost) on a 101k x 17 tabular CSV that is already downloaded: seconds-to-minutes per fit on 8 CPU cores, so the whole protocol (clean, scale, SMOTE, 80/20 split, 5 seeds, 2 models, 5 metrics) is ~20 minutes of command time; a GPU gives no meaningful speedup for scikit-learn RandomForest."
+ },
+ "repo_info": {
+  "url": "https://github.com/jamesrawlins1000/Telecom-CDR-Dataset-",
+  "cloned": true,
+  "n_files": 2,
+  "n_python": 0,
+  "python2_style_files": 0
+ }
+}

@@ -1,0 +1,254 @@
+{
+ "title": "Towards Token-Level Text Anomaly Detection",
+ "summary": "Existing text anomaly detection methods only work at the document level (or on narrow, task-specific token tasks such as spell checking), so they cannot localize which tokens in a text are anomalous. The paper introduces token-level text anomaly detection, releases three token-annotated benchmarks (SMS_Spam with injected character corruption, Restaurant Review semantic anomalies, Grammar errors), and proposes TokenCore, which builds a memory bank of normal word-level token embeddings (BERT-base-uncased embeddings aggregated by element-wise max pooling over subwords) and scores each test token by its nearest-neighbor distance, aggregating token scores by mean for document-level scores. TokenCore achieves the best average token-level AUROC (0.7145) and document-level AUROC (0.7335) among 7 methods, ranking first at token level on Review (0.8271) and Grammar (0.6371) and at document level on Review (0.9594), while ECOD/iForest remain better on the character-corruption SMS_Spam token-level task.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "TokenCore token-level AUROC on the Grammar dataset",
+   "metric": "AUROC",
+   "dataset": "Grammar (Grammar Correction, Kaggle)",
+   "split": "Test = 50% of documents not used as normal training data (normal + anomalous); token-level scoring over test documents",
+   "value": 0.6371,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column Grammar ROC",
+   "config_for_value": "BERT-base-uncased contextual embeddings, element-wise max pooling over subwords to word level, memory bank of all normal-training token embeddings, nearest-neighbor (distance) token anomaly score, mean aggregation for document score, 50% normal documents for training",
+   "reported_spread": null,
+   "est_compute": "CPU or 1 GPU, < 5 min (300 documents, single BERT-base forward pass plus nearest-neighbor search)",
+   "quote": "TokenCore 0.6792 0.0141 0.8271 0.053 0.6371 0.0407 0.7145 0.0359",
+   "page": 3
+  },
+  {
+   "id": "C2",
+   "statement": "TokenCore token-level AUPRC on the Grammar dataset",
+   "metric": "AUPRC",
+   "dataset": "Grammar (Grammar Correction, Kaggle)",
+   "split": "Test = 50% of documents (normal + anomalous); token-level",
+   "value": 0.0407,
+   "unit": "AUPRC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column Grammar PRC",
+   "config_for_value": "Same as C1: BERT-base-uncased + max pooling word embeddings, normal-token memory bank, nearest-neighbor token score, mean document aggregation",
+   "reported_spread": null,
+   "est_compute": "CPU or 1 GPU, < 5 min (300 documents)",
+   "quote": "TokenCore 0.6792 0.0141 0.8271 0.053 0.6371 0.0407 0.7145 0.0359",
+   "page": 3
+  },
+  {
+   "id": "C3",
+   "statement": "TokenCore token-level AUROC on the Restaurant Review dataset",
+   "metric": "AUROC",
+   "dataset": "Restaurant Review (Google Maps reviews, authors' collection)",
+   "split": "Test = 50% of documents (normal + anomalous); token-level",
+   "value": 0.8271,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column Review ROC",
+   "config_for_value": "BERT-base-uncased + max pooling word embeddings, memory bank from 50% normal training documents, nearest-neighbor token scores, mean aggregation",
+   "reported_spread": null,
+   "est_compute": "1 GPU or CPU, ~5 min (1,100 documents)",
+   "quote": "TokenCore 0.6792 0.0141 0.8271 0.053 0.6371 0.0407 0.7145 0.0359",
+   "page": 3
+  },
+  {
+   "id": "C4",
+   "statement": "TokenCore token-level AUROC on the SMS_Spam dataset",
+   "metric": "AUROC",
+   "dataset": "SMS Spam (kendx/NLP-ADBench sms_spam, with injected character corruption)",
+   "split": "Test = 50% of documents (normal + anomalous); token-level",
+   "value": 0.6792,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column SMS_Spam ROC",
+   "config_for_value": "BERT-base-uncased + max pooling word embeddings, memory bank from 50% normal training documents, nearest-neighbor token scores, mean aggregation",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~10-20 min (4,518 documents, largest token memory bank)",
+   "quote": "TokenCore 0.6792 0.0141 0.8271 0.053 0.6371 0.0407 0.7145 0.0359",
+   "page": 3
+  },
+  {
+   "id": "C5",
+   "statement": "TokenCore average token-level AUROC across the three datasets (headline result: rank first among 7 methods)",
+   "metric": "AUROC (average over SMS_Spam, Review, Grammar)",
+   "dataset": "SMS_Spam + Restaurant Review + Grammar",
+   "split": "Token-level test sets of all three datasets",
+   "value": 0.7145,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column Average ROC",
+   "config_for_value": "Same TokenCore configuration run on all three datasets; average of the three token-level AUROC values",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~30 min total for the three datasets",
+   "quote": "the proposed TokenCore ranks first in average AUROC at both level",
+   "page": 3
+  },
+  {
+   "id": "C6",
+   "statement": "TokenCore average token-level AUPRC across the three datasets",
+   "metric": "AUPRC (average over SMS_Spam, Review, Grammar)",
+   "dataset": "SMS_Spam + Restaurant Review + Grammar",
+   "split": "Token-level test sets of all three datasets",
+   "value": 0.0359,
+   "unit": "AUPRC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Token section, row TokenCore, column Average PRC",
+   "config_for_value": "Same TokenCore configuration on all three datasets; average of token-level AUPRC values",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~30 min total",
+   "quote": "TokenCore 0.6792 0.0141 0.8271 0.053 0.6371 0.0407 0.7145 0.0359",
+   "page": 3
+  },
+  {
+   "id": "C7",
+   "statement": "TokenCore average document-level AUROC across the three datasets",
+   "metric": "AUROC (average over SMS_Spam, Review, Grammar)",
+   "dataset": "SMS_Spam + Restaurant Review + Grammar",
+   "split": "Document-level test set (50% of documents, normal + anomalous)",
+   "value": 0.7335,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Document section, row TokenCore, column Average ROC",
+   "config_for_value": "Mean aggregation of token-level nearest-neighbor scores gives the document score; same embeddings and memory bank as token level",
+   "reported_spread": null,
+   "est_compute": "1 GPU, ~30 min total (reuses the same token embeddings as token-level)",
+   "quote": "TokenCore 0.5859 0.2072 0.9594 0.7495 0.6553 0.2624 0.7335 0.4064",
+   "page": 3
+  },
+  {
+   "id": "C8",
+   "statement": "TokenCore document-level AUROC on the Restaurant Review dataset",
+   "metric": "AUROC",
+   "dataset": "Restaurant Review (Google Maps reviews, authors' collection)",
+   "split": "Document-level test set (50% of the 1,100 documents)",
+   "value": 0.9594,
+   "unit": "AUROC",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Document section, row TokenCore, column Review ROC",
+   "config_for_value": "Mean aggregation of TokenCore token-level nearest-neighbor scores to document level",
+   "reported_spread": null,
+   "est_compute": "1 GPU or CPU, ~5 min (1,100 documents)",
+   "quote": "TokenCore 0.5859 0.2072 0.9594 0.7495 0.6553 0.2624 0.7335 0.4064",
+   "page": 3
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user's target hint names exactly this number, and it is also the cheapest claim that still exercises the paper's central token-level memory-bank pipeline: the Grammar benchmark is the smallest (300 documents, 30 anomalous, ~150 test documents) and is one of the two datasets where TokenCore ranks first at token level, so a single BERT-base forward pass plus nearest-neighbor search verifies the core method."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: AUROC is a bounded score and the paper prints it in [0,1] as a fraction; no std/CI over repeated runs is reported (rule 1 inapplicable), and the token-level test set for Grammar is only ~150 documents' tokens, whose size is never stated as 2,000+ examples, so the smaller-set band of 0.02 absolute is used rather than the 0.01 of rule 2."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "All methods (including baselines) must operate on BERT-base-uncased contextual embeddings with max pooling aggregation over subwords, so that only the detection algorithm differs.",
+   "cite": "Section 6.1 Experimental Setup",
+   "quote": "All the methods operate on BERT-base-uncased embeddings with max pooling aggregation.",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Word-level token embeddings must be formed by element-wise max pooling over the embeddings of all subwords of that word (Equation 1), not by taking the first subword or averaging.",
+   "cite": "Section 5, Embedding Extraction with Max Pooling, Eq. (1)",
+   "quote": "To maximize the anomaly signal for each token, we propose using max pooling to aggregate subword embeddings.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "A memory bank must be built from the word-level embeddings of all tokens in the normal training documents only (no anomalous-token embeddings are stored).",
+   "cite": "Section 5, TokenCore: Token-Level Anomaly Detection",
+   "quote": "we extract word-level embeddings from all normal samples in the training set and store them in a memory bank",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "The token-level anomaly score is the minimum distance from the test-token embedding to any memory-bank entry (Equation 2); larger distance means more anomalous.",
+   "cite": "Section 5, Token-Level Scoring, Eq. (2)",
+   "quote": "we compute its anomaly score as the distance to its nearest neighbor in the memory bank",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Document-level anomaly scores must be obtained by mean aggregation of the token-level scores over all tokens of the document (Equation 3).",
+   "cite": "Section 5, Document-Level Aggregation, Eq. (3)",
+   "quote": "To obtain document-level anomaly scores, we aggregate token-level scores across all tokens in the document.",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "The train/test split must use 50% of the normal documents for training, with the remainder (normal and anomalous) as the test set, for every dataset.",
+   "cite": "Section 6.1 Experimental Setup",
+   "quote": "We use 50% normal documents as training data, the rest of data are set as testing including both normal and anomaly.",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "Evaluation must report both AUROC and AUPRC, computed separately at token level and at document level.",
+   "cite": "Section 6.1 Experimental Setup; Table 1",
+   "quote": "We compare TokenCore against 6 anomaly detection methods and use AUROC and AUPRC as evaluation metrics.",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "The comparison set must contain the six baselines LOF, iForest, ECOD, DeepSVDD (D.SVDD), AutoEncoder and LUNAR, run on the same embeddings, in addition to TokenCore.",
+   "cite": "Table 1 (method column); Section 6.1",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R9",
+   "stmt": "Subword embeddings must be aggregated up to word level so that scores align with the word-level token annotations used as ground truth.",
+   "cite": "Section 5, Embedding Extraction with Max Pooling",
+   "quote": "Since tokenizers often split words into multiple subword units, we need to aggregate subword embeddings",
+   "page": 3
+  },
+  {
+   "id": "R10",
+   "stmt": "Data must match the released benchmarks: Grammar = 270 correct (normal) + 30 incorrect (anomalous) sentences, 300 documents, 10% anomaly rate.",
+   "cite": "Section 4, Grammar Correction Dataset",
+   "quote": "This dataset has 30 anomalous samples in total 300 documents, anomaly rate is 10%.",
+   "page": 2
+  },
+  {
+   "id": "R11",
+   "stmt": "Documents must be labeled anomalous if they contain at least one anomalous token (or deviate at document level), so document-level labels are consistent with token-level labels.",
+   "cite": "Section 3, Definition 2 (Document-Level Anomaly)",
+   "quote": "it contains at least one anomalous token, or (2) its document-level representation deviates from the normal document distribution.",
+   "page": 2
+  }
+ ],
+ "data": [
+  {
+   "name": "SMS Spam (token-level annotated, corrupted)",
+   "how_to_get": "https://huggingface.co/datasets/kendx/NLP-ADBench/tree/main/datasets/sms_spam (link given in the paper)"
+  },
+  {
+   "name": "Grammar Correction Dataset (Kaggle)",
+   "how_to_get": "https://www.kaggle.com/datasets/satishgunjal/grammar-correction?resource=download (link given in the paper); released 300-document split may be mirrored in the TokenCore GitHub repo"
+  },
+  {
+   "name": "Restaurant Review Dataset (Google Maps reviews collected by the authors)",
+   "how_to_get": "No public URL in the paper text; check https://github.com/charles-cao/TokenCore for the released annotated split"
+  },
+  {
+   "name": "BERT-base-uncased",
+   "how_to_get": "HuggingFace model hub: bert-base-uncased (named in the paper as the embedding backbone)"
+  }
+ ],
+ "code_links": [
+  "https://github.com/charles-cao/TokenCore",
+  "https://huggingface.co/datasets/kendx/NLP-ADBench/tree/main/datasets/sms_spam",
+  "https://www.kaggle.com/datasets/satishgunjal/grammar-correction?resource=download"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2601.13644",
+  "kind": "arxiv",
+  "arxiv_id": "2601.13644",
+  "url": "https://arxiv.org/abs/2601.13644",
+  "title": "Towards Token-Level Text Anomaly Detection",
+  "pages": 4
+ }
+}

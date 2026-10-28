@@ -1,0 +1,91 @@
+{
+ "approach": "Full-release route: clone Bonbhel/kabena-ml into vendor/, `pip install -e .` (core is numpy-only; scikit-learn is already present, so no extras are needed and no numpy downgrade should be allowed), then run the authors' own seeded Table 1 script rather than reimplementing anything. First I inspect validation/table1_real_datasets.py, validation/_common.py and kabena/core/{config,filter,sampling}.py to learn the exact call signature, the stdout/JSON format, whether a QUICK switch exists, and the true shipped defaults (N, k_percentile, strategy, alpha). A tiny smoke_check.py proves the data flow (569x30 Breast Cancer, Kabena.select on a toy loss vector, |S| = round(N*k), weights 1/pi, last_gain_ ≈ 0.28) and confirms the author script prints the LogReg/Breast Cancer row under QUICK=1. reproduce.py is a thin orchestrator: it subprocess-runs the author script from the repo root, tees stdout to results/table1_stdout.txt, parses the LogReg / Breast Cancer row (baseline accuracy, v3 accuracy ± spread, saving %), and writes results/metrics.json with C1's mean-over-seeds-0-4 accuracy and C2's 28.5% saving plus tolerance verdicts. No model, sampler, or training loop is rewritten; reader assumptions A1-A14 only enter as provenance metadata if the released script does not fix them itself.",
+ "files": [
+  {
+   "path": "setup_env.py",
+   "purpose": "Clone https://github.com/Bonbhel/kabena-ml.git (depth 1) into vendor/kabena-ml, then `pip install -e vendor/kabena-ml --no-deps` (numpy/scikit-learn already installed, so never let pip touch numpy), verify `import kabena` and that vendor/kabena-ml/validation/table1_real_datasets.py exists. Fallback if clone fails: `pip install kabena==2.1.1` and fetch validation/_common.py + validation/table1_real_datasets.py from the GitHub raw URLs with requests into vendor/kabena-ml/validation/. Prints a JSON readiness report.",
+   "requirement_ids": [
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "smoke_check.py",
+   "purpose": "Data-flow proof before the full run: load_breast_cancer (assert n=569, d=30, class counts 212/357), stratified 75/25 split (426/143), instantiate Kabena with paper config, call kb.select on a synthetic loss vector whose 40th percentile is known, and verify the returned mask keeps all majors plus round(N*k) minors, that weights are 1.0 for majors and ~1/(m*p_i) for selected minors, and that kb.last_gain_ ≈ 0.28 (0.7*0.4). Also runs the author Table 1 script once with QUICK=1 and asserts the string 'Breast' appears in stdout.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin wrapper/orchestrator: ensures vendor/ is installed (calls setup_env.py if missing), subprocess-runs `python validation/table1_real_datasets.py` with cwd=vendor/kabena-ml, PYTHONHASHSEED=0 and a 900 s timeout, tees stdout to results/table1_stdout.txt, parses the LogReg / Breast Cancer row (baseline acc, v3 acc with ±spread, saving %), and writes results/metrics.json containing C1 (mean v3 test accuracy over seeds 0-4, baseline value, per-seed values if printed, |diff| vs 0.9706, pass/fail at 0.02 absolute) and C2 (saving %, expected 28.5, tolerance 1.0), plus provenance (commit hash, Kabena version, config actually used). If the script supports no row filter and exceeds the time budget, it calls the script's own helper functions for the Breast Cancer row only (still author code, no reimplementation).",
+   "requirement_ids": [
+    "R1",
+    "R9",
+    "R10",
+    "R11",
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/Bonbhel/kabena-ml (route repo_info.url)",
+  "repo_dir": "vendor/kabena-ml",
+  "install_command": "pip install -e vendor/kabena-ml --no-deps (core extra is numpy only; scikit-learn>=1.3 preinstalled) (pyproject.toml)",
+  "author_script": "validation/table1_real_datasets.py (route entrypoints)",
+  "dataset": "sklearn.datasets.load_breast_cancer(), n=569, d=30 (paper Sec 7 / R11)",
+  "split": "75/25 stratified train/test, StratifiedKFold/shuffle with per-seed RNG (R11, paper Sec 7)",
+  "seeds": "[0,1,2,3,4] paired across methods (R9, paper Sec 7)",
+  "N": "0.3 (paper default, Sec 7 / R1 / R3)",
+  "k_percentile": "40.0 (K at 40th percentile of current losses, recomputed per epoch inside select(); R1)",
+  "strategy": "\"auto\" (= v3 canonical compensated design) (README, Sec 9 / R12)",
+  "alpha": "0.3 defensive-mixture (paper Sec 7 / R1)",
+  "estimator": "self-normalized Hajek weighted gradient (Eq. 3, R7); HT weights 1/pi_i for selected minors, 1 for majors (R6)",
+  "inclusion_probability": "pi_i = m * p_i (Poisson/rejective approximation, Assumption 1(b), R5); alpha=1 would give pi_i = m/k",
+  "retention_count": "m = round(N * k) (R3)",
+  "expected_gain": "G = (1-N)*k/n = 0.7*0.4 = 0.28 -> 28.5% measured on Breast Cancer (R8, C2)",
+  "dataset_scaler": "StandardScaler fit on train split only (A4)",
+  "model": "logistic regression, unregularized binary cross-entropy, zero init (A3, A13, R13)",
+  "optimizer": "full-batch SGD, constant LR 0.1, no momentum (A1) - ONLY as fallback if the author script exposes no fixed setting; author-script values take precedence and are logged",
+  "epochs": "author-script value; if absent assume 200 with relative train-loss change < 1e-6 early stop (A2)",
+  "mask_timing": "author-script behaviour (delayed epoch-(t-1) losses per A5); do not change",
+  "claim_C1_value": 0.9706,
+  "claim_C1_tolerance": "0.02 absolute (tolerance block)",
+  "claim_C2_value": 28.5,
+  "claim_C2_tolerance": "1.0 percentage point (sanity; paper prints no spread)",
+  "test_size": "143 examples (25% of 569)",
+  "metric_output": "results/metrics.json",
+  "stdout_log": "results/table1_stdout.txt"
+ },
+ "steps": [
+  "Run `python setup_env.py`: shallow-clone the repo into vendor/kabena-ml, `pip install -e vendor/kabena-ml --no-deps`, confirm `import kabena` succeeds and that validation/table1_real_datasets.py is present. Record the git commit hash.",
+  "Inspect vendor/kabena-ml/validation/table1_real_datasets.py (885 B) and validation/_common.py (2.8 KB) to determine: the callable/`__main__` structure, the exact stdout row format (is the '28.5%' saving printed? is a spread printed?), any QUICK/ONLY env switch, and whether a JSON/CSV artifact is written.",
+  "Inspect kabena/core/config.py, filter.py, sampling.py, gate.py to confirm shipped defaults (N=0.3, k_percentile=40.0, strategy auto/v3, alpha=0.3), that select() re-derives K at the loss percentile each call, that m=round(N*k), that sampling is without-replacement with defensive-mixture probabilities, and that weights are the Hajek self-normalized form. Diff any mismatch against R1-R8 and log it in metrics.json provenance (do not patch author code).",
+  "Run `python smoke_check.py`: verify dataset shapes/class balance, split sizes 426/143, toy-loss select() output (all majors kept, |S| = round(0.3*k), major weight 1.0, minor weights ≈ 1/(m*p_i)), kb.last_gain_ ≈ 0.28, then a QUICK=1 author-table run under a 300 s timeout confirming the Breast Cancer line is printed.",
+  "Run `python reproduce.py`: it subprocess-runs `python validation/table1_real_datasets.py` from the repo root (PYTHONHASHSEED=0, 900 s timeout, full 5 seeds), tees output to results/table1_stdout.txt, and parses the LogReg / Breast Cancer row for baseline accuracy, v3 accuracy (±spread) and saving %.",
+  "Write results/metrics.json: C1 = mean v3 test accuracy over seeds 0-4 with per-seed list if available, baseline accuracy, signed difference vs 0.9706, abs difference, pass flag using the 0.02 absolute tolerance, and the parity check |v3 - baseline| <= 0.02; C2 = measured saving % (compare to 28.5, tolerance 1.0) plus the analytic check G = (1-N)*k/n. Include dataset name, split, seeds, config actually used by the script, commit hash, commands, and wall-clock timings.",
+  "Cross-validate the parsed numbers against the printed stdout log (grep the Breast line) and, if the script emits CIs/permutation tests (R10), copy them into metrics.json verbatim rather than recomputing.",
+  "If time remains, optionally re-run reproduce.py once to confirm determinism of the parsed values across runs; do not modify author code, only the parser."
+ ],
+ "smoke_test": "`python smoke_check.py` - loads Breast Cancer (asserts 569x30, classes 212/357), makes the 426/143 stratified split, runs Kabena().select on a 50-element synthetic loss vector with a known 40th percentile (asserts all majors retained and exactly round(0.3*k) minors selected, minor weight ~1/(m*p_i), kb.last_gain_ in [0.27, 0.29]), then runs `QUICK=1 python validation/table1_real_datasets.py` under a 300 s timeout and asserts the 'Breast' row string appears in stdout - proving the whole pipeline end-to-end in <2 minutes.",
+ "intermediate_checks": [
+  "Dataset: load_breast_cancer gives X.shape == (569, 30), y.sum() == 357 (benign), 212 malignant; stratified 75/25 split sizes 426/143 with the same class ratio in both parts.",
+  "Kabena defaults read from kabena/core/config.py match N=0.3, k_percentile=40.0, strategy auto/v3; alpha=0.3 present; select() recomputes K internally (K is not a constructor argument, per README).",
+  "Sampler invariants on the toy vector: all n-k majors always kept; |S| == round(N*k); probabilities sum to 1, are >= 0; weights are 1.0 on majors and 1/pi_i on selected minors; kb.last_gain_ ~= (1-N)*k/n = 0.28.",
+  "Author script runs to completion in <5 min and prints exactly the expected number of Table 1 rows (5 model/dataset rows), including 'LogReg' with 'Breast'; if a saving column is printed it reads ~28-29%.",
+  "Number of seeds exercised is 5 (0-4); paired identical splits/initializations across baseline and v3 (same seed list, same scaler fit).",
+  "Sanity baseline: full-batch logistic regression on this split should land ~0.95-0.99 test accuracy; if the baseline is far off (e.g. <0.90) the parse or the environment is wrong, stop before the full run.",
+  "Check that pip install did not change numpy/scipy/scikit-learn versions (record `pip freeze` diff) and that no GPU/torch is required."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "12 min total. Setup ~3 min: clone (10-30 s), `pip install -e . --no-deps` (~30-60 s), read the 5 author files (~1 min). Smoke ~2 min: smoke_check.py + QUICK=1 author run. Full run ~4 min: `python validation/table1_real_datasets.py` over seeds 0-4 (paper states <1 min/seed; whole Table 1 well under 1 CPU-hour). Wrap-up ~2 min: reproduce.py parsing + results/metrics.json + a second confirmation pass. ~1 min buffer. If the full Table 1 exceeds 8 min, cut to the Breast Cancer row only via the author script's helper functions (no rewriting), keeping the same seeds 0-4.",
+ "approach_notes_removed": null
+}

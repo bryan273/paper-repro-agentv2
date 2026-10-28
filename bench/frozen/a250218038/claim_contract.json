@@ -1,0 +1,272 @@
+{
+ "title": "Sequential Outlier Detection in Non-Stationary Time Series",
+ "summary": "The paper addresses sequential outlier detection in time series whose mean can drift, where repeated tests inflate false-positive probabilities. It estimates the mean with a one-sided local-linear smoother plus Jackknife bias reduction, then uses extreme-value theory to set GEV-based critical values for the maximum residual over n consecutive tests. In simulations and Australian temperature data, the full and partial procedures achieve high specificity and competitive sensitivity, with the full IID μ1 n=50 standard-normal setting reporting 98.3% specificity.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Empirical specificity of the proposed full method for IID standard normal errors, mean function μ1, and n=50.",
+   "metric": "specificity",
+   "dataset": "Simulated IID standard normal time series, mean function μ1, n=50, no outliers",
+   "split": "1,000 simulated no-outlier time series; horizon 11n=550 time points",
+   "value": 98.3,
+   "unit": "% specificity",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Panel A (Specificity for μ1), row Ours (full), n=50, column N",
+   "config_for_value": "Model (3) with μ=μ1, IID errors η~N(0,1) rescaled to mean 0 and sd 1/20, n=50, horizon 11n=550, no outliers (ci=0), full estimator using all observations up to time i, one-sided quartic kernel, bandwidth by 5-fold CV minimizing MSE, joint level α=1%, GEV quantile rule (5).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10–30 min for 1,000 series",
+   "quote": "Ours (full) 98.3 98.5 98.2 97.6 97.5 99.3 99.3 99.4 99.2 99.1 99.7 99.7 99.8 99.8 99.8",
+   "page": 13
+  },
+  {
+   "id": "C2",
+   "statement": "Empirical specificity of the proposed full method for IID standard normal errors, mean function μ1, and n=200.",
+   "metric": "specificity",
+   "dataset": "Simulated IID standard normal time series, mean function μ1, n=200, no outliers",
+   "split": "1,000 simulated no-outlier time series; horizon 11n=2200 time points",
+   "value": 99.7,
+   "unit": "% specificity",
+   "higher_is_better": true,
+   "table_ref": "Table 1, Panel A (Specificity for μ1), row Ours (full), n=200, column N",
+   "config_for_value": "Model (3) with μ=μ1, IID errors η~N(0,1) rescaled to mean 0 and sd 1/20, n=200, horizon 11n=2200, no outliers (ci=0), full estimator using all observations up to time i, one-sided quartic kernel, bandwidth by 5-fold CV minimizing MSE, joint level α=1%, GEV quantile rule (5).",
+   "reported_spread": null,
+   "est_compute": "CPU, ~30–60 min for 1,000 series",
+   "quote": "Ours (full) 98.3 98.5 98.2 97.6 97.5 99.3 99.3 99.4 99.2 99.1 99.7 99.7 99.8 99.8 99.8",
+   "page": 13
+  },
+  {
+   "id": "C3",
+   "statement": "Empirical sensitivity of the proposed full method for IID standard normal errors, mean function μ1, and n=50 in the outlier setting.",
+   "metric": "sensitivity",
+   "dataset": "Simulated IID standard normal time series with 5% outliers, mean function μ1, n=50",
+   "split": "1,000 simulated outlier time series; horizon 11n=550 time points",
+   "value": 80.4,
+   "unit": "% sensitivity",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Panel E (Sensitivity for μ1), row Ours (full), n=50, column N",
+   "config_for_value": "Model (3) with μ=μ1, IID errors η~N(0,1) rescaled to mean 0 and sd 1/20, n=50, outliers at 5% of observations with distribution-specific minimal height multiplied by a random factor from U[−2,−1]∪[1,2], full estimator, quartic kernel, 5-fold CV bandwidth, joint level α=1%.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10–30 min for 1,000 series",
+   "quote": "Ours (full) 80.4 32.7 79.1 52.4 63.8 93.8 48.7 91.3 60.9 61.2 97.5 61.1 95.4 60.6 58.0",
+   "page": 14
+  },
+  {
+   "id": "C4",
+   "statement": "Empirical sensitivity of the proposed full method for IID standard normal errors, mean function μ1, and n=200 in the outlier setting.",
+   "metric": "sensitivity",
+   "dataset": "Simulated IID standard normal time series with 5% outliers, mean function μ1, n=200",
+   "split": "1,000 simulated outlier time series; horizon 11n=2200 time points",
+   "value": 97.5,
+   "unit": "% sensitivity",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Panel E (Sensitivity for μ1), row Ours (full), n=200, column N",
+   "config_for_value": "Model (3) with μ=μ1, IID errors η~N(0,1) rescaled to mean 0 and sd 1/20, n=200, outliers at 5% of observations with distribution-specific minimal height multiplied by a random factor from U[−2,−1]∪[1,2], full estimator, quartic kernel, 5-fold CV bandwidth, joint level α=1%.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~30–60 min for 1,000 series",
+   "quote": "Ours (full) 80.4 32.7 79.1 52.4 63.8 93.8 48.7 91.3 60.9 61.2 97.5 61.1 95.4 60.6 58.0",
+   "page": 14
+  },
+  {
+   "id": "C5",
+   "statement": "Empirical specificity of the proposed full method on contaminated IID standard normal data, mean function μ1, and n=50.",
+   "metric": "specificity",
+   "dataset": "Simulated IID standard normal time series with 5% outliers, mean function μ1, n=50",
+   "split": "1,000 simulated outlier time series; horizon 11n=550 time points",
+   "value": 86.8,
+   "unit": "% specificity",
+   "higher_is_better": true,
+   "table_ref": "Table 2, Panel A (Specificity for μ1), row Ours (full), n=50, column N",
+   "config_for_value": "Model (3) with μ=μ1, IID errors η~N(0,1) rescaled to mean 0 and sd 1/20, n=50, outliers at 5% of observations with distribution-specific minimal height multiplied by a random factor from U[−2,−1]∪[1,2], full estimator, quartic kernel, 5-fold CV bandwidth, joint level α=1%.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~10–30 min for 1,000 series",
+   "quote": "Ours (full) 86.8 95.2 85.5 89.4 88.3 87.4 96.7 87.6 93.4 92.6 87.2 97.3 88.0 95.7 94.2",
+   "page": 14
+  },
+  {
+   "id": "C6",
+   "statement": "Empirical sensitivity of the proposed full method on Hobart daily temperature data.",
+   "metric": "sensitivity",
+   "dataset": "Australian Bureau of Meteorology daily temperature data, Hobart",
+   "split": "52,163 data points, 233 outliers; initial 365-day outlier-free period used for GEV estimation",
+   "value": 99.6,
+   "unit": "% sensitivity",
+   "higher_is_better": true,
+   "table_ref": "Table 3, Panel B (Sensitivity), row Ours (full), column Hobart",
+   "config_for_value": "Daily temperature data, n=365, first consecutive 365 days without outlier used as initial period, α=1%, bandwidth selected by cross-validation between 30 and 50 days, full estimator, one-sided quartic kernel.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5–15 min for one city",
+   "quote": "Ours (full) 40.0 97.3 95.7 99.6 100.0 49.8 78.7 89.2",
+   "page": 16
+  },
+  {
+   "id": "C7",
+   "statement": "Empirical specificity of the proposed full method on Melbourne daily temperature data.",
+   "metric": "specificity",
+   "dataset": "Australian Bureau of Meteorology daily temperature data, Melbourne",
+   "split": "58,324 data points, 2 outliers; initial 365-day outlier-free period used for GEV estimation",
+   "value": 100.0,
+   "unit": "% specificity",
+   "higher_is_better": true,
+   "table_ref": "Table 3, Panel A (Specificity), row Ours (full), column Melbourne",
+   "config_for_value": "Daily temperature data, n=365, first consecutive 365 days without outlier used as initial period, α=1%, bandwidth selected by cross-validation between 30 and 50 days, full estimator, one-sided quartic kernel.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5–15 min for one city",
+   "quote": "Ours (full) 99.9 99.5 99.0 97.1 100.0 99.6 99.4 100.0",
+   "page": 16
+  },
+  {
+   "id": "C8",
+   "statement": "Empirical sensitivity of the proposed full method on Melbourne daily temperature data.",
+   "metric": "sensitivity",
+   "dataset": "Australian Bureau of Meteorology daily temperature data, Melbourne",
+   "split": "58,324 data points, 2 outliers; initial 365-day outlier-free period used for GEV estimation",
+   "value": 100.0,
+   "unit": "% sensitivity",
+   "higher_is_better": true,
+   "table_ref": "Table 3, Panel B (Sensitivity), row Ours (full), column Melbourne",
+   "config_for_value": "Daily temperature data, n=365, first consecutive 365 days without outlier used as initial period, α=1%, bandwidth selected by cross-validation between 30 and 50 days, full estimator, one-sided quartic kernel.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5–15 min for one city",
+   "quote": "Ours (full) 40.0 97.3 95.7 99.6 100.0 49.8 78.7 89.2",
+   "page": 16
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Cheapest central result and exactly matches the user's hint: it is one simulation cell for the proposed full method with no contamination, so it isolates specificity and needs only CPU. It reports the paper's headline finite-sample specificity for the target configuration."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 1.0,
+  "why": "Rule 2: this is an accuracy-like % metric evaluated over 1,000 series × 550 time points (well over 2,000 observations), and the paper prints it as a percentage."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Model the observed series as Xi = μ(i/n)+ε_i+c_i, with c_i=0 for normal observations and c_i≠0 for outliers.",
+   "cite": "Section 2.1, Eq. (3)",
+   "quote": "and ci is a sequence of variables indicating a normal observation, for ci = 0, or an outlier, for ci̸ = 0.",
+   "page": 4
+  },
+  {
+   "id": "R2",
+   "stmt": "Use one-sided local linear regression with a kernel supported on [−1,0] so that no future observations enter the estimator.",
+   "cite": "Section 2.2, local linear estimator",
+   "quote": "In the following, we assume that K has the support [−1, 0], which means that ˆμhn(t) only depends on observations of time points i ≤nt",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "Apply Jackknife bias reduction to define tilde μ_n(t)=2 hat μ_{h_n/√2}(t)−hat μ_{h_n}(t).",
+   "cite": "Section 2.2, Jackknife estimator",
+   "quote": "To account for the bias of this estimator, we employ the Jackknife bias reduction technique",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "Reject the null at time i when |Xi−tilde μ_n(i/n)| exceeds the GEV (1−α_i) quantile of estimated θ_n.",
+   "cite": "Section 2.3, Eq. (5)",
+   "quote": "Generally, we propose to reject H(i) 0 , if |Xi − ̃μn( i n)| > q1−αi(ˆθn).",
+   "page": 8
+  },
+  {
+   "id": "R5",
+   "stmt": "Estimate the GEV parameters θ_n from the initial outlier-free period, using MLE or PWM as permitted by the paper.",
+   "cite": "Section 2.3 and Assumption 6",
+   "quote": "Different approaches exist to approximate the unknown values of θn, such as maximum likelihood estimation or the probability weighted moment (PWM) method.",
+   "page": 7
+  },
+  {
+   "id": "R6",
+   "stmt": "Require the first n observations to be outlier-free and use them to estimate θ_n.",
+   "cite": "Assumption 6",
+   "quote": "The first observations X1, . . . , Xn do not contain outliers, i. e., ci = 0 for i = 1, . . . , n.",
+   "page": 7
+  },
+  {
+   "id": "R7",
+   "stmt": "With constant α_i=α, the procedure has asymptotic level α for n consecutive tests.",
+   "cite": "Corollary 8(i)",
+   "quote": "With constant level αi = α, the decision rule in (5) has asymptotic level α for n consecutive tests",
+   "page": 9
+  },
+  {
+   "id": "R8",
+   "stmt": "Use the one-sided quartic kernel K(x)=15/8(1−x^2)^2 supported on [−1,0] in the simulation study.",
+   "cite": "Section 3.1",
+   "quote": "we selected the one-sided quartic kernel K(x) = 15 8 (1 −x2)2 with support on [−1, 0]",
+   "page": 11
+  },
+  {
+   "id": "R9",
+   "stmt": "Tune the bandwidth by 5-fold cross-validation minimizing the mean squared error.",
+   "cite": "Section 3.1",
+   "quote": "tuned the bandwidth with 5-fold cross validation, minimizing the mean squared error.",
+   "page": 11
+  },
+  {
+   "id": "R10",
+   "stmt": "Set the joint level α for n consecutive tests to 1% in the experiments.",
+   "cite": "Section 3.1",
+   "quote": "Finally, the joint level α for n consecutive tests was set to 1%.",
+   "page": 11
+  },
+  {
+   "id": "R11",
+   "stmt": "Add outliers randomly to 5% of observations in the contaminated simulation setting.",
+   "cite": "Section 3.1",
+   "quote": "outliers were randomly added to the original time series at 5% of the observations.",
+   "page": 10
+  },
+  {
+   "id": "R12",
+   "stmt": "Generate 1,000 time series with outliers and 1,000 without outliers for each simulation combination.",
+   "cite": "Section 3.1",
+   "quote": "we generated 1 000 time series with outliers and another 1 000 time series without outliers.",
+   "page": 10
+  },
+  {
+   "id": "R13",
+   "stmt": "Define 'Ours (full)' as using the estimator based on all observations until time i.",
+   "cite": "Section 3, empirical results setup",
+   "quote": "the estimator ̃μn( i n) is based on all observations until time i and refer to it as the “full” version.",
+   "page": 9
+  },
+  {
+   "id": "R14",
+   "stmt": "Rescale the error process to mean 0 and standard deviation 1/20 whenever the variance exists.",
+   "cite": "Section 3.1",
+   "quote": "we rescaled ε to have mean 0 and standard deviation 1 20, in all cases where the variance exists.",
+   "page": 10
+  },
+  {
+   "id": "R15",
+   "stmt": "For the real temperature data, use n=365 as the initial outlier-free year and α=1%.",
+   "cite": "Section 3.2",
+   "quote": "we set n = 365, which corresponds to an initial year without outliers, and chose α = 1%, as before.",
+   "page": 15
+  }
+ ],
+ "data": [
+  {
+   "name": "Simulation study synthetic time series",
+   "how_to_get": "Generate with the paper's code at https://github.com/FlorianHeinrichs/outlier_detection; no external dataset is needed."
+  },
+  {
+   "name": "Australian Bureau of Meteorology daily temperature data",
+   "how_to_get": "Download from Climate Data Online at http://www.bom.gov.au/climate/data/index.shtml, as cited in the paper."
+  }
+ ],
+ "code_links": [
+  "https://github.com/FlorianHeinrichs/outlier_detection"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2502.18038",
+  "kind": "arxiv",
+  "arxiv_id": "2502.18038",
+  "url": "https://arxiv.org/abs/2502.18038",
+  "title": "Sequential Outlier Detection in Non-Stationary Time Series",
+  "pages": 28
+ }
+}

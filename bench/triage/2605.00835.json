@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Horseshoe test MSE on the Diabetes dataset (n=442, p=10) is 0.472 ± 0.011, compared to Lasso 0.504 ± 0.057 and OLS 0.507 ± 0.060.",
+  "table_ref": "Table 4",
+  "dataset": "Diabetes (scikit-learn built-in, n=442, p=10)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/xiao98/sparse-bayesian-regression-bench",
+  "https://github.com/theosaulus/BML-horseshoe-prior"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Diabetes is a 10-feature built-in dataset; the only real cost is a PyMC NUTS fit (2 chains × 3000 iters) on a tiny model, which the paper reports at ~12 s per fit, so a handful of seeds plus install time fits comfortably in well under an hour on CPU."
+ },
+ "blockers": [
+  "Repo may not contain the exact Diabetes script/config; some re-implementation of the PyMC Horseshoe model and 80/20 split may be needed",
+  "Exact seed set and split for the Diabetes table are not specified in the paper"
+ ],
+ "suitable": true,
+ "id": "2605.00835",
+ "title": "Sparse Regression under Correlation and Weak Signals: A Reproducible Benchmark of Classical and Bayesian Methods",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

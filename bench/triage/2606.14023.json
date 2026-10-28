@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Median MSE of ALR (proposed method) for rotation with theta=pi/6, sigma^2=0.1, ns=1000, nt=50, over 100 trials (Table 1 cell: 4.00e-4 ± 7.00e-4)",
+  "table_ref": "Table 1, row theta=pi/6, sigma^2=0.1, column ALR",
+  "dataset": "Synthetic 2D line data (y=ax+eps, a=0, Gaussian noise), generated per paper's simulation protocol"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Synthetic data is trivially generated; the method is K-means + POT optimal transport + SVD on tiny 2D sets (ns=1000, nt=50) with 100 trials, all CPU-cheap, but the full ALR pipeline (bootstrap, N repetitions, median) must be reimplemented from the algorithm descriptions since no code is released."
+ },
+ "blockers": [
+  "No code released; ALR pipeline (bootstrap proportion p, N repetitions, K-means/OT alignment details) must be reimplemented from prose",
+  "Baselines LFT and Trans-Lasso must be reimplemented to match the table's comparison",
+  "Exact reproduction of the reported MSE value is unlikely due to unspecified random seeds and some ambiguous algorithm details"
+ ],
+ "suitable": true,
+ "id": "2606.14023",
+ "title": "Geometric Domain Adaptation via Optimal Transport for Linear Regression in R^2",
+ "pages": 15,
+ "model": "DeepSeek-V4.1-Flash"
+}

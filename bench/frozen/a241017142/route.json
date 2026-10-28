@@ -1,0 +1,45 @@
+{
+ "route": "partial_release",
+ "why": "The authors' code is public and pip-installable, but the exact artifact the claim names (coniferest 0.0.13, the Cython implementation) predates the current maturin/Rust rewrite in the repo and almost certainly has no CPython-3.12 Windows wheel; building its Cython extension on 3.12 would need a port. There is also no script in the repo that produces Figure 1 - only pytest-benchmark micro-benchmarks for isolation-forest fit/score - and the 10^6x2 synthetic dataset is not shipped and its distribution is not stated. So: keep the authors' model/logic (IsolationForest scoring) and their benchmark harness, substitute the current Rust build for 0.0.13, regenerate the dataset from numpy, and reconstruct the scikit-learn baseline bars.",
+ "repo": "https://github.com/snad-space/coniferest",
+ "entrypoints": [
+  "pytest tests/test_isoforest.py -m benchmark --benchmark-enable --n_jobs 1  (authors' pytest-benchmark suite for IsolationForest fit/score; closest thing in-repo to Figure 1)",
+  "pip install coniferest  (prebuilt wheel; imports coniferest.IsolationForest, .fit_predict/.score_samples)",
+  ".github/workflows/benchmark.yml  (CI wrapper around the same benchmark suite)"
+ ],
+ "missing_artifacts": [
+  "the plotting/benchmark script that produced Figure 1 (not present in the repository)",
+  "the ~10^6 x 2 synthetic dataset generator (no seed, no distribution given in the paper)",
+  "an installable coniferest 0.0.13 for CPython 3.12 on Windows (0.0.13 is the Cython build; current releases are the Rust/maturin rewrite)",
+  "the reference hardware (Apple M3 Pro, Intel Xeon Gold 6148) - only the coniferest-vs-scikit-learn ordering and throughput are testable here, not the absolute 350 s axis value"
+ ],
+ "blockers_seen": [
+  "version mismatch: Figure 1 measures coniferest 0.0.13 (Cython + OpenMP); the repo HEAD and the cp312 wheels on PyPI are the Rust rewrite, so an exact-version rerun would require source-building an old Cython extension against Python 3.12/Windows (removed-C-API risk)",
+  "no Figure-1 driver script: the timing must be reconstructed around coniferest.IsolationForest vs sklearn.ensemble.IsolationForest",
+  "no GPU and no Apple Silicon here; the paper's absolute numbers are hardware-labelled and cannot be matched, only the relative claim (coniferest single-thread faster than scikit-learn, well inside a 350 s-scale bar) can be checked"
+ ],
+ "feasibility": {
+  "gpu_required": false,
+  "est_runtime_on_this_machine": "~10-15 minutes total: 2-3 minutes of pip installs (coniferest wheel, scikit-learn 1.3.2 and 1.4.2), <1 minute to generate the 10^6 x 2 array and fit both forests, a few minutes of repeated single-thread score_samples timing",
+  "fits_budget": true,
+  "scale_down_plan": "Keep the full 10^6 x 2 sample size (it is the quantity the claim is about) but (a) use the current coniferest release instead of 0.0.13, reporting it explicitly as a version substitution, and (b) cover 2 of the 4 scikit-learn baseline versions instead of all four. Expected effect: the coniferest-vs-sklearn wall-time ratio and the 'well under the 350 s axis ceiling' statement remain checkable; the per-version scikit-learn trend in Figure 1 is only partially covered and no absolute M3 Pro number can be produced.",
+  "verdict_ceiling": "partially_reproduced"
+ },
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 6,
+  "disk_gb": 3,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "One 10^6 x 2 float64 array (16 MB) fed to a 100-tree isolation forest in both libraries; scoring is a handful of seconds to ~1 minute per library on 8 cores, dominated by pip installs of coniferest plus two scikit-learn versions."
+ },
+ "repo_info": {
+  "url": "https://github.com/snad-space/coniferest",
+  "cloned": true,
+  "n_files": 109,
+  "n_python": 41,
+  "python2_style_files": 0
+ }
+}

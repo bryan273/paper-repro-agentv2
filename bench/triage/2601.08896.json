@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Optimal XGBoost (expanding window, 20 lags) out-of-sample log-return RMSE = 0.013450 (with MAE 0.009814, R2 0.2063, directional accuracy 65.15%)",
+  "table_ref": "Table 1, row 'XGBoost / Expanding / 20'",
+  "dataset": "NEPSE Index daily closing prices, July 1997–Nov 2025 (~6,393 obs), from NepseAlpha"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/sahajrajmalla/nepse-xgboost-forecasting"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 90,
+  "gpu_speedup": null,
+  "basis": "XGBoost on ~6.4k rows with Optuna (60 trials x 5-fold) plus walk-forward refitting over ~1,280 test steps is CPU-only and small, but requires scraping/cleaning NepseAlpha data and re-running tuning to match the exact reported cell."
+ },
+ "blockers": [
+  "Data must be scraped from NepseAlpha (third-party portal, no direct bulk download guaranteed)",
+  "Exact RMSE depends on Optuna seed/trial budget and walk-forward refit details not fully specified",
+  "Repo may not contain the processed dataset or exact configs"
+ ],
+ "suitable": true,
+ "id": "2601.08896",
+ "title": "XGBoost Forecasting of NEPSE Index Log Returns with Walk Forward Validation",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

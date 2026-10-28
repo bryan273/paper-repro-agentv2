@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Standard equal-frequency binning of income produces 9.63% racial bias (max demographic deviation across bins and groups, Equation 2).",
+  "table_ref": "Table 3, row 'Income / Standard', column 'Race Bias'",
+  "dataset": "HMDA 2023 Snapshot National Loan-Level Dataset, filtered to Chicago MSA (MD 16984), cleaned to 103,481 records"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/Archit1706/FairLend-Miners",
+  "https://github.com/Archit1706/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Requires downloading and unzipping the ~4 GB HMDA 2023 national CSV, filtering to Chicago MSA, applying the paper's five cleaning steps, and running pd.qcut plus the bias formula; the paper used PySpark on Colab but the target itself is a small pandas computation, so the main cost is the download and cleaning pipeline."
+ },
+ "blockers": [
+  "Repository may not contain the exact cleaning/config scripts needed to reproduce the 103,481-row frame; the paper describes the steps but the code may be incomplete or outdated.",
+  "HMDA 2023 Snapshot is a large national file (~4 GB CSV, ~10M rows); filtering and cleaning on a laptop is feasible but time-consuming.",
+  "The paper's reported 9.63% depends on exact cleaning choices (income clipping percentiles, DTI mapping, race handling) that must be matched."
+ ],
+ "suitable": true,
+ "id": "2606.12435",
+ "title": "Auditing Discriminatory Patterns in Mortgage Lending Through Association Rules and Fair Binning",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Battery power 0.83 (83/100) at planted redirection f=0.3 on the primary recorded-label construction (2019 vs 2020, 14,235 vs 10,399 buyer-year baskets)",
+  "table_ref": "Table S3a / Fig. 3a",
+  "dataset": "Proprietary B2C sales records of one Japanese second-hand luxury resale intermediary, 2018-2021"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "The headline power number requires the firm's proprietary transaction records (42,962 buyers, 133 brands) which are not public, plus reimplementing the full pipeline (graph builder, two permutation nulls, 100 planted replicates x grid of f with R=999-2000 inner permutations); even with data this is hours of CPU work, and without data it is impossible."
+ },
+ "blockers": [
+  "Proprietary single-firm transaction data not released",
+  "No code or data links in the paper",
+  "Complex multi-stage pipeline (two nulls, planted-effect simulations, tie rules) must be rebuilt from prose"
+ ],
+ "suitable": false,
+ "id": "2609.36825",
+ "title": "Luxury resale volume and composition shifted during the COVID-19 tourism shock, but co-purchase network tests were inconclusive and construction-sensitive",
+ "pages": 79,
+ "model": "DeepSeek-V4.1-Flash"
+}

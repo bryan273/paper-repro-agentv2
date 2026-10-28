@@ -1,0 +1,36 @@
+{
+ "target": {
+  "statement": "FM-DS-V4 achieves 70.2% accuracy on LongBench-v2-S (46K) with 0.04 GB GPU KV cache, versus DS-V4-Flash at 68.9% with 0.17 GB.",
+  "table_ref": "Table 1, row LongBench-v2-S (46K), column FM-DS-V4",
+  "dataset": "LongBench-v2-S (46K)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/libertywing/FlashMemory-Deepseek-V4",
+  "https://huggingface.co/libertywing/FlashMemory-Deepseek-V4",
+  "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 768,
+  "ram_gb": 256,
+  "disk_gb": 1000,
+  "ref_minutes": 10080,
+  "gpu_speedup": null,
+  "basis": "The target requires the hundred-billion-parameter DeepSeek-V4-Flash/Pro backbone, the LSA memory-indexer checkpoint, and the custom PD-disaggregated CPU-GPU serving stack, which the paper measures only on an 8×H20 server."
+ },
+ "blockers": [
+  "Requires a massive DeepSeek-V4-Flash/Pro backbone model, not runnable on a laptop",
+  "Requires 8×H20-class GPU serving infrastructure for the reported deployment path",
+  "Custom CUDA-graph/PD-disaggregated SGLang offload implementation is needed and the project is suspended",
+  "Complete configurations and training/eval recipes appear unavailable due to project suspension",
+  "The reported KV-cache numbers depend on GPU memory accounting from the serving stack, not just model inference"
+ ],
+ "suitable": false,
+ "id": "2606.09079",
+ "title": "FlashMemory-DeepSeek-V4: Lightning Index Ultra-Long Context via Lookahead Sparse Attention",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

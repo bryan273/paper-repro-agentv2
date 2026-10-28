@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "AgentOPSD (full method, turn-level bounded reshaping with λ=0.5) reaches 89.1% average success on ALFWorld with Qwen2.5-7B-Instruct.",
+  "table_ref": "Table 1 (ALFWorld Avg column, Qwen2.5-7B-Instruct row, AgentOPSD) and Table 2 (full row, 89.1)",
+  "dataset": "ALFWorld"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/ZethWang/AgentOPSD"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 100000,
+  "gpu_speedup": null,
+  "basis": "The 89.1 number requires RL training Qwen2.5-7B for 150 steps on 8×H800 GPUs with group size 8 and up to 50-turn ALFWorld rollouts; it cannot be run on an 8-core/16 GB laptop, so the command-time estimate is effectively unbounded."
+ },
+ "blockers": [
+  "Requires 8×H800 GPUs or similar to train Qwen2.5-7B with RL; no CPU-only path",
+  "No released trained checkpoints, so the target must be retrained from scratch",
+  "Training depends on privileged skills retrieved from the external SkillBank of SkillRL",
+  "Long-horizon agentic rollouts (up to 50 turns) with vLLM/FSDP make the run far beyond laptop scale"
+ ],
+ "suitable": false,
+ "id": "2608.05987",
+ "title": "AgentOPSD: Recursive Self-Distillation for Agentic Reinforcement Learning",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

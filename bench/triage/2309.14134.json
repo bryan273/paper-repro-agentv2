@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "S-SVDD-ψ1 (linear) achieves Gmean ≈ 0.99 on the Replay attack target class for the Leaf EV CAN bus (best-performing method, illustrating the paper's main claim that S-SVDD outperforms OC-SVM)",
+  "table_ref": "Table I (Leaf Electric Vehicle), Linear S-SVDD-ψ1, Replay column",
+  "dataset": "Custom CAN bus traffic collected from a 2011 Nissan Leaf (EV CAN bus) during normal driving and CyberAuto injection attacks (Random ID, Zero ID, Replay)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "The dataset is proprietary vehicle CAN-bus captures (Leaf/Volt, CyberAuto event) with no public link; the S-SVDD/GE-SVDD/E-SVDD implementations are not released, so both data and code would have to be recreated from scratch, making the target unreachable in practice despite tiny compute."
+ },
+ "blockers": [
+  "No code or data links in the paper",
+  "Dataset is proprietary CAN-bus captures from specific vehicles (2011 Nissan Leaf, Chevy Volt) collected at the CyberAuto event; not publicly downloadable",
+  "S-SVDD, E-SVDD, GE-SVDD, GE-OC-SVM implementations not provided; would need reimplementation from cited papers",
+  "Exact feature extraction windowing and train/test split details insufficient to reproduce the exact table cell"
+ ],
+ "suitable": false,
+ "id": "2309.14134",
+ "title": "One-Class Classification for Intrusion Detection on Vehicular Networks",
+ "pages": 7,
+ "model": "DeepSeek-V4.1-Flash"
+}

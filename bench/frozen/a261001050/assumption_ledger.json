@@ -1,0 +1,178 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The Gaussian KDE bandwidth h is not numerically specified for the Old Faithful figure or the Table 1 simulations.",
+  "options": [
+   "Scott's rule of thumb",
+   "Silverman's rule of thumb",
+   "fixed h=0.5 in each coordinate",
+   "likelihood cross-validation"
+  ],
+  "chosen": "Use Scott's rule on the raw (unstandardized) two-dimensional coordinates, and reuse the same rule for the Gaussian-mixture simulations.",
+  "rationale": "The paper only says Gaussian KDE; Scott's rule is a standard scale-adaptive default and avoids hand-tuning.",
+  "source": "convention",
+  "risk": "high",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The practical finite-sample value of the gradient step size ηn is not specified.",
+  "options": [
+   "ηn=1.0 in data units",
+   "ηn=h",
+   "ηn=h^2",
+   "tune ηn to reproduce the figure"
+  ],
+  "chosen": "Use ηn=1.0 in data units for both Old Faithful and the simulation experiments.",
+  "rationale": "The asymptotic condition only requires ηn=o(1); a unit step is the least arbitrary choice that still moves points along the local KDE gradient.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "where ηn > 0 is a step size parameter depending on the sample size n.",
+  "page": 9
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper says there are 272 eruptions but plots pairs of consecutive eruption durations, so the number of plotted current-next pairs may be 271 unless the source table is already paired.",
+  "options": [
+   "use 272 pre-paired points from the source table if available",
+   "form 271 adjacent pairs from 272 eruptions",
+   "wrap the last eruption to the first to force 272 pairs"
+  ],
+  "chosen": "Use the 272-eruption source and take consecutive current-next pairs; if the source already provides 272 pre-paired rows, use those directly.",
+  "rationale": "The figure axes are current and next eruption duration, which requires adjacent-pair construction; the paper's n=272 appears to count eruptions.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "GGDPC applied to pairs of consecutive eruption durations in the Old Faithful data.",
+  "page": 3
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The exact deterministic rule for breaking density and 1NN-search ties is not specified.",
+  "options": [
+   "break ties by original observation index",
+   "break ties by density then index",
+   "break ties lexicographically by coordinates"
+  ],
+  "chosen": "Break ties deterministically by original observation index after comparing density, and never allow a self-edge.",
+  "rationale": "The paper mandates a fixed strict ordering but does not state which one; index order is reproducible.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "ties in (estimated or population) density values and 1NN searches are resolved by a fixed strict ordering of the observations.",
+  "page": 7
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether the gradient estimator should be the analytic gradient of the same KDE or a separate/numerical gradient is not fixed for implementation.",
+  "options": [
+   "analytic gradient of the Gaussian KDE",
+   "finite-difference gradient",
+   "separate gradient estimator"
+  ],
+  "chosen": "Use the analytic gradient of the Gaussian KDE, so bg=∇bp.",
+  "rationale": "Assumption A2 explicitly allows this natural differentiable-KDE choice.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "When bp is differentiable, a natural choice is bg = ∇bp.",
+  "page": 9
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "For Old Faithful, it is not explicitly stated whether to force exactly two clusters or accept whatever centers the threshold rule selects.",
+  "options": [
+   "use the mean+3 SD threshold only",
+   "force the two largest-weight centers",
+   "force the known two-cluster label count"
+  ],
+  "chosen": "Use the mean+3 SD threshold only and do not force K=2, then check qualitatively whether two eruption-duration clusters emerge.",
+  "rationale": "Figure 1 states the mean+3 SD threshold, and the paper emphasizes that DPC-type methods do not require a pre-specified number of clusters.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The gray dashed line shows the distance threshold used in this illustration, equal to the sample mean uphill distance plus three sample standard deviations.",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The optional low-density screening rule is not stated as used in Figure 1 or Table 1.",
+  "options": [
+   "disable screening",
+   "enable lower 5% density-quantile screening"
+  ],
+  "chosen": "Disable density screening for both Figure 1 and Table 1 unless reproducing an explicitly screened variant.",
+  "rationale": "The main descriptions of Figure 1 and Table 1 do not mention screening; the supplement calls it optional.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The nonadjacent-pair dissimilarity value d* in the single-linkage dendrogram construction is only constrained to exceed the maximum pairwise distance.",
+  "options": [
+   "d*=dmax+1",
+   "d*=2*dmax",
+   "d*=Infinity"
+  ],
+  "chosen": "Set d* to a value strictly greater than dmax, e.g. dmax+1, or Inf if the implementation supports it.",
+  "rationale": "Single-linkage merge topology is unchanged for any d*>dmax, so the exact value is immaterial.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "assigns a common value d⋆larger than every such edge weight to nonadjacent pairs.",
+  "page": 15
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The random seed and exact Monte Carlo averaging procedure for the 1000 replications in Table 1 are not specified.",
+  "options": [
+   "single fixed seed",
+   "average over several fixed seeds",
+   "no seed control"
+  ],
+  "chosen": "Use a single fixed pseudorandom seed and average ARI/runtime over 1000 independent replications.",
+  "rationale": "This makes the simulation reproducible without changing the paper's stated Monte Carlo design.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether Old Faithful coordinates should be standardized before KDE and gradient steps is not stated.",
+  "options": [
+   "raw minutes",
+   "standardize each coordinate",
+   "log-transform durations"
+  ],
+  "chosen": "Use raw minutes so axes and density scale match Figure 1.",
+  "rationale": "Figure 1 axes are labeled in minutes and the plotted density range is on the raw scale.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The exact KDE kernel normalization and whether to use a boundary correction are not specified for the Old Faithful illustration.",
+  "options": [
+   "standard normalized Gaussian KDE without boundary correction",
+   "boundary-corrected Gaussian KDE"
+  ],
+  "chosen": "Use a standard normalized Gaussian KDE without boundary correction for the descriptive figure.",
+  "rationale": "The figure is a finite-sample illustration; the paper only says Gaussian KDE and theory allows boundary correction elsewhere.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ }
+]

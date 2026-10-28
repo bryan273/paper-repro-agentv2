@@ -1,0 +1,132 @@
+{
+ "approach": "Because the authors' code is unavailable, implement a paper-only reproduction of the annthyroid claims C1 and C2: rebuild random isolation trees, the depth score phi_IF, the hypervolume score phi_PAC, and the h_alpha aggregation from the paper, then evaluate with ADBench's annthyroid data and default split. Use 100 trees and sweep alpha over {0, 0.5, 1, 2, inf} for both IF_alpha and PAC_alpha, reporting the best PAC_alpha and the alpha=0.5 value for C1, plus the IF_alpha alpha=0 baseline for C2. The entrypoint writes a single JSON file with all per-alpha AUCROCs, best-alpha selections, gap to the reported 91.47 and 82.12, and configuration provenance. The route is paper_only, so ADBench is used only for the dataset/preprocessing/split, while the scoring methods are custom NumPy implementations.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Central hyperparameters, alpha grid, ADBench data settings, formula switches, seeds, and paths.",
+   "requirement_ids": [
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "data.py",
+   "purpose": "Clone/locate ADBench annthyroid, apply ADBench preprocessing and default split, and return numeric X_train, y_train, X_test, y_test with metadata.",
+   "requirement_ids": [
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "isolation_tree.py",
+   "purpose": "Custom random isolation-tree implementation with leaf membership, leaf depth, leaf counts, split-bound hyperrectangles, and bounding-volume helpers.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R6"
+   ]
+  },
+  {
+   "path": "scoring.py",
+   "purpose": "Implement phi_IF, phi_PAC, the f_alpha / h_alpha aggregation family, numerical alpha limits, and higher-score-is-anomaly orientation.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R8",
+    "R13"
+   ]
+  },
+  {
+   "path": "evaluate.py",
+   "purpose": "Fit the 100-tree forest, compute IF_alpha and PAC_alpha scores over the alpha grid, compute AUCROC, select best alpha per variant, and assemble metrics.",
+   "requirement_ids": [
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R13"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint that runs smoke or full evaluation and writes results/metrics.json.",
+   "requirement_ids": [
+    "R11",
+    "R12",
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "dataset": "ADBench annthyroid (paper Table I, R9)",
+  "n_estimators": "100 (paper Sec III-A, R7)",
+  "alpha_grid": [
+   0,
+   0.5,
+   1,
+   2,
+   "inf"
+  ],
+  "alpha_grid_provenance": "paper Sec III-A and Table I caption (R8)",
+  "subsample_size_Y": "256 per tree (assumption A1; standard IF convention)",
+  "max_depth": "None; grow until singleton leaf, no splittable feature, or duplicate-only leaf (assumption A2)",
+  "random_seed": "42 for split and forest; tree i uses seed 42+i (assumption A7)",
+  "split_policy": "ADBench default split as loaded by ADBench code (assumption A6)",
+  "preprocessing": "ADBench-provided preprocessing/encoding only; no additional scaling (assumptions A5, A11)",
+  "phi_IF": "depth_leaf / c(|Y|), c(n)=2H(n-1)-2(n-1)/n (R2)",
+  "phi_PAC": "(|L(x)|/|Y|) * (V(Y)/V(L(x))) (R5, R6)",
+  "bounding_volume_VY": "axis-aligned bounding box of the per-tree subsample Y (assumption A3; paper Sec II-B)",
+  "leaf_volume_VL": "volume of the axis-aligned split-bound leaf hyperrectangle, rooted at V(Y)",
+  "zero_width_epsilon": "1e-12 * max(global_feature_range, 1.0), applied per zero-width dimension (assumption A4)",
+  "aggregation_f_alpha": "f_alpha = (mean(phi_i^(1-alpha)))^(1/(1-alpha)); alpha=0 arithmetic mean; alpha=1 geometric mean; alpha=inf min(phi_i); h_alpha=2^(-f_alpha) (R3,R4,A8)",
+  "alpha_numerics": "clip phi to >=1e-300 before log/power operations; handle alpha=0, alpha=1, and alpha=inf analytically (assumption A8)",
+  "score_orientation": "higher h_alpha means more anomalous (R13, A10)",
+  "metric": "sklearn.metrics.roc_auc_score(y_test, h_alpha) (R10)",
+  "best_alpha_selection": "max test AUCROC over the alpha grid, as Table I reports best alpha (R8, A9)",
+  "tolerance_absolute_aucroc_points": "1.0 (claim tolerance)",
+  "adbench_repo": "https://github.com/Minqi824/ADBench",
+  "data_fallback": "If ADBench annthyroid npz is absent, fetch annthyroid from the ODDS/ADBench data release and apply ADBench split routine",
+  "output_path": "results/metrics.json",
+  "smoke_mode": {
+   "n_train": 128,
+   "n_test": 64,
+   "n_estimators": 5,
+   "subsample_size_Y": 32,
+   "alpha_grid": [
+    0,
+    0.5
+   ]
+  }
+ },
+ "steps": [
+  "Create the project layout, install numpy/scipy/scikit-learn/pandas/requests/tqdm, and clone ADBench with git clone --depth 1 https://github.com/Minqi824/ADBench.git vendor/ADBench.",
+  "Inspect vendor/ADBench for the annthyroid data file and the ADBench loader/preprocessing functions. Load annthyroid through ADBench's own code so the default train/test split and encodings match the benchmark; if the npz is not bundled, fetch annthyroid from the ADBench/ODDS release and call the ADBench split routine to produce the same split.",
+  "Record dataset metadata: n_rows, n_features, train/test sizes, anomaly counts/rates in both splits, and a hash of sorted labels/features for reproducibility.",
+  "Implement IsolationTree.fit(X_subsample): recursively choose a feature with positive range, draw a uniform split threshold between that feature's min and max in the node, grow children until a leaf has one point or no splittable feature, and store depth plus lower/upper split bounds for every leaf.",
+  "For each of the 100 trees, draw a random subsample Y of size 256 from the training set without replacement using seed 42+i, fit the tree on Y, compute V(Y) as the epsilon-padded axis-aligned bounding box of Y, and store for every train/test point its leaf id, depth, |L(x)| count of Y points in the leaf, and V(L(x)).",
+  "Compute per-tree scores: phi_IF = depth / c(|Y|) with c(n)=2H(n-1)-2(n-1)/n, and phi_PAC = (|L(x)|/|Y|)*(V(Y)/V(L(x))). Validate that all leaf counts sum to |Y| and all volumes are positive.",
+  "Implement h_alpha aggregation exactly: f_alpha = (mean_i phi_i^(1-alpha))^(1/(1-alpha)) for non-limit alpha, f_0 = arithmetic mean, f_1 = geometric mean, f_inf = min_i phi_i, and h_alpha = 2^(-f_alpha). Verify alpha=0 gives h_0=2^(-mean(phi)) within 1e-12.",
+  "Build IF_alpha scores by aggregating phi_IF over trees and PAC_alpha scores by aggregating phi_PAC over trees for every alpha in the configured grid. Ensure higher h_alpha is treated as anomalous.",
+  "On the ADBench annthyroid test split, compute AUCROC for every (variant, alpha) pair. Select best_IF_alpha and best_PAC_alpha by maximum test AUCROC; explicitly record PAC_alpha at alpha=0.5 for C1 and IF_alpha at alpha=0 for C2.",
+  "Write results/metrics.json with the target values 91.47 and 82.12, computed per-alpha AUCROCs, best alphas, absolute differences, pass/fail against the 1.0 AUCROC-point tolerance, configuration provenance, package versions, and dataset split metadata.",
+  "Re-run reproduce.py from a clean process with the fixed seed and confirm the JSON values are identical up to floating-point determinism."
+ ],
+ "smoke_test": "Run `python reproduce.py --smoke`, which uses a 128-point training slice and 64-point test slice from annthyroid, 5 trees, subsample size 32, and alpha grid [0, 0.5]. Assert that X_train/X_test are numeric 2-D arrays, both label classes appear, each tree has positive V(Y), every point maps to a valid leaf with |L(x)| > 0, phi_IF/phi_PAC and h_alpha are finite and non-constant, alpha=0 aggregation matches 2^(-mean(phi)) within 1e-12, and AUCROC is in [0,1]. Print the tiny metrics table before allowing the full run.",
+ "intermediate_checks": [
+  "Dataset size/features: annthyroid should be near 7,200 points and about 21 features as stated in the paper; confirm the ADBench test split is non-empty and contains both normal and anomaly labels.",
+  "Class balance: report anomaly rate in train and test; confirm test AUCROC is well-defined and not dominated by one class.",
+  "Forest scale: exactly 100 estimators in full mode, subsample |Y|=256, and at most 2*256-1 nodes per fully grown tree; confirm memory stays under the 4 GB budget.",
+  "Volume sanity: for every tree, V(Y)>0 after epsilon padding, every leaf volume V(L)>0, every leaf count is at least 1, and sum of leaf counts equals |Y|.",
+  "Aggregation identity: alpha=0 must reproduce standard IF h(x)=2^(-mean(phi)) within 1e-12 for both phi_IF and phi_PAC before running the full sweep.",
+  "Baseline plausibility: standard IF alpha=0 on full annthyroid should be in a plausible 0.7-0.9 AUCROC range; if it is far from 82.12, debug depth/c(n), leaf mapping, and score orientation before trusting PAC_alpha.",
+  "Orientation check: labels are y=1 for anomaly and higher h_alpha must be anomalous; if AUCROC is near 1-AUCROC, flip only after confirming the label convention.",
+  "Numerical check: all PAC_alpha and IF_alpha scores are finite, no NaN/Inf, and alpha=inf uses min(phi_i) analytically rather than a huge finite alpha."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Reserve about 5-6 minutes for environment setup, ADBench cloning, annthyroid acquisition, and split verification; 2-3 minutes for the smoke run and fixing shape/volume/aggregation assertions; 6-8 minutes for the full 100-tree IF_alpha and PAC_alpha sweep on annthyroid; and 3-4 minutes for writing metrics.json, checking the C1/C2 gaps, and a clean deterministic re-run. Total planned budget is about 16-21 minutes on CPU, inside the stated ~20 minute budget."
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "XGBoost classifier with no feature selection achieves AUC 0.989 ± 0.01 in 10-fold cross-validation",
+  "table_ref": "Table 2, row 'FS=-, Classifier=XGBoost', column AUC",
+  "dataset": "CSIC2010 v2 (processed: 13,569 samples, 78 features)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "No code released; must reimplement the paper's custom feature extraction (session grouping by cookie, payload/URL parsing into 78 features) and 10-fold CV with XGBoost on ~13.5k samples, which is CPU-feasible but the preprocessing reimplementation is the main time sink."
+ },
+ "blockers": [
+  "No code or configs released; feature extraction pipeline must be reimplemented from the paper's prose",
+  "Original CSIC2010 v2 dataset only available via a web.archive.org snapshot (link in paper), may need manual download",
+  "Exact hyperparameters (XGBoost settings, grid search ranges) not fully specified"
+ ],
+ "suitable": true,
+ "id": "2412.16791",
+ "title": "Enhancing web traffic attacks identification through ensemble methods and feature selection",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

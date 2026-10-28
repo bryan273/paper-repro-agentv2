@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "SBOC-R achieves success rate S = 63.5% over all 52 test functions (and SBOC-K 65.4%), i.e. the headline success-rate table cell for the proposed algorithm",
+  "table_ref": "Table 3",
+  "dataset": "52 analytical test functions (Table 2), N=2..10, Kmax=100N, 10 random runs each"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 600,
+  "gpu_speedup": null,
+  "basis": "No code released; the full SBOC algorithm (Sobol init, RBF/KRG surrogate with hyperparameter selection, multi-start SQP minimization, elbow-method k-means, exploration/exploitation point rules) must be reimplemented from the paper, then run 10x on 52 functions with Kmax=100N evaluations; Table 8 shows per-run surrogate minimization alone takes tens of seconds to minutes, so the full protocol is many CPU-hours."
+ },
+ "blockers": [
+  "No code or supplementary implementation linked in the paper",
+  "Full protocol requires reimplementing SBOC-R and SBOC-K plus 16 benchmark algorithms to reproduce the comparison",
+  "Table 8 wall-clock times imply the full 52-function x 10-run protocol is many CPU-hours even for SBOC alone"
+ ],
+ "suitable": false,
+ "id": "2601.07442",
+ "title": "Surrogate-based Optimization via Clustering for Box-Constrained Problems",
+ "pages": 49,
+ "model": "DeepSeek-V4.1-Flash"
+}

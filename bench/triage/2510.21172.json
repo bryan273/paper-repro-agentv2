@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Per-iteration computational complexity of classical crisp k-means is O(mnk) (Table 1 entry); no empirical/numerical result is reported in the paper.",
+  "table_ref": "Table 1",
+  "dataset": "none (theoretical complexity analysis; no dataset used)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "The only quantitative content is a theoretical complexity table; verifying O(mnk) requires at most a tiny synthetic timing script, not a real experiment."
+ },
+ "blockers": [
+  "Paper contains no experiments, no datasets, and no numerical results to reproduce",
+  "No code or data links provided",
+  "Target is a theoretical complexity claim, not an empirical headline number"
+ ],
+ "suitable": false,
+ "id": "2510.21172",
+ "title": "A Unified Matrix Factorization Framework for Classical and Robust Clustering",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,182 @@
+{
+ "approach": "Treat the released repository as the source of truth: set up Python 3.12, install the dependency set (trying the pinned requirements first and relaxing only if they cannot resolve), then run the authors' single experiment script as released. A thin reproduce.py will invoke scripts/trimcal_eval.py --skip-compile, read the regenerated data/main_results.csv, filter to noisy cells, aggregate Gated-LWCal ECE with equal weight per noisy cell, and write results/metrics.json. The quick mode will be used only as a smoke test, and the full run will provide C1 plus cheap cross-checks for C2-C8. No author code is modified; any version-induced drift is logged in the metrics file.",
+ "files": [
+  {
+   "path": "scripts/trimcal_eval.py",
+   "purpose": "Existing author experiment script; run as-is with --skip-compile. It generates the 432 noisy random-forest cells, calibrators, CSVs, and figures.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R14"
+   ]
+  },
+  {
+   "path": "requirements-repro.txt",
+   "purpose": "Optional relaxed dependency lock used only if the authors' pinned requirements.txt cannot resolve on Python 3.12. Keeps the environment reproducible without changing author code.",
+   "requirement_ids": [
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin wrapper: runs the author script, loads data/main_results.csv, computes the noisy-cell aggregate for Gated-LWCal ECE, cross-checks related Table III/V values, and writes results/metrics.json.",
+   "requirement_ids": [
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R13"
+   ]
+  }
+ ],
+ "config": {
+  "route": "full_release",
+  "repo_url": "https://github.com/ZemingL/lwcal",
+  "repo_root": ".",
+  "author_script": "scripts/trimcal_eval.py",
+  "full_run_command": [
+   "python",
+   "scripts/trimcal_eval.py",
+   "--skip-compile"
+  ],
+  "smoke_run_command": [
+   "python",
+   "scripts/trimcal_eval.py",
+   "--quick",
+   "--skip-compile"
+  ],
+  "skip_latex_compile": "true (paper artifact notes; avoids optional LaTeX dependency)",
+  "python_version": "3.12",
+  "full_run_timeout_sec": 1800,
+  "dependency_install": {
+   "first_try": "pip install -r requirements.txt",
+   "fallback_if_pins_fail": {
+    "numpy": ">=1.26,<3",
+    "pandas": ">=2.2,<4",
+    "scipy": ">=1.11,<2",
+    "scikit-learn": ">=1.4,<2",
+    "matplotlib": ">=3.8,<4"
+   },
+   "note": "Relax pins only if the author-pinned versions are unavailable on Python 3.12; log installed versions."
+  },
+  "base_model": {
+   "type": "RandomForestClassifier",
+   "n_estimators": "160 (paper, Sec IV)",
+   "min_samples_leaf": "2 (paper, Sec IV)",
+   "max_features": "sqrt (paper, Sec IV)",
+   "random_state": "cell seed from fixed seed list (A10)",
+   "class_weight": "None (A10/A14)",
+   "bootstrap": "sklearn default (A10)",
+   "n_jobs": "author script default (A10)"
+  },
+  "datasets": {
+   "list": [
+    "breast_cancer",
+    "wine_class0",
+    "wine_class2",
+    "digits_high",
+    "digits_even",
+    "iris_versicolor",
+    "synthetic_overlap",
+    "synthetic_sparse",
+    "synthetic_imbalance"
+   ],
+   "binarization": "one-vs-rest for named classes; Digits High = digit>=5; Digits Even = parity even (A11)",
+   "synthetic_generators": "matched to Table II n/d/positive-rate with low class_sep, many irrelevant features, or class imbalance by task (A12)"
+  },
+  "split": {
+   "train_cal_test": "60/20/20 stratified (A1)",
+   "test_labels": "clean and used only for evaluation (R14)"
+  },
+  "seeds": "0..5 shared across split, RF, noise, and bootstrap RNGs (A2)",
+  "noise": {
+   "modes": "symmetric and asymmetric noisy calibration cells (paper Table V)",
+   "same_eta_train_and_cal": "same per-cell eta, independent draws (A4/R14)",
+   "asymmetric_rates": "positive flip eta, negative flip eta/2 (A3)",
+   "clean_rows_excluded_from_headline": "eta=0 rows excluded (R10)"
+  },
+  "calibration": {
+   "methods": [
+    "Raw",
+    "Isotonic",
+    "Platt",
+    "Beta",
+    "LWCal",
+    "Gated-LWCal"
+   ],
+   "weighted_isotonic": "sklearn IsotonicRegression(sample_weight=w_i, out_of_bounds='clip', y_min=0, y_max=1) (A5)",
+   "loss": "l_i = -log(y_tilde_i p_i + (1-y_tilde_i)(1-p_i)) (R3)",
+   "median_mad": "m = median(l_i); s = median(|l_i - m|) (R3)",
+   "weights": "w_i = clip(sigmoid(-(l_i - m)/(1.4826*s + eps)), 0.05, 1), eps=1e-12 (R4/A8)",
+   "gate_statistic": "d_hat = fraction of calibration points where base 0.5 decision disagrees with noisy label (R7)",
+   "gate": "rho = clip((d_hat - 0.29)/0.12, 0, 1) (R8)",
+   "gated_output": "(1-rho)*g(p) + rho*p (R6)"
+  },
+  "metrics": {
+   "primary_ece": "15 equal-width bins; ignore empty bins (R9/A7)",
+   "adaptive_ece": "equal-mass bins (R9)",
+   "nll": "clip probabilities to [1e-12, 1-1e-12] (A8)",
+   "brier": "mean squared probability error (R9)",
+   "auc": "R9",
+   "macro_f1": "unweighted, threshold 0.5 (R9/A14)"
+  },
+  "aggregate": {
+   "filter": "noise_rate/eta > 0; exclude clean eta=0 rows (R10)",
+   "cell_weighting": "equal weight per noisy cell (A9)",
+   "target_method_aliases": [
+    "Gated-LWCal",
+    "GATED-LWCAL",
+    "GatedLWCal",
+    "gated_lwcal"
+   ],
+   "expected_noisy_cells": "432 (paper, Table III aggregate)",
+   "paired_bootstrap": "2000 percentile paired resamples over matched dataset/seed/noise-mode/noise-rate cells, fixed seed 0 (R11/A13)"
+  },
+  "expected_values": {
+   "C1_gated_ece": 0.122,
+   "C1_tolerance_abs": 0.02,
+   "C2_gated_nll": 0.396,
+   "C3_lwcal_ece": 0.113,
+   "C4_raw_ece": 0.188,
+   "C5_isotonic_ece": 0.147,
+   "C6_gated_brier": 0.125,
+   "C7_lwcal_symmetric_ece": 0.08,
+   "C8_gated_asymmetric_nll": 0.41
+  }
+ },
+ "steps": [
+  "Clone https://github.com/ZemingL/lwcal if the repository is not already present, cd to the repo root, and confirm scripts/trimcal_eval.py, data/main_results.csv, and requirements.txt exist.",
+  "Create a Python 3.12 virtual environment and install dependencies. First run pip install -r requirements.txt; if the pinned versions do not resolve, install requirements-repro.txt with relaxed bounds and record the actual versions.",
+  "Inspect scripts/trimcal_eval.py enough to confirm the RF settings are n_estimators=160, min_samples_leaf=2, max_features='sqrt', and that the script writes data/main_results.csv and main_summary.csv.",
+  "Run the smoke command: python scripts/trimcal_eval.py --quick --skip-compile. Confirm it exits 0, updates data/main_results.csv, and contains Gated-LWCal rows.",
+  "Inspect data/main_results.csv headers and unique values for method/calibrator, noise_rate/eta, noise_mode, and dataset. Map column aliases robustly; do not alter author code.",
+  "Write reproduce.py as a thin wrapper. It must resolve the repo root from __file__, run [sys.executable, 'scripts/trimcal_eval.py', '--skip-compile'] with cwd=repo root and a timeout, then read data/main_results.csv.",
+  "In reproduce.py, normalize method names and select Gated-LWCal aliases. Filter to noisy cells with eta/noise_rate > 0. Verify the selected Gated-LWCal row count is 432; if not, stop and report the mismatch rather than silently aggregating.",
+  "Compute the equal-cell mean ECE, NLL, and Brier for Gated-LWCal; also compute Raw, Isotonic, and LWCal ECE/NLL aggregates for cross-checks. Compute a paired bootstrap 95% interval for Gated-LWCal vs Raw ECE over matched cells if compatible columns exist.",
+  "Write results/metrics.json with primary_claim=C1, value, target=0.122, tolerance_abs=0.02, pass flag, n_cells, command, git commit if available, installed package versions, and cross-check values for C2-C8.",
+  "Run python reproduce.py end-to-end. Confirm C1 passes if abs(value - 0.122) <= 0.02; if not, inspect filtering, method aliases, eta column, and whether the script wrote a different table version before changing anything.",
+  "Keep author code unmodified. If dependency relaxation changes results beyond tolerance, report the version delta and the regenerated CSV paths in results/metrics.json."
+ ],
+ "smoke_test": "python scripts/trimcal_eval.py --quick --skip-compile (expected ~10 seconds). After it finishes, assert data/main_results.csv exists and has at least one Gated-LWCal row; compute a mean ECE on that small nonempty subset to prove the CSV-to-metric path works before the full run.",
+ "intermediate_checks": [
+  "Confirm 9 dataset names appear in data/dataset_summary.csv or equivalent output and inspect positive rates/class balance for plausibility.",
+  "Confirm the full noisy-cell universe after filtering eta>0 contains 432 Gated-LWCal rows; if rows are long-format over methods, check 432 cells times the number of methods instead.",
+  "Check that method aliases include Gated-LWCal and LWCal and that Raw/Isotonic/Platt/Beta rows are also present for cross-checks.",
+  "Inspect scripts/trimcal_eval.py for RF hyperparameters: 160 trees, min_samples_leaf=2, max_features='sqrt'.",
+  "Check that d_hat, rho, m, s, and calibration weights are present in logs/CSVs; if the author script logs them elsewhere, point reproduce.py at those files instead of recomputing.",
+  "Run the quick smoke before the full run and verify data/main_results.csv is nonempty and parseable by pandas.",
+  "Before accepting the full result, compute raw RF ECE and isotonic ECE from the same regenerated CSV; expect values near 0.188 and 0.147 respectively.",
+  "Check for NaNs/infinities in ECE, NLL, and Brier columns before aggregation; enforce NLL clipping only in the wrapper if needed for cross-checks.",
+  "Confirm that eta=0/clean rows are excluded from the headline aggregate and that equal-cell weighting is used, not dataset-balanced weighting.",
+  "Confirm results/metrics.json is valid JSON and contains the exact command, row count, target, tolerance, and pass/fail boolean for C1."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~30 minutes on CPU. 0-5 min: clone/inspect repo and confirm the author script. 5-12 min: create venv and install dependencies, relaxing pins only if necessary. 12-14 min: run the --quick smoke and inspect CSV schema. 14-26 min: run the full --skip-compile experiment. 26-30 min: aggregate, write results/metrics.json, validate C1 and cross-checks, and leave buffer for dependency/version surprises."
+}

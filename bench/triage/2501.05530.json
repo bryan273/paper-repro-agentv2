@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "UNCCD-IOS F2-score of 0.541 on the hepatitis dataset (best among all methods)",
+  "table_ref": "Table 16 (hepatitis column, UNCCD-IOS row)",
+  "dataset": "hepatitis (UCI/ODDS, n=74, d=19, 7 outliers)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 240,
+  "gpu_speedup": null,
+  "basis": "No code is released; the CCD (RK-CCD/UN-CCD) construction and the OOS/IOS scores must be reimplemented from the definitions, and the exact preprocessing/threshold (2) and Smin=0 settings must be matched to hit the reported F2; the dataset itself is tiny so runtime is negligible and the cost is almost entirely reimplementation/debugging."
+ },
+ "blockers": [
+  "No code or repository linked in the paper",
+  "CCD construction (RK-CCD/UN-CCD) must be reimplemented from scratch; depends on prior work arXiv:2409.11596",
+  "Exact preprocessing and threshold choices needed to match the reported number are not fully specified"
+ ],
+ "suitable": true,
+ "id": "2501.05530",
+ "title": "Outlyingness Scores with Cluster Catch Digraphs",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

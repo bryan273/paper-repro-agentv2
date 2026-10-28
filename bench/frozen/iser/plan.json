@@ -1,0 +1,114 @@
+{
+ "approach": "Route is full_release, so the plan reuses the authors' released ISER.py verbatim (class ISER with fit/transform/ISER_A/ISER_S/ISER_IF) and the in-tree dataset data/18_Ionosphere.npz, and only adds the thin Table III/IV driver that the repo is missing. A small harness loads the npz, sweeps psi over {2,4,...,256}, fits ISER once per (psi, seed) for t=200 partitionings, and reads the three scores off the same fitted model, so ISER-A/ISER-S/ISER-IF all come from one Phi(x). Each configuration is repeated with seeds 0-4 (assumption A1), AUC-ROC is averaged over seeds, and per dataset the psi maximising the mean AUC is selected exactly as the paper's tuned-psi protocol implies (assumption A4, label-informed oracle, flagged). The match target C3 (ISER-IF on Ionosphere = 0.9314) is verified within an absolute tolerance of 0.02, with a PyOD iForest baseline on raw features (expected 0.8530) acting as an independent validation of the label convention and the raw-vs-standardised preprocessing choice; the sibling Ionosphere values (ISER-S 0.9359, ISER-A 0.9179) and, if budget remains, the speech rows (C5/C6) are reported from the same run. No author code is rewritten and no GPU is required.",
+ "files": [
+  {
+   "path": "common.py",
+   "purpose": "Data + evaluation utilities: load data/<name>.npz from the cloned repo (keys X, y), return X as float64 and y as 0/1 with 1 = anomaly (ODDS/PyOD convention, verified at runtime by counting), expose load_dataset(name), auc(y_true, score) via sklearn.roc_auc_score, and an iforest_baseline(X, y, seed) that runs PyOD IForest(n_estimators=100, max_samples=256, contamination='auto') on the full contaminated data and returns the decision_function AUC. No ISER import here.",
+   "requirement_ids": [
+    "R9",
+    "R12",
+    "R13"
+   ]
+  },
+  {
+   "path": "iser_eval.py",
+   "purpose": "Thin wrapper around the authors' repo/ISER.py: build_isr(X, psi, seed) constructs ISER(max_samples=psi, n_estimators=200, if_max_samples=256, random_state=seed) and calls fit(X); scores_from_model(model, X) returns the dict {ISER_A: model.ISER_A(X), ISER_S: model.ISER_S(X), ISER_IF: model.ISER_IF(X)} computed from the SAME fitted Phi so nothing is recomputed; run_psi_grid(X, y, method, psi_grid, seeds) loops psi x seed, records per-seed AUC-ROC, and returns per-psi mean/std plus the argmax psi (A4). Also returns Phi = model.transform(X) shape/finite checks. Imports common.py and repo/ISER.py only (R1-R8, R10, R11).",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R10",
+    "R11"
+   ]
+  },
+  {
+   "path": "smoke.py",
+   "purpose": "Tiny end-to-end data-flow proof: load Ionosphere, build ISER(max_samples=16, n_estimators=10, random_state=0), assert transform(X).shape == (351, 10) and all finite, print the phi range, compute ISER_IF/ISER_S/ISER_A AUC on the single tiny model and assert each is in [0,1] and that ISER_IF AUC > 0.5 (score orientation), and print wall-clock. Uses only iser_eval/common; finishes in seconds.",
+   "requirement_ids": [
+    "R5",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint. CLI: python reproduce.py --dataset Ionosphere [--datasets Ionosphere,speech] --out results/metrics.json. For each requested dataset: loads the npz, runs the psi grid for ISER-A/ISER-S/ISER-IF (5 seeds), runs the PyOD iForest baseline on raw features, selects psi by max mean AUC, and writes results/metrics.json with the headline ISER-IF mean AUC plus per-seed values, per-psi AUCs, selected psi, the iForest baseline, the relative-improvement percentage, the target values (C3 0.9314, C4 0.9359, C5 0.6443, C6 0.6952) and a pass/fail flag at tolerance 0.02. Imported by nothing.",
+   "requirement_ids": [
+    "R8",
+    "R9",
+    "R10",
+    "R12"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/charles-cao/ISER (authors' release; clone target ./repo)",
+  "author_files_used_as_is": "repo/ISER.py (class ISER), repo/data/18_Ionosphere.npz, repo/data/36_speech.npz (route: full_release, code_links[0])",
+  "t_estimators": "200 (paper R8, Section V-A: 'with default t = 200')",
+  "psi_grid": "[2, 4, 8, 16, 32, 64, 128, 256] (paper R8: psi in {2^m, m = 1..8})",
+  "psi_search_criterion": "per-dataset argmax of the mean AUC-ROC over 5 seeds (assumption A4 - label-informed oracle, same protocol family as PyOD/ADBench; flagged as the main irreproducibility risk)",
+  "n_repeats": "5 (paper R10, Section V-A: 'Each experiment is repeated 5 times and reported average results.')",
+  "seeds": "[0, 1, 2, 3, 4] (assumption A1; seeds are not stated in the paper)",
+  "random_state_handling": "one fixed seed per repeat, shared by the ISER sampling and the internal iForest so a repeat is fully deterministic",
+  "distance_metric": "Euclidean / L2 (assumption A2; matches the d-dimensional-ball volume argument and iNNE/ADERH)",
+  "preprocessing": "raw features exactly as stored in the .npz, no standardisation/min-max (assumption A3, high risk; validated by the iForest=0.8530 baseline check below, with standardised features as fallback diagnostic only)",
+  "phi_space_for_if": "raw phi values in [0,1]-ish (no z-scoring) fed to the internal iForest (assumption A9)",
+  "iforest_n_estimators": "100 trees (assumption A8; PyOD default)",
+  "iforest_max_samples": "256 (assumption A8; ISER(if_max_samples=256) default and PyOD max_samples=256)",
+  "iforest_baseline": "PyOD IForest(n_estimators=100, max_samples=256, contamination='auto'), fitted and scored on the full contaminated dataset (R9)",
+  "iser_if_score": "S = 1 - 2^(-E(h(Phi(x)))/c(n)) - produced by ISER.ISER_IF (paper R11); orientation re-checked by requiring AUC > 0.5",
+  "iser_s_score": "cosine similarity of Phi(x) to the all-ones vector in R^t - produced by ISER.ISER_S (paper R7, assumption A7)",
+  "iser_a_score": "arithmetic mean of the t phi components - produced by ISER.ISER_A (paper R6)",
+  "degenerate_radius_guard": "if the authors' code yields r = 0 for coincident sampled points, note it; do NOT patch ISER.py (A6)",
+  "primary_dataset": "Ionosphere -> data/18_Ionosphere.npz, expected (351, 32) with 126 anomalies at 35.90% (C3, C4; route match_target)",
+  "secondary_dataset": "speech -> data/36_speech.npz, expected (3686, 400) with 61 anomalies at 1.65% (C5, C6)",
+  "targets": {
+   "C3_iser_if_ionosphere": "0.9314 (tolerance +/-0.02 absolute)",
+   "C4_iser_s_ionosphere": "0.9359 (tolerance +/-0.02)",
+   "C2_side_iser_a_ionosphere": "0.9179 (tolerance +/-0.02, informational)",
+   "iforest_baseline_ionosphere": "0.8530",
+   "C5_iser_if_speech": "0.6443 (tolerance +/-0.02)",
+   "C6_iser_s_speech": "0.6952 (tolerance +/-0.02)"
+  },
+  "metric_orientation": "higher score = more anomalous; AUC-ROC only (paper R12)",
+  "tolerance": {
+   "type": "absolute",
+   "value": 0.02,
+   "applies_to": "C3 headline; same band used for the informational siblings"
+  }
+ },
+ "steps": [
+  "Setup: if ./repo is absent run `git clone https://github.com/charles-cao/ISER.git repo` (git allowed); then `pip install pyod` (numpy/scipy/sklearn/matplotlib/pandas are pre-installed; torch and ISER_GPU.py are NOT used). Confirm repo/ISER.py and repo/data/18_Ionosphere.npz exist.",
+  "Read repo/README.md and repo/ISER.py to confirm the exact API: constructor args (max_samples=psi, n_estimators=t, if_max_samples=256, random_state=seed), that fit(X) is required before ISER_A/ISER_S/ISER_IF, and that all three return higher = more anomalous. Record the real signature in a comment; do not edit the file.",
+  "Data inspection (script or python -c): load repo/data/18_Ionosphere.npz, print np.load keys, X.shape, X.dtype, per-feature min/max/mean/std, np.unique(y, return_counts=True). Assert X.shape == (351, 32) and 126 anomalies (35.90%). Record the label value that encodes the anomaly (assumption to verify, not guess).",
+  "Write common.py (loader, label handling, roc_auc_score wrapper, PyOD IForest baseline). Then run it standalone on Ionosphere to print n, d, anomaly count - no ISER involved yet.",
+  "Baseline check BEFORE anything else: run the PyOD iForest baseline (100 trees, max_samples=256) on raw Ionosphere for seeds 0-4 and compare the mean AUC to the paper's 0.8530. If |diff| <= 0.05 continue; if far off, print the same with per-feature z-score standardisation and note which preprocessing the released npz implies.",
+  "Write iser_eval.py. Then write smoke.py and run `python smoke.py`: Ionosphere, t=10, psi=16, seed=0 -> assert transform(X).shape == (351, 10), all finite, phi range printed, all three AUCs in [0,1], ISER_IF AUC > 0.5, runtime printed. Abort the plan if this fails.",
+  "Write reproduce.py with the CLI and the metrics.json writer (headline ISER-IF mean AUC at the selected psi, per-seed AUCs, per-psi mean AUCs, selected psi, iForest baseline, relative improvement %, target + |diff| + pass flag).",
+  "Run the match target: `python reproduce.py --dataset Ionosphere --out results/metrics.json`. Expect ~2-4 min (40 fits of a 351x32 model at t=200 plus the internal 100-tree iForest on a 351x200 matrix).",
+  "Verify results/metrics.json: |ISER_IF_mean - 0.9314| <= 0.02 -> C3 reproduced. Inspect the per-psi curve: a flat/random curve means a wiring bug, not a paper mismatch. Also read the ISER_S (target 0.9359) and ISER_A (target 0.9179) blocks as the C4/C2 sanity signals on the same Phi.",
+  "If C3 is outside tolerance, in this order: (a) try standardised features (assumption A3 fallback) and re-run, (b) try the per-seed oracle selection (mean over seeds of each seed's best psi) instead of the mean-argmax, (c) widen psi_grid sanity to check the argmax is interior, then record which variant matched and file it under assumption A4/A3 in metrics.json. Never edit repo/ISER.py.",
+  "If >= 25 min of budget remain, run the secondary rows for C5/C6: `python reproduce.py --dataset speech --out results/metrics_speech.json` (~5-15 min; n=3686, d=400, use scipy cKDTree per partitioning for the coverage lookup) and merge the speech block into results/metrics.json.",
+  "Final: dump results/metrics.json, print a compact table (method, selected psi, mean AUC, target, |diff|, pass) and stop; leave the repo untouched for audit."
+ ],
+ "smoke_test": "python smoke.py -> load data/18_Ionosphere.npz (351x32), build ISER(max_samples=16, n_estimators=10, if_max_samples=256, random_state=0), fit on X, then: assert model.transform(X).shape == (351, 10); assert np.isfinite(Phi).all(); print Phi.min()/Phi.max()/Phi.mean(); compute a = model.ISER_A(X), s = model.ISER_S(X), f = model.ISER_IF(X); assert each has 351 finite values, each roc_auc_score(y, .) is in [0,1] and all three > 0.5 (score orientation); print elapsed seconds (<60 s expected). This exercises the whole data path (sampling -> radii -> phi -> all three scores) on a 10-partitioning model before the 200-partitioning grid.",
+ "intermediate_checks": [
+  "repo/ISER.py imports cleanly and exposes ISER with fit/transform/ISER_A/ISER_S/ISER_IF and the constructor params (max_samples, n_estimators, if_max_samples, random_state); ISER_GPU.py is never imported (no GPU).",
+  "Ionosphere array shapes/labels: X.shape == (351, 32), exactly 126 positives => 126/351 = 35.90% anomaly rate, matching Table II; confirm which label value is the anomaly and encode y as 1 = anomaly.",
+  "Feature scale audit: per-feature min/max/mean/std of the shipped npz - decides whether the released data is already standardised (assumption A3) or raw; print it and record the decision.",
+  "Baseline anchor: PyOD iForest (100 trees, max_samples=256) on the full contaminated Ionosphere gives mean AUC ~= 0.8530 (accept |diff| <= 0.05). A large gap points at the label convention or the preprocessing, not at ISER.",
+  "Score orientation: random uniform scores give AUC ~= 0.5 and the inverted score gives ~= 0.5 too, confirming that larger ISER_* output means more anomalous and that roc_auc_score is fed the correct sign.",
+  "Phi shape/range: for t=200, Phi.shape == (351, 200); report min/max/mean and the fraction of exactly-1.0 entries (uncovered points) - a fraction near 0 or near 1 means psi is off the useful range.",
+  "No NaNs/infs: assert np.isfinite on Phi and on all three score vectors for every psi in the grid (degenerate r=0 guard, assumption A6).",
+  "Runtime probe: time one (psi=256, t=200, seed=0) Ionosphere fit to confirm the 8x5 grid stays in the 2-4 min envelope before launching the full grid.",
+  "Per-psi monotonicity sanity: print mean AUC for each psi; an interior maximum (not always psi=2 or psi=256) is the expected shape of the paper's tuned curve."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total 90 min. ~5 min setup (git clone the repo, pip install pyod, read ISER.py/README). ~5 min data inspection + the iForest=0.8530 baseline anchor. ~3 min writing common.py/iser_eval.py and running smoke.py (tiny t=10 model, must pass before anything else). ~10 min full Ionosphere grid for C3/C4/ISER-A (8 psi x 5 seeds x t=200, 351x32 -> 351x200 phi-space with a 100-tree iForest; ~2-4 min compute plus verification of results/metrics.json against 0.9314 +/- 0.02). ~8 min reserve for the standardised-features / per-seed-oracle fallbacks if C3 misses tolerance. ~35 min, only if the primary run passes and >=25 min remain, for the speech rows C5/C6 (3686x400 -> 3686x200 phi-space, cKDTree coverage lookup, 8 psi x 5 seeds); skip entirely if the Ionosphere block already consumed the reserve. ~10 min final table dump, metrics merge and wrap-up. If the cap is reached, results/metrics.json with the completed Ionosphere C3/C4 block is the deliverable."
+}

@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Qwen2.5-7B-Instruct with Vanilla Prompt achieves a Creativity score of 0.168 on CreativeBench-Combo (Pass@1 9.21%, Novelty 1.56).",
+  "table_ref": "Table 3, row 'Qwen2.5-7B-Instruct / Standard / Vanilla Prompt', column 'CreativeBench-Combo / Creativity'",
+  "dataset": "CreativeBench-Combo (1308 problems)"
+ },
+ "release": "partial",
+ "code_links": [
+  "CreativeBench Homepage (URL given in abstract as 'CreativeBench Homepage', no explicit link in PDF text)"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 5,
+  "basis": "Requires running a 7B LLM over 1308 problems with sandboxed execution plus CodeXEmbed novelty scoring; on CPU-only 8-core laptop this is many hours, and the paper's pipeline depends on GPT-4.1/GPT-4o/Gemini APIs for data construction and judging."
+ },
+ "blockers": [
+  "No explicit code/data URL in the PDF text (only 'CreativeBench Homepage' placeholder)",
+  "Data construction pipeline depends on closed models (GPT-4.1, GPT-4o, Gemini-2.5-Pro) for generation, filtering, and LLM-as-judge",
+  "Novelty metric requires CodeXEmbed embedding model and baseline solutions",
+  "Running Qwen2.5-7B-Instruct over 1308 problems with sandboxed test execution is heavy for a CPU-only laptop"
+ ],
+ "suitable": false,
+ "id": "2603.11863",
+ "title": "CreativeBench: Benchmarking and Enhancing Machine Creativity via Self-Evolving Challenges",
+ "pages": 34,
+ "model": "DeepSeek-V4.1-Flash"
+}

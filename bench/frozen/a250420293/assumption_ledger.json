@@ -1,0 +1,181 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Exact definition of the 'clustering success' score used for the median values.",
+  "options": [
+   "Hungarian-matched clustering accuracy",
+   "Adjusted Rand Index",
+   "Normalized Mutual Information",
+   "purity"
+  ],
+  "chosen": "Hungarian-matched clustering accuracy after optimal label permutation",
+  "source": "guess",
+  "risk": "high",
+  "quote": "Values represent the median clustering success in recovering ground-truth labels",
+  "page": 8
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "Random seeds and implementation of the reported 100 repeats / best-of-five protocol.",
+  "options": [
+   "100 independent KMeans seeds, report median over all runs",
+   "five seeds only, report median",
+   "best-of-five selected using known ground truth"
+  ],
+  "chosen": "Use 100 independent seeds and report the median over all runs; let each KMeans fit use its internal initialization protocol.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "Each experiment was repeated 100 times, and the best of five runs was kept.",
+  "page": 5
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "Whether FCPS coordinates are used raw or standardized before k-means and radius computation.",
+  "options": [
+   "raw coordinates",
+   "z-score standardization",
+   "min-max scaling"
+  ],
+  "chosen": "raw coordinates",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "Exact scikit-learn KMeans hyperparameters and version.",
+  "options": [
+   "scikit-learn defaults",
+   "explicit n_init=10 and k-means++",
+   "n_init=100"
+  ],
+  "chosen": "scikit-learn defaults (k-means++, n_init=10, max_iter=300, tol=1e-4) with a recorded library version",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "Implemented as a lightweight post-processing step atop scikit-learn’s k-means",
+  "page": 1
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Whether a center distance exactly equal to the radius sum is merged.",
+  "options": [
+   "≤, merge equality",
+   "<, do not merge equality"
+  ],
+  "chosen": "≤, merge equality",
+  "source": "paper",
+  "risk": "low",
+  "quote": "two clusters are merged if their radius-based boundaries would overlap",
+  "page": 4
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether zero-radius or singleton clusters are kept or filtered out before merging.",
+  "options": [
+   "keep all clusters",
+   "exclude radius-zero clusters",
+   "exclude singletons"
+  ],
+  "chosen": "keep all clusters for noise-free FCPS Atom; no filtering",
+  "source": "paper",
+  "risk": "low",
+  "quote": "clusters with radius zero—typically corresponding to isolated outliers—can be excluded prior to merging",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "Whether FCPS Atom should use the fixed reported k=20 or select another k in the stated 15≤k≤20 range.",
+  "options": [
+   "fixed k=20",
+   "best k in the range",
+   "median across the range"
+  ],
+  "chosen": "fixed k=20, matching the target hint and Table 2 entry",
+  "source": "paper",
+  "risk": "low",
+  "quote": "FCPS Atom\n15 ≤k ≤20, k = 20",
+  "page": 6
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "How the interquartile range is computed and which runs enter the median.",
+  "options": [
+   "Q3-Q1 via linear interpolation",
+   "inclusive quartiles",
+   "exclusive quartiles"
+  ],
+  "chosen": "Q3-Q1 via linear interpolation over all runs used for the median",
+  "source": "convention",
+  "risk": "low",
+  "quote": "reporting median clustering success and interquartile range across runs",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "How empty clusters from k-means are handled.",
+  "options": [
+   "scikit-learn default reseeding",
+   "raise an error",
+   "drop empty clusters"
+  ],
+  "chosen": "scikit-learn default behavior",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Which FCPS distribution/version is used for Atom and its labels.",
+  "options": [
+   "Gagolewski benchmark suite v1 [5]",
+   "R fcps package",
+   "original Ultsch SOM benchmark"
+  ],
+  "chosen": "Gagolewski benchmark suite v1 cited as [5]",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": "Fundamental Clustering Problem Suite (FCPS), introduced in [15] and available from [5]",
+  "page": 3
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Whether Engytime is included when reproducing the full FCPS table.",
+  "options": [
+   "exclude Engytime",
+   "include Engytime"
+  ],
+  "chosen": "exclude Engytime, as in the paper",
+  "source": "paper",
+  "risk": "low",
+  "quote": "One dataset, FCPS Engytime, was excluded from evaluation",
+  "page": 5
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "How the tiled experiment converts a k percentage into an integer local cluster count.",
+  "options": [
+   "round(pct × tile_n)",
+   "ceil(pct × tile_n)",
+   "floor(pct × tile_n)"
+  ],
+  "chosen": "round(pct × tile_n) and clip to at least 1",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "k set as a percentage of the tile’s point count",
+  "page": 7
+ }
+]

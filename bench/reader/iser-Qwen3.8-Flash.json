@@ -1,0 +1,272 @@
+{
+ "title": "Isolation-based Spherical Ensemble Representations for Tabular Anomaly Detection",
+ "summary": "Unsupervised tabular anomaly detection must identify global, local, and dependency anomalies without labels while remaining scalable on heterogeneous tabular data. ISER builds t spherical ensemble representations by sampling ψ points, using nearest-neighbor hypersphere radii as a monotonic density proxy, and scores points via average or cosine similarity to an all-ones anomaly reference; ISER-IF applies Isolation Forest to the transformed representation space. On 20 benchmark datasets ISER-S reaches average AUC-ROC 0.8523, and on Ionosphere ISER-IF raises iForest AUC-ROC from 0.8530 to 0.9314.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "ISER-IF achieves AUC-ROC 0.9314 on the Ionosphere dataset.",
+   "metric": "AUC-ROC",
+   "dataset": "Ionosphere",
+   "split": "full contaminated dataset (unsupervised; no train/test split)",
+   "value": 0.9314,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row Ionosphere, column ISER-IF",
+   "config_for_value": "ISER-IF: build ISER ensemble Φ(x) with t=200 and ψ from {2,4,8,16,32,64,128,256}; apply iForest to Φ(x); use modified score S_ISER-IF(x,n)=1-2^{-E(h(Φ(x)))/c(n)}; average over 5 runs.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds (<1 min for 351×32 table)",
+   "quote": "Data\niForest\nISER-IF\n↑(%)\nIonosphere\n0.8530\n0.9314\n9.19",
+   "page": 9
+  },
+  {
+   "id": "C2",
+   "statement": "ISER-S achieves the highest average AUC-ROC of 0.8523 across the 20 datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "20 real-world datasets (average)",
+   "split": "full contaminated datasets (unsupervised; no train/test split)",
+   "value": 0.8523,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Avg., column ISER-S",
+   "config_for_value": "ISER-S similarity scoring; t=200; ψ ∈ {2,4,8,16,32,64,128,256}; average AUC-ROC over Table II datasets; 5-run average.",
+   "reported_spread": null,
+   "est_compute": "CPU, hours to days if naive O(nψt) on large datasets; optimized vectorized CPU hours",
+   "quote": "Avg.\n0.6600\n0.7832\n0.7223\n0.7296\n0.7361\n0.8043\n0.7493\n0.7741\n0.7827\n0.8199\n0.8394\n0.8380\n0.8399\n0.8523",
+   "page": 8
+  },
+  {
+   "id": "C3",
+   "statement": "ISER-A achieves average AUC-ROC 0.8399 across the 20 datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "20 real-world datasets (average)",
+   "split": "full contaminated datasets (unsupervised; no train/test split)",
+   "value": 0.8399,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Avg., column ISER-A",
+   "config_for_value": "ISER-A average-based scoring; t=200; ψ ∈ {2,4,8,16,32,64,128,256}; average AUC-ROC over Table II datasets; 5-run average.",
+   "reported_spread": null,
+   "est_compute": "CPU, hours to days if naive O(nψt) on large datasets; optimized vectorized CPU hours",
+   "quote": "Avg.\n0.6600\n0.7832\n0.7223\n0.7296\n0.7361\n0.8043\n0.7493\n0.7741\n0.7827\n0.8199\n0.8394\n0.8380\n0.8399\n0.8523",
+   "page": 8
+  },
+  {
+   "id": "C4",
+   "statement": "Standard iForest achieves average AUC-ROC 0.7832 across the 20 datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "20 real-world datasets (average)",
+   "split": "full contaminated datasets (unsupervised; no train/test split)",
+   "value": 0.7832,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Avg., column iForest",
+   "config_for_value": "Standard iForest under the same 5-run AUC protocol; ψ/subsample grid if used as stated for iForest.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes to hours",
+   "quote": "Avg.\n0.6600\n0.7832\n0.7223\n0.7296\n0.7361\n0.8043\n0.7493\n0.7741\n0.7827\n0.8199\n0.8394\n0.8380\n0.8399\n0.8523",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "IDK achieves average AUC-ROC 0.8394 across the 20 datasets.",
+   "metric": "AUC-ROC",
+   "dataset": "20 real-world datasets (average)",
+   "split": "full contaminated datasets (unsupervised; no train/test split)",
+   "value": 0.8394,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Avg., column IDK",
+   "config_for_value": "IDK with ψ ∈ {2,4,8,16,32,64,128,256} and t=200 as stated; 5-run average.",
+   "reported_spread": null,
+   "est_compute": "CPU/GPU, hours (kernel overhead)",
+   "quote": "Avg.\n0.6600\n0.7832\n0.7223\n0.7296\n0.7361\n0.8043\n0.7493\n0.7741\n0.7827\n0.8199\n0.8394\n0.8380\n0.8399\n0.8523",
+   "page": 8
+  },
+  {
+   "id": "C6",
+   "statement": "ISER-S achieves AUC-ROC 0.9359 on Ionosphere.",
+   "metric": "AUC-ROC",
+   "dataset": "Ionosphere",
+   "split": "full contaminated dataset (unsupervised; no train/test split)",
+   "value": 0.9359,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Ionosphere, column ISER-S",
+   "config_for_value": "ISER-S similarity scoring on Ionosphere; t=200; ψ ∈ {2,4,8,16,32,64,128,256}; 5-run average.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "Ionosphere\n0.8934\n0.8530\n0.7284\n0.7895\n0.7850\n0.9459\n0.9281\n0.8975\n0.9114\n0.8899\n0.8883\n0.9247\n0.9179\n0.9359",
+   "page": 8
+  },
+  {
+   "id": "C7",
+   "statement": "ISER-A achieves AUC-ROC 0.9179 on Ionosphere.",
+   "metric": "AUC-ROC",
+   "dataset": "Ionosphere",
+   "split": "full contaminated dataset (unsupervised; no train/test split)",
+   "value": 0.9179,
+   "unit": "AUC-ROC",
+   "higher_is_better": true,
+   "table_ref": "Table III, row Ionosphere, column ISER-A",
+   "config_for_value": "ISER-A average-based scoring on Ionosphere; t=200; ψ ∈ {2,4,8,16,32,64,128,256}; 5-run average.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "Ionosphere\n0.8934\n0.8530\n0.7284\n0.7895\n0.7850\n0.9459\n0.9281\n0.8975\n0.9114\n0.8899\n0.8883\n0.9247\n0.9179\n0.9359",
+   "page": 8
+  },
+  {
+   "id": "C8",
+   "statement": "ISER-IF improves iForest AUC-ROC on Ionosphere by 9.19%.",
+   "metric": "relative AUC-ROC improvement over iForest",
+   "dataset": "Ionosphere",
+   "split": "full contaminated dataset (unsupervised; no train/test split)",
+   "value": 9.19,
+   "unit": "%",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row Ionosphere, column ↑(%)",
+   "config_for_value": "Table IV comparison: iForest AUC-ROC 0.8530 vs ISER-IF AUC-ROC 0.9314; improvement reported as 9.19%.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "Data\niForest\nISER-IF\n↑(%)\nIonosphere\n0.8530\n0.9314\n9.19",
+   "page": 9
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "User hint specifies Table IV, ISER-IF AUC-ROC on Ionosphere. It is a small dataset and directly demonstrates the central ISER-IF contribution: enhancing iForest through ISER ensemble representations."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "No std/CI is reported for the target. AUC-ROC is a bounded score printed in [0,1] on Ionosphere with 351 examples (<2000), so tolerance rule 3 gives 0.02 absolute points."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "For each of t partitionings, randomly sample a subset of size ψ without replacement.",
+   "cite": "Section III-A",
+   "quote": "we begin by randomly sampling a subset Di ⊂D of size ψ without replacement",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "For each sampled center z, define the hypersphere radius as the nearest-neighbor distance to another sampled point.",
+   "cite": "Section III-A",
+   "quote": "When a hypersphere expands from a random point to its nearest neighbor, the radius reflects local crowding.",
+   "page": 1
+  },
+  {
+   "id": "R3",
+   "stmt": "For a query point x, consider all covering hyperspheres and select the one with smallest radius.",
+   "cite": "Section III-A",
+   "quote": "we select the covering hypersphere with the smallest radius:",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Use radius as a monotonic density proxy: smaller radii produce smaller φ values.",
+   "cite": "Section III-A",
+   "quote": "smaller radii (characteristic of denser regions) yield smaller φ values",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "If x is not covered by any hypersphere in a partitioning, assign φ_i(x)=1.",
+   "cite": "Section III-A",
+   "quote": "When x is covered by no hypersphere in Hi, we assign φi(x) = 1",
+   "page": 3
+  },
+  {
+   "id": "R6",
+   "stmt": "Construct the ensemble representation Φ(x) by concatenating φ_i(x) over all t partitionings.",
+   "cite": "Section III-A",
+   "quote": "The ensemble representation of point x is constructed by concatenating the coverage indicators from all t partitionings:",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "ISER-A computes the anomaly score as the arithmetic mean of the ensemble representation.",
+   "cite": "Section III-B",
+   "quote": "The average-based anomaly score is computed as the arithmetic mean of all ensemble components",
+   "page": 3
+  },
+  {
+   "id": "R8",
+   "stmt": "ISER-S computes the anomaly score using cosine similarity between Φ(x) and the anomaly reference vector.",
+   "cite": "Section III-B",
+   "quote": "cosine similarity between the point’s ensemble representation and the anomaly reference vector",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "The anomaly reference vector is the all-ones vector representing consistent isolation across partitionings.",
+   "cite": "Section III-B",
+   "quote": "This vector represents the theoretical pattern of a point that lies outside all hyperspheres across all partitionings",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "ISER-IF applies iForest to the transformed ISER feature space Φ(x), not the original feature space.",
+   "cite": "Section VI",
+   "quote": "we apply iForest to the transformed feature space Φ(x).",
+   "page": 8
+  },
+  {
+   "id": "R11",
+   "stmt": "ISER-IF modifies the iForest anomaly score to account for the inverted isolation behavior in Φ-space.",
+   "cite": "Section VI",
+   "quote": "To accommodate this inversion, we modify the original iForest anomaly scoring function",
+   "page": 8
+  },
+  {
+   "id": "R12",
+   "stmt": "Evaluate anomaly detection performance with AUC-ROC.",
+   "cite": "Section V-A",
+   "quote": "We use Area Under the ROC Curve (AUC-ROC) as evaluation metrics.",
+   "page": 7
+  },
+  {
+   "id": "R13",
+   "stmt": "Repeat each experiment 5 times and report the average result.",
+   "cite": "Section V-A",
+   "quote": "Each experiment is repeated 5 times and reported average results.",
+   "page": 7
+  },
+  {
+   "id": "R14",
+   "stmt": "Use ψ from powers of two up to 256 and default t=200 for iForest/iNNE/IDK/ADERH/proposed methods.",
+   "cite": "Section V-A",
+   "quote": "For iForest, iNNE, IDK, ADERH and proposed methods, ψ ∈ {2m, m = 1, 2, . . . , 8} and with default t = 200.",
+   "page": 7
+  },
+  {
+   "id": "R15",
+   "stmt": "Use the unsupervised contaminated-dataset setting: fit and score all points, with labels only for evaluation.",
+   "cite": "Section V-A",
+   "quote": "Following the unsupervised setting, our experiments assume access to the entire dataset containing both normal and anomalous instances during training",
+   "page": 6
+  }
+ ],
+ "data": [
+  {
+   "name": "Ionosphere",
+   "how_to_get": "Load via PyOD dataset utilities or ODDS repository; 351 samples, 32 features, 126 anomalies."
+  },
+  {
+   "name": "Full 20-dataset benchmark",
+   "how_to_get": "Use PyOD and ODDS repositories cited in the paper; datasets are listed in Table II."
+  }
+ ],
+ "code_links": [
+  "https://github.com/charles-cao/ISER"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2510.13311",
+  "kind": "arxiv",
+  "arxiv_id": "2510.13311",
+  "url": "https://arxiv.org/abs/2510.13311",
+  "title": "Isolation-based Spherical Ensemble Representations for Tabular Anomaly Detection",
+  "pages": 10
+ }
+}

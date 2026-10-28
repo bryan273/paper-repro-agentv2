@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "With set.seed(1863) in R, for normal data with n=500 and two contaminated points (5 and 6), Tukey's boxplot labels 3 suspected outliers and the Chauvenet-type boxplot labels 2 suspected outliers.",
+  "table_ref": "Figure 2 caption / Section 4.1",
+  "dataset": "Simulated standard normal data with two contaminated points (5 and 6), n=500, seed=1863"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/tiejuntong/ChauBoxplot"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "Simulation of 500 normal variates and two outliers, then applying two simple boxplot rules; trivial computation on any laptop."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2506.06491",
+ "title": "When Tukey meets Chauvenet: a new boxplot criterion for outlier detection",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

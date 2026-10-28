@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Best enhanced classical model R2 on the SAMPL dataset (hydration free energy), reported as 0.91 ± 0.02 by the Gradient Boosting ensemble.",
+  "table_ref": "Table 3 (SAMPL row) / Table 2 (Ensemble (GB) column, SAMPL row)",
+  "dataset": "SAMPL (MoleculeNet), 642 molecules"
+ },
+ "release": "partial",
+ "code_links": [
+  "GitHub repository mentioned in conclusion but no URL given in the PDF"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Small 642-molecule dataset, RDKit/Mordred descriptor computation plus Gradient Boosting with 5-fold CV on CPU; paper claims <5 min training, so most time is install and descriptor generation."
+ },
+ "blockers": [
+  "No code URL is actually provided in the PDF text (only a claim that code is on GitHub), so the exact feature set and hyperparameters must be re-implemented from the description",
+  "D(G) and ζ(G) definitions are given but the exact implementation (e.g., irregularity index t(v)) must be inferred",
+  "Mordred descriptor package can be slow to install/compile"
+ ],
+ "suitable": true,
+ "id": "2604.19840",
+ "title": "Graph-Theoretic Models for the Prediction of Molecular Measurements",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Auto-GLOSH achieves Precision@n = 1.0 on the Banana dataset with global outliers (Table IV, row Banana, column Auto-GLOSH, subcolumn G).",
+  "table_ref": "Table IV",
+  "dataset": "Banana (synthetic 2D dataset from Koncar 2018, with synthetic global outliers)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "basis": "No code is released; the agent must reimplement HDBSCAN* with GLOSH, the CORE-SG multi-minpts hierarchy extraction, Auto-GLOSH elbow detection, and the synthetic outlier generation, then run on a tiny 2D dataset; most time is implementation and debugging, not compute."
+ },
+ "blockers": [
+  "No code released (no repository or supplementary code linked)",
+  "CORE-SG efficient multi-minpts hierarchy extraction must be reimplemented from the cited paper [8]",
+  "Synthetic outlier generation (GMM-based local/clumps, uniform global with Tomek-link filtering) must be reimplemented from description",
+  "Exact random seeds and data splits for the Banana dataset are not specified"
+ ],
+ "suitable": false,
+ "id": "2411.08867",
+ "title": "Unsupervised Parameter-free Outlier Detection using HDBSCAN* Outlier Profiles",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

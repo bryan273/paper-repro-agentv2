@@ -1,0 +1,178 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "Corollary 11 does not specify n or the number of Monte Carlo trials for the k=2 diameter-initialization simulation.",
+  "options": [
+   "n=1000, 200 trials",
+   "n=2000, 100 trials",
+   "n=10000, 50 trials"
+  ],
+  "chosen": "n=2000, 100 trials in d=2, with Δ swept around 2√2",
+  "rationale": "Large enough for the 1−e^{−Ω(n)} probability to be near 1 while keeping the exact LP experiment cheap.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": "with probability 1 −e−Ω∆(n).",
+  "page": 7
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The dimension d is not fixed by Corollary 11; d=2 is a cheap choice but not mandated.",
+  "options": [
+   "d=2",
+   "d=10",
+   "vary d"
+  ],
+  "chosen": "d=2 for the cheapest central check",
+  "rationale": "Theorem/Corollary do not restrict d, and d=2 keeps the transportation LP small and visualizable.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The balanced stochastic ball model allows any rotationally invariant unit-ball-supported noise; the exact noise law is not pinned down.",
+  "options": [
+   "uniform on unit ball",
+   "uniform on unit sphere",
+   "radial law with bounded support"
+  ],
+  "chosen": "uniform on the unit Euclidean ball in d=2",
+  "rationale": "It is the canonical rotationally invariant distribution supported in the unit ball and matches Experiment 16's uniform-ball choice.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "A balanced stochastic ball model is a balanced mixture model in which g has a rotationally invariant distribution supported in the unit Euclidean ball.",
+  "page": 5
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "For k=2 only the minimum separation Δ is constrained, not the orientation or placement of the two planted centers.",
+  "options": [
+   "centers at (−Δ/2,0),(Δ/2,0)",
+   "random orientation",
+   "random center placement"
+  ],
+  "chosen": "centers at (−Δ/2,0) and (Δ/2,0)",
+  "rationale": "BalLOT and exact recovery are rotation/translation equivariant, so this fixes a representative deterministic setup.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "Diameter initialization chooses 'any pair' maximizing distance; ties and duplicate maxima are not resolved.",
+  "options": [
+   "first lexicographic maximizer",
+   "random maximizer",
+   "all maximizers"
+  ],
+  "chosen": "first lexicographic maximizer for reproducibility",
+  "rationale": "The theorem permits any diameter pair, so a deterministic tie-break is faithful and reproducible.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The full BalLOT stopping tolerance is unspecified ('prescribed tolerance').",
+  "options": [
+   "1e-6",
+   "1e-8",
+   "1e-10"
+  ],
+  "chosen": "1e-8 in Frobenius norm for full runs; one-step target does not use stopping",
+  "rationale": "Tight enough to reach stable centroids without material extra cost.",
+  "source": "guess",
+  "risk": "low",
+  "quote": "We terminate once ∥μt+1−μt∥F is below a prescribed tolerance.",
+  "page": 3
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The paper does not name a specific LP solver for the exact transportation assignment.",
+  "options": [
+   "SciPy linprog HiGHS",
+   "MATLAB linprog",
+   "network simplex / POT exact"
+  ],
+  "chosen": "SciPy linprog with HiGHS, or an equivalent exact transportation solver",
+  "rationale": "Any exact LP solver returns the required optimal vertex; library choice is irrelevant up to numerical tolerance.",
+  "source": "convention",
+  "risk": "low",
+  "quote": "When k divides n, the extreme points of Un,k are precisely the integral couplings.",
+  "page": 24
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The recovery metric is defined up to permutation, but the implementation must choose how to compute the best label matching.",
+  "options": [
+   "min over all permutations",
+   "min over k! permutations for small k",
+   "canonical sorting"
+  ],
+  "chosen": "min over all k! permutations (k=2 for target)",
+  "rationale": "Definition 5 explicitly allows permutation of labels, so exact recovery is partition equality.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "up to a permutation of the cluster labels.",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "The coupon-collecting experiment's m formula and ε are given, but tie/failure handling when the sampled adjacency graph is not k cliques is not specified.",
+  "options": [
+   "count as initialization failure",
+   "resample",
+   "pick arbitrary representatives"
+  ],
+  "chosen": "count as failure and do not resample",
+  "rationale": "The paper says the initialization fails outright if the graph is not a disjoint union of k cliques.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the m-coupon-collecting initialization, which first draws m column vectors from X uniformly without replacement.",
+  "page": 7
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The adjacency threshold for coupon collecting must be instantiated for the experiment; the paper gives a formula but not code details.",
+  "options": [
+   "min{Δ−2,2}",
+   "Δ−2 only",
+   "2 only"
+  ],
+  "chosen": "min{Δ−2,2}=1 for Δ=3",
+  "rationale": "This is exactly the paper's declared adjacency rule and gives the stated m=9, k=3 setup.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "Two of these points are declared adjacent if their distance is at most min{∆−2, 2}.",
+  "page": 7
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "The experiment 23 statistic r must be computed from sampled points relative to the unknown planted centers.",
+  "options": [
+   "smallest radius covering all sampled points around their nearest planted center",
+   "max distance to assigned planted center",
+   "smallest enclosing ball"
+  ],
+  "chosen": "smallest r such that every sampled point is within r of a planted center",
+  "rationale": "This matches the figure description and the reported 93.9% at r≤1/2.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "record the smallest r for which every one of the m = 9 sampled points lies in a radius-r ball centered at a planted center.",
+  "page": 21
+ }
+]

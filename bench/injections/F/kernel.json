@@ -1,0 +1,10 @@
+[
+ {
+  "at": "planner->implementer",
+  "type": "false_info",
+  "path": "config.nbins_grid",
+  "value": "[2, 4, 8, 16] (paper Sec 5.1, R12)",
+  "marker": "INJ-F4",
+  "what": "nbins grid is {2,4,8,16}; the paper says {2,3,4,6,8}"
+ }
+]

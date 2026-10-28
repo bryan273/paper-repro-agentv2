@@ -1,0 +1,117 @@
+{
+ "approach": "This is a full_release reproduction of C1: install R if needed, install the CRAN ctsfeatures package, run the paper's printed GeneticSequences outlier snippet, and write results/metrics.json. The R driver uses the author functions total_correlation(features=TRUE), marginal_probabilities, dist, colSums and boxplot(range=1) verbatim, avoiding any rewrite of working package code. reproduce.py orchestrates the R path and also contains a pure-Python contingency that reads the packaged GeneticSequences.rda and evaluates Eq. (18) exactly if R cannot be installed in the sandbox. The final check is the number of top-2 highest outlier scores that lie above the boxplot upper whisker on all 32 sequences.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Python-side orchestration and fallback dependencies: requests for CRAN downloads, rdata for reading the packaged .rda, numpy/scipy for the contingency computation.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "scripts/install_r_ctsfeatures.py",
+   "purpose": "Detect Rscript; if absent on Windows, download the CRAN R installer with requests and run the silent installer; then install ctsfeatures and dependencies from CRAN and verify that GeneticSequences loads with 32 sequences.",
+   "requirement_ids": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "path": "scripts/run_c1.R",
+   "purpose": "Author-code R driver for C1: load GeneticSequences, build categories factor(c('a','g','c','t')), compute cbind(total_correlation(..., features=TRUE), marginal_probabilities(...)), Euclidean dist, colSums outlier scores, boxplot(range=1), and write results/c1_scores.csv plus results/c1_boxplot.png.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "scripts/fallback_c1.py",
+   "purpose": "Pure-Python contingency only if Rscript cannot be installed or the R path fails: download the ctsfeatures CRAN source tarball, extract and read data/GeneticSequences.rda with rdata, compute lag-1 individual psi_ij correlations and marginal probabilities, form the Eq. (18) feature matrix, Euclidean dist, colSums, boxplot(range=1) upper-whisker rule, and write results/c1_scores.csv.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: ensure dependencies, run install_r_ctsfeatures.py, execute scripts/run_c1.R; if R is unavailable or fails, run scripts/fallback_c1.py; read results/c1_scores.csv, verify top-2-vs-flagged count, and write results/metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  }
+ ],
+ "config": {
+  "claim_id": "C1",
+  "dataset": "GeneticSequences from ctsfeatures CRAN package",
+  "n_series": "32 (paper Table 2 / R1)",
+  "categories": "factor(c('a','g','c','t')) as printed in the outlier code; R default levels become a,c,g,t (A3). A common category permutation leaves dB unchanged.",
+  "lag_L": "1 (paper Sec 4.3.2 default; A1)",
+  "total_correlation_features": "TRUE, exposing individual psi_ij(l) terms (R3; A2)",
+  "marginal_probabilities": "TRUE, p_i by observed frequencies over T (R4)",
+  "feature_matrix": "cbind(total_correlation(..., features=TRUE), marginal_probabilities(...)) (R7)",
+  "distance": "dist(features), Euclidean on raw unscaled features (R7; A8)",
+  "outlier_score": "colSums(as.matrix(dist_db)); full matrix includes zero diagonal (R8; A5)",
+  "boxplot_range": "1 (R9; A4)",
+  "outlier_rule": "flag scores above the upper whisker of boxplot(range=1) (R9; A6)",
+  "report_top_k": "2, for verifying the claim value (C1)",
+  "labels_usage": "unsupervised scoring only; classes not used in ranking (A7)",
+  "R_version": "existing Rscript if present, otherwise latest CRAN Windows binary 4.4.x",
+  "cran_repo": "https://cloud.r-project.org",
+  "install_timeout_min": 20,
+  "random_seed": "not applicable; deterministic computation",
+  "output_scores_csv": "results/c1_scores.csv",
+  "output_boxplot_png": "results/c1_boxplot.png",
+  "output_metrics_json": "results/metrics.json"
+ },
+ "steps": [
+  "Create project directories: scripts/, results/, data/.",
+  "Write scripts/install_r_ctsfeatures.py. It checks shutil.which('Rscript'). If missing on Windows, download the current R Windows installer from https://cran.r-project.org/bin/windows/base/ using requests, run it silently with /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=C:\\R, and add C:\\R\\bin to PATH. On Linux, if Rscript is missing, raise a clear exception so reproduce.py can use the fallback.",
+  "In scripts/install_r_ctsfeatures.py, after Rscript is available, run: Rscript -e \"install.packages('ctsfeatures', repos='https://cloud.r-project.org', dependencies=TRUE)\" with a 20-minute timeout.",
+  "Verify installation: Rscript -e \"library(ctsfeatures); data(GeneticSequences); stopifnot(length(GeneticSequences$data)==32); cat('OK')\".",
+  "Write scripts/run_c1.R using the paper's printed snippet: library(ctsfeatures); data(GeneticSequences); categories <- factor(c('a','g','c','t')); features <- cbind(total_correlation(GeneticSequences$data, categories=categories, features=TRUE), marginal_probabilities(GeneticSequences$data, categories=categories)); dist_db <- as.matrix(dist(features)); outlier_score <- colSums(dist_db); bp <- boxplot(outlier_score, range=1, plot=FALSE).",
+  "In scripts/run_c1.R, save results/c1_scores.csv with columns index, score, flagged=outlier_score > bp$stats[5], and top2=index %in% order(outlier_score, decreasing=TRUE)[1:2]. Also save results/c1_boxplot.png with boxplot(outlier_score, range=1).",
+  "Write scripts/fallback_c1.py as a contingency. It downloads the ctsfeatures source tarball from CRAN (parse PACKAGES for the current version), extracts data/GeneticSequences.rda, reads it with rdata, converts each sequence to bases, and computes p_i plus lag-1 psi_ij correlations over t=1..T-1 using Pearson correlation of the binary indicators 1{X_t=i} and 1{X_{t+1}=j}.",
+  "In scripts/fallback_c1.py, build the 32 x (16+4) feature matrix for K=4 categories at L=1, compute Euclidean pairwise distances with scipy/numpy, outlier_score as column sums including the zero diagonal, and apply the R type-7 boxplot rule with range=1 to compute the upper whisker and flagged points. Write results/c1_scores.csv in the same schema.",
+  "Write reproduce.py. It installs requirements.txt, runs scripts/install_r_ctsfeatures.py, then executes Rscript scripts/run_c1.R. If Rscript is absent or the R script fails, reproduce.py runs scripts/fallback_c1.py instead.",
+  "reproduce.py reads results/c1_scores.csv, computes value = number of top-2 highest-score indices that are flagged, and writes results/metrics.json with claim_id, value, target=2, top2_indices, top2_scores, flagged_indices, upper_whisker, n_flagged, method ('R ctsfeatures' or 'python fallback'), and pass boolean using the 10% relative tolerance effectively requiring value==2.",
+  "Run the smoke test before the full run: load the package data, compute features for the first 3 sequences, assert feature dimension 3 x 20 for L=1 and distance dimension 3 x 3, and check no NA/Inf.",
+  "Run the full entrypoint: python reproduce.py. Confirm results/metrics.json reports value=2 and the two top scores are the two flagged above-whisker points."
+ ],
+ "smoke_test": "Run a tiny data-flow check: Rscript -e 'library(ctsfeatures); data(GeneticSequences); categories<-factor(c(\"a\",\"g\",\"c\",\"t\")); f<-cbind(total_correlation(GeneticSequences$data[1:3], categories=categories, features=TRUE), marginal_probabilities(GeneticSequences$data[1:3], categories=categories)); stopifnot(nrow(f)==3, ncol(f)==20); d<-as.matrix(dist(f)); stopifnot(all(dim(d)==c(3,3))); print(d)'. The Python fallback smoke test is the same on the first 3 extracted sequences. This proves loading, feature extraction, distance construction and output schema in under one minute.",
+ "intermediate_checks": [
+  "Dataset: GeneticSequences has exactly 32 sequences; bases are only a,c,g,t; sequence lengths are variable and > 1; classes are present but not used for scoring.",
+  "Feature dimension: with L=1 and K=4 categories, total_correlation(features=TRUE) should contribute 16 individual psi_ij terms and marginal_probabilities should contribute 4 p_i terms, so features is 32 x 20.",
+  "Feature sanity: no NA, NaN or Inf in the feature matrix; each marginal-probability group sums to 1 per sequence.",
+  "Distance sanity: dist_db is 32 x 32, symmetric, non-negative, and has zero diagonal; outlier_score equals colSums(dist_db) and is invariant to excluding the diagonal for ranking.",
+  "Outlier sanity: boxplot(range=1) upper whisker is computed from the scores; top-2 indices should be the two points above the upper whisker. If not, check category-order consistency, that features=TRUE returns individual correlations, that L=1, that features are not standardized, and that range=1 is used.",
+  "If both R and the Python fallback are available, compare the first 3 feature rows and the top-2 ranking between the two paths as a cross-check."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~12-18 minutes: 5-10 minutes one-time R + ctsfeatures CRAN binary/dependency install; 1 minute smoke test; under 1 minute for the full 32-series C1 computation; 3-5 minutes buffer for CRAN download/install variance. The optional C2-C4 checks would add about 2 minutes but are not needed for the target C1."
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Ours achieves 34.21 dB PSNR / 0.969 SSIM on GoPro (Table 1), demonstrating the benefit of the kernel-prior Frequency Integration Module for blind image deblurring.",
+  "table_ref": "Table 1",
+  "dataset": "GoPro"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 30,
+  "ref_minutes": 100000,
+  "gpu_speedup": 30,
+  "basis": "The target is a full GoPro-trained deblurring result requiring the unreleased implementation plus three-stage training on 8 NVIDIA V100 GPUs (400k kernel-estimator iterations, backbone/FIM training, and 200k fine-tuning iterations), which is weeks on a CPU-only laptop even with reduced settings."
+ },
+ "blockers": [
+  "No source code or pretrained model released; paper only says source code will be available soon",
+  "Training target requires 8 NVIDIA V100 GPUs and a multi-stage schedule totaling hundreds of thousands of iterations",
+  "GoPro/HIDE/RealBlur training and evaluation data are several GB and not practical to train on CPU within hours",
+  "The headline result also depends on reimplementing or retraining the FFTFormer backbone and the kernel-estimation module"
+ ],
+ "suitable": false,
+ "id": "2504.14664",
+ "title": "Frequency-domain Learning with Kernel Prior for Blind Image Deblurring",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

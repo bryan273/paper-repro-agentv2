@@ -1,0 +1,168 @@
+{
+ "approach": "No author implementation is available, so the plan reimplements only the match-target claim C1 with public QM7b data and scikit-learn. It downloads the QM7b .mat file, loads the 7,211 x 14 property matrix and the atomic-charge matrix, derives total atom count including hydrogens, z-scores the properties on the full dataset, performs a fixed-seed 90/10 split, fits a single CART regression tree constrained to 101 leaves, and evaluates test MSE/RMSE/MAE/Pearson R. A smoke mode and sanity baselines are included; QM9, tree-SNE, SUOD, and intrinsic-dimension claims are intentionally out of scope for this budget.",
+ "files": [
+  {
+   "path": "requirements.txt",
+   "purpose": "Pin the small CPU dependency set: numpy, scipy, pandas, scikit-learn, requests.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/__init__.py",
+   "purpose": "Package marker for importable source modules.",
+   "requirement_ids": []
+  },
+  {
+   "path": "src/config.py",
+   "purpose": "Single source of truth for dataset URLs, expected shapes, split seed, model hyperparameters, tolerance, and output paths.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "src/download.py",
+   "purpose": "Download qm7b.mat using requests with mirror fallbacks, validate file size, and record SHA-256.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "src/data.py",
+   "purpose": "Load qm7b.mat with scipy.io.loadmat, extract X and Z, derive atom counts, z-score X, perform the 90/10 split, and return numpy arrays plus metadata.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4"
+   ]
+  },
+  {
+   "path": "src/model.py",
+   "purpose": "Build and fit the DecisionTreeRegressor constrained to 101 leaves, expose n_leaves and feature importances.",
+   "requirement_ids": [
+    "R5",
+    "R6"
+   ]
+  },
+  {
+   "path": "src/evaluate.py",
+   "purpose": "Compute MSE, RMSE, MAE, Pearson R, tolerance checks, and write the final metrics JSON.",
+   "requirement_ids": [
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "CLI entrypoint: full run writes results/metrics.json; --smoke runs a tiny data-flow check and writes results/smoke_metrics.json.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8"
+   ]
+  }
+ ],
+ "config": {
+  "target_claim": "C1",
+  "dataset": {
+   "name": "QM7b",
+   "expected_n_molecules": "7211 (R1, paper Sec II)",
+   "expected_n_features": "14 (R1, paper Sec II)",
+   "source_urls": [
+    "https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/qm7b.mat",
+    "http://quantum-machine.org/datasets/qm7b.mat",
+    "http://quantum-machine.org/data/qm7b.mat"
+   ],
+   "local_path": "data/qm7b.mat"
+  },
+  "preprocessing": {
+   "feature_scaling": "StandardScaler fit on full X before split; zero mean, unit variance (R2/R3; A3)",
+   "target": "number of atoms including hydrogens, derived from Z > 0 per row; raw counts, not z-scored (R4; A4/A7)",
+   "round_predictions": "False (A13)"
+  },
+  "split": {
+   "test_fraction": "0.1 (R5)",
+   "random_state": "0 (A2; paper seed unspecified)",
+   "shuffle": "True (R5)",
+   "expected_n_train": "6489",
+   "expected_n_test": "722"
+  },
+  "model": {
+   "implementation": "sklearn.tree.DecisionTreeRegressor (A1)",
+   "criterion": "squared_error (A1)",
+   "splitter": "best (A1)",
+   "max_leaf_nodes": "101 (paper nbrOfRules; A1/A12)",
+   "min_samples_leaf": "1 (A1 sklearn default)",
+   "max_depth": "None (A1)",
+   "min_samples_split": "2 (A1 sklearn default)",
+   "random_state": "0 (A2)",
+   "ccp_alpha": "0.0 (A1; no pruning beyond leaf cap)"
+  },
+  "metrics": {
+   "primary": "MSE (C1)",
+   "secondary": [
+    "RMSE",
+    "MAE",
+    "Pearson R",
+    "nbrOfRules"
+   ],
+   "R_definition": "Pearson correlation coefficient between y_true and y_pred (A6)",
+   "nbrOfRules_definition": "number of terminal leaves in the fitted tree (A12)"
+  },
+  "tolerance": {
+   "type": "relative",
+   "value": "0.1 (10% band around paper MSE)",
+   "paper_mse": 0.1397,
+   "acceptable_mse_range": "[0.12573, 0.15367]"
+  },
+  "smoke": {
+   "n_rows": 200,
+   "test_fraction": 0.2,
+   "max_leaf_nodes": 20,
+   "random_state": "0"
+  },
+  "output": {
+   "metrics_json": "results/metrics.json",
+   "smoke_json": "results/smoke_metrics.json"
+  }
+ },
+ "steps": [
+  "Create the project skeleton and requirements.txt; confirm numpy, scipy, pandas, scikit-learn, and requests are importable.",
+  "Implement src/config.py with the QM7b URLs, expected shapes, preprocessing choices, seed 0, DecisionTreeRegressor(max_leaf_nodes=101), and output paths.",
+  "Implement src/download.py: try each configured URL with requests, stream to data/qm7b.mat, verify file size is plausible (>1 MB), and compute SHA-256.",
+  "Implement src/data.py: load data/qm7b.mat with scipy.io.loadmat; inspect keys; extract X, transpose if shape is (14,7211), and validate it becomes (7211,14); extract Z and derive y=(Z>0).sum(axis=1), with a clear error if Z is absent; validate y is integer, finite, and max <= 23.",
+  "In src/data.py, fit StandardScaler on the full X matrix, transform X, then call train_test_split with test_size=0.1, random_state=0, shuffle=True; return X_train, X_test, y_train, y_test, scaler, and metadata.",
+  "Implement src/model.py: instantiate DecisionTreeRegressor(criterion='squared_error', max_leaf_nodes=101, random_state=0), fit on training data, and expose tree_.n_leaves and feature_importances_.",
+  "Implement src/evaluate.py: compute MSE, RMSE, MAE, Pearson R via np.corrcoef, and nbrOfRules; compare MSE to the 10% band; assemble a JSON object containing observed metrics, paper values, split sizes, model config, assumptions A1/A2/A3/A4/A6/A7/A12/A13, and download SHA-256.",
+  "Implement reproduce.py with --smoke: full mode loads/downloads QM7b, fits the 101-leaf tree, evaluates on the test split, and writes results/metrics.json; smoke mode uses the first 200 rows, an 80/20 split, and max_leaf_nodes=20, then writes results/smoke_metrics.json.",
+  "Run the smoke test first and verify shapes, finite values, integer targets, and that the smoke tree has <=20 leaves.",
+  "Run the full command python reproduce.py and verify nbrOfRules is exactly 101 and test MSE is inside [0.12573, 0.15367]. If MSE is outside but nbrOfRules is correct, record the primary result and optionally run a documented seed-sweep diagnostic (seeds 0-4) without changing the official seed-0 metric.",
+  "Inspect results/metrics.json for all required C1 fields and confirm the file is valid JSON."
+ ],
+ "smoke_test": "python reproduce.py --smoke: downloads/loads QM7b if needed, takes the first 200 rows, z-scores 14 features, does an 80/20 split, fits DecisionTreeRegressor(max_leaf_nodes=20), prints X shapes, target min/max, finite checks, n_leaves, and writes results/smoke_metrics.json.",
+ "intermediate_checks": [
+  "Downloaded data/qm7b.mat exists, size is plausible, and SHA-256 is recorded.",
+  "scipy.io.loadmat exposes X with shape (7211,14) after any needed transpose; no NaN or inf values; all 14 columns are nonconstant.",
+  "Z has first dimension 7211; derived atom counts are positive integers, max <= 23, and include hydrogens (some atomic numbers equal 1).",
+  "Report atom-count min/max/mean/std and confirm the distribution is consistent with QM7b molecules of up to 23 atoms including hydrogens.",
+  "After StandardScaler, feature means are approximately 0 and standard deviations approximately 1.",
+  "Train/test split sizes are 6489/722 and train/test target means and standard deviations are similar.",
+  "The full tree has n_leaves == 101; record depth and top feature importances.",
+  "Sanity baselines: mean-predictor test MSE equals test-target variance; a LinearRegression baseline is fit for comparison; the tree MSE should be far below the mean baseline and near 0.1397.",
+  "All reported metrics are finite, Pearson R is in [-1,1], and the 10% tolerance check is explicitly stored in the JSON."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 10 minutes total on CPU: 2-3 minutes for environment checks and QM7b download, <1 minute for the smoke run, <1 minute for the full 101-leaf tree fit/evaluation, and 2-3 minutes for sanity baselines/inspection/JSON validation. No GPU is needed. If the primary seed-0 MSE is outside tolerance, a 2-minute optional seed-sweep diagnostic is allowed, but the official output remains the fixed-seed C1 run."
+}

@@ -1,0 +1,269 @@
+{
+ "title": "MNAR-k-means: A k-means Clustering for Data Missing Not at Random with Magnitude-Decaying Probability",
+ "summary": "The paper addresses k-means clustering for incomplete data under missing-not-at-random mechanisms, where k-POD-style mean imputation biases cluster centers. It proposes MNAR-k-means, which adds a penalty on imputed values at missing positions, interprets this as maximizing a magnitude-decaying missingness probability, and optimizes the loss by alternating updates with linear complexity. Experiments on synthetic and real data show lower CER and MSE than k-POD and several imputation baselines, with theoretical consistency results for the estimated centers.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "On the Lymphoma microarray data with artificial MNAR0 missingness at 30%, the proposed method achieves CER 0.029, much lower than k-POD at 0.279.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Lymphoma microarray (n=62, p=4026, k=3)",
+   "split": "artificial MNAR0 30% missingness; 10 repetitions",
+   "value": 0.029,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Table 3, MNAR0 row 30%, Proposed column",
+   "config_for_value": "Lymphoma data, k=3, MNAR0 missingness set to 30%; proposed lambda selected by instability criterion from {2,4,6,8,10}; 10 repetitions.",
+   "reported_spread": "SD 0.01 in brackets",
+   "est_compute": "CPU, seconds to minutes for n=62, p=4026, k=3",
+   "quote": "30% 0.297 (0.00) 0.279 (0.00) 0.297 (0.00) 0.279 (0.00) 0.029 (0.01)",
+   "page": 14
+  },
+  {
+   "id": "C2",
+   "statement": "On the Lymphoma data with artificial MNAR1 missingness at 10%, the proposed method achieves CER 0.080.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Lymphoma microarray (n=62, p=4026, k=3)",
+   "split": "artificial MNAR1 10% missingness; 10 repetitions",
+   "value": 0.08,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Table 3, MNAR1 row 10%, Proposed column",
+   "config_for_value": "Lymphoma data, k=3, MNAR1 missingness set to 10%; proposed lambda selected by instability criterion from {2,4,6,8,10}; 10 repetitions.",
+   "reported_spread": "SD 0.11 in brackets",
+   "est_compute": "CPU, seconds to minutes for n=62, p=4026, k=3",
+   "quote": "10% 0.297 (0.00) 0.295 (0.01) 0.297 (0.00) 0.295 (0.01) 0.080 (0.11)",
+   "page": 14
+  },
+  {
+   "id": "C3",
+   "statement": "On the Lymphoma data with artificial MNAR1 missingness at 30%, the proposed method achieves CER 0.034.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Lymphoma microarray (n=62, p=4026, k=3)",
+   "split": "artificial MNAR1 30% missingness; 10 repetitions",
+   "value": 0.034,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Table 3, MNAR1 row 30%, Proposed column",
+   "config_for_value": "Lymphoma data, k=3, MNAR1 missingness set to 30%; proposed lambda selected by instability criterion from {2,4,6,8,10}; 10 repetitions.",
+   "reported_spread": "SD 0.02 in brackets",
+   "est_compute": "CPU, seconds to minutes for n=62, p=4026, k=3",
+   "quote": "30% 0.297 (0.00) 0.283 (0.01) 0.296 (0.00) 0.283 (0.01) 0.034 (0.02)",
+   "page": 14
+  },
+  {
+   "id": "C4",
+   "statement": "On the Lymphoma data with artificial MNAR2 missingness at 30%, the proposed method achieves CER 0.040.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Lymphoma microarray (n=62, p=4026, k=3)",
+   "split": "artificial MNAR2 30% missingness; 10 repetitions",
+   "value": 0.04,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Table 3, MNAR2 row 30%, Proposed column",
+   "config_for_value": "Lymphoma data, k=3, MNAR2 missingness set to 30%; proposed lambda selected by instability criterion from {2,4,6,8,10}; 10 repetitions.",
+   "reported_spread": "SD 0.01 in brackets",
+   "est_compute": "CPU, seconds to minutes for n=62, p=4026, k=3",
+   "quote": "30% 0.297 (0.00) 0.279 (0.00) 0.291 (0.00) 0.279 (0.00) 0.040 (0.01)",
+   "page": 14
+  },
+  {
+   "id": "C5",
+   "statement": "On the Lymphoma data with artificial MNAR0 missingness at 50%, the proposed method achieves CER 0.093.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Lymphoma microarray (n=62, p=4026, k=3)",
+   "split": "artificial MNAR0 50% missingness; 10 repetitions",
+   "value": 0.093,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Table 3, MNAR0 row 50%, Proposed column",
+   "config_for_value": "Lymphoma data, k=3, MNAR0 missingness set to 50%; proposed lambda selected by instability criterion from {2,4,6,8,10}; 10 repetitions.",
+   "reported_spread": "SD 0.07 in brackets",
+   "est_compute": "CPU, seconds to minutes for n=62, p=4026, k=3",
+   "quote": "50% 0.297 (0.00) 0.283 (0.01) 0.294 (0.01) 0.295 (0.01) 0.093 (0.07)",
+   "page": 14
+  },
+  {
+   "id": "C6",
+   "statement": "On the real Usoskin scRNA-seq data with about 73% missingness, the proposed method reaches CER 0.057.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Usoskin scRNA-seq (n=622, p=452, k=4)",
+   "split": "real missingness, about 73% total; average of 30 repetitions",
+   "value": 0.057,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Figure 7, Proposed panel",
+   "config_for_value": "Usoskin data, k=4, 452 genes with <90% missing; best lambda from {0.001,0.01,0.1,1,10} selected by instability criterion.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes for n=622, p=452, k=4",
+   "quote": "It can be seen that the proposed method has the lowest CER value",
+   "page": 14
+  },
+  {
+   "id": "C7",
+   "statement": "On the same Usoskin scRNA-seq data, k-POD reaches CER 0.132, worse than the proposed method.",
+   "metric": "Classification Error Rate (CER)",
+   "dataset": "Usoskin scRNA-seq (n=622, p=452, k=4)",
+   "split": "real missingness, about 73% total; average of 30 repetitions",
+   "value": 0.132,
+   "unit": "CER fraction, lower is better",
+   "higher_is_better": false,
+   "table_ref": "Figure 7, k-POD panel",
+   "config_for_value": "Usoskin data, k=4, k-POD baseline on the same missing matrix.",
+   "reported_spread": null,
+   "est_compute": "CPU, minutes for n=622, p=452, k=4",
+   "quote": "k-POD fails to discriminate TH cells and PEP cells",
+   "page": 14
+  },
+  {
+   "id": "C8",
+   "statement": "On p=50, k=3 synthetic data with 10% MNAR0 missingness, the proposed algorithm takes 6.833 iterations on average.",
+   "metric": "number of iterations to convergence",
+   "dataset": "synthetic Gaussian data (p=50, k=3)",
+   "split": "MNAR0 10% missingness; 30 repetitions",
+   "value": 6.833,
+   "unit": "iterations, lower is faster",
+   "higher_is_better": false,
+   "table_ref": "Table 1, MNAR0 column, 10% row",
+   "config_for_value": "Fully observed data with p=50 and k=3, MNAR0 missingness at 10%; 30 repetitions; tmax as in Algorithm 1.",
+   "reported_spread": "4.70 SD in brackets",
+   "est_compute": "CPU, seconds per run for p=50, k=3",
+   "quote": "10% 6.833 (4.70) 5.867 (2.66) 6.933 (3.16)",
+   "page": 10
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "The user hint points to Figure 2 (k=2, a=2, lambda*=0.1), but that panel is graphical and prints no exact CER value. Among numeric claims, C1 is the cheapest central comparison showing the paper's proposed-vs-k-POD improvement: Lymphoma n=62, proposed 0.029 vs k-POD 0.279."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.03,
+  "why": "Rule 1: Table 3 reports SD 0.01 for the target C1 value, so the absolute band is 3 x 0.01 = 0.03."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Implement the unconstrained MNAR-k-means objective with binary memberships U and U1_k=1_n.",
+   "cite": "Section 4.1, Eq.(7)",
+   "quote": "min U,M ∥PΩ(X −UM)∥2 F + λ∥PΩc(UM)∥2 F",
+   "page": 7
+  },
+  {
+   "id": "R2",
+   "stmt": "Use the expanded loss summing observed squared residuals plus lambda times squared center values at missing positions.",
+   "cite": "Section 4.1, Eq.(8)",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R3",
+   "stmt": "Update each membership by assigning the point to the center minimizing observed squared distances plus lambda times missing-feature center squares.",
+   "cite": "Algorithm 1, line 3",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R4",
+   "stmt": "Update each center coordinate as observed assigned sum divided by observed assigned count plus lambda times missing assigned count.",
+   "cite": "Algorithm 1, line 4",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R5",
+   "stmt": "Generate synthetic MNAR missingness with observed probability 1-exp(-lambda* x_ij^2), equivalently missing probability exp(-lambda* x_ij^2).",
+   "cite": "Assumption 1, Eq.(5); Section 5.1",
+   "quote": "Pr (xij is observed | x1, . . . , xn) = 1 −exp(−λ∗x2 ij)",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Initialize centers by column-mean imputation followed by k-means++ on the imputed complete matrix.",
+   "cite": "Section 4.3",
+   "quote": "First, we impute missing values of X by corresponding columns’ means of observed values",
+   "page": 8
+  },
+  {
+   "id": "R7",
+   "stmt": "Evaluate clustering with the pairwise Classification Error Rate definition.",
+   "cite": "Section 5",
+   "quote": "CER( bC, C∗∗) = 2 {n(n −1)}−1 P i>i′ |1 b C(i,i′) −1C∗∗(i,i′)|",
+   "page": 8
+  },
+  {
+   "id": "R8",
+   "stmt": "Evaluate center estimation error by sum_l min_l' squared Euclidean distance between estimated and true centers.",
+   "cite": "Section 5",
+   "quote": "MSE( c M, M ∗∗) = Pk l=1 minl′=1,...,k ∥ˆμl −μ∗∗ l′ ∥2",
+   "page": 8
+  },
+  {
+   "id": "R9",
+   "stmt": "Run 30 repetitions and report averaged CER/MSE values with standard deviations.",
+   "cite": "Section 5.1",
+   "quote": "The averaged values of 30 repetitions are reported, as well as standard deviations.",
+   "page": 8
+  },
+  {
+   "id": "R10",
+   "stmt": "Implement k-POD as the proposed algorithm with lambda equal to zero.",
+   "cite": "Section 5.2",
+   "quote": "We use the proposed algorithm with a tuning parameter equal to zero as a substitute of the original R package kpodclustr",
+   "page": 10
+  },
+  {
+   "id": "R11",
+   "stmt": "Use fully observed k-means via Lloyd's algorithm as the complete-data benchmark.",
+   "cite": "Section 5.2",
+   "quote": "The built-in R function kmeans with Lloyd’s algorithm Lloyd [1982] is used.",
+   "page": 9
+  },
+  {
+   "id": "R12",
+   "stmt": "For synthetic data, exclude data points for which all coordinates are missing.",
+   "cite": "Section 5.1",
+   "quote": "we exclude those data points that all elements xij are missing",
+   "page": 8
+  },
+  {
+   "id": "R13",
+   "stmt": "For Lymphoma experiments, select lambda by the instability criterion from the stated candidate set.",
+   "cite": "Section 6.1",
+   "quote": "The tuning parameter λ of the proposed method is selected by instability criterion from a set of candidates {2, 4, 6, 8, 10}.",
+   "page": 13
+  },
+  {
+   "id": "R14",
+   "stmt": "Use 100 initializations and a maximum of 100 iterations for the comparison experiments where stated.",
+   "cite": "Section 5.2",
+   "quote": "In the implementation of all methods, 100 initializations and a maximum of 100 iterations are used.",
+   "page": 10
+  }
+ ],
+ "data": [
+  {
+   "name": "Synthetic Gaussian data for Figure 2",
+   "how_to_get": "Generate locally with the paper's simulation code; no external download."
+  },
+  {
+   "name": "Lymphoma microarray dataset",
+   "how_to_get": "Used by Jin and Wang (2016); obtain from the original source or the paper's GitHub repository. It has n=62, p=4026, k=3."
+  },
+  {
+   "name": "Usoskin scRNA-seq dataset",
+   "how_to_get": "Usoskin et al. (2015) single-cell dataset; use the 622 cells and 452 genes with missingness less than 90% per gene, as in the paper."
+  }
+ ],
+ "code_links": [
+  "https://github.com/GXguanxin/MNAR-k-means"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2606.31253",
+  "kind": "arxiv",
+  "arxiv_id": "2606.31253",
+  "url": "https://arxiv.org/abs/2606.31253",
+  "title": "MNAR-k-means: A k-means Clustering for Data Missing Not at Random with Magnitude-Decaying Probability",
+  "pages": 30
+ }
+}

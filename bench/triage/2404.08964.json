@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "CSM achieves 0.9708 classification accuracy on CIFAR-10, compared to 0.9805 for linear probing and 0.7212 for random concept selection.",
+  "table_ref": "Table 1, row CSM, column CIFAR-10",
+  "dataset": "CIFAR-10"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 10,
+  "ref_minutes": 300,
+  "gpu_speedup": 5,
+  "basis": "Requires reimplementing the two-stage CSM pipeline (greedy concept selection over 13,933 concepts and mask fine selection) from scratch, plus CLIP-ViT-L/14 inference on 50k CIFAR-10 images; no code is released."
+ },
+ "blockers": [
+  "No code or configuration released",
+  "Requires reimplementation of the full CSM pipeline from the paper description",
+  "CLIP-ViT-L/14 inference on 50k images is CPU-heavy without a GPU"
+ ],
+ "suitable": false,
+ "id": "2404.08964",
+ "title": "Understanding Multimodal Deep Neural Networks: A Concept Selection View",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

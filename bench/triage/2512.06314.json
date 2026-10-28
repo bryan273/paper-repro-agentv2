@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Toy example: the bag-and-whisker plot flags only z8=(19,20) as an outlier, with data-adaptive inflation factor λ=8 (max(λstat, λdata)) under FWER/FDR/PFER control",
+  "table_ref": "Section 4, Step 5 (toy example, n=8)",
+  "dataset": "Toy dataset of 8 bivariate points given in Section 4"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/seanq31/BagWhiskerPlot"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 20,
+  "gpu_speedup": null,
+  "basis": "The target is an 8-point hand-verifiable toy example; installing R plus the BagWhiskerPlot/aplpack/MASS packages and running the pipeline takes minutes on a CPU."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2512.06314",
+ "title": "The Bag-and-Whisker Plot: A New Bagplot for Bivariate Data",
+ "pages": 36,
+ "model": "DeepSeek-V4.1-Flash"
+}

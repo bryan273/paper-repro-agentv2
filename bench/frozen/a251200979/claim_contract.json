@@ -1,0 +1,269 @@
+{
+ "title": "An Approach to Variable Clustering: K-means in Transposed Data and its Relationship with Principal Component Analysis",
+ "summary": "The paper addresses the underexplored link between PCA and K-means when K-means clusters variables rather than observations. It standardizes the data, applies PCA to obtain loadings, transposes the standardized matrix, runs K-means on variables, and quantifies each variable cluster's contribution to each principal component as S_{k,j} and normalized P_{k,j}. On USArrests with K=2, the Murder/Assault/Rape cluster has S_{2,PC1}=1.662, dominating PC1, which explains 62.5% of variance.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "Cluster 2 (Murder, Assault, Rape) contribution to PC1, S_{2,PC1}, is 1.662.",
+   "metric": "cluster contribution S_{k,j}",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 1.662,
+   "unit": "sum of absolute PCA loadings",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row cluster 2, column PC1",
+   "config_for_value": "PCA on standardized USArrests (4 variables); K-means on transposed standardized data with K=2; C2={Murder, Assault, Rape}; absolute PCA loadings from Table II",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "Cluster 2 (Murder, Assault, Rape) contributes significantly more to PC1 (1.65) than Cluster 1 (UrbanPop) (0.28).",
+   "page": 6
+  },
+  {
+   "id": "C2",
+   "statement": "Cluster 1 (UrbanPop) contribution to PC1, S_{1,PC1}, is 0.278.",
+   "metric": "cluster contribution S_{k,j}",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 0.278,
+   "unit": "sum of absolute PCA loadings",
+   "higher_is_better": true,
+   "table_ref": "Table IV, row cluster 1, column PC1",
+   "config_for_value": "PCA on standardized USArrests (4 variables); K-means on transposed standardized data with K=2; C1={UrbanPop}; absolute PCA loadings from Table II",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "Cluster 2 (Murder, Assault, Rape) contributes significantly more to PC1 (1.65) than Cluster 1 (UrbanPop) (0.28).",
+   "page": 6
+  },
+  {
+   "id": "C3",
+   "statement": "Cluster 2 proportion of contribution to PC1, P_{2,PC1}, is 0.857.",
+   "metric": "contribution proportion P_{k,j}",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 0.857,
+   "unit": "proportion (0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table VI, row cluster 2, column PC1",
+   "config_for_value": "P_{2,PC1}=S_{2,PC1}/(S_{1,PC1}+S_{2,PC1}) using K=2 and C2={Murder, Assault, Rape}",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "The contribution ratio confirms this: 0.85 for Cluster 2 versus 0.15 for Cluster 1.",
+   "page": 6
+  },
+  {
+   "id": "C4",
+   "statement": "Cluster 1 proportion of contribution to PC1, P_{1,PC1}, is 0.143.",
+   "metric": "contribution proportion P_{k,j}",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 0.143,
+   "unit": "proportion (0-1)",
+   "higher_is_better": true,
+   "table_ref": "Table VI, row cluster 1, column PC1",
+   "config_for_value": "P_{1,PC1}=S_{1,PC1}/(S_{1,PC1}+S_{2,PC1}) using K=2 and C1={UrbanPop}",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "The contribution ratio confirms this: 0.85 for Cluster 2 versus 0.15 for Cluster 1.",
+   "page": 6
+  },
+  {
+   "id": "C5",
+   "statement": "PC1 explains 62.5% of the variance in USArrests.",
+   "metric": "explained variance percentage",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 62.5,
+   "unit": "% variance explained",
+   "higher_is_better": true,
+   "table_ref": "Section IV-C USArrests example; also Figure 2 on page 7",
+   "config_for_value": "PCA on standardized 4-variable USArrests",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "This means that PC1 is strongly influenced by the variables Murder, Assault and Rape. PC1 explains 62.5% of the variance",
+   "page": 6
+  },
+  {
+   "id": "C6",
+   "statement": "PC2 explains 25% of the variance in USArrests.",
+   "metric": "explained variance percentage",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 25.0,
+   "unit": "% variance explained",
+   "higher_is_better": true,
+   "table_ref": "Section IV-C USArrests example",
+   "config_for_value": "PCA on standardized 4-variable USArrests",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "This indicates that both Cluster 1 variables (Murder, Assault, Rape) and the Cluster 2 variable (UrbanPop) influence PC2. PC2 explains 25% of the variance.",
+   "page": 6
+  },
+  {
+   "id": "C7",
+   "statement": "Assault has PCA loading 0.583 on PC1 in USArrests.",
+   "metric": "absolute PCA loading",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 0.583,
+   "unit": "PCA loading (absolute value)",
+   "higher_is_better": true,
+   "table_ref": "Table II, row Assault, column PC1",
+   "config_for_value": "PCA on standardized 4-variable USArrests",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "Murder 0.536 0.418 0.341 0.649 Assault 0.583 0.188 0.268 0.743",
+   "page": 5
+  },
+  {
+   "id": "C8",
+   "statement": "UrbanPop has PCA loading 0.873 on PC2 in USArrests.",
+   "metric": "absolute PCA loading",
+   "dataset": "USArrests",
+   "split": "full dataset (n=50 states, p=4 variables), no train/test split",
+   "value": 0.873,
+   "unit": "PCA loading (absolute value)",
+   "higher_is_better": true,
+   "table_ref": "Table II, row UrbanPop, column PC2",
+   "config_for_value": "PCA on standardized 4-variable USArrests",
+   "reported_spread": null,
+   "est_compute": "CPU, <1 s",
+   "quote": "UrbanPop 0.278 0.873 0.378 0.167 Rape 0.543 0.167 0.818 0.089",
+   "page": 5
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "It is the paper's central USArrests result and the user's target: a single PCA plus K-means on a 50x4 dataset, no training or heavy compute, and it directly verifies the S_{2,PC1}=1.662 contribution."
+ },
+ "tolerance": {
+  "type": "relative",
+  "value": 0.1,
+  "why": "Rule 4: no repeated-run std is reported, and S_{2,PC1} is a numeric contribution rather than an accuracy/F1/AUC score; use 10% relative tolerance."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Standardize each variable using its mean and sample standard deviation (n-1 denominator) before PCA.",
+   "cite": "Section III.A and Algorithm 1 lines 2-11",
+   "quote": "The scaled (normalized) data set Z with zij ∈Z, is obtained by the transformation:",
+   "page": 3
+  },
+  {
+   "id": "R2",
+   "stmt": "Apply PCA to the standardized matrix Z and obtain the loading matrix L.",
+   "cite": "Section III.B and Algorithm 1 line 13",
+   "quote": "PCA is applied to the Z matrix to find a linear transformation that projects the data into a new lower dimensional space, maximizing the retained variance.",
+   "page": 3
+  },
+  {
+   "id": "R3",
+   "stmt": "Construct the absolute-loading matrix La from L.",
+   "cite": "Section III.B and Algorithm 1 line 14",
+   "quote": "Let La be the matrix of absolute loadings, where La = |ljk| (|ljk| ∈L).",
+   "page": 3
+  },
+  {
+   "id": "R4",
+   "stmt": "Transpose the standardized data matrix Z to get ZT of size p x n.",
+   "cite": "Section III.C and Algorithm 1 line 16",
+   "quote": "Let ZT be the transposed matrix of Z, of dimension p × n.",
+   "page": 3
+  },
+  {
+   "id": "R5",
+   "stmt": "Use K=2 for USArrests, as reported from the elbow method.",
+   "cite": "Section IV.A",
+   "quote": "In USArrests, two clusters were obtained by means of the elbow method",
+   "page": 5
+  },
+  {
+   "id": "R6",
+   "stmt": "Run Euclidean K-means on the transposed standardized data ZT, minimizing within-cluster squared distances.",
+   "cite": "Section III.D and Algorithm 1 line 19",
+   "quote": "The objective of K-means is to partition the transposed data set ZT into K clusters",
+   "page": 3
+  },
+  {
+   "id": "R7",
+   "stmt": "For USArrests K=2, obtain C1={UrbanPop} and C2={Murder, Assault, Rape}.",
+   "cite": "Section IV-B and Table IV",
+   "quote": "Cluster 2 C2 groups the variables Murder, Assault and Rape; Cluster 2 C1 contains the variable UrbanPop.",
+   "page": 5
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute S_{k,j} as the sum of absolute PCA loadings of variables in cluster k on component j.",
+   "cite": "Section III.E and Algorithm 1 line 24",
+   "quote": "The contribution Sk,j of each cluster k to each principal component j is calculated as the sum of the absolute loadings",
+   "page": 4
+  },
+  {
+   "id": "R9",
+   "stmt": "Compute P_{k,j} by dividing S_{k,j} by the sum of S over all clusters for the same component j.",
+   "cite": "Section III.E and Algorithm 1 line 30",
+   "quote": "The contribution ratio Pk,j of each cluster k to each principal component j is calculated as:",
+   "page": 4
+  },
+  {
+   "id": "R10",
+   "stmt": "Check that proportions sum to 1 for each principal component.",
+   "cite": "Section III.E",
+   "quote": "The sum of the proportions for each principal component must equal 1 (or 100%).",
+   "page": 4
+  },
+  {
+   "id": "R11",
+   "stmt": "Return both the S contribution matrix and the P proportion matrix.",
+   "cite": "Algorithm 1 line 35",
+   "quote": "Ensure: Contributions Sk,j and proportions Pk,j of each cluster to each principal component",
+   "page": 4
+  },
+  {
+   "id": "R12",
+   "stmt": "Set a fixed random seed for K-means reproducibility.",
+   "cite": "Section III.D",
+   "quote": "Once the number of clusters is defined, the K-means algorithm is run, ensuring reproducibility by setting a fixed value for the random seed.",
+   "page": 3
+  },
+  {
+   "id": "R13",
+   "stmt": "Use absolute loadings when accumulating cluster contributions, regardless of loading sign.",
+   "cite": "Section III.E",
+   "quote": "we use the absolute values of the loads because we are interested in the magnitude of the influence",
+   "page": 4
+  },
+  {
+   "id": "R14",
+   "stmt": "Compute all four principal components for the four-variable USArrests PCA table.",
+   "cite": "Section IV.A and Table I",
+   "quote": "in the case of four principal components and four variables",
+   "page": 4
+  }
+ ],
+ "data": [
+  {
+   "name": "USArrests",
+   "how_to_get": "R built-in dataset: data(USArrests) from the datasets package; use the four numeric columns Murder, Assault, UrbanPop, Rape."
+  },
+  {
+   "name": "Iris",
+   "how_to_get": "R built-in dataset: data(iris) from the datasets package."
+  },
+  {
+   "name": "Decathlon2",
+   "how_to_get": "R package factoextra: data(decathlon2), also used in FactoMineR/factoextra examples."
+  }
+ ],
+ "code_links": [
+  "https://github.com/vsaquicela/PCA-K-means"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2512.00979",
+  "kind": "arxiv",
+  "arxiv_id": "2512.00979",
+  "url": "https://arxiv.org/abs/2512.00979",
+  "title": "An Approach to Variable Clustering: K-means in Transposed Data and its Relationship with Principal Component Analysis",
+  "pages": 8
+ }
+}

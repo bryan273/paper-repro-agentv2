@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "MGBTAI achieves the highest precision on 25 univariate datasets (out of 31).",
+  "table_ref": "Fig. 4 (univariate precision comparison) / Tables 11-14 in Supplementary",
+  "dataset": "31 univariate datasets (NAB, Yahoo Webscope, synthetic)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://anonymous.4open.science/r/Anomaly-Benchmarking-776D/README.md"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Running MGBTAI (a tree-based method with k-means) on 31 small univariate datasets (544-2500 points) is fast on CPU, but requires downloading and preprocessing multiple public datasets and implementing the MGBTAI algorithm from the paper since the anonymous code link may be incomplete or outdated."
+ },
+ "blockers": [
+  "Anonymous code repository may be incomplete or not maintained",
+  "MGBTAI implementation details (k-means, thresholds) must be inferred from paper",
+  "Data from NAB and Yahoo Webscope requires separate downloads and preprocessing",
+  "Supplementary tables with exact per-dataset results are not in the main paper"
+ ],
+ "suitable": true,
+ "id": "2402.07281",
+ "title": "Benchmarking Anomaly Detection Algorithms: Deep Learning and Beyond",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

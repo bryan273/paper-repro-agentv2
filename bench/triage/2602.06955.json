@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "ROC-AUC of 0.983 for EBM using top 18 features",
+  "table_ref": "Table 4",
+  "dataset": "Kaggle Credit Card Fraud Detection (European cardholders)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "EBM training on 284k rows with 18 features and 5-fold CV is CPU-friendly; main cost is re-implementing the Taguchi-based preprocessing and feature selection pipeline from scratch, plus running 25 scaler-order experiments and 9 hyperparameter trials."
+ },
+ "blockers": [
+  "No code or configuration provided; must re-implement entire pipeline including Taguchi orthogonal arrays and feature selection",
+  "Exact scaler sequence and hyperparameter search details are not fully specified"
+ ],
+ "suitable": true,
+ "id": "2602.06955",
+ "title": "Improving Credit Card Fraud Detection with an Optimized Explainable Boosting Machine",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

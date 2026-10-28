@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "AUC of the clust (cluster-cleaning + logistic regression) method with SMOTE under non-SCAR labelling at c=0.3, averaged over Monte Carlo replications on a single small UCI dataset (e.g. wdbc or banknote)",
+  "table_ref": "Fig. 1 (AUC; SMOTE scheme; nonSCAR) / Table 2 (ΔAUC nonscar, calc_c=0.3, clust row)",
+  "dataset": "UCI benchmark datasets (e.g. wdbc, banknote, breastc) with synthetic non-SCAR surrogate labels"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/kapacc/mdai26",
+  "https://github.com/kapacc/mdai26/blob/main/supplement.pdf"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Small UCI tables with 2-means + logistic/Lasso + SMOTE in R, up to 100 Monte Carlo reps per dataset; the main cost is reconstructing the non-SCAR labelling and pecking pipeline from the supplement since only R code (no configs) is linked."
+ },
+ "blockers": [
+  "Non-SCAR surrogate-label generation (non_scar_labelling.mvc) must be re-implemented from the supplement description",
+  "Exact Monte Carlo seeds / aggregation over datasets not specified, so the headline cell may not match exactly",
+  "Code is R (glmnet, caret, smotefamily) rather than a packaged reproducible pipeline"
+ ],
+ "suitable": true,
+ "id": "2609.14675",
+ "title": "PU classification under Non-SCAR: clustering-assisted logistic model with oversampling enhancement",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

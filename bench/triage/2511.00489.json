@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "ToM with DeepSeek-V3 achieves 38.60 F1 on InfiniteBench Question-Answering (Inf.QA)",
+  "table_ref": "Table 1, row '+ ToM' (DeepSeek-V3), column 'Inf.QA F1'",
+  "dataset": "InfiniteBench Inf.QA (100 samples, ~192k tokens each)"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/gjn12-31/ToM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 160,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 720,
+  "gpu_speedup": 10,
+  "basis": "Requires serving a 671B-parameter DeepSeek-V3 model (needs ~160GB VRAM in FP8, impossible on 16GB RAM CPU) plus a 3B HSP model, and running hundreds of LLM calls over 100 ultra-long documents; even with API access, the full protocol would take many hours."
+ },
+ "blockers": [
+  "Requires DeepSeek-V3 (671B parameters), which cannot run on a normal laptop (8 CPU cores, 16 GB RAM, no GPU)",
+  "Requires a 3B-scale Hierarchical Semantic Parser LLM for DocTree construction",
+  "Requires serving large models with vLLM, needing GPU memory far beyond a laptop",
+  "Even with API access, the full protocol involves hundreds of LLM calls over 100 ultra-long documents, exceeding a few hours"
+ ],
+ "suitable": false,
+ "id": "2511.00489",
+ "title": "ToM: Leveraging Tree-oriented MapReduce for Long-Context Reasoning in Large Language Models",
+ "pages": 20,
+ "model": "DeepSeek-V4.1-Flash"
+}

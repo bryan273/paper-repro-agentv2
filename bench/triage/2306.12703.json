@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "AUC-ROC of OptIForest on the Arrhythmia dataset (79.6 ± 0.8%)",
+  "table_ref": "Table 1",
+  "dataset": "Arrhythmia"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/xiagll/OptIForest"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": null,
+  "basis": "Small dataset (452 instances, 274 features) and CPU-only isolation forest; code is available but may require setup and hyperparameter tuning to match reported results."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2306.12703",
+ "title": "OptIForest: Optimal Isolation Forest for Anomaly Detection",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

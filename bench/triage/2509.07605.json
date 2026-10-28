@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "AUC-ROC of TabPFN on the Breast Cancer dataset (D1) at 100% minority class (no reduction), averaged over 2x5-fold cross-validation.",
+  "table_ref": "Figure 2(a) / Figure 3(a) (D1, 100% minority)",
+  "dataset": "Breast Cancer (UCI, D1)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "gpu_speedup": 1.0,
+  "basis": "Breast Cancer is a tiny UCI dataset (365 samples); TabPFN inference on CPU is fast, and the 2x5 CV protocol is trivial, but the exact preprocessing and TabPFN version are unspecified, so some re-implementation is needed."
+ },
+ "blockers": [
+  "No code or scripts released (available only on request from authors)",
+  "Exact preprocessing and TabPFN version not specified",
+  "Target is a single point in a figure, not a table cell; exact value must be read off the plot"
+ ],
+ "suitable": true,
+ "id": "2509.07605",
+ "title": "Beyond Rebalancing: Benchmarking Binary Classifiers Under Class Imbalance Without Rebalancing Techniques",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

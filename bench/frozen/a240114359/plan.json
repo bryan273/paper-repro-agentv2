@@ -1,0 +1,117 @@
+{
+ "approach": "The route is full_release, but the sandbox can only execute python/pip/git, so R (and thus R CMD INSTALL of StableMCD) is not runnable. The plan therefore clones the authors' repository as a read-only reference, ports vigenettes/star_mcd.R + R/mcd.R + src/ProjectionDepth.cpp line-by-line into a small numpy/scipy Python package (projection depth with the hybrid 500 data-driven + 500 uniform directions, depth-initialized C-step MCD without reweighting, B=100 bootstrap pairs with psi outlier maps, log(1+p/c) clustering instability, log(1+W2) Wasserstein instability, and the lambda=3 beta-calibrated IIM), and runs it on the robustbase starsCYG data (n=47, p=2) over h in {25..46}. reproduce.py is the single entrypoint: it downloads/validates the data, runs the grid at a fixed seed plus a small seed sweep, and writes results/metrics.json with the selected h, implied outlier count, the full IIM/s/w paths, and the clustering-only minimizer (paper's h=43 cross-check). Everything is deterministic, tiny (22 h-values x 200 Depth-MCD fits on 47x2 data) and runs in seconds, leaving most of the budget for porting fidelity checks.",
+ "files": [
+  {
+   "path": "stablemcd/data.py",
+   "purpose": "Download and validate the StarsCYG dataset (robustbase 47x2 log.Te/log.light) as CSV, cache to data/starsCYG.csv; fallback path downloads the CRAN robustbase tarball and reads data/starsCYG.rda with pyreadr. Returns float64 X (47,2) and asserts shape, finiteness and column names.",
+   "requirement_ids": [
+    "C1"
+   ]
+  },
+  {
+   "path": "stablemcd/depth.py",
+   "purpose": "Projection depth: build m = max(1000, 100p) directions (first 500 data-driven from random observation differences, remaining uniform on the unit sphere), project X, and return PD(x)=1/(1+sup_v |v'x-med(v'X)|/MAD(v'X)) with raw (unscaled) MAD. Depths are computed once on the original sample and reused for every h and every bootstrap sample.",
+   "requirement_ids": [
+    "R1",
+    "R9",
+    "R4"
+   ]
+  },
+  {
+   "path": "stablemcd/mcd.py",
+   "purpose": "Depth-initialized best-subset MCD (Algorithm 1) with no reweighting: H0 = h largest-depth rows, then C-steps (mean, sample covariance, h smallest Mahalanobis distances) until H is unchanged (cap 1000 iters, deterministic tie-break by row index). Returns (H, mu, Sigma, det) and records the determinant trace for the monotonicity check.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R11"
+   ]
+  },
+  {
+   "path": "stablemcd/instability.py",
+   "purpose": "Algorithm 2 machinery: draw B bootstrap pairs (n rows with replacement), fit Depth-MCD on each bootstrap sample reusing original-sample depths, compute Mahalanobis distances of the ORIGINAL n observations under each bootstrap subset, form psi = 1 outside the h-largest distances, compute clustering instability s(h)=mean_b log(1+p_hat/c) with c=2(h/n)((n-h)/n), Wasserstein instability w(h)=mean_b log(1+W2(N(mu1,S1),N(mu2,S2))) via eq (11) with a symmetric matrix square root, calibrate beta = sd_s/(sd_s + lambda*sd_w) (sample sd, ddof=1, over the h grid), and return I(h)=(1-beta)s(h)+beta(w(h)-min w).",
+   "requirement_ids": [
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  },
+  {
+   "path": "smoke_test.py",
+   "purpose": "Tiny end-to-end run: B=3 bootstrap pairs, h grid {25,35,40,45,46}, seed 0; asserts path lengths, finiteness, computable beta, an argmin, and prints the paths.",
+   "requirement_ids": [
+    "R9"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: load data, compute depths, run the full h grid {25..46} with B=100 and seed 2024, plus a 5-seed sweep, write results/metrics.json (selected h, outliers=n-h, clustering-only argmin, iim/s/w paths, beta, runtimes, claim comparison) and results/stability_paths.png; prints a PASS/FAIL line against h=40 +/- 1.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "seed": "2024 for the primary run; sweep over seeds [1,2,3,4,5] (A1: paper specifies no RNG)",
+  "n_bootstrap_pairs_B": "100 (paper, Sec 5.1 'applying Algorithm 2 with 100 bootstrap pairs')",
+  "lambda": "3 (paper, Sec 3.3, eq 13)",
+  "h_grid": "all integers 25..46 inclusive; h=47 excluded because the metric is undefined at h=n (paper Sec 5.1; A5)",
+  "n_directions": "max(1000, 100*p) = 1000 (R1; p=2)",
+  "n_data_driven_directions": "min(500, m) = 500 (R1)",
+  "n_uniform_directions": "m - 500 = 500, uniform on the unit sphere via normalized Gaussian draws (R1)",
+  "data_driven_pair_sampling": "iid pairs with replacement, zero-norm differences redrawn (A7)",
+  "depth_formula": "PD(x)=1/(1+sup_v |v'x - med(v'X)| / mad(v'X)), mad = med(|V-med(V)|) raw, no 1.4826 factor (R1, A8)",
+  "depth_reuse": "depths computed once on original X, reused for all h and all bootstrap samples (R4, A9)",
+  "mcd_init": "h observations with the largest projection depths (R2)",
+  "cstep_stop_rule": "stop when H is identical after a full C-step; max 1000 iterations; ties broken by ascending row index (A3)",
+  "cstep_cov": "sample covariance with 1/(h-1) denominator; singular S handled by pinv with a 1e-10 ridge fallback (R11)",
+  "reweighting": "none, in both full-data and bootstrap Depth-MCD fits (R3)",
+  "bootstrap": "draw n=47 rows with replacement per sample (A2)",
+  "psi_definition": "psi_i = 1 if observation i of the ORIGINAL X is outside the h smallest Mahalanobis distances computed with that bootstrap subset's (mu, Sigma) (R5, A10)",
+  "clustering_scale": "c = 2*(h/n)*((n-h)/n) (R6)",
+  "clustering_instability": "s(h) = (1/B) * sum_b log(1 + p_hat_b / c), p_hat_b = (#{i: psi_b1(i) != psi_b2(i)})/n (R6)",
+  "wasserstein_instability": "w(h) = (1/B) * sum_b log(1 + W2_b), W2_b from eq (11): ||mu1-mu2||^2 + tr(S1+S2-2(S1^{1/2}S2S1^{1/2})^{1/2}) via eigendecomposition (R7)",
+  "beta_calibration": "beta = sd(s)/(sd(s) + lambda*sd(w)), sample sd with ddof=1 taken over the h grid; sd(w - min w) = sd(w) (A4, R8)",
+  "iim": "I(h) = (1-beta)*s(h) + beta*(w(h) - min_h w(h)) (R8)",
+  "selection_rule": "argmin_h I(h); ties -> smallest h (A12, R9)",
+  "outlier_count": "n - selected_h, no reweighting-based cutoff (A6)",
+  "dataset": "robustbase::starsCYG, 47 rows x 2 cols log.Te, log.light, used as-is (A11)"
+ },
+ "steps": [
+  "Create the working tree (reproduce.py, stablemcd/, data/, results/, third_party/) and git clone --depth 1 https://github.com/qhengncsu/StableMCD into third_party/StableMCD as a read-only reference (do not attempt R CMD INSTALL: only python/pip/git are executable in this sandbox).",
+  "Read third_party/StableMCD/vigenettes/star_mcd.R, R/mcd.R and src/ProjectionDepth.cpp and write NOTES.md mapping every line of the R/C++ reference (grid construction, bootstrap_mcd call, classifier='MD', depth direction generation, C-step loop) to the planned Python functions, flagging any deviation.",
+  "Implement stablemcd/data.py: download https://vincentarelbundock.github.io/Rdatasets/csv/robustbase/starsCYG.csv with requests, keep columns log.Te, log.light, assert (47,2), all finite, plausible ranges (log.Te ~ 3.5-4.8, log.light ~ -1.5 to 6.7), cache to data/starsCYG.csv. Fallback: download the CRAN robustbase source tarball, extract data/starsCYG.rda with tarfile, read with pyreadr.",
+  "Implement stablemcd/depth.py (R1): build 500 data-driven directions from random observation differences + 500 uniform-sphere directions (normalize Gaussian draws), project the 47x2 matrix, compute med/MAD per direction and the sup outlyingness; return depth = 1/(1+O) as a length-47 vector in (0,1].",
+  "Implement stablemcd/mcd.py (R2, R3, R11): depth-ordered initialization, C-step loop with sample covariance and h smallest Mahalanobis distances, stop when the index set is unchanged (cap 1000), record the log-determinant trace and assert it is non-increasing across every C-step.",
+  "Implement stablemcd/instability.py (R4-R8): for each of B=100 bootstrap pairs draw two n=47 with-replacement samples, fit Depth-MCD at each h using the fixed original-sample depths, compute Mahalanobis distances of the original X under each bootstrap subset, build psi indicators, accumulate log(1+p/c) and log(1+W2), then calibrate beta and assemble I(h). Vectorize over h (depths and bootstrap draws are shared).",
+  "Run smoke_test.py (B=3, grid {25,35,40,45,46}, seed 0) and confirm: paths have length 5, s/w/I finite, beta in (0,1), argmin exists, determinant traces monotone, wall time < 30 s.",
+  "Run intermediate checks: clustering-only path s(h) must minimize near h=43 (paper C7) and the 7 lowest-depth stars must be clearly separated from the rest; if the s(h) minimizer is far from 43, debug depth direction count/MAD convention/C-step convergence before the full run.",
+  "Full run: B=100, seed 2024, h grid 25..46; record selected h, n-h outliers, beta, full iim/s/w paths, and the identity of the excluded observations; save results/stability_paths.png and results/metrics.json. Also run seeds 1..5 to report the selection distribution (A1).",
+  "reproduce.py prints a verdict line: PASS if |selected_h - 40| <= 1 for the primary seed (tolerance from the claim contract) and reports the seed-sweep agreement rate; metrics.json must contain the primary result plus the sweep."
+ ],
+ "smoke_test": "python smoke_test.py -> loads data/starsCYG.csv (assert 47x2), builds 1000 projection directions, runs B=3 bootstrap pairs over h in {25,35,40,45,46} with seed 0, and asserts len(iim)==len(s)==len(w)==5, all finite, 0<beta<1, np.argmin defined, and that every C-step log-determinant trace is non-increasing; prints the five IIM values and finishes in well under a minute.",
+ "intermediate_checks": [
+  "Dataset: exactly 47 rows, 2 numeric columns named log.Te and log.light, 0 NaNs, and value ranges matching Rousseeuw-Leroy star data (log.Te ~3.5-4.8, log.light ~-1.5 to 6.7).",
+  "Depths: 47 finite values in (0,1]; the ~7 giant stars should form a visible low-depth plateau (print the 8 smallest depths and their row indices).",
+  "MCD sanity: at h=40 on the full data the retained subset must exclude exactly the 7 giants, and det(Sigma) must be small relative to the full-sample covariance determinant (sanity that the trimming works).",
+  "C-step monotonicity: for a few (h, bootstrap) cells assert log det(Sigma) is non-increasing over iterations and that the loop terminates in far fewer than 1000 iterations.",
+  "Clustering-only cross-check (paper C7): argmin_h s(h) should land at h≈43 (accept 42-44); this validates depths + C-steps + the psi/c scaling before trusting the IIM.",
+  "Beta range: calibrated beta should be in (0,1) and stable across seeds (print beta per seed) - an extreme beta (>0.9 or <0.01) signals a scale problem in eq (11).",
+  "Runtime: full B=100 grid should take seconds to a couple of minutes on CPU; if it exceeds ~10 min, profile the Mahalanobis/C-step loop before continuing."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup (~10 min): clone the repo, read star_mcd.R/mcd.R/ProjectionDepth.cpp, download and validate starsCYG (plus pyreadr fallback), write NOTES.md. Implementation (~25 min): depth, MCD, instability modules with assertion-based unit checks. Smoke + intermediate checks (~10 min): B=3 run, determinant monotonicity, depth plateau at 7 giants, clustering-only argmin near 43. Full run (~5 min): B=100 over 22 h-values at seed 2024 plus a 5-seed sweep, write metrics.json and the path figure; the paper reports 3 s for this grid, so essentially all residual budget goes to fidelity checks rather than compute."
+}

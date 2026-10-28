@@ -1,0 +1,126 @@
+{
+ "approach": "Use the authors' released simulation code without modifying it. Install pinned Python 3.12-compatible dependencies, copy the fixed-default config to a C1 config with (gamma,c,h,m,d,tilde_m,pi_aug,q,n_reps)=(0.2,0.2,4,1000,200,1000,0.5,0.1,1000), and run simulation/all_procedures_fixed.py directly, without SGE, with only BONuS enabled. A thin reproduce.py calls that driver, parses the per-replication TPP CSV for BONuS, evaluates the Theorem 1 TPR_BH functional (prefer simulation/utils/theory.py, fall back to the paper formula with scipy), and writes results/metrics.json containing both the pi_aug=0.5 setting check and the theory-vs-simulation power gap.",
+ "files": [
+  {
+   "path": "setup_env.py",
+   "purpose": "One-time environment setup: create results/config directories, pip-install simulation/requirements.txt plus pinned numpy/numba for Python 3.12, verify imports, and print the resolved versions.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R10",
+    "R13",
+    "R15"
+   ]
+  },
+  {
+   "path": "theory_eval.py",
+   "purpose": "Evaluate mu_bonus and Theorem 1 TPR_BH; first try the authors' simulation/utils/theory.py callable, otherwise implement the paper formula with scipy.stats.norm and a scalar root finder. Optionally report theory_finite_fixed.py as a finite-m sanity check.",
+   "requirement_ids": [
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "configs/c1_bonus_pi0.5.json",
+   "purpose": "Author-driver config for C1: point-mass prior, mean learner, gamma=0.2, c=0.2, h=4, m=1000, d=200, tilde_m=1000, pi_aug=0.5, q=0.1, n_reps=1000, BONuS only.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R6",
+    "R7",
+    "R8",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Thin orchestrator: discover the exact author CLI flag, run simulation/all_procedures_fixed.py as a subprocess with the C1 config, parse the output CSV, call theory_eval, and write results/metrics.json (plus a --smoke mode).",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R13",
+    "R14",
+    "R15"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/Katsevich-Lab/masking-power",
+  "repo_dir": "masking-power",
+  "python": "3.12.10",
+  "pip_pins": {
+   "numpy": "1.26.4 (Python 3.12/numba compatibility)",
+   "numba": "0.59.1 (Python 3.12 compatibility)",
+   "scipy": ">=1.11,<1.15 (environment assumption)",
+   "pandas": ">=2.0,<2.3 (environment assumption)",
+   "tqdm": ">=4.66 (environment assumption)"
+  },
+  "author_entrypoint": "simulation/all_procedures_fixed.py",
+  "config_flag": "use exact argparse flag discovered from --help; expected --config or --json_path",
+  "run_name": "c1_bonus_pi0.5_q0.1",
+  "prior": "point_mass (R3)",
+  "learner": "mean learner: normalized average of rows of X_learn (R5)",
+  "methods": [
+   "BONuS only (R6-R8); disable Split BH and In-sample BH if the config supports method selection"
+  ],
+  "m": "1000 (C1/C3/R13)",
+  "d": "200 (A2: d = c*m = 0.2*1000)",
+  "gamma": "0.2 (C3/R13)",
+  "c": "0.2 (C3/R13)",
+  "h": "4 (C3/R13)",
+  "tilde_m": "1000 (C1/R15/A8)",
+  "pi_aug": "0.5 (C1/R15; m/(m+tilde_m))",
+  "q": "0.1 (A1; paper treats q as unspecified fixed level)",
+  "n_reps": "1000 (C3/R14); fallback 500 if wall-clock budget is exceeded",
+  "seed": "12345 (A9)",
+  "direction_v": "e1 (A3)",
+  "null_distribution": "N(0,I_d) for BONuS synthetic null rows (A5)",
+  "score": "v^T X_j after dropping the monotone -h^2/2 term (R4/A6)",
+  "p_value_rule": "plain augmented empirical survival function, no continuity correction (R7/A11)",
+  "bh_level": "Benjamini-Hochberg at q (R8)",
+  "mu_bonus": "h^2*gamma / sqrt(h^2*gamma^2 + c/pi_aug) (R12)",
+  "theory_target": "TPR_BH(N(0,1), N(mu_bonus,1), gamma) (R11)",
+  "tolerance": "abs(TPR_BONuS_sim - TPR_BH_theory) <= 0.02 (claim tolerance)"
+ },
+ "steps": [
+  "Open a shell at the repo root; if absent, clone with `git clone https://github.com/Katsevich-Lab/masking-power && cd masking-power`. Create `results/` and `configs/`.",
+  "Run `python setup_env.py`. It installs `simulation/requirements.txt` and then pins `numpy==1.26.4` and `numba==0.59.1` for Python 3.12, plus scipy/pandas/tqdm, and verifies imports. Do not use the SGE wrappers.",
+  "Inspect author plumbing before writing the config: run `python simulation/all_procedures_fixed.py --help`; open the argparse block and `simulation/scripts/fixed_scripts/fixed_default.json`; record the exact config flag, the keys for m,d,gamma,c,h,tilde_m/pi_aug,q,n_reps, method/procedure selection, and the output directory rule (`run_name`).",
+  "Create `configs/c1_bonus_pi0.5.json` by copying the default fixed config and overriding only: run_name=c1_bonus_pi0.5_q0.1, gamma=0.2, c=0.2, h=4, m=1000, d=200, tilde_m=1000, pi_aug=0.5, q=0.1, n_reps=1000, seed=12345, prior=point_mass, learner=mean, methods=[BONuS] using the exact key names discovered above. Ensure In-sample BH and Split BH are disabled; if no method selector exists, call the BONuS function directly from reproduce.py rather than running the all-methods driver.",
+  "Write `theory_eval.py`. First import `simulation.utils.theory` and search for a callable TPR_BH/power function; call it with gamma, c, h, pi_aug, q. If no scalar callable exists, implement the paper formula: mu_bonus=h^2*gamma / sqrt(h^2*gamma^2 + c/pi_aug); TPR_BH = survival of N(mu_bonus,1) at t*, where t* solves (1-gamma)*S0(t) / ((1-gamma)*S0(t) + gamma*S1(t)) = q, with S0=N(0,1) survival and S1=N(mu_bonus,1) survival, using scipy.stats.norm and brentq/bisection.",
+  "Write `reproduce.py` with `--smoke` and default full mode. It invokes the author driver via `subprocess.run([sys.executable, 'simulation/all_procedures_fixed.py', <exact config flag>, config_path], check=True)`, globs the output CSV under `simulation/results/<run_name>/`, parses per-replication BONuS TPP, filters h=4, averages over reps, calls theory_eval, and writes results/metrics.json.",
+  "Run smoke: `python reproduce.py --smoke`. This uses n_reps=10 at the full m=1000,d=200,tilde_m=1000 dimensions and writes results/metrics_smoke.json. Inspect the CSV schema and confirm the run is BONuS-only.",
+  "Run the intermediate checks below. Verify mu_bonus is approximately 3.137, theory TPR_BH is approximately 0.878 at q=0.1, and the smoke TPP is in [0,1] with no NaNs.",
+  "Run the full reproduction: `python reproduce.py`. It uses n_reps=1000; if wall clock exceeds about 20 minutes, stop and rerun with n_reps=500, reporting the Monte Carlo standard error.",
+  "Validate results/metrics.json: pi_aug==0.5, tilde_m==1000, m==1000, TPR_BH_theory in [0,1], TPR_BONuS_sim in [0,1], and abs_gap<=0.02. Print a one-line summary. If gap>0.02, re-check q, d, tilde_m, method key, score, empirical p-value rule, and BH level; do not tune to the target.",
+  "Optionally evaluate `simulation/utils/theory_finite_fixed.py` at the same setting and record it as TPR_BH_finite_check; do not substitute it for the Theorem 1 value."
+ ],
+ "smoke_test": "`python reproduce.py --smoke` sets n_reps=10, m=1000, d=200, tilde_m=1000, pi_aug=0.5, q=0.1, BONuS only, and writes results/metrics_smoke.json. It checks CSV schema, non-NaN TPP values in [0,1], and that theory_eval returns mu_bonus≈3.137 and TPR_BH≈0.878. Ten reps are for data-flow validation only, not for the 0.02 tolerance.",
+ "intermediate_checks": [
+  "Python/import check: `python -c \"import numpy, scipy, pandas, numba; print(numpy.__version__, numba.__version__)\"` succeeds.",
+  "CLI/config check: `python simulation/all_procedures_fixed.py --help` and `simulation/scripts/fixed_scripts/fixed_default.json` reveal where n_reps, tilde_m/pi_aug, method list, and output dir live.",
+  "Data shape check after one replication: X.shape==(1000,200); non-null count is roughly Binomial(1000,0.2)=200±13; non-null theta rows equal h*v=4*e1.",
+  "BONuS check: augmented learn matrix has shape (2000,200) when tilde_m=1000; synthetic null rows have mean near 0 and variance near 1; permutation may be skipped for the mean learner (A4).",
+  "P-value/BH check: p-values lie in [0,1], BH rejection set is monotone in p-value order, and rejection count is >0 at h=4,q=0.1.",
+  "Theory check: mu_bonus≈3.137 and TPR_BH≈0.878 at q=0.1; both are in [0,1]. Record any finite-m value from theory_finite_fixed.py separately.",
+  "Smoke timing check: 10 full-size reps should finish in <2 minutes; extrapolate to 1000 reps. If >2 minutes for 10, use 500 reps or enable driver parallelism.",
+  "Method isolation check: confirm the run CSV contains only BONuS (or filter BONuS); In-sample BH with B=50000 must not be running.",
+  "Output schema check: CSV has one row per replication and an explicit TPP/power column; parse by column name, not by index."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Setup/install: 5 min. Code/config inspection: 5 min. Theory evaluation + 10-rep smoke: 3 min. Full 1000-rep BONuS run: 15 min target, with a 500-rep fallback at about 8 min. Parsing and validation: 2 min. Total about 30 min. If the author driver exposes n_jobs/parallelism, use 8 workers; otherwise run sequentially. Kill and fall back to 500 reps if the full run exceeds 20 min."
+}

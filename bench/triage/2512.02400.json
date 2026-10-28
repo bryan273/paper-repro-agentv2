@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "Nav-R2 achieves 44.0% success rate (SR) on the OVON val-unseen split (open-vocabulary object-goal navigation).",
+  "table_ref": "Table 2, column Val-Unseen, row Nav-R2",
+  "dataset": "HM3D-OVON val-unseen"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/AMAP-EAI/Nav-R2"
+ ],
+ "data_access": "restricted",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 96,
+  "ram_gb": 32,
+  "disk_gb": 200,
+  "ref_minutes": 1000000,
+  "gpu_speedup": null,
+  "basis": "The main result requires training a 7B vision-language model for 1280 H20-GPU-hours (64 GPUs) and evaluating a 7B VLM over many navigation episodes; both are infeasible on an 8-core CPU-only laptop within hours."
+ },
+ "blockers": [
+  "training needs 64 H20 GPUs / ~1280 GPU-hours",
+  "evaluation requires running a 7B VLM over many episodes",
+  "HM3D-OVON depends on HM3D simulator/scenes which require signed terms",
+  "no confirmed release of NavR2-CoT dataset, model weights, or training configs"
+ ],
+ "suitable": false,
+ "id": "2512.02400",
+ "title": "Nav-$R^2$ Dual-Relation Reasoning for Generalizable Open-Vocabulary Object-Goal Navigation",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MGA achieves NMI = 0.8519 (and ARI = 0.8289) on Karate, exceeding the best topology-only baseline by ~20.5%",
+  "table_ref": "Table II (EQ2), Karate row, MGA NMI column; also Fig. 2 (EQ1.1)",
+  "dataset": "Karate (Zachary's karate club, 34 nodes, 78 edges)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released; the whole RAM objective (affinity, k-means-binned g(d) calibration, BGD/MGA optimisers, AutoGL embedding pipeline) must be reimplemented from the text, and the exact 0.8519 depends on AutoGL's auto-selected embeddings and 10-run averaging, so matching the number is uncertain even though the Karate graph itself is tiny and CPU-only."
+ },
+ "blockers": [
+  "No code or configs released (empty link list)",
+  "Target number depends on AutoGL's automatic embedding selection, which is not specified per-dataset",
+  "10-run averaging and unspecified random seeds make exact reproduction of 0.8519 unlikely",
+  "g(d) estimation details (k-means bin count via silhouette, 30% pair sampling) must be guessed"
+ ],
+ "suitable": false,
+ "id": "2610.07088",
+ "title": "Representation-Aware Modularity with a Distance-Calibrated Null Model",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

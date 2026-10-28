@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "F1-score of 0.569 for the sarcastic class using Multinomial Naive Bayes (or Logistic Regression) on the 100k subsample of SARC 2.0 balanced subset",
+  "table_ref": "Table 1",
+  "dataset": "SARC 2.0 balanced subset (100k subsample)"
+ },
+ "release": "partial",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 45,
+  "basis": "Full training code is in the appendix; only need to download SARC 2.0 balanced subset (~1-2 GB bz2), subsample 100k, and fit TF-IDF + Naive Bayes/LogReg on 8 CPU cores — minutes of compute, dominated by download and TF-IDF fitting."
+ },
+ "blockers": [
+  "SARC 2.0 download URL not given in paper (must locate from Khodak et al. 2018)",
+  "Column index 9 for reply text and tab-separated format must be verified against actual file",
+  "No explicit code link/repo, only appendix listing"
+ ],
+ "suitable": true,
+ "id": "2512.04396",
+ "title": "Sarcasm Detection on Reddit Using Classical Machine Learning and Feature Engineering",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

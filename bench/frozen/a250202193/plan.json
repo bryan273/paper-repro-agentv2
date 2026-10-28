@@ -1,0 +1,122 @@
+{
+ "approach": "Because the linked smhasher repository contains only the MurmurHash primitive and no Bloom-filter experiment, reproduce the paper's claims directly in Python rather than running author code. Implement a pure-Python MurmurHash3_x86_32 with fixed seed 0, Kirsch-Mitzenmacher double hashing, and power-of-two masking, then build StandardBF and RationalBF classes that share the same bit-array and query protocol. For C1, insert n=1000 synthetic 64-bit values into m=8192 bits, use k*=5.678031 (floor 5, activation p=0.678031) for RBF and integer k=6 for the baseline, query 10,000 disjoint values, and report RBF_FPR - BF_FPR. Also run the C2 k-sweep at m=131072, n=60000 as an optional cross-check, and write all diagnostics and metrics to results/metrics.json through reproduce.py.",
+ "files": [
+  {
+   "path": "config.py",
+   "purpose": "Central constants: C1 and C2 settings, derived k*, activation probability, seeds, hash seeds, tolerance, and output paths. No imports from project files.",
+   "requirement_ids": []
+  },
+  {
+   "path": "hash_utils.py",
+   "purpose": "Pure-Python MurmurHash3_x86_32, h1/h2 derivation, Kirsch-Mitzenmacher double hashing, power-of-two index masking, and deterministic activation-index helper.",
+   "requirement_ids": [
+    "R5",
+    "R7",
+    "R8"
+   ]
+  },
+  {
+   "path": "data.py",
+   "purpose": "Generate fixed-seed uniform 64-bit insertion and disjoint query sets matching the Figure 6 protocol.",
+   "requirement_ids": [
+    "R9",
+    "R11"
+   ]
+  },
+  {
+   "path": "bloom_filter.py",
+   "purpose": "Implement StandardBloomFilter and RationalBloomFilter with insert/query, deterministic extra-hash activation, no-false-negative behavior, and fraction-of-zeros diagnostic.",
+   "requirement_ids": [
+    "R1",
+    "R4",
+    "R5",
+    "R6",
+    "R8",
+    "R10",
+    "R12"
+   ]
+  },
+  {
+   "path": "experiments.py",
+   "purpose": "Compute theoretical standard-BF FPR, run C1 RBF-vs-BF comparison, run optional C2 k-sweep, and assemble metrics/diagnostics.",
+   "requirement_ids": [
+    "R2",
+    "R3",
+    "R9",
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint with --smoke and full modes; imports experiments, writes results/metrics.json, and prints the C1 difference.",
+   "requirement_ids": [
+    "R9",
+    "R11"
+   ]
+  }
+ ],
+ "config": {
+  "implementation_language": "Python 3.12 (sandbox executes only Python; R7 C++ build is infeasible, but MurmurHash + K&M + AND behavior is preserved)",
+  "hash_primitive": "MurmurHash3_x86_32 (A3)",
+  "hash_seed_h1": "0 (A3)",
+  "hash_seed_h2": "2654435769 / 0x9E3779B9 (derived from A3 and A4; h2 is forced odd)",
+  "double_hashing": "h_i = (h1 + i*h2) & (m-1) for power-of-two m (A4, R7, R8)",
+  "bit_array": "one bit per index, all zero initially (R1)",
+  "C1": {
+   "m_bits": 8192,
+   "n_inserted": 1000,
+   "k_star": "8192/1000*ln(2) = 5.678031... (Eqn 2, R3, A1)",
+   "rbf_floor_k": 5,
+   "rbf_activation_prob": "k_star - floor(k) = 0.678031... (R4, A1)",
+   "rbf_extra_index": "H_floor(k)=(h1+floor(k)*h2)&(m-1); activate iff H_floor(k) < activation_prob*m (R5, A5)",
+   "baseline_standard_bf_k": 6,
+   "baseline_rule": "nearest integer to k* (A2, R10)",
+   "n_queries": 10000,
+   "fpr_denominator": 10000,
+   "seed_insert": 42,
+   "seed_query": 43,
+   "trial": "single fixed-seed run (A7)"
+  },
+  "C2": {
+   "m_bits": 131072,
+   "n_inserted": 60000,
+   "k_theoretical": "131072/60000*ln(2) = 1.514... (Eqn 2)",
+   "k_sweep": "0.0 to 4.0 inclusive step 0.1 (cross-check only; claim contract says k in [0,4])",
+   "n_queries": 10000,
+   "seed_insert": 42,
+   "seed_query": 43,
+   "role": "optional cross-check; C1 is the target"
+  },
+  "fraction_zero_shadow": "0.5 +/- 0.02, diagnostic visualization only (R12, A9)",
+  "tolerance_abs": 0.01,
+  "claim_pass_rule": "report rbf_minus_bf; pass under tolerance if rbf_minus_bf <= 0.01, and also record whether the strict Theorem-1 inequality rbf_minus_bf <= 0 holds",
+  "results_path": "results/metrics.json"
+ },
+ "steps": [
+  "Create results/ and write config.py with all C1/C2 constants, derived k*, activation probability, seeds, and tolerance.",
+  "Implement hash_utils.py: pure-Python MurmurHash3_x86_32, h1/h2 double-hash derivation, index masking with (m-1), and a helper returning H_floor(k) for deterministic activation.",
+  "Implement data.py: generate 1000 insertion values from seed 42 and 10000 query values from seed 43 via numpy default_rng; reject/regenerate any query value present in the insertion set and assert the two sets are disjoint.",
+  "Implement bloom_filter.py: bytearray bit storage; StandardBloomFilter uses k integer hashes; RationalBloomFilter uses floor(k) base hashes plus the extra H_floor(k) index only when H_floor(k) < frac(k)*m; use the same rule for insert and query.",
+  "Implement experiments.py: theoretical standard-BF FPR p_FP=(1-(1-1/m)^{kn})^k and exponential approximation (R2); run C1 with m=8192,n=1000,RBF k*=5.678031 vs BF k=6, 10000 disjoint queries; record FPRs, difference, fraction-of-zero diagnostics, and no-false-negative checks.",
+  "Add optional C2 in experiments.py: m=131072,n=60000, sweep rational k from 0.0 to 4.0 step 0.1 with the same RBF protocol, record measured FPRs and argmin; mark it as a cross-check, not the C1 target.",
+  "Implement reproduce.py with --smoke and full modes; full mode calls the C1 runner, optionally the C2 runner, and writes results/metrics.json with config, FPR_RBF, FPR_BF, difference, strict inequality flag, tolerance flag, and diagnostics.",
+  "Run the smoke test (python reproduce.py --smoke), verify no false negatives on inserted elements, all bit indices in range, activation frequency near 0.678, and a valid JSON output.",
+  "Run the full C1 experiment, inspect metrics, and confirm the reported difference is within the 0.01 absolute tolerance; if a sanity check fails, debug the hash/index/activation path before accepting results.",
+  "Run reproduce.py again to confirm deterministic identical metrics, then optionally run/record C2 for the Figure 6 bottom cross-check."
+ ],
+ "smoke_test": "python reproduce.py --smoke uses m=128, n=20, q=200, RBF k=2.5 and BF k=2, seeds 42/43; it asserts all inserted elements query present, every computed index is in [0,m), activation frequency is plausible, both FPRs are in [0,1], and results/metrics_smoke.json is valid JSON.",
+ "intermediate_checks": [
+  "MurmurHash3_x86_32 determinism: same input+seed gives same output; optionally cross-check a known vector or mmh3 if installed. Verify h1/h2 are stable and h2 is forced odd.",
+  "Data check: insertion set has exactly 1000 unique values, query set exactly 10000 unique values, and intersection size is 0.",
+  "Index check: for m=8192 and m=131072, every double-hashed index equals (h1+i*h2)&(m-1) and is in range; activation comparison uses H_floor(k) against frac(k)*m.",
+  "Filter check: after inserting n elements, querying those same elements returns present for both StandardBF and RationalBF, proving no false negatives on inserted items.",
+  "Theory check: theoretical standard-BF FPR for m=8192,n=1000,k=6 is about 0.0196; a small simulation should land within sampling noise, confirming the bit/index path.",
+  "Diagnostic check: fraction of zero bits is recorded after insertion for both filters and is used only as a diagnostic against the 0.5 +/- 0.02 shadow (R12, A9).",
+  "C2 sanity: theoretical k*=1.514 for m=131072,n=60000; the sweep covers [0,4] and the measured curve is reported with argmin but does not gate C1."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "About 15 minutes total: 3-4 minutes writing config/hash/data/filter modules, 2 minutes smoke test and fixing index/activation bugs, 2-3 minutes full C1 and optional C2 runs (C1 is under a minute; C2 is a few minutes at most), 3 minutes validation and deterministic re-run, and 2-3 minutes buffer for environment or hash-vector issues."
+}

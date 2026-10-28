@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "VS3D achieves PSNR 22.51 on the Objaverse-derived editing benchmark (Table 1).",
+  "table_ref": "Table 1",
+  "dataset": "Objaverse-derived editing benchmark"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 64,
+  "disk_gb": 40,
+  "ref_minutes": 10080,
+  "gpu_speedup": 100,
+  "basis": "The paper reports 57 s per asset on an RTX 4090 and uses multiple test-time DiT forward/backward passes for RASI, PMG sampling, and TAR twins; reproducing the aggregate Table 1 metric requires the full benchmark on GPU, and CPU-only execution is effectively infeasible."
+ },
+ "blockers": [
+  "No code release or repository link is provided in the paper.",
+  "The Objaverse-derived editing benchmark, edit pairs, human masks, reference renderings, and instructions are not stated to be publicly released.",
+  "Requires the frozen TRELLIS 2.0 three-stage DiT backbone plus DINOv3-L and SC-VAE checkpoints, which are not linked.",
+  "Test-time per-step optimization (RASI) and multi-sample PMG make CPU-only inference impractical; paper uses an RTX 4090.",
+  "The headline Table 1 result is an aggregate over the whole benchmark, so a single-asset reproduction is not sufficient."
+ ],
+ "suitable": false,
+ "id": "2605.07385",
+ "title": "Velocity-Space 3D Asset Editing",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

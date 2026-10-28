@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Misclassification rate of cellGMM on the Homogenized Meat data set with 3% cellwise contamination (0% missing), reported as 0.01 in Table 2.",
+  "table_ref": "Table 2, row (3%, 0%), column cellGMM",
+  "dataset": "Homogenized Meat data set (McElhinney et al., 1999), 231 samples, 5 selected wavelengths"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/giorgiazaccaria/cellGMM"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Small data set (231x5) and a pure-R EM implementation; the paper reports cellGMM.penb taking ~1-5 seconds per run on a laptop, so a few runs plus installation and data loading fit easily in under an hour."
+ },
+ "blockers": [
+  "The GitHub repository may not include the exact data preprocessing (wavelength selection) or the random contamination seed used in the paper, so the exact 0.01 value may not be bit-reproducible.",
+  "The meat data set is public but may require manual download and formatting."
+ ],
+ "suitable": true,
+ "id": "2409.07881",
+ "title": "Cellwise outlier detection in heterogeneous populations",
+ "pages": 75,
+ "model": "DeepSeek-V4.1-Flash"
+}

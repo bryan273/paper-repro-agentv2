@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "SCMoE improves Mixtral 8x7B accuracy on GSM8K from 61.79 (greedy) to 66.94",
+  "table_ref": "Table 1",
+  "dataset": "GSM8K"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/DavidFanzz/SCMoE.git"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 48,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 600,
+  "gpu_speedup": 20,
+  "basis": "Requires running Mixtral 8x7B (~47B params) inference over 1319 GSM8K test questions with two forward passes per token (top-2 and rank-2 routing); on an 8-core CPU this is roughly 100x slower than the paper's 4xA100 setup, making it infeasible within hours."
+ },
+ "blockers": [
+  "Mixtral 8x7B is a ~47B parameter model requiring ~90GB in fp16, far exceeding 16GB RAM",
+  "No GPU available; CPU inference of a 47B MoE model is prohibitively slow",
+  "Code repo may not include exact evaluation scripts/configs for reproducing Table 1"
+ ],
+ "suitable": false,
+ "id": "2405.14507",
+ "title": "Unchosen Experts Can Contribute Too: Unleashing MoE Models' Power by Self-Contrast",
+ "pages": 19,
+ "model": "DeepSeek-V4.1-Flash"
+}

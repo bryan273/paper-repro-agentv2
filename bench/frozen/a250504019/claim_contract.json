@@ -1,0 +1,245 @@
+{
+ "title": "Extending Decision Predicate Graphs for Comprehensive Explanation of Isolation Forest",
+ "summary": "The paper addresses the opacity of Isolation Forest by extending Decision Predicate Graphs to provide global explanations of iForest. It converts iForest split rules and training-sample traversals into a weighted directed predicate graph and introduces the Inlier-Outlier Propagation Score (IOP-Score). On Annthyroid, the predicate TSH > receives the lowest IOP-Score, -0.2429, identifying it as the strongest outlier-associated predicate in the reported DPG.",
+ "claims": [
+  {
+   "id": "C1",
+   "statement": "In the Annthyroid DPG, the predicate 'TSH >' has IOP-Score -0.2429, the lowest and most outlier-associated score in Table 6.",
+   "metric": "IOP-Score",
+   "dataset": "Annthyroid",
+   "split": "all 6,916 samples; no train/test split reported; graph over training data",
+   "value": -0.2429,
+   "unit": "IOP-Score",
+   "higher_is_better": false,
+   "table_ref": "Table 6, row TSH >, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on Annthyroid (six numerical features, 6,916 samples); model-output outlier/inlier labels; predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5 min",
+   "quote": "Notably, as observed in Table 6, the node with the lowest score corresponds to the predicate TSH >.",
+   "page": 13
+  },
+  {
+   "id": "C2",
+   "statement": "In the Annthyroid DPG, 'T3 >' has IOP-Score -0.0282, negative but closer to zero than TSH >.",
+   "metric": "IOP-Score",
+   "dataset": "Annthyroid",
+   "split": "all 6,916 samples; no train/test split reported; graph over training data",
+   "value": -0.0282,
+   "unit": "IOP-Score",
+   "higher_is_better": false,
+   "table_ref": "Table 6, row T3 >, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on Annthyroid (six numerical features, 6,916 samples); model-output outlier/inlier labels; predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5 min",
+   "quote": "Similarly, the node containing the predicate T3 > also has a negative score, though closer to zero",
+   "page": 13
+  },
+  {
+   "id": "C3",
+   "statement": "In the Annthyroid DPG, 'TSH <=' has IOP-Score 0.0965, the highest positive score in Table 6.",
+   "metric": "IOP-Score",
+   "dataset": "Annthyroid",
+   "split": "all 6,916 samples; no train/test split reported; graph over training data",
+   "value": 0.0965,
+   "unit": "IOP-Score",
+   "higher_is_better": true,
+   "table_ref": "Table 6, row TSH <=, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on Annthyroid (six numerical features, 6,916 samples); model-output outlier/inlier labels; predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, ~5 min",
+   "quote": "Similarly, a low TSH value (TSH <=) redirects the flow through additional feature-based decisions before reaching a final classification.",
+   "page": 13
+  },
+  {
+   "id": "C4",
+   "statement": "In the first synthetic dataset (one outlier), 'F4 >' has IOP-Score -0.1580, one of the lowest scores.",
+   "metric": "IOP-Score",
+   "dataset": "Synthetic dataset 1 (200 samples, one outlier)",
+   "split": "all 200 samples; one outlier; no train/test split",
+   "value": -0.158,
+   "unit": "IOP-Score",
+   "higher_is_better": false,
+   "table_ref": "Table 3, row F4 >, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on first synthetic dataset: 200 samples, six numerical features, one outlier (Sample 0 altered in F0, F3, F4, F5 as Table 2); predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "The nodes with the lowest scores contain particularly meaningful predicates—namely, F4 >, F5 >, and F0 >",
+   "page": 8
+  },
+  {
+   "id": "C5",
+   "statement": "In the first synthetic dataset, 'F0 <=' has IOP-Score 0.1427, the highest positive score in Table 3.",
+   "metric": "IOP-Score",
+   "dataset": "Synthetic dataset 1 (200 samples, one outlier)",
+   "split": "all 200 samples; one outlier; no train/test split",
+   "value": 0.1427,
+   "unit": "IOP-Score",
+   "higher_is_better": true,
+   "table_ref": "Table 3, row F0 <=, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on first synthetic dataset: 200 samples, six numerical features, one outlier (Sample 0 altered in F0, F3, F4, F5 as Table 2); predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "Finally, the remaining nodes with IOP-Score values above 0 are predominantly involved in splits that classify points as inliers.",
+   "page": 9
+  },
+  {
+   "id": "C6",
+   "statement": "In the second synthetic dataset (four outliers), 'F0 >' has IOP-Score -0.0494, the lowest and most outlier-associated score in Table 5.",
+   "metric": "IOP-Score",
+   "dataset": "Synthetic dataset 2 (200 samples, four outliers)",
+   "split": "all 200 samples; four outliers; no train/test split",
+   "value": -0.0494,
+   "unit": "IOP-Score",
+   "higher_is_better": false,
+   "table_ref": "Table 5, row F0 >, column IOP-Score",
+   "config_for_value": "iForest with 200 iTrees on second synthetic dataset: 200 samples, six numerical features, four outliers (Samples 0–3 altered as Table 4); predicate pairs (f,σ); class-weighted edges; IOP-Score Eq. 2.",
+   "reported_spread": null,
+   "est_compute": "CPU, seconds",
+   "quote": "the nodes with the lowest IOP-Score are F0 >, F3 <=, and F1 >",
+   "page": 11
+  }
+ ],
+ "match_target": {
+  "claim_id": "C1",
+  "why": "Directly matches the user's target hint and is the paper's central Annthyroid result; it uses the same iForest+DPG computation as any other Annthyroid IOP-Score and is CPU-only and cheap."
+ },
+ "tolerance": {
+  "type": "absolute",
+  "value": 0.02,
+  "why": "Rule 3: IOP-Score is a bounded score in [-1,1] printed as a decimal, and no repeated-run std is reported; use the 0.02 absolute decimal band rather than a relative band."
+ },
+ "requirements": [
+  {
+   "id": "R1",
+   "stmt": "Use scikit-learn's IsolationForest (or equivalent) with 200 iTrees for the Annthyroid experiment.",
+   "cite": "Section 4.2",
+   "quote": "We applied our proposal to obtain an iForest model (using 200 iTrees) into a DPG and obtained results similar to the literature [21].",
+   "page": 12
+  },
+  {
+   "id": "R2",
+   "stmt": "Extract predicates from every internal node of every iTree as triples (f, σ, v), with sign σ in {>, ≤}.",
+   "cite": "Section 3.1",
+   "quote": "These predicates are represented as triples (f, σ, v), where the sign (σ) can be either > or ≤.",
+   "page": 5
+  },
+  {
+   "id": "R3",
+   "stmt": "Traverse every training sample through each iTree, record ordered predicate lists, and append the model-assigned Outlier/Inlier label.",
+   "cite": "Section 3.1 and Algorithm 1 lines 4–9",
+   "quote": "Each list is then extended by appending the label previously assigned to the observations",
+   "page": 5
+  },
+  {
+   "id": "R4",
+   "stmt": "For outlier sets, remove predicate lists whose path length exceeds the tree maximum depth.",
+   "cite": "Section 3.1 and Algorithm 1 line 10",
+   "quote": "we eliminate all predicate lists that exceed the trees’ maximum depth from the outlier sets.",
+   "page": 5
+  },
+  {
+   "id": "R5",
+   "stmt": "Collapse predicate triples to pairs (f, σ), discarding split values v for cross-tree aggregation.",
+   "cite": "Section 3.1 and Algorithm 1 line 11",
+   "quote": "we further refine them by removing the values (v) from each predicate triple, resulting in pairs of the form (f, σ).",
+   "page": 6
+  },
+  {
+   "id": "R6",
+   "stmt": "Add a directed edge only when two predicates appear consecutively in a recorded list, preserving order; edge weight is frequency.",
+   "cite": "Section 3.1 and Algorithm 1 lines 12–13",
+   "quote": "the predicate in the first node is immediately followed by the predicate in the second node",
+   "page": 6
+  },
+  {
+   "id": "R7",
+   "stmt": "Apply class-imbalance weights wo=(No+Ni)/No for outlier transitions and wi=(No+Ni)/Ni for inlier transitions.",
+   "cite": "Eq. 1",
+   "quote": "If the instance is classified as an outlier, its contribution to the frequency is multiplied by a weight wo.",
+   "page": 6
+  },
+  {
+   "id": "R8",
+   "stmt": "Compute IOP-Score(v) as the difference between Inlier and Outlier terminal frequencies, normalized by the node context.",
+   "cite": "Eq. 2",
+   "quote": "the difference between the frequency of data transitions from a node toward the “Inlier” class and those toward the “Outlier” class",
+   "page": 6
+  },
+  {
+   "id": "R9",
+   "stmt": "Use fin(v) as the denominator term in the IOP-Score normalization.",
+   "cite": "Eq. 2",
+   "quote": "fin(v) is the sum of the frequencies of all edges entering node v.",
+   "page": 6
+  },
+  {
+   "id": "R10",
+   "stmt": "Include terminal “Outlier” and “Inlier” nodes connected to predicate nodes based on appended labels.",
+   "cite": "Section 3.1 and Table 1",
+   "quote": "The resulting graph shows two classes: “Outlier” and “Inlier”, with their respective predicates distinguished by their frequency and position within the model logic.",
+   "page": 6
+  },
+  {
+   "id": "R11",
+   "stmt": "Use the iForest maximum-depth definition ceil(log2(min(256, |X|))) for depth cutoff.",
+   "cite": "Section 2.1",
+   "quote": "The iTree reaches its maximum depth, which is defined as:",
+   "page": 3
+  },
+  {
+   "id": "R12",
+   "stmt": "Use model-predicted Outlier/Inlier labels, not ground-truth anomaly labels, to color/label graph paths.",
+   "cite": "Section 3.1",
+   "quote": "These observations are assigned labels: “Outlier” if the model classifies them as such, and “Inlier” otherwise.",
+   "page": 5
+  },
+  {
+   "id": "R13",
+   "stmt": "For Annthyroid, use the six numerical features and 6,916 samples, excluding binary features.",
+   "cite": "Section 4.2",
+   "quote": null,
+   "page": null
+  },
+  {
+   "id": "R14",
+   "stmt": "Preserve the Annthyroid class imbalance of 3.61% anomalous samples when computing weights.",
+   "cite": "Section 4.2",
+   "quote": "anomalous instances accounting for only 3.61 % of the total samples.",
+   "page": 12
+  },
+  {
+   "id": "R15",
+   "stmt": "Use Graphviz to render the DPG visualization.",
+   "cite": "Section 4",
+   "quote": "Graphviz enabled the visualization of the DPG2 , enhancing the interpretability of the decision-making process.",
+   "page": 8
+  }
+ ],
+ "data": [
+  {
+   "name": "Annthyroid",
+   "how_to_get": "UCI Machine Learning Repository (paper ref [22]); the paper uses the Annthyroid thyroid-function dataset with six numerical features, 6,916 samples, and 3.61% anomalous cases; binary features are excluded."
+  },
+  {
+   "name": "Synthetic dataset 1",
+   "how_to_get": "Generate per Section 4.1: 200 samples, six numerical features, single cluster; alter Sample 0 in F0, F3, F4, and F5 using Table 2's initial/final values; the DPG-iForest repository may include the generator."
+  },
+  {
+   "name": "Synthetic dataset 2",
+   "how_to_get": "Generate per Section 4.1.2: 200 samples, six numerical features, single cluster; alter Samples 0–3 as specified in Table 4; the DPG-iForest repository may include the generator."
+  }
+ ],
+ "code_links": [
+  "https://github.com/LeonardoArrighi/DPG",
+  "https://github.com/Math0097/DPG-iForest"
+ ],
+ "stated_compute": null,
+ "paper_meta": {
+  "source": "2505.04019",
+  "kind": "arxiv",
+  "arxiv_id": "2505.04019",
+  "url": "https://arxiv.org/abs/2505.04019",
+  "title": "Extending Decision Predicate Graphs for Comprehensive Explanation of Isolation Forest",
+  "pages": 16
+ }
+}

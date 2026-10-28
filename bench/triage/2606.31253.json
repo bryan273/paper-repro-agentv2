@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "CER of the proposed MNAR-k-means method on synthetic 2D Gaussian data (k=2, a=2, lambda*=0.1) is lower than k-POD and close to fully-observed k-means (Figure 2, one panel/cell).",
+  "table_ref": "Figure 2 (CER panel, k=2, a=2, log(lambda*)=-1)",
+  "dataset": "Synthetic 2D Gaussian mixture (n=100k, k=2, a=2), MNAR0 missingness with lambda*=0.1"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/GXguanxin/MNAR-k-means"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Synthetic data generation plus a few hundred k-means iterations on n=200-400 points in 2D; 30 repetitions and lambda tuning are cheap on CPU."
+ },
+ "blockers": [
+  "Code repo may be incomplete or not match paper (R/MATLAB mix for baselines)",
+  "Exact figure values not tabulated; only qualitative reproduction of the trend is feasible",
+  "Instability-based lambda selection and 100 initializations add implementation effort"
+ ],
+ "suitable": true,
+ "id": "2606.31253",
+ "title": "MNAR-$k$-means: A $k$-means Clustering for Data Missing Not at Random with Magnitude-Decaying Probability",
+ "pages": 30,
+ "model": "DeepSeek-V4.1-Flash"
+}

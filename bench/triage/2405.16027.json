@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "WiSE-FT with alpha=0.4 achieves 63.5% average OOD accuracy on ImageNet variants after fine-tuning CLIP ViT-B/16 on ImageNet",
+  "table_ref": "Table 1, row WiSE-FT alpha=0.4, column Avg OOD",
+  "dataset": "ImageNet and its variants (ImageNet-V2, ImageNet-R, ImageNet-A, ImageNet-Sketch, ObjectNet)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 16,
+  "ram_gb": 16,
+  "disk_gb": 500,
+  "ref_minutes": 1440,
+  "gpu_speedup": 10,
+  "basis": "Fine-tuning CLIP ViT-B/16 on ImageNet for 10 epochs with batch size 512 requires GPU memory and compute; even on a GPU it takes hours, and on CPU it would be infeasible."
+ },
+ "blockers": [
+  "No code or data links provided",
+  "Requires GPU for fine-tuning CLIP ViT-B/16 on ImageNet",
+  "Large dataset (ImageNet) and multiple OOD datasets need to be downloaded and processed"
+ ],
+ "suitable": false,
+ "id": "2405.16027",
+ "title": "Feature Protection For Out-of-distribution Generalization",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

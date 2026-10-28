@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "F1 score of Isolation Forest (OutCenTR) on the NVD dataset",
+  "table_ref": "Table 3, row 'NVD', column 'F1', sub-row 'Isolation Forest (OutCenTR)'",
+  "dataset": "NVD (National Vulnerability Database) curated with ExploitDB labels"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/HEskandari/outcentr-research"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code or data released; NVD dataset must be re-curated from NVD and ExploitDB, and the OutCenTR pipeline (feature ranking, 10% selection, Isolation Forest) must be reimplemented from the paper's description, then run on 61k records x 286 features."
+ },
+ "blockers": [
+  "No code released (paper states code will be available only after final publication)",
+  "NVD dataset curated by authors is not publicly provided; must be rebuilt from NVD and ExploitDB with unspecified labeling procedure",
+  "Exact preprocessing, feature encoding, and train/test split details are underspecified"
+ ],
+ "suitable": false,
+ "id": "2304.10511",
+ "title": "OutCenTR: A novel semi-supervised framework for predicting exploits of vulnerabilities in high-dimensional datasets",
+ "pages": 11,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Silhouette score of 0.191 for k-means clustering on TDA-derived features (Wasserstein distance matrix embedded via MDS) for 13 currencies using monthly log-returns from 2000-01-13 to 2022-03-01.",
+  "table_ref": "Table 2 (text: 'Scores: Silhouette 0.191; CH 4.850')",
+  "dataset": "ECB euro foreign exchange reference rates for 13 currencies (AUD, BRL, CHF, CNY, GBP, INR, JPY, KRW, RUB, THB, TRY, USD, ZAR) against EUR, monthly log-returns, Jan 2000 - Mar 2022 (266 monthly observations)."
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 1,
+  "ref_minutes": 120,
+  "gpu_speedup": null,
+  "basis": "Data is freely available from ECB; TDA computations (Vietoris-Rips on ~260 points per currency, 13 currencies) are small and CPU-friendly, but no code is provided, so the agent must implement the full pipeline (sliding-window embedding, persistent homology, Wasserstein distances, MDS, k-means) from scratch, which is the main time cost."
+ },
+ "blockers": [
+  "No code or configuration files provided; full pipeline must be reimplemented from the paper's description.",
+  "Some methodological details (e.g., exact MDS settings, Wasserstein computation parameters) are not fully specified, requiring reasonable choices that may affect the exact score."
+ ],
+ "suitable": true,
+ "id": "2510.19306",
+ "title": "Topology of Currencies: Persistent Homology for FX Co-movements: A Comparative Clustering Study",
+ "pages": 26,
+ "model": "DeepSeek-V4.1-Flash"
+}

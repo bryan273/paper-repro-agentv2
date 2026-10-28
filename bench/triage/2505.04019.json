@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "IOP-Score of the predicate 'TSH >' in the DPG of an iForest model trained on the Annthyroid dataset, reported as -0.2429.",
+  "table_ref": "Table 6",
+  "dataset": "Annthyroid"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/LeonardoArrighi/DPG",
+  "https://github.com/Math0097/DPG-iForest"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 30,
+  "basis": "Training a 200-tree Isolation Forest on 6916 samples and building the DPG graph is lightweight; the main effort is installing dependencies and running the provided code, with some risk of missing configuration details."
+ },
+ "blockers": [
+  "Code may not be fully reproducible without specific hyperparameters (e.g., random seed, contamination) not stated in the paper."
+ ],
+ "suitable": true,
+ "id": "2505.04019",
+ "title": "Extending Decision Predicate Graphs for Comprehensive Explanation of Isolation Forest",
+ "pages": 16,
+ "model": "DeepSeek-V4.1-Flash"
+}

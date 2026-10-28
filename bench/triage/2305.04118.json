@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "MAPS with COMET-QE selection achieves a COMET score of 87.6 on English→Chinese translation using text-davinci-003, compared to 86.2 for the Baseline.",
+  "table_ref": "Table 1, row 'MAPS COMET-QE' under 'text-davinci-003 | COMET', column 'En-Zh'",
+  "dataset": "WMT22 English→Chinese test set"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/zwhe99/MAPS-mt"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 300,
+  "gpu_speedup": null,
+  "basis": "The target requires calling the closed-source text-davinci-003 API for knowledge mining, candidate generation, and QE scoring, which is not freely available and may be deprecated; the code is released but depends on external APIs and models, making reproduction infeasible without API access."
+ },
+ "blockers": [
+  "Requires access to the closed-source text-davinci-003 API, which is not freely available and may be deprecated.",
+  "The released code depends on external APIs and models (e.g., COMET-QE) that may require additional setup or access."
+ ],
+ "suitable": false,
+ "id": "2305.04118",
+ "title": "Exploring Human-Like Translation Strategy with Large Language Models",
+ "pages": 17,
+ "model": "DeepSeek-V4.1-Flash"
+}

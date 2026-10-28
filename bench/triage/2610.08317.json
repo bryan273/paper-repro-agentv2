@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "Mean held-out log copula density per subject for the four-family (Clayton/Gumbel/Frank/Gaussian) copula mixture fitted to within-sex standardized 50-m sprint and standing long jump scores of students: 0.1079, i.e. a gain of 0.0050 (SE 0.0011) over a single Gaussian copula (0.1029).",
+  "table_ref": "Table 4, row 'Students: speed, power / Four-family, K = 4'",
+  "dataset": "Jiangxi university student physical fitness tests (8772 students; supporting dataset S1 of Sun et al. 2024a)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code is released, so the four-family marginal Metropolis sampler (Algorithm 1), the Gaussian-copula baselines, the stratified train/eval split and the held-out scoring must all be re-implemented; the paper reports ~40-300 s per four-family fit on a laptop CPU, so a handful of chains plus baselines is a few hours of command time, dominated by debugging the re-implementation."
+ },
+ "blockers": [
+  "No code or repository linked anywhere in the paper",
+  "Student fitness data are a third-party supporting dataset (Sun et al. 2024a) that must be located and downloaded separately",
+  "Exact train/eval split and tie-breaking must be reconstructed from the text; results are sensitive to the random split",
+  "MCMC sampler details (adaptation, independence proposals, chain lengths) only partly specified"
+ ],
+ "suitable": true,
+ "id": "2610.08317",
+ "title": "Bayesian heterogeneous copula mixtures with nonparametric margins: consistency, identifiability and tail asymmetry in physical fitness data",
+ "pages": 55,
+ "model": "DeepSeek-V4.1-Flash"
+}

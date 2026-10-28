@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "GPT-4o + AnyCap-8B achieves an average content score of 4.54 on instruction-based image captioning (AnyCapEval), compared to GPT-4o's 2.89.",
+  "table_ref": "Table 2",
+  "dataset": "AnyCapEval image subset"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/qishisuren123/AnyCap"
+ ],
+ "data_access": "unknown",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 200,
+  "ref_minutes": 360,
+  "gpu_speedup": 10,
+  "basis": "Training AnyCap-8B requires 21 hours on 32 A100 GPUs; even inference with GPT-4o API and evaluation would need substantial compute and data access."
+ },
+ "blockers": [
+  "Requires training AnyCap-8B (21 hours on 32 A100 GPUs)",
+  "Needs GPT-4o API access for base captions and evaluation",
+  "AnyCapEval benchmark data may not be publicly released",
+  "AnyCapData construction uses proprietary models (GPT-4o, InternVL2.5-78B, Qwen2.5-VL-72B)"
+ ],
+ "suitable": false,
+ "id": "2507.12841",
+ "title": "AnyCap Project: A Unified Framework, Dataset, and Benchmark for Controllable Omni-modal Captioning",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

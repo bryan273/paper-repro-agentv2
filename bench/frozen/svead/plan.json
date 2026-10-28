@@ -1,0 +1,119 @@
+{
+ "approach": "Route is paper_only with no author repository on disk (only an uncloned anonymous.4open.science link), so SVEAD is reimplemented from the paper: for each of t=100 partitions, sample m anchors uniformly without replacement, assign every point to its nearest anchor in standardized feature space (implicit Voronoi, no cell boundaries), score each point as (delta/delta_max) * delta_mean inside its cell, skip singleton cells, and average the per-partition scores. The match target is C1: AUC-ROC 0.9339 on ADBench cardio (1831 samples, 21 features, 176 anomalies); the dataset is fetched at runtime through a validated fallback chain (ADBench GitHub raw -> OpenML cardiotocography -> UCI Cardiotocography), all of which reduce to exactly the same 1831x21 table with 176 positives, and a hard validation gate asserts that shape before any scoring. The m hyperparameter is grid-searched over {2,4,...,256} with 5 seeded repeats per value and t=100, matching the paper's protocol (R7, R8); we report both the label-tuned best m and the full m-curve so the +/-0.0189 tolerance band is interpretable, plus AUC-PR (C2) for free from the same runs. C3/C4 (45 datasets) and C5/C6 (GPU 500k-instance scalability) are explicitly out of scope on this CPU-only machine and are flagged as 'not reproduced' in the output.",
+ "files": [
+  {
+   "path": "svead/__init__.py",
+   "purpose": "Package marker; exposes load_cardio, svead_score, evaluate_scores for imports.",
+   "requirement_ids": []
+  },
+  {
+   "path": "svead/data.py",
+   "purpose": "Resolve, download, cache and validate the cardio dataset (ADBench GitHub raw -> OpenML 1466 -> UCI 193), filter to NSP in {1,3}, label = (NSP==3), return (X float64 1831x21, y int 0/1 with 176 ones, provenance dict). StandardScaler is applied later in reproduce/run_cardio, never labels. Labels are returned separately and never touch the scoring code (R10).",
+   "requirement_ids": [
+    "R10"
+   ]
+  },
+  {
+   "path": "svead/svead_core.py",
+   "purpose": "Core SVEAD: sample_anchors (uniform without replacement, R1), assign_cells (chunked Euclidean nearest anchor, argmin with lowest-index tie-break, no explicit cell boundaries, R2/R11), cell_stats (per-cell delta_max and delta_mean computed once per partition before scoring, R4), score_partition (score = (delta/delta_max)*delta_mean, singleton cell -> NaN skip, R3/R5), svead_score (mean over t partitions ignoring NaNs, all-NaN -> 0, R6) with a diagnostics dict (cell sizes, skipped fraction, per-partition timing) and O(n*m*d*t) chunked implementation (R12).",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "svead/metrics.py",
+   "purpose": "Evaluation helpers used only after scores exist (R9, R10): roc_auc_score, average_precision_score as primary AUC-PR, trapezoidal PR-curve AUC as secondary, and summarize(values) -> mean/std/min/max over the 5 repeats.",
+   "requirement_ids": [
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "experiments/smoke_test.py",
+   "purpose": "Tiny end-to-end data-flow proof: synthetic 300x6 with 10% injected outliers run at t=3, m=4, plus the real cardio at t=5, m=8; asserts score shapes, finiteness, non-negativity, a computed AUC-ROC, determinism for a repeated seed, and wall-clock under 60 s.",
+   "requirement_ids": []
+  },
+  {
+   "path": "experiments/run_cardio.py",
+   "purpose": "Full cardio protocol: for each m in {2,4,8,16,32,64,128,256} and each seed in {1..5}, run SVEAD with t=100, record AUC-ROC and AUC-PR, wall time, skipped-point fraction and cell-size stats; writes results/per_m_table.csv and results/raw_cardio.json; selects best m by mean AUC-ROC (R7, R8, R9, R10).",
+   "requirement_ids": [
+    "R7",
+    "R8",
+    "R9",
+    "R10"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Single entrypoint: loads cached/raw cardio results (re-running experiments/run_cardio.py if cache is missing or --force is passed), selects best m, writes results/metrics.json containing C1/C2 reproduced values, per-m table, std, dataset provenance/validation, timing, assumption ledger and an explicit 'not_reproduced' section for C3-C6; prints PASS if |AUC-ROC - 0.9339| <= 0.0189.",
+   "requirement_ids": [
+    "R7",
+    "R8",
+    "R9"
+   ]
+  }
+ ],
+ "config": {
+  "t_ensemble_size": "100 (paper Sec 5.1, requirement R7)",
+  "m_grid": "[2, 4, 8, 16, 32, 64, 128, 256] = {2^1..2^8} (paper Sec 5.1, requirement R7)",
+  "m_selection_criterion": "argmax over m of the mean AUC-ROC across the 5 repeats — label-using grid search as in benchmark practice (assumptions A3, A10)",
+  "m_fallback_if_scaling_down": "128 (assumption A3 fallback)",
+  "repeats": "5 (paper Sec 5.1, requirement R8)",
+  "seeds": "[1, 2, 3, 4, 5] (assumption A4)",
+  "distance": "Euclidean, computed on standardized features (paper Sec 4.1, requirement R2; scaling choice assumption A2)",
+  "scaling": "sklearn StandardScaler fit on all 1831 rows, no labels used (assumption A2)",
+  "anchor_sampling": "uniform without replacement over row indices, numpy default_rng(seed + 1000*m) so each (m, seed) pair is independent and reproducible (assumption A4)",
+  "tie_break": "lowest anchor index on distance ties (assumption A5)",
+  "singleton_cell": "skip the point in that partition, rely on remaining t-1 partitions (requirement R5)",
+  "all_partitions_skipped": "final score 0 (assumption A7)",
+  "delta_max_zero_guard": "score 0 if delta_max == 0 for a cell (degenerate duplicate-anchor case)",
+  "cell_stats_scope": "delta_max = max ||x - a|| and delta_mean = mean ||x - a|| over all points assigned to the cell, including the anchor itself with distance 0 (assumption A-new, low risk)",
+  "auc_roc": "sklearn.metrics.roc_auc_score (requirement R9)",
+  "auc_pr_primary": "sklearn.metrics.average_precision_score, matching ADBench convention (requirement R9)",
+  "auc_pr_secondary": "trapezoidal AUC of precision_recall_curve, reported alongside",
+  "dtype": "float32 distance blocks, float64 for cell statistics and scores",
+  "chunk_rows": 4096,
+  "device": "CPU only (assumption A8)",
+  "expected_dataset_signature": "n=1831, d=21, n_anomalies=176, anomaly_rate=0.0961",
+  "claim_c1_target": "AUC-ROC 0.9339 (paper Table 4, cardio/VEAD)",
+  "claim_c2_target": "AUC-PR 0.5356 (paper Table 6, cardio/VEAD)",
+  "tolerance_c1": "absolute 0.0189 = 3 x reported std 0.0063 (5 runs)",
+  "reported_std": "AUC-ROC 0.0063, AUC-PR 0.0246 (paper Tables 5 and 7)"
+ },
+ "steps": [
+  "Install/verify deps: `pip install numpy scipy pandas scikit-learn matplotlib requests tqdm openpyxl xlrd`; confirm sklearn.datasets.fetch_openml and sklearn.metrics imports succeed.",
+  "Write svead/data.py with a priority loader and an on-disk cache at data/cardio.npz: (1) local cache; (2) ADBench GitHub — GET https://api.github.com/repos/Minqi824/ADBench/git/trees/main?recursive=1, find any path containing 'cardio' ending in .csv/.npz/.arff, download via raw.githubusercontent.com; (3) sklearn.datasets.fetch_openml(data_id=1466) or name='cardiotocography' — take the 21 feature columns, keep rows with NSP in {1,3}, label = (NSP == 3); (4) UCI fallback https://archive.ics.uci.edu/static/public/193/cardiotocography.zip -> CTG.xls, same 21-feature/NSP filter.",
+  "Validate the loaded table in svead/data.py: assert X.shape == (1831, 21), y.sum() == 176, mean(y) ~= 0.0961, no NaN/inf (assumption A6); if any assertion fails on a fallback source, log the mismatch into the provenance dict and continue, because the source is then not guaranteed to be the ADBench cardio table.",
+  "Write svead/svead_core.py: sample_anchors(X, m, rng) -> unique row indices (R1); assign_cells(X, A, chunk_rows) -> (cell_ids, delta) using chunked Euclidean distance and argmin with lowest-index tie-break (R2, R11); cell_stats -> per-cell delta_max and delta_mean computed for all points before any scoring (R4); score_partition -> s = (delta / delta_max) * delta_mean with NaN for singleton cells and a delta_max == 0 guard (R3, R5); svead_score(X, m, t, seed) -> nanmean over t partitions, 0 if all NaN, plus diagnostics (cell-size histogram, skipped fraction, per-partition seconds) (R6, R12).",
+  "Write svead/metrics.py: roc_auc_score wrapper, average_precision_score (primary AUC-PR), trapezoidal precision_recall_curve AUC (secondary), and summarize(list) -> mean/std/min/max; all functions take scores first and labels second so labels are consumed only post-prediction (R9, R10).",
+  "Run the smoke test: `python experiments/smoke_test.py`. Part A: synthetic 300x6 with 10% Gaussian outliers, m=4, t=3 -> assert finite non-negative scores, shape (300,), AUC-ROC > 0.8. Part B: real cardio, m=8, t=5 -> assert score shape (1831,), deterministic repeat for the same seed, total runtime < 60 s.",
+  "Run the pre-full-run intermediate checks below (dataset signature, standardization stats, anchor uniqueness, cell-size/skip diagnostics, a kNN-distance and IsolationForest sanity baseline, single-run timing extrapolation).",
+  "Write experiments/run_cardio.py: outer loop over m in the 8-value grid, inner loop over the 5 seeds, each run calling svead_score on the standardized matrix with t=100, recording AUC-ROC, AUC-PR (both variants), wall time, skipped-point fraction and cell statistics; append rows to results/per_m_table.csv and dump raw per-run records to results/raw_cardio.json.",
+  "Launch the full suite: `python experiments/run_cardio.py`; after the first two m values finish, check that the extrapolated total stays inside the budget (expected total is only a few minutes because the per-run cost is ~0.1-3 s at these sizes) and only then let it complete.",
+  "Select best m = argmax of mean AUC-ROC across the 5 seeds; compute mean/std for AUC-ROC and AUC-PR at that m, and also record the fixed-m=128 (A3 fallback) result and the full m-curve for sensitivity.",
+  "Write reproduce.py: load data from cache, reuse or regenerate results/raw_cardio.json, run selection, then write results/metrics.json with (a) C1 value vs 0.9339 with the 0.0189 band and PASS/FAIL verdict, (b) C2 value vs 0.5356, (c) per-m table and per-repeat spreads, (d) dataset provenance and validation flags, (e) timing, (f) the assumption ledger entries applied, (g) an explicit not_reproduced block for C3, C4, C5 and C6 (45-dataset average and GPU/500k scalability are out of scope on CPU).",
+  "Run the final entrypoint `python reproduce.py` and read results/metrics.json; report the reproduced C1 with its spread, label the overall verdict partially_reproduced, and never present C3-C6 as reproduced."
+ ],
+ "smoke_test": "`python experiments/smoke_test.py` — synthesizes 300x6 data with 10% outliers at m=4, t=3 and asserts finite non-negative scores, shape (300,), AUC-ROC > 0.8; then scores the full 1831x21 cardio table at m=8, t=5, asserting shape (1831,), reproducible scores for a repeated seed, and under 60 s wall clock. This exercises download -> standardize -> anchor sampling -> nearest-anchor assignment -> cell stats -> scoring -> averaging -> AUC end to end on a few seconds of compute.",
+ "intermediate_checks": [
+  "Dataset signature: X.shape == (1831, 21), y.sum() == 176, anomaly rate 0.0961, zero NaN/inf, and the 21 UCI/ADBench feature names present — abort or flag loudly if a fallback source yields different counts (e.g. 2126 rows means the suspect class was not filtered).",
+  "Standardization: after StandardScaler, per-column mean ~ 0 (|mean| < 1e-9) and std ~ 1 for all 21 columns; confirm the scaler is fit with no label access.",
+  "Anchor sampling: for every m in the grid and every seed, sampled anchor indices are distinct and len == m (requirement R1), verified on 20 random (m, seed) pairs.",
+  "Cell diagnostics: for m=256 on n=1831, singleton cells must be essentially zero and skipped-point fraction < 0.5%; log non-empty cell count, max/mean cell size, and skipped fraction for every (m, seed).",
+  "Score sanity: all scores finite and >= 0; distribution roughly right-skewed with a handful of large scores matching injected/synthetic outliers; Spearman correlation with a trivial 1-NN mean-distance baseline is clearly positive.",
+  "Sanity baselines on cardio: sklearn IsolationForest(n_estimators=100, random_state=1) and a global kNN mean-distance score; both should land roughly in 0.65-0.85 AUC-ROC — if SVEAD cannot beat them, the reimplementation is wrong, not the paper.",
+  "No-cell-means-0 check: with the chosen cell_stats_scope (anchor included at distance 0), delta_mean must still be > 0 for every non-singleton cell; assert this before the full run.",
+  "Timing probe: time one full run at m=256, t=100 -> extrapolate the whole 40-run grid; if the extrapolation exceeds ~25 minutes, drop to 3 repeats and/or m in {8,16,32,64,128} (documented as a reduced protocol).",
+  "Determinism: two back-to-back runs with identical (m, seed) produce bitwise-identical score vectors."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~90 min on CPU. Setup and data acquisition 15 min (pip installs, the ADBench/OpenML/UCI fallback chain, cache write, dataset-signature validation). Implementation of svead/data.py, svead/svead_core.py and svead/metrics.py 20 min. Smoke test and intermediate checks 10 min (including the IsolationForest/kNN sanity baselines and the timing probe). Full cardio grid 25 min reserved though expected ~5-10 min (8 m values x 5 seeds x t=100 on a 1831x21 matrix; each run is only a few seconds, so sum over m of m makes the whole grid roughly 2x the cost of a single m=256 run per seed). Final reproduce.py + metrics.json writing and interpretation 10 min. Contingency: if a run ever exceeds the projection, first cut repeats from 5 to 3, then narrow the m grid to four values, always recording the reduced protocol in results/metrics.json. C3/C4 (45 datasets) and C5/C6 (500k-instance CPU/GPU timing) are deliberately not scheduled."
+}

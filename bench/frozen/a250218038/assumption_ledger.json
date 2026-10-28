@@ -1,0 +1,176 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper permits either maximum likelihood or probability-weighted-moment estimation of the GEV parameters but does not state which was used for the reported simulations or real-data results.",
+  "options": [
+   "maximum likelihood estimation (MLE)",
+   "probability weighted moments (PWM)"
+  ],
+  "chosen": "MLE",
+  "rationale": "MLE is listed first, is standard for GEV fits, and is directly available in scipy.stats.genextreme.fit; use it consistently.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "Different approaches exist to approximate the unknown values of θn, such as maximum likelihood estimation or the probability weighted moment (PWM) method.",
+  "page": 7
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "How to form GEV samples from the initial n residuals and how to scale an estimate from block size r to block size n are not specified.",
+  "options": [
+   "rolling block maxima of size r=floor(sqrt(n)) then scale to n using Assumption 3",
+   "disjoint block maxima of size r=floor(sqrt(n)) then scale to n",
+   "fit GEV directly to |residuals| treating them as maxima"
+  ],
+  "chosen": "rolling block maxima of size r=floor(sqrt(n)) then scale to n using Assumption 3",
+  "rationale": "Remark 4 explicitly motivates scaling from blocks r=o(n) to n; sqrt(n) gives enough maxima while satisfying r=o(n).",
+  "source": "convention",
+  "risk": "high",
+  "quote": "The assumption about the scaling sequences is required to scale estimators of the GEV distribution from blocks of size r to blocks of size n.",
+  "page": 6
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The simulation bandwidth candidate grid and whether h_n is in t-units or observation counts are not stated.",
+  "options": [
+   "h_n in t-units over {0.10,0.15,0.20,0.25,0.30,0.40,0.50}",
+   "h_n in observation counts over {5,10,15,20,25}",
+   "h_n fixed at 0.2"
+  ],
+  "chosen": "h_n in t-units over {0.10,0.15,0.20,0.25,0.30,0.40,0.50}",
+  "rationale": "The kernel argument is (i/n−t)/h_n, so h_n is in t-units; this grid gives roughly 5–25 observations for n=50.",
+  "source": "guess",
+  "risk": "high",
+  "quote": "tuned the bandwidth with 5-fold cross validation, minimizing the mean squared error.",
+  "page": 11
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The 5-fold cross-validation split for a time series is not described.",
+  "options": [
+   "contiguous time blocks",
+   "random shuffle of time points",
+   "leave-future-out rolling folds"
+  ],
+  "chosen": "contiguous time blocks",
+  "rationale": "Respects temporal dependence and avoids leakage from future points into training folds.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "tuned the bandwidth with 5-fold cross validation, minimizing the mean squared error.",
+  "page": 11
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "How specificity and sensitivity are aggregated across the 1,000 series and across time points is not defined.",
+  "options": [
+   "pool all observations across series",
+   "average per-series rates",
+   "average over series and then over time"
+  ],
+  "chosen": "pool all observations across series and time points",
+  "rationale": "Matches empirical specificity and sensitivity as proportions among all normal or outlier observations.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "In Tables 1 and 2, we report the empirical specificity and sensitivity of the compared tests",
+  "page": 11
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "Whether the initial n observations are included in the reported specificity/sensitivity is not explicit.",
+  "options": [
+   "exclude first n and test only subsequent 10n points",
+   "test all 11n points",
+   "exclude first n and also n after each block"
+  ],
+  "chosen": "exclude first n and evaluate tests on subsequent 10n points",
+  "rationale": "The initial period is reserved for GEV estimation under Assumption 6, and the real-data section discards data before the initial period.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "The first observations X1, . . . , Xn do not contain outliers",
+  "page": 7
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The distribution-specific minimal outlier height d_n in simulations is not given numerically.",
+  "options": [
+   "d_n = GEV (1−α) critical value from the initial fit",
+   "d_n = 3 sd(ε)",
+   "d_n = 5 sd(ε)"
+  ],
+  "chosen": "d_n = GEV (1−α) critical value from the initial fit",
+  "rationale": "Directly follows Corollary 8(iii)'s requirement c_i,n ≥ d_n and makes outliers asymptotically detectable.",
+  "source": "paper",
+  "risk": "high",
+  "quote": "For each distribution, a minimal outlier height was defined in accordance with the assumption from Corollary 8 (iii).",
+  "page": 10
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The software parameterization and sign convention for the GEV shape parameter are not specified.",
+  "options": [
+   "scipy.stats.genextreme c = −γ",
+   "scipy.stats.genextreme c = γ",
+   "implement the paper's G(γ,μ,σ) directly"
+  ],
+  "chosen": "implement the paper's G(γ,μ,σ) directly or use scipy with c=−γ",
+  "rationale": "The paper defines G with shape γ; scipy's c parameter uses the opposite sign in this convention.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": "The Generalized Extreme Value (GEV) distribution is defined by",
+  "page": 5
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Seeds for simulation, outlier placement, and cross-validation folds are not reported.",
+  "options": [
+   "fixed seed 0",
+   "fixed seed 42",
+   "no seed / independent runs"
+  ],
+  "chosen": "fixed seed 0 for all stochastic steps",
+  "rationale": "Makes reproduction deterministic; 1,000 series makes estimates stable.",
+  "source": "guess",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "Whether simulations use constant α_i=α or summable block levels α_i=bar α_k is not explicitly tied to Tables 1 and 2.",
+  "options": [
+   "constant α_i=α=0.01",
+   "summable block levels with total α=0.01",
+   "Bonferroni per test"
+  ],
+  "chosen": "constant α_i=α=0.01 as stated for joint level of n consecutive tests",
+  "rationale": "Corollary 8(i) and the text set the joint level α for n consecutive tests to 1%; no summable schedule is mentioned for simulations.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "With constant level αi = α, the decision rule in (5) has asymptotic level α for n consecutive tests",
+  "page": 9
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Does the one-sided estimator at time i include the current observation Xi itself?",
+  "options": [
+   "include Xi (j ≤ i)",
+   "exclude current Xi (j < i)"
+  ],
+  "chosen": "include Xi (j ≤ i)",
+  "rationale": "Kernel support [−1,0] includes zero and the paper says observations up to time i are used for the full version.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the estimator ̃μn( i n) is based on all observations until time i and refer to it as the “full” version.",
+  "page": 9
+ }
+]

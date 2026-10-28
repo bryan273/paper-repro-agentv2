@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "Number of significant LISA clusters (55 total: 47 High-High, 8 Low-Low) in the uncorrected local Moran analysis of Colombian malaria incidence, and the ESS-adjusted counts (ESS ≈ 364.5 from APLE ρ̂ = 0.4911)",
+  "table_ref": "Section 6 / Section 2 (Figure 1 and text; no numbered table for the case study)",
+  "dataset": "Colombian malaria incidence 1998, 1,066 municipalities (GeoDa Data and Lab)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://geodacenter.github.io/data-and-lab/colomb_malaria/"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 4,
+  "disk_gb": 1,
+  "ref_minutes": 60,
+  "gpu_speedup": null,
+  "basis": "Data is a small public shapefile (1,066 polygons); the analysis is local Moran + APLE + ESS-adjusted Bonferroni/BH, all cheap on CPU, but no code is released so the agent must reimplement LISA/APLE/ESS from the paper and match the reported counts."
+ },
+ "blockers": [
+  "No code released (only 'available upon request')",
+  "Must reimplement APLE estimator and ESS formula to match reported ρ̂=0.4911 and ESS=364.5",
+  "Exact cluster counts depend on permutation/randomization settings not fully specified"
+ ],
+ "suitable": true,
+ "id": "2610.13472",
+ "title": "How Many Significant LISA?: A multiple testing correction",
+ "pages": 25,
+ "model": "DeepSeek-V4.1-Flash"
+}

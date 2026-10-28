@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "LiFi achieves 99.16% Correctness on sentiment control (neu2pos) with GPT2-Medium, outperforming baselines",
+  "table_ref": "Table I, row LiFi, column neu2pos Correctness",
+  "dataset": "SST-5 (sentiment) + IMDb unlabeled"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 240,
+  "gpu_speedup": 3,
+  "basis": "No code released; must reimplement LiFi (attribute classifier, adapter fusion, training loop) from scratch, train GPT2-Medium with adapters on SST-5 + IMDb, then generate and evaluate; CPU-only feasible but slow."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Requires reimplementing adapter fusion and fine-grained control code pipeline",
+  "Training GPT2-Medium on CPU is slow (hours)"
+ ],
+ "suitable": false,
+ "id": "2402.06930",
+ "title": "LiFi: Lightweight Controlled Text Generation with Fine-Grained Control Codes",
+ "pages": 13,
+ "model": "DeepSeek-V4.1-Flash"
+}

@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Unpruned inverse-square RTKNNC on variable-density blobs at K=8 yields ARI 0.7817 (4 clusters, 0 unclustered)",
+  "table_ref": "Table 1, row K=8",
+  "dataset": "variable-density Gaussian blobs (synthetic, N=2000, 5 reference classes)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/epmarinho/rtknnc"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 2,
+  "disk_gb": 1,
+  "ref_minutes": 15,
+  "gpu_speedup": null,
+  "basis": "Single K=8 run on 2000 2-D points: KNN graph + closure is milliseconds-to-seconds; time is dominated by cloning repo, building the C binary (or running the Python port) and computing ARI."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2610.06795",
+ "title": "Round-Trip KNN Clustering: multiscale hierarchical cluster detection on directed nearest-neighbour graphs",
+ "pages": 32,
+ "model": "DeepSeek-V4.1-Flash"
+}

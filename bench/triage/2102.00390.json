@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "AACP reduces 50% FLOPs of VGG16 on CIFAR10 with +0.16% top-1 accuracy (Ours (S,0.50): 93.72% vs baseline 93.56%)",
+  "table_ref": "Table 1, row 'Ours (S,0.50)' for VGG16",
+  "dataset": "CIFAR10"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 16,
+  "disk_gb": 20,
+  "ref_minutes": 900,
+  "gpu_speedup": 5,
+  "basis": "No code released; must reimplement AACP (IDE search + PSAE) and train VGG16 on CIFAR10 for 160 epochs plus 320-epoch from-scratch training of the pruned model, which is many CPU-hours even on a small dataset."
+ },
+ "blockers": [
+  "No code released (paper says source code will be released after publication)",
+  "Requires reimplementing IDE search and PSAE from scratch",
+  "Training VGG16 on CIFAR10 for 160+320 epochs is slow on CPU-only laptop"
+ ],
+ "suitable": false,
+ "id": "2102.00390",
+ "title": "AACP: Model Compression by Accurate and Automatic Channel Pruning",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

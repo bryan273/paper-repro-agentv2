@@ -1,0 +1,338 @@
+[
+ {
+  "id": "A1",
+  "by": "reader",
+  "gap": "The paper does not state the hidden-layer nonlinearity for the Table 1 regression networks.",
+  "options": [
+   "ReLU",
+   "TanH",
+   "sigmoid"
+  ],
+  "chosen": "ReLU",
+  "rationale": "ReLU is the common default in PBP-style UCI regression and in the authors' later code.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A2",
+  "by": "reader",
+  "gap": "The paper says dropout probabilities 0.05 and 0.005 but does not specify which weight layer receives which probability.",
+  "options": [
+   "p=0.05 on input-to-hidden, p=0.005 on hidden-to-output",
+   "p=0.005 on input-to-hidden, p=0.05 on hidden-to-output",
+   "single p=0.05"
+  ],
+  "chosen": "p=0.05 on input-to-hidden, p=0.005 on hidden-to-output",
+  "rationale": "Matches the two weight layers in a one-hidden-layer network and the stated two dropout probabilities.",
+  "source": "paper",
+  "risk": "medium",
+  "quote": "We used dropout with probabilities 0.05 and 0.005 since the network size is very small",
+  "page": 7
+ },
+ {
+  "id": "A3",
+  "by": "reader",
+  "gap": "The paper uses BO over validation log-likelihood but does not give the train/validation/test split proportions.",
+  "options": [
+   "90/10 train/test, with 20% of train held out for validation",
+   "80/20 train/test",
+   "80/10/10 train/validation/test"
+  ],
+  "chosen": "90/10 train/test, with 20% of train held out for validation",
+  "rationale": "Follows the PBP-style 20-split UCI setup with a 10% test set and provides a validation set for BO.",
+  "source": "cited_work",
+  "risk": "high",
+  "quote": "we use Bayesian optimisation (BO, (Snoek et al., 2012; Snoek & authors, 2015)) over validation log-likelihood to find optimal τ",
+  "page": 7
+ },
+ {
+  "id": "A4",
+  "by": "reader",
+  "gap": "The paper does not specify input/target scaling for the UCI datasets.",
+  "options": [
+   "Standardize inputs and targets per split",
+   "Standardize inputs only",
+   "No scaling"
+  ],
+  "chosen": "Standardize inputs and targets per split",
+  "rationale": "Standard practice for UCI regression and consistent with PBP preprocessing.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A5",
+  "by": "reader",
+  "gap": "The paper does not state the number T of MC dropout forward passes used for Table 1.",
+  "options": [
+   "10",
+   "100",
+   "1000"
+  ],
+  "chosen": "1000",
+  "rationale": "The paper uses T=1000 for drawing CO2 results and notes smaller T gives reasonable estimates; T=1000 reduces Monte Carlo noise for RMSE.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A6",
+  "by": "reader",
+  "gap": "The Adam learning rate is not specified.",
+  "options": [
+   "0.001 (default)",
+   "0.01",
+   "tuned by BO"
+  ],
+  "chosen": "0.001 (default)",
+  "rationale": "Adam default is the most common convention when the paper does not specify a rate.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A7",
+  "by": "reader",
+  "gap": "The exact weight-decay value is not given, only the relation to tau and l.",
+  "options": [
+   "Compute lambda from tau, l, and N using eq. (7)",
+   "Tune lambda directly",
+   "Fix lambda = 1e-4"
+  ],
+  "chosen": "Compute lambda from tau, l, and N using eq. (7)",
+  "rationale": "Eq. (7) gives tau = sqrt(l^2/(2N lambda)), so lambda = l^2/(2N tau^2); this is the paper's intended connection.",
+  "source": "paper",
+  "risk": "low",
+  "quote": "the prior length-scale l and model precision τ are simply used to define the model’s weight decay through eq. (7).",
+  "page": 7
+ },
+ {
+  "id": "A8",
+  "by": "reader",
+  "gap": "The exact 20 random splits from Hernandez-Lobato & Adams (2015) are not included in the paper.",
+  "options": [
+   "Use exact PBP splits if available",
+   "Generate 20 random splits with a fixed seed"
+  ],
+  "chosen": "Use exact PBP splits if available, else generate 20 random splits with a fixed seed",
+  "rationale": "Using the original splits is most faithful; otherwise a fixed seed makes the reproduction deterministic.",
+  "source": "cited_work",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A9",
+  "by": "reader",
+  "gap": "Weight initialization is not specified.",
+  "options": [
+   "Glorot/Xavier uniform",
+   "He normal",
+   "Small Gaussian"
+  ],
+  "chosen": "Glorot/Xavier uniform",
+  "rationale": "Standard initialization for fully connected layers with ReLU/TanH; Keras default.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A10",
+  "by": "reader",
+  "gap": "The paper does not mention early stopping or a stopping criterion beyond fixed iterations.",
+  "options": [
+   "Fixed 400 epochs",
+   "Early stopping on validation loss",
+   "Fixed epochs with learning-rate decay"
+  ],
+  "chosen": "Fixed 400 epochs",
+  "rationale": "The paper explicitly says 40 BO iterations then 10x more iterations/epochs, and does not mention early stopping.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A11",
+  "by": "reader",
+  "gap": "Shuffling of mini-batches is not specified.",
+  "options": [
+   "Shuffle each epoch",
+   "Do not shuffle"
+  ],
+  "chosen": "Shuffle each epoch",
+  "rationale": "Standard SGD/Adam practice and Keras default.",
+  "source": "convention",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A12",
+  "by": "reader",
+  "gap": "Random seeds for initialization and dropout are not specified.",
+  "options": [
+   "Single fixed seed",
+   "Multiple seeds averaged",
+   "Same seeds as PBP"
+  ],
+  "chosen": "At least 5 seeds per split, average",
+  "rationale": "The paper averages over random splits; averaging seeds further reduces variance in reproduction.",
+  "source": "guess",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A13",
+  "by": "reader",
+  "gap": "If targets are standardized, RMSE must be reported in the original target units.",
+  "options": [
+   "Inverse-transform predictions before computing RMSE",
+   "Compute RMSE in standardized space"
+  ],
+  "chosen": "Inverse-transform predictions before computing RMSE",
+  "rationale": "Table 1 RMSE values are in the original dataset units; this makes them comparable to PBP/VI.",
+  "source": "convention",
+  "risk": "medium",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A14",
+  "by": "reader",
+  "gap": "Predictive log-likelihood in eq. (8) requires tau and T, but T is not stated for Table 1.",
+  "options": [
+   "T=1000",
+   "T=100"
+  ],
+  "chosen": "T=1000",
+  "rationale": "Consistent with the MC dropout sample size used for qualitative results and low Monte Carlo noise.",
+  "source": "paper",
+  "risk": "low",
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A15",
+  "by": "implementer",
+  "gap": "Which epoch budget corresponds to the Table 1 (claim C1) dropout row, given the authors' released result files are named 100_xepochs.",
+  "chosen": "Base schedule 40 epochs (data/n_epochs.txt) times multiplier 10 = 400 epochs for the Table-1 setting; the shipped *_100_xepochs_* result files (40*100 = 4000 epochs) belong to the paper's Table 2 / '10x epochs' setting and are used only as an external anchor.",
+  "rationale": "Paper sec. 5.3 says BO used 40 iterations and that after finding optimal parameters 10x more iterations were used; update note 4 calls the shipped setting '100x more epochs compared to PBP' (i.e. Table 2). The claim contract for C1 also specifies ~400 epochs.",
+  "risk": "medium",
+  "options": [
+   "epoch multiplier 10 (=400 epochs) for Table 1",
+   "epoch multiplier 100 (=4000 epochs), i.e. reproduce the released files instead",
+   "no multiplier (40 epochs)"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A16",
+  "by": "implementer",
+  "gap": "Batch size: the paper says 32 (R6), the authors' released net/net.py uses 128.",
+  "chosen": "batch_size = 32 (paper), keeping the gradient-step count of the Table-1 schedule (10x fewer steps than the released 4000-epoch/128-batch runs).",
+  "rationale": "The target claim is the paper's Table 1 number, whose stated configuration is mini-batches of 32; the ported training loop is otherwise identical to net/net.py.",
+  "risk": "medium",
+  "options": [
+   "32 (paper)",
+   "128 (released code)"
+  ],
+  "quote": "Finally, we used mini-batches of size 32 and the Adam optimiser (Kingma & Ba, 2014).",
+  "page": 7
+ },
+ {
+  "id": "A17",
+  "by": "implementer",
+  "gap": "How the 20% validation set used for hyper-parameter selection is formed.",
+  "chosen": "Deterministically: the last 20% of the released training index file, exactly as the authors' experiment.py (num_training_examples = int(0.8 * n_train); validation = rows [num_training_examples:]).",
+  "rationale": "The released code is authoritative and deterministic; no reshuffling was invented. This supersedes the reader's assumption that a random 80/20 split was used.",
+  "risk": "low",
+  "options": [
+   "last 20% of the released training indices (authors' code)",
+   "random 80/20 with fixed seed"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A18",
+  "by": "implementer",
+  "gap": "Hyper-parameter search: the paper (R4) uses 40-iteration Spearmint Bayesian optimisation over validation log-likelihood.",
+  "chosen": "The authors' own 2018 replacement: exhaustive grid search over the released dropout_rates.txt x tau_values.txt, scored by validation predictive log-likelihood, with the grid written by Spearmint in the released data dirs.",
+  "rationale": "Spearmint is Python-2 and unavailable here; the authors updated the repo precisely to use this grid search because of test-set contamination in the BO runs.",
+  "risk": "medium",
+  "options": [
+   "grid search over released grids (authors' 2018 update)",
+   "re-implement 40-iteration BO",
+   "random search"
+  ],
+  "quote": "The BO runs used 40 iterations following the original setup",
+  "page": 7
+ },
+ {
+  "id": "A19",
+  "by": "implementer",
+  "gap": "R10 requires averaging over 20 random splits; the compute budget does not allow 20 splits x 12 grid fits x 400 epochs on this CPU.",
+  "chosen": "Run 5 of the 20 released splits for the target dataset and report mean test RMSE with the standard error over those 5 splits (documented scale-down along the split axis only).",
+  "rationale": "Measured cost is ~161 s per split (~2.7 min), so 20 splits would be ~54 min of compute alone. Shrinking the split axis keeps the estimator (400 epochs, T MC passes, grid search) intact, which is required for the value to be comparable; the standard error widens by sqrt(20/5).",
+  "risk": "medium",
+  "options": [
+   "5 of 20 splits (chosen)",
+   "10 of 20 splits",
+   "all 20 splits with fewer epochs/MC samples"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A20",
+  "by": "implementer",
+  "gap": "Eq. (7) as it appears in the paper text/reader note suggests a square-root relation lambda = l^2/(2 N tau^2)-style scaling, while the released code scales linearly in 1/tau.",
+  "chosen": "Weight decay lambda = l^2 (1 - p_dropout) / (2 N tau), i.e. the expression in the authors' net/net.py (paper eq. (7) with p = keep probability), evaluated per model with N = number of training rows of that fit.",
+  "rationale": "The route plan designates the released source as authoritative; validation of the exact expression is asserted in the intermediate checks.",
+  "risk": "medium",
+  "options": [
+   "net/net.py expression l^2(1-p)/(2 N tau) (chosen)",
+   "paper eq. (7) sqrt form"
+  ],
+  "quote": null,
+  "page": null
+ },
+ {
+  "id": "A21",
+  "by": "implementer",
+  "gap": "The number of MC dropout samples T is only loosely constrained (reader assumption A5/A14 proposed T=1000).",
+  "chosen": "T = 10000 stochastic forward passes for the final test RMSE/log-likelihood (authors' net.py), and T = 1000 during the grid search (cheaper, same mean estimator).",
+  "rationale": "The authors' released evaluation code uses T=10000; using the same value removes an unnecessary deviation and costs only ~3 s per split. This is a small deviation from the reader's ledger assumption, recorded here.",
+  "risk": "low",
+  "options": [
+   "T=10000 test / T=1000 grid (chosen, matches net.py)",
+   "T=1000 everywhere",
+   "T=100"
+  ],
+  "quote": "The number of forward iterations used to estimate the uncertainty (T) was 1000 for drawing purposes.",
+  "page": 6
+ },
+ {
+  "id": "A22",
+  "by": "implementer",
+  "gap": "Eq. (8) in the paper uses -1/2 log(tau) while the released code adds +0.5 log(tau); the OCR'd equation text is ambiguous.",
+  "chosen": "Predictive log-likelihood of the authors' net/net.py: logsumexp(-0.5*tau*(y-yhat)^2) - log(T) - 0.5*log(2*pi) + 0.5*log(tau).",
+  "rationale": "The released code is authoritative for this reproduction and is the formula that generated the shipped result files; both variants differ only by a constant offset in log tau, which does not change hyper-parameter selection within a fixed tau unless the offset crosses tau values (noted as a risk).",
+  "risk": "low",
+  "options": [
+   "released code formula (chosen)",
+   "paper eq. (8) as OCR'd"
+  ],
+  "quote": "−log T −1\n2 log 2π −1\n2 log τ −1",
+  "page": 4
+ }
+]

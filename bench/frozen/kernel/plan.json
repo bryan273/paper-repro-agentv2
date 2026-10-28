@@ -1,0 +1,152 @@
+{
+ "approach": "Reimplement the proximity kernel from the paper for the target claim C1 on the UCI Hepatitis dataset. For each feature, equal-frequency binning uses evenly-spaced percentiles of observed values only, then each observed value is assigned to its nearest bin center and encoded as a one-hot vector. Missing feature encodings are filled by a three-level cascading fallback (intersection matching, union matching, global prior) using kernel mean embedding over matching samples. The resulting representation Z is clustered with sklearn KMeans using the ground-truth number of clusters, NMI is averaged over 10 random seeds, and nbins is searched over {2,3,4,6,8} by mean NMI. Finally, reproduce.py writes results/metrics.json comparing the selected NMI to the target 0.2289 within ±0.02.",
+ "files": [
+  {
+   "path": "src/data.py",
+   "purpose": "Load UCI Hepatitis (155 samples, 19 features, 2 classes) from the UCI URL, replace '?', blanks, and NaN markers with NaN, return X as float array (155x19) and y as integer labels (0/1) for K=2.",
+   "requirement_ids": [
+    "R1"
+   ]
+  },
+  {
+   "path": "src/proximity_kernel.py",
+   "purpose": "Implement equal-frequency binning, proximity assignment to nearest bin center, one-hot encoding for observed values, three-level cascading fallback with kernel mean embedding for missing values, build representation Z, and compute proximity kernel K = (1/d) Z Z^T.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R14"
+   ]
+  },
+  {
+   "path": "src/cluster.py",
+   "purpose": "Run sklearn KMeans with n_clusters equal to ground-truth K on Z, compute NMI, average over 10 random seeds, and search nbins over {2,3,4,6,8} selecting the best mean NMI.",
+   "requirement_ids": [
+    "R10",
+    "R11",
+    "R12"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: load Hepatitis, run nbins search and 10-seed KMeans/NMI evaluation, write results/metrics.json with the C1 value, target, tolerance, pass/fail, best nbins, per-nbins and per-seed results, diagnostics, and environment metadata.",
+   "requirement_ids": [
+    "R1",
+    "R2",
+    "R3",
+    "R4",
+    "R5",
+    "R6",
+    "R7",
+    "R8",
+    "R9",
+    "R10",
+    "R11",
+    "R12",
+    "R14"
+   ]
+  },
+  {
+   "path": "results/metrics.json",
+   "purpose": "Generated output containing the final C1 metric and supporting per-nbins/per-seed results.",
+   "requirement_ids": []
+  }
+ ],
+ "config": {
+  "dataset_name": "Hepatitis (UCI id=46, 155x19, 2 classes) (claim C1, Table 2)",
+  "data_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/hepatitis/hepatitis.data",
+  "missing_markers": [
+   "?",
+   "",
+   "NaN",
+   "nan"
+  ],
+  "missing_markers_assumption": "A6",
+  "class_labels": {
+   "1": 0,
+   "2": 1
+  },
+  "feature_encoding": "ordinal integer codes; treat all columns as numeric after ordinal encoding; no scaling (A1, A11)",
+  "bin_center_percentiles": "100*k/(nbins+1) for k=1..nbins (new assumption A13; paper Eq.4 says evenly-spaced percentiles)",
+  "percentile_interpolation": "linear (numpy default) (A2)",
+  "tie_break": "lowest bin index via np.argmin (A3)",
+  "nbins_grid": [
+   2,
+   3,
+   4,
+   6,
+   8
+  ],
+  "nbins_grid_source": "paper Sec 5.1 (R12)",
+  "nbins_selection": "max mean NMI over 10 runs per nbins (A9)",
+  "clustering": "sklearn KMeans on Z (one-hot/proximity representation), n_clusters=ground_truth K (paper Sec 5.1, R10; A4)",
+  "kmeans_init": "k-means++ (A4)",
+  "kmeans_n_init": 10,
+  "kmeans_n_init_assumption": "A4",
+  "kmeans_random_states": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "kmeans_random_states_assumption": "A4, R11",
+  "nmi_variant": "sklearn normalized_mutual_info_score default arithmetic mean (A5)",
+  "fallback_level1": "intersection matching on all observed features of i; mean one-hot over matching samples that have feature j observed (R5,R6; A8)",
+  "fallback_level2": "union matching on any observed feature of i; mean one-hot over matching samples that have feature j observed (R7)",
+  "fallback_level3": "global prior bin frequencies for feature j; uniform 1/nbins if feature j is entirely missing (R8; A7)",
+  "kernel_normalization": "K = (1/d) Z @ Z.T (paper Eq.15, R9)",
+  "target_claim": "C1",
+  "target_value": 0.2289,
+  "tolerance_absolute": 0.02,
+  "output_path": "results/metrics.json",
+  "smoke_subset_size": 20,
+  "smoke_nbins": 2,
+  "smoke_seed": 0
+ },
+ "steps": [
+  "Setup: confirm numpy, pandas, scikit-learn are installed. No extra packages are required because pandas can read the UCI URL directly. Set all random seeds via the seed lists in config.",
+  "Implement src/data.py: read https://archive.ics.uci.edu/ml/machine-learning-databases/hepatitis/hepatitis.data with pandas.read_csv(header=None, na_values=['?', '']); X = df.iloc[:, 1:].astype(float).values; y = df.iloc[:, 0].astype(int).values - 1; assert X.shape == (155, 19), y.shape == (155,), len(np.unique(y)) == 2; return X, y, K=2.",
+  "Implement src/proximity_kernel.py fit_bins(X, nbins): for each feature j, obs = X[~np.isnan(X[:, j]), j]; if len(obs) == 0, centers = None and prior = uniform 1/nbins; else centers = np.percentile(obs, 100*np.arange(1, nbins+1)/(nbins+1), method='linear'); store centers and global prior frequencies.",
+  "Implement proximity_kernel.py assign_bins(X, centers): for each observed value, k = np.argmin(np.abs(x - centers)); tie breaks to lowest index; store integer bin assignments B (n, d) with -1 for missing entries.",
+  "Implement proximity_kernel.py encode_observed(B, nbins): build H_obs (n, d, nbins) with H_obs[i, j, B[i, j]] = 1 for observed entries, zeros for missing entries.",
+  "Implement proximity_kernel.py compute_fallback_encodings(X, B, H_obs, centers, nbins): for each missing entry (i, j), let O_i = observed features of i and B_i = B[i, O_i]. Level 1: S1 = {m != i : X[m, l] observed and B[m, l] == B[i, l] for all l in O_i}; S1_j = {m in S1 : X[m, j] observed}; if S1_j nonempty, h = mean(H_obs[m, j] for m in S1_j). Level 2: if S1_j empty, S2 = union_{l in O_i} {m != i : X[m, l] observed and B[m, l] == B[i, l]}; S2_j = {m in S2 : X[m, j] observed}; if S2_j nonempty, h = mean(H_obs[m, j] for m in S2_j). Level 3: if S2_j empty, h = global prior for feature j (bin frequencies among observed values, or uniform 1/nbins if feature entirely missing). Store H[i, j] = h and record level counts.",
+  "Implement proximity_kernel.py build_representation(X, nbins): call fit_bins, assign_bins, encode_observed, compute_fallback_encodings; concatenate H[i, j] across j to get Z (n, d*nbins); return Z and diagnostics including missing entry count and level 1/2/3 counts.",
+  "Implement proximity_kernel.py proximity_kernel(Z): return K = Z @ Z.T / d where d = 19; use only for symmetry and bounds checks.",
+  "Implement src/cluster.py evaluate_nbins(Z, y, K, seeds): for each seed, run KMeans(n_clusters=K, init='k-means++', n_init=10, random_state=seed).fit(Z); labels = kmeans.labels_; nmi = normalized_mutual_info_score(y, labels); return mean, std, per-seed list.",
+  "Implement src/cluster.py search_nbins(X, y, K, nbins_grid, seeds): for each nbins in nbins_grid, call build_representation, evaluate_nbins, and record mean/std/per-seed; select best nbins as the one with highest mean NMI; return best_nbins, best_mean, all_results.",
+  "Implement reproduce.py: parse optional --smoke flag. If smoke, load data, subset first 20 rows, run build_representation with nbins=2, assert Z.shape == (20, 38), assert no NaN/inf, assert each observed-feature one-hot sums to 1 and each missing-feature fallback vector sums to 1, compute K and assert symmetry and diagonal <= 1, run one KMeans with seed 0, print NMI and diagnostics. Otherwise run search_nbins on full Hepatitis with nbins_grid and seeds.",
+  "Run smoke test: python reproduce.py --smoke. Verify output shows correct shapes, no NaNs, at least one missing entry resolved by level 1 or 2, and a valid NMI in [0, 1].",
+  "Run intermediate checks before full run: print X shape (155, 19), y shape (155,), class counts, total missing entries and per-feature missing counts; verify bin centers are strictly increasing for features with observed values; verify B indices are in [0, nbins-1]; verify H row sums per feature are 1 for all samples; print fallback level counts (level 3 should be rare, <5% of missing entries); verify K is symmetric, K_ii <= 1, K_ij in [0, 1]; run a sanity baseline KMeans on median-imputed raw features and record its NMI for reference.",
+  "Run full reproduction: python reproduce.py. This runs 5 nbins values × 10 seeds = 50 KMeans runs on 155 samples; each run is seconds or less.",
+  "Inspect results/metrics.json: check the C1 value, best_nbins, per-nbins means, and per-seed NMI spread. Compare |value - 0.2289| <= 0.02. If outside tolerance, run sensitivity variants: (a) percentile centers at 100*(k-0.5)/nbins; (b) percentile centers at 100*k/nbins; (c) kernel K-means assigning each point to the cluster maximizing average K to cluster members. Record each variant's value and choose the most faithful documented variant; otherwise keep the primary result.",
+  "Finalize results/metrics.json with the chosen C1 value, target 0.2289, tolerance 0.02, pass/fail boolean, best nbins, per-nbins and per-seed results, diagnostics, runtime, and environment metadata."
+ ],
+ "smoke_test": "python reproduce.py --smoke: loads Hepatitis, subsets first 20 rows, builds Z with nbins=2, checks Z shape == (20, 38), no NaN/inf, each feature encoding sums to 1 per sample, kernel K = Z @ Z.T / 19 is symmetric with diagonal <= 1, at least one missing entry resolved by level 1 or 2, runs KMeans(n_clusters=2, init='k-means++', n_init=10, random_state=0), and prints an NMI in [0, 1].",
+ "intermediate_checks": [
+  "Dataset size: X.shape == (155, 19), y.shape == (155,), number of classes == 2.",
+  "Class balance: print counts of y == 0 and y == 1 (expected approximately 32/123 for Hepatitis; exact counts are fine).",
+  "Missingness: total number of NaN entries and per-feature NaN counts; confirm common UCI missing markers '?' were converted to NaN.",
+  "Binning: for each feature with observed values, the nbins bin centers are strictly increasing; for any entirely missing feature, uniform prior is used.",
+  "Proximity assignment: all non-missing bin indices B[i, j] are in [0, nbins-1]; missing entries are -1.",
+  "One-hot encoding: for every sample and every feature, the encoding vector h_{i,j} sums to 1 (exactly 1 for observed, probabilities summing to 1 for missing).",
+  "Fallback diagnostics: count missing entries resolved by level 1, level 2, and level 3; level 3 should be rare (<5% of missing entries).",
+  "Kernel matrix: K = Z @ Z.T / 19 is symmetric, K_ii <= 1, and all entries are in [0, 1].",
+  "Sanity baseline: KMeans on raw features with median imputation gives some NMI; record it to ensure the proximity kernel result is not identical to a trivial imputation baseline.",
+  "Parameter count: Z has shape (155, 19*nbins); for nbins in {2,3,4,6,8} this is 38, 57, 76, 114, 152 features."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Total ~15-20 min for target C1: setup and dependency check 2 min, data download and parsing 1 min, implementation of data/proximity_kernel/cluster 5 min, smoke test 1 min, intermediate checks and diagnostics 3 min, full 5 nbins × 10 seeds KMeans/NMI run on 155 samples 5 min, write and verify results/metrics.json 2 min. C2-C8 are out of scope for this plan because they require 12 datasets and would take hours; the code is dataset-agnostic if extended."
+}

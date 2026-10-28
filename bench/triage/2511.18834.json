@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "FlowSteer (Ours) achieves PickScore 22.39 and HPSv2 28.60 on COCO 10k with 4 NFE on SD3-Medium, outperforming PeRFlow (22.19/26.36) and other baselines.",
+  "table_ref": "Table 3, row 'Ours' under Backbone: SD3-Medium",
+  "dataset": "COCO 10k (1k prompts used in Table 1; 10k in Table 3)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 100,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Requires training a LoRA + adversarial discriminator on SD3-Medium (2B+ params) with online teacher ODE solves over Flux-Reason-6M prompts, then 4-step sampling of 10k COCO images; no code released, so the full pipeline must be reimplemented from scratch."
+ },
+ "blockers": [
+  "No code or configs released (empty code_links)",
+  "Training SD3-Medium with adversarial distillation requires GPU (24GB+ VRAM)",
+  "Online trajectory generation via teacher ODE solving is compute-heavy",
+  "Flux-Reason-6M prompt dataset is large and may need preprocessing",
+  "Reproducing the exact improved scheduler and discriminator head requires reverse-engineering from paper text"
+ ],
+ "suitable": false,
+ "id": "2511.18834",
+ "title": "FlowSteer: Guiding Few-Step Image Synthesis with Authentic Trajectories",
+ "pages": 12,
+ "model": "DeepSeek-V4.1-Flash"
+}

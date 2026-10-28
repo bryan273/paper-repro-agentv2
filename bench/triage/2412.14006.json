@@ -1,0 +1,33 @@
+{
+ "target": {
+  "statement": "InstructSeg achieves 85.8 cIoU on refCOCO val (RES), the headline image-level referring segmentation result.",
+  "table_ref": "Table 2, row 'InstructSeg', column 'refCOCO val'",
+  "dataset": "refCOCO (val split)"
+ },
+ "release": "none",
+ "code_links": [
+  "https://github.com/congvvc/InstructSeg"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 2880,
+  "gpu_speedup": 20,
+  "basis": "Training requires 80k iterations with batch size 32 on 8×A100 GPUs (paper implementation details); even a single A100 run would take many hours, and CPU-only training is infeasible."
+ },
+ "blockers": [
+  "No code or model weights released (paper says code will be made publicly available in the near future)",
+  "Training requires 8×A100 GPUs (80 GB VRAM each) for 80k iterations",
+  "Multi-dataset training (RefCOCO/+/g, ReasonSeg, Ref-YouTube-VOS, ReVOS, LLaVA-150k) needed to reproduce the joint-training result",
+  "Large disk and RAM requirements for datasets and model checkpoints"
+ ],
+ "suitable": false,
+ "id": "2412.14006",
+ "title": "InstructSeg: Unifying Instructed Visual Segmentation with Multi-modal Large Language Models",
+ "pages": 14,
+ "model": "DeepSeek-V4.1-Flash"
+}

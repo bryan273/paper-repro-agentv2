@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "After TS-OPSD policy reheating, DAPO w/ PR-FKL on Qwen3-4B-Base achieves 86.48 avg@8 on MATH-500 (Table 1 single cell).",
+  "table_ref": "Table 1, Qwen3-4B-Base w/ PR-FKL, MATH-500 avg@8 = 86.48",
+  "dataset": "MATH-500, after DAPO-Math-17K RL + TS-OPSD + continued RL"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 128,
+  "disk_gb": 200,
+  "ref_minutes": 500000,
+  "gpu_speedup": 100,
+  "basis": "Table 7 reports TS-OPSD alone takes ~4.3 h on 8×H800 for Qwen3-4B-Base and the full RL run >27.8 h on 8×H800; reproducing this table cell requires DAPO RL to entropy collapse, TS-OPSD, continued RL, and MATH-500 avg@8 evaluation, so CPU-only is not practically feasible."
+ },
+ "blockers": [
+  "requires 8×H800-class GPUs for DAPO RL/OPSD; full RL is >27.8 h on 8×H800 for 4B",
+  "no code or config links in the PDF",
+  "must reproduce the full RLVR pipeline: DAPO training until entropy collapse, TS-OPSD, continued RL, and avg@8 evaluation",
+  "initial entropy-collapsed checkpoint and reheated checkpoints are not released",
+  "evaluation protocol needs many long-form generations (avg@8 over MATH-500)"
+ ],
+ "suitable": false,
+ "id": "2606.00755",
+ "title": "Internalize the Temperature: On-Policy Self-Distillation as Policy Reheater for Reinforcement Learning",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

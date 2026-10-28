@@ -1,0 +1,30 @@
+{
+ "target": {
+  "statement": "F1-Score of LMSAE on the NAB NYC Taxi dataset (0.953)",
+  "table_ref": "Table 1, row F1-Score, column NAB/NT, method LMSAE",
+  "dataset": "NAB NYC Taxi (realKnownCause)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 2,
+  "ref_minutes": 240,
+  "gpu_speedup": 2.0,
+  "basis": "No code released; must reimplement the multi-scale wavelet autoencoder and per-dataset hyperparameter grid search from the paper text, then train and evaluate on the small NYC Taxi series (CPU-feasible but implementation and tuning dominate)."
+ },
+ "blockers": [
+  "No code or configs released",
+  "Per-dataset loss-weight grid search (beta, lambda, gamma) not fully specified",
+  "Exact threshold selection procedure and windowing details must be inferred"
+ ],
+ "suitable": false,
+ "id": "2607.12599",
+ "title": "Lightweight Multi-Scale Anomaly Detection for Resource-Constrained Edge Devices",
+ "pages": 22,
+ "model": "DeepSeek-V4.1-Flash"
+}

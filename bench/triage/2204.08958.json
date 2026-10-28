@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "MANIQA achieves PLCC 0.983 on the LIVE dataset, outperforming all compared NR-IQA methods.",
+  "table_ref": "Table 1, LIVE PLCC column, MANIQA row",
+  "dataset": "LIVE"
+ },
+ "release": "partial",
+ "code_links": [
+  "https://github.com/IIGROUP/MANIQA"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 4,
+  "needs_gpu": true,
+  "vram_gb": 24,
+  "ram_gb": 16,
+  "disk_gb": 50,
+  "ref_minutes": 300,
+  "gpu_speedup": 10,
+  "basis": "Training MANIQA on LIVE requires fine-tuning a ViT-B/8 model for 50 epochs with 5 random splits, which is infeasible on a CPU-only laptop within a few hours; a GPU is necessary."
+ },
+ "blockers": [
+  "Requires GPU for training (paper uses RTX 3090)",
+  "Training involves 5 random splits and 50 epochs, which is time-consuming",
+  "ViT-B/8 pretrained weights need to be downloaded"
+ ],
+ "suitable": false,
+ "id": "2204.08958",
+ "title": "MANIQA: Multi-dimension Attention Network for No-Reference Image Quality Assessment",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

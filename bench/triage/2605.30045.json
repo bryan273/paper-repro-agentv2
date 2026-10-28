@@ -1,0 +1,32 @@
+{
+ "target": {
+  "statement": "DualEraser 1.3B achieves 32.21 dB PSNR on the ROSE Benchmark (and the 5B variant reaches 33.33 dB, a 2.16 dB gain over SVOR), demonstrating state-of-the-art joint object-and-effect removal.",
+  "table_ref": "Table 2",
+  "dataset": "ROSE Benchmark"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 5,
+  "needs_gpu": true,
+  "vram_gb": 80,
+  "ram_gb": 64,
+  "disk_gb": 500,
+  "ref_minutes": 200000,
+  "gpu_speedup": 20,
+  "basis": "The target requires reproducing a two-stage training pipeline for a Wan2.2 5B / Wan2.1 1.3B video diffusion model on 60k VOR + 17k ROSE video pairs, trained with batch size 2 across 16 A100 GPUs; no code, weights, or configs are linked, so even the 1.3B variant cannot be fully reproduced from scratch on an 8-core/16 GB CPU laptop within hours."
+ },
+ "blockers": [
+  "No code or model weights released (the PDF link list is empty)",
+  "Training uses 16 A100 GPUs and 60k+17k video pairs",
+  "Requires the Wan2.2 5B / Wan2.1 1.3B base models and Qwen3-VL 8B for Bipartite Text prompt generation",
+  "Full pipeline includes two-stage MoE-style training of Locator and Preserver plus LD-CFG, which is infeasible on a CPU-only laptop",
+  "Benchmark evaluation depends on the trained DualEraser checkpoints, which are not provided"
+ ],
+ "suitable": false,
+ "id": "2605.30045",
+ "title": "DualEraser: Joint Video Object and Effect Removal via Balanced Text-Mask Guidance and Decoupled Locator-Preserver",
+ "pages": 18,
+ "model": "DeepSeek-V4.1-Flash"
+}

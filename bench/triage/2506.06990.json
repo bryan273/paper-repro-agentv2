@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Mean clustering loss of Min-D-LO on Iris with K=5 (random init) is 57.32",
+  "table_ref": "Table 1, Iris K=5 Min-D-LO row",
+  "dataset": "Iris (N=150, d=4)"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/lmingyi/LO-K-means"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 1,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 1,
+  "disk_gb": 0.1,
+  "ref_minutes": 5,
+  "gpu_speedup": null,
+  "basis": "Iris is tiny (150x4); 20 runs of K-means and Min-D-LO take milliseconds each, so total command time is dominated by pip install and data loading."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2506.06990",
+ "title": "Modified K-means Algorithm with Local Optimality Guarantees",
+ "pages": 29,
+ "model": "DeepSeek-V4.1-Flash"
+}

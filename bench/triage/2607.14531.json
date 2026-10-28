@@ -1,0 +1,31 @@
+{
+ "target": {
+  "statement": "Highway ranks first in ONMI on LFR benchmarks, exceeding the strongest baseline (SLPA) by 6.9%",
+  "table_ref": "Figure 1 (ONMI panel) / Section 4.2",
+  "dataset": "LFR synthetic benchmarks (728 networks, mu_w in {0.1..0.7})"
+ },
+ "release": "partial",
+ "code_links": [
+  "CDlib library (Highway available as part of CDlib, per paper; no explicit URL given in text)"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "LFR generation plus running Highway and 10 baselines (via CDlib) over 728 small-to-medium synthetic graphs on CPU; main cost is installing CDlib and running the full comparison protocol."
+ },
+ "blockers": [
+  "No explicit code/data link in paper text; must rely on CDlib implementation and reimplement LFR generation and metrics",
+  "Reproducing the exact 6.9% ONMI margin requires all 10 baselines and the exact 728-network protocol, which is not fully specified (sizes, seeds, parameters)"
+ ],
+ "suitable": true,
+ "id": "2607.14531",
+ "title": "Overlapping Network Community Detection Using Sparse Backbones",
+ "pages": 9,
+ "model": "DeepSeek-V4.1-Flash"
+}

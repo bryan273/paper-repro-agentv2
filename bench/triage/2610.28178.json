@@ -1,0 +1,29 @@
+{
+ "target": {
+  "statement": "Training weighted CF (%) for P+R on CAMSL at K=5 (smallest dataset, smallest K), reported as 59.35% in Table II Panel B",
+  "table_ref": "Table II, Panel B, CAMSL, K=5, CF column",
+  "dataset": "CAMSL (Japanese smart-meter panel, 4,172 customers, 30-min grid)"
+ },
+ "release": "none",
+ "code_links": [],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 3,
+  "needs_gpu": false,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 180,
+  "gpu_speedup": null,
+  "basis": "No code released, so the full P+R pipeline (peak-time distribution K-means with 30 starts, constrained reassignment via rectangular assignment, refinement to convergence) must be reimplemented from the paper; CAMSL is the smallest panel (~4k customers, 30-min, ~9 months training) and the paper reports fitting times of seconds-to-minutes on a laptop-class CPU, so the dominant cost is data download/preprocessing plus writing and debugging the method."
+ },
+ "blockers": [
+  "No code or configs linked in the paper; method must be reimplemented from text",
+  "CAMSL data must be located/downloaded from Mendeley and preprocessed (cohort filtering, 30-min grid alignment)",
+  "Exact reproduction of the 59.35% value depends on matching 30 random K-means starts, tie-breaking in peak selection, and refinement tolerance"
+ ],
+ "suitable": true,
+ "id": "2610.28178",
+ "title": "Coincidence-Maximizing Customer Clustering Using Smart Meter Data",
+ "pages": 10,
+ "model": "DeepSeek-V4.1-Flash"
+}

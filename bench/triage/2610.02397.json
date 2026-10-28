@@ -1,0 +1,28 @@
+{
+ "target": {
+  "statement": "Pooled MASE for gradient boosting on the corrupted condition (sparse fault suite) = 1.415",
+  "table_ref": "Table 1, row 'Gradient boosting', column 'Corrupted'",
+  "dataset": "Building Data Genome 2 (BDG2) v1.0, 12 buildings, hourly electricity, 2016-2017"
+ },
+ "release": "full",
+ "code_links": [
+  "https://github.com/LIANGYIXUAN3335/energy-data-onboarding-forecasting"
+ ],
+ "data_access": "public",
+ "compute": {
+  "difficulty": 2,
+  "needs_gpu": false,
+  "vram_gb": null,
+  "ram_gb": 8,
+  "disk_gb": 5,
+  "ref_minutes": 45,
+  "gpu_speedup": null,
+  "basis": "Small tabular dataset (210k rows, 30 features), gradient boosting with 120 iterations on 8 CPU cores; pipeline is deterministic and hash-verified, so a clean re-run should take well under an hour including install and download."
+ },
+ "blockers": [],
+ "suitable": true,
+ "id": "2610.02397",
+ "title": "Validated Data Onboarding for AI Demand Forecasting on U.S. Building Meter Data: Design, Controlled Evaluation, and a Corrected Negative Result",
+ "pages": 8,
+ "model": "DeepSeek-V4.1-Flash"
+}

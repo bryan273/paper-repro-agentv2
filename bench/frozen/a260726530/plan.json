@@ -1,0 +1,81 @@
+{
+ "approach": "Use the full_release route: keep the authors' C implementation untouched, build the included chaining_benchmark binary, and run the list-only forced-bucket stress that produces C1. A thin reproduce.py orchestrates environment setup, build, smoke test, full run, stdout parsing, tolerance checking, and results/metrics.json writing. On Linux use system cc/make; on Windows use existing MinGW/MSYS2 if present, otherwise download and extract a portable w64devkit via Python and invoke its make/gcc. The full run uses 500,000 keys, 4096 fixed buckets, 8 hot bins, seed 1, list chaining, and no resize, expecting (62500+1)/2 = 31250.5 average successful-lookup strcmp comparisons.",
+ "files": [
+  {
+   "path": "tools/env_setup.py",
+   "purpose": "Detect OS, locate or provision a C toolchain and make (system cc/make on Linux; existing MinGW/MSYS2 or Python-downloaded portable w64devkit on Windows), and return commands for build/run.",
+   "requirement_ids": []
+  },
+  {
+   "path": "tools/parse_benchmark.py",
+   "purpose": "Parse chaining_benchmark stdout for the List row or single-policy summary, extracting average strcmp comparisons per successful lookup, aggregate comparisons, successful lookup count, mode, keys, buckets, hot bins, and seed.",
+   "requirement_ids": [
+    "R9"
+   ]
+  },
+  {
+   "path": "reproduce.py",
+   "purpose": "Entrypoint: clone/check repo, build chaining_benchmark, run smoke and full list-only forced-bucket stress with seed 1, compare parsed value against C1 with 10% relative tolerance, and write results/metrics.json plus raw stdout/stderr logs.",
+   "requirement_ids": [
+    "R6",
+    "R7",
+    "R8",
+    "R9"
+   ]
+  }
+ ],
+ "config": {
+  "repo_url": "https://github.com/rbtreechainingforhashtable/project",
+  "binary": "chaining_benchmark",
+  "build_target": "chaining_benchmark",
+  "bucket_policy": "list (paper Table 6 row List; C1)",
+  "forced_bucket": true,
+  "keys": "500000 (C1, R7, forced-bucket stress)",
+  "buckets": "4096 fixed, no resize (C1, R7, A14)",
+  "hot_bins": "8 (C1, R6)",
+  "keys_per_hot_bin": "62500 (500000 / 8; C1)",
+  "seed": "1 (R8, Appendix A.4)",
+  "resize": "false (C1, A14)",
+  "threshold_k": "8 (R3, paper default; unused by list-only C1)",
+  "lookups": "500000 successful lookups, one per inserted key (C1 final lookup phase; A10)",
+  "metric": "average strcmp comparisons per successful lookup (R9)",
+  "expected_value": "31250.5 (C1; also (62500 + 1) / 2)",
+  "tolerance_relative": "0.10 (claim contract tolerance)",
+  "smoke_keys": "8000",
+  "smoke_buckets": "4096",
+  "smoke_hot_bins": "8",
+  "smoke_seed": "1",
+  "smoke_expected_avg": "500.5 (8 hot bins of 1000 -> (1000 + 1) / 2)",
+  "cflags": "-O2 -Wall -Wextra (authors' Makefile default)",
+  "compiler_linux": "system cc",
+  "compiler_windows": "existing gcc/mingw32-make if present; otherwise portable w64devkit downloaded and extracted by Python",
+  "full_run_timeout_seconds": "1800",
+  "smoke_run_timeout_seconds": "300"
+ },
+ "steps": [
+  "Inspect the cloned repository: confirm chaining_benchmark.c, hashtable/chain_ht.c, hashtable/rbtree.c, hashtable/list.c, Makefile, and vendor/english-words/words_alpha.txt exist; read experiments/chaining-benchmark/README.md and docs/benchmark-methodology.md.",
+  "Run tools/env_setup.py to locate cc/make on Linux or provision/use MinGW on Windows; verify the compiler and make versions and record them in results/logs/environment.txt.",
+  "Build the author binary with the authors' Makefile: `make chaining_benchmark` or the MinGW equivalent; do not edit C sources.",
+  "Discover the exact chaining_benchmark CLI from `./chaining_benchmark --help` and chaining_benchmark.c; identify the flags for list policy, forced-bucket mode, key count, bucket count, hot-bin count, seed, and disabling resize.",
+  "Run the smoke test: list chaining with forced buckets, 8000 keys, 4096 buckets, 8 hot bins, seed 1, no resize; parse average comparisons and assert it is near 500.5 rather than null or a different policy row.",
+  "If the binary has no single-policy flags, fall back to `make run-chaining-compare CHAIN_KEYS=500000` and parse only the List row from its table output.",
+  "Run the full C1 command: list chaining, forced buckets, 500000 keys, 4096 buckets, 8 hot bins, seed 1, no resize, looking up all inserted keys; capture stdout and stderr under results/logs/.",
+  "Parse the full stdout with tools/parse_benchmark.py; require mode=List, successful_lookups=500000, avg_comparisons present, and aggregate comparisons consistent with avg * lookups.",
+  "Check avg_comparisons against C1 target 31250.5 using a 10% relative tolerance; set passed=true only if within [28125.45, 34375.55].",
+  "Write results/metrics.json with claim_id C1, target, observed value, unit, absolute/relative error, tolerance, passed flag, command line, binary hash/version, compiler, seed, keys, buckets, hot_bins, lookup count, and paths to raw logs."
+ ],
+ "smoke_test": "Build `chaining_benchmark`, then run list-only forced-bucket mode with 8000 keys, 4096 buckets, 8 hot bins, seed 1, and no resize. This creates 1000 keys in each of 8 hot bins; a successful list lookup should average (1000+1)/2 = 500.5 strcmp comparisons. Parse that value and assert it is present and within a few percent before attempting the 500000-key run.",
+ "intermediate_checks": [
+  "Repository contains chaining_benchmark.c, hashtable/chain_ht.c, hashtable/rbtree.c, hashtable/list.c, and Makefile; no author C files are modified.",
+  "Toolchain check passes: cc/make or MinGW make can compile and link chaining_benchmark.",
+  "`./chaining_benchmark --help` or source usage confirms list policy, forced-bucket mode, key-count, bucket-count, hot-bin, seed, and no-resize controls.",
+  "Smoke run uses exactly 8 hot bins and 8000 keys, giving 1000 keys per hot bin and expected average 500.5 comparisons.",
+  "Full-run precheck: 500000/8 = 62500 keys per hot bin; expected deterministic list average is (62500+1)/2 = 31250.5.",
+  "Full-run aggregate sanity: 31250.5 * 500000 = 15,625,250,000 strcmp comparisons if all 500000 successful lookups are performed.",
+  "Confirm the table uses 4096 fixed buckets and resize is disabled during the forced-bucket stress.",
+  "Confirm the parsed row says List, not Hybrid-batch, Hybrid-incremental, or Always-tree."
+ ],
+ "entrypoint": "reproduce.py",
+ "metric_output": "results/metrics.json",
+ "budget_plan": "Allocate about 5-10 minutes to environment/toolchain setup and repository inspection, 1-2 minutes to build, 1 minute to the smoke test, 10-18 minutes to the full 500000-key list forced-bucket run, and 2 minutes to parsing/checking/reporting. On Windows, add 5-10 minutes only if a portable MinGW toolchain must be downloaded and extracted. If the full 500000-lookup phase risks exceeding the budget, keep the required 500000-key insert and sample 100000 successful lookups instead; the expected mean remains ~31250.5 with roughly ±60 sampling noise, well inside the 10% tolerance, but the exact full-lookup run is preferred."
+}
