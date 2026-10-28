@@ -47,8 +47,18 @@ Deno.serve(async (req) => {
     const post = (url: string, key: string, b: Record<string, unknown>) =>
       fetch(url, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(b), signal: AbortSignal.timeout(110_000) });
     const { thinking: _t, ...plain } = body as Record<string, unknown>;
-    let r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
-    if (!r.ok && [401, 402, 429].includes(r.status) && PARA) r = await post("https://llmapi.paratera.com/v1/chat/completions", PARA, { ...plain, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" });
+    const paraCall = () => post("https://llmapi.paratera.com/v1/chat/completions", PARA!, { ...plain, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" });
+    const viaParatera = async () => {
+      let rr = await paraCall();
+      for (let k = 0; k < 2 && (rr.status === 429 || rr.status >= 500); k++) {   // the gateway answers 429 "no deployments available" for a few seconds at times
+        await new Promise((res) => setTimeout(res, 3000));
+        rr = await paraCall();
+      }
+      return rr;
+    };
+    // Paratera serves the same DeepSeek models and is the account with credit, so it goes first when its key is set
+    let r = PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
+    if (!r.ok && PARA && KEY && [401, 402, 429, 500, 502, 503].includes(r.status)) r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
     if (!r.ok && [401, 402, 429, 502, 503].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });
     const out = await r.json();
     if (!r.ok) {
