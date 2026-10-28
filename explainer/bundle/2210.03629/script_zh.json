@@ -1,0 +1,132 @@
+{
+ "title": "ReAct: Reasoning and Acting Together",
+ "arxiv": "2210.03629",
+ "lang": "zh",
+ "scenes": [
+  {
+   "type": "title",
+   "big": "ReAct",
+   "sub": "Reasoning and acting, interleaved",
+   "en": "ReAct makes language models reason and act together.",
+   "zh": "ReAct 让语言模型把推理和行动结合起来。",
+   "evidence": null,
+   "audio": "zh_0.mp3",
+   "audio_ms": 4824.0,
+   "dur": 5724
+  },
+  {
+   "type": "cards",
+   "en": "Reasoning and acting were mostly studied as separate topics.",
+   "zh": "推理和行动此前大多被当作分开的课题来研究。",
+   "evidence": "arXiv:2210.03629",
+   "cards": [
+    {
+     "h": "Reasoning alone",
+     "t": "Chain-of-thought is a static black box"
+    },
+    {
+     "h": "Acting alone",
+     "t": "Actions without high-level reasoning"
+    },
+    {
+     "h": "The gap",
+     "t": "No synergy between the two"
+    }
+   ],
+   "audio": "zh_1.mp3",
+   "audio_ms": 4848.0,
+   "dur": 5748
+  },
+  {
+   "type": "tokens",
+   "en": "ReAct interleaves reasoning traces with task-specific actions.",
+   "zh": "ReAct 把推理轨迹和具体任务的行动交错生成。",
+   "evidence": "arXiv:2210.03629 · “generate both reasoning traces and task-specific actions in an interleaved manner”",
+   "words": [
+    "Thought",
+    "Action",
+    "Observation",
+    "Thought",
+    "Action"
+   ],
+   "links": [
+    [
+     0,
+     1,
+     0.9
+    ],
+    [
+     1,
+     2,
+     0.9
+    ],
+    [
+     2,
+     3,
+     0.8
+    ],
+    [
+     3,
+     4,
+     0.8
+    ]
+   ],
+   "focus": 2,
+   "audio": "zh_2.mp3",
+   "audio_ms": 5064.0,
+   "dur": 5964
+  },
+  {
+   "type": "flow",
+   "en": "Thoughts guide actions, and actions bring back outside information.",
+   "zh": "思考引导行动，行动又带回外部信息。",
+   "evidence": "arXiv:2210.03629",
+   "nodes": [
+    {
+     "h": "Thought",
+     "t": "Plan and reason"
+    },
+    {
+     "h": "Action",
+     "t": "Search or act"
+    },
+    {
+     "h": "Observation",
+     "t": "New information"
+    },
+    {
+     "h": "Update",
+     "t": "Adjust the plan"
+    }
+   ],
+   "audio": "zh_3.mp3",
+   "audio_ms": 4368.0,
+   "dur": 5268
+  },
+  {
+   "type": "number",
+   "en": "On ALFWorld, ReAct beats imitation and reinforcement learning by 34 percent.",
+   "zh": "在 ALFWorld 上，ReAct 比模仿和强化学习方法高出 34%。",
+   "evidence": "arXiv:2210.03629",
+   "value": 34,
+   "unit": "%",
+   "label": "Absolute success rate gain on ALFWorld",
+   "audio": "zh_4.mp3",
+   "audio_ms": 7152.0,
+   "dur": 8052
+  },
+  {
+   "type": "end",
+   "big": "Reason + Act",
+   "sub": "Better, more interpretable agents",
+   "note": "Based on Yao et al., ReAct, arXiv:2210.03629",
+   "en": "Combining reasoning and acting makes models more effective and interpretable.",
+   "zh": "把推理和行动结合起来，让模型更有效、也更可解释。",
+   "evidence": null,
+   "audio": "zh_5.mp3",
+   "audio_ms": 5712.0,
+   "dur": 6612
+  }
+ ],
+ "total": 37368
+}

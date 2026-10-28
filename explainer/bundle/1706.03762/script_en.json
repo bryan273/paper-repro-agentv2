@@ -1,0 +1,153 @@
+{
+ "title": "Attention Is All You Need",
+ "arxiv": "1706.03762",
+ "lang": "en",
+ "scenes": [
+  {
+   "type": "title",
+   "big": "Transformer",
+   "sub": "Attention Is All You Need",
+   "en": "This paper introduces the Transformer, a new model for sequence tasks.",
+   "zh": "本文介绍了Transformer，一种用于序列任务的新模型。",
+   "evidence": null,
+   "audio": "en_0.mp3",
+   "audio_ms": 5592.0,
+   "dur": 6492
+  },
+  {
+   "type": "cards",
+   "cards": [
+    {
+     "h": "Recurrent models",
+     "t": "Sequential computation limits parallelization"
+    },
+    {
+     "h": "Convolutional models",
+     "t": "Complex and less parallelizable"
+    },
+    {
+     "h": "Attention",
+     "t": "Used with recurrence, not alone"
+    }
+   ],
+   "en": "Existing models rely on recurrence or convolution, which are hard to parallelize.",
+   "zh": "现有模型依赖循环或卷积，难以并行化。",
+   "evidence": "arXiv:1706.03762",
+   "audio": "en_1.mp3",
+   "audio_ms": 6096.0,
+   "dur": 6996
+  },
+  {
+   "type": "tokens",
+   "words": [
+    "The",
+    "cat",
+    "sat",
+    "on",
+    "the",
+    "mat"
+   ],
+   "links": [
+    [
+     0,
+     1,
+     0.2
+    ],
+    [
+     1,
+     2,
+     0.8
+    ],
+    [
+     2,
+     3,
+     0.6
+    ],
+    [
+     3,
+     4,
+     0.3
+    ],
+    [
+     4,
+     5,
+     0.7
+    ],
+    [
+     1,
+     5,
+     0.4
+    ]
+   ],
+   "focus": 2,
+   "en": "The Transformer uses self-attention to relate all positions directly.",
+   "zh": "Transformer使用自注意力直接关联所有位置。",
+   "evidence": "arXiv:1706.03762",
+   "audio": "en_2.mp3",
+   "audio_ms": 5256.0,
+   "dur": 6156
+  },
+  {
+   "type": "flow",
+   "nodes": [
+    {
+     "h": "Input",
+     "t": "Embeddings + positional encoding"
+    },
+    {
+     "h": "Encoder",
+     "t": "6 layers of self-attention + feed-forward"
+    },
+    {
+     "h": "Decoder",
+     "t": "6 layers with masked self-attention"
+    },
+    {
+     "h": "Output",
+     "t": "Linear + softmax"
+    }
+   ],
+   "en": "The architecture stacks self-attention and feed-forward layers in encoder and decoder.",
+   "zh": "该架构在编码器和解码器中堆叠自注意力和前馈层。",
+   "evidence": "arXiv:1706.03762",
+   "audio": "en_3.mp3",
+   "audio_ms": 5928.0,
+   "dur": 6828
+  },
+  {
+   "type": "number",
+   "value": 28.4,
+   "unit": "BLEU",
+   "label": "English-to-German translation",
+   "bars": [
+    {
+     "label": "Transformer",
+     "value": 28.4
+    },
+    {
+     "label": "Previous best",
+     "value": 26.36
+    }
+   ],
+   "en": "It achieves 28.4 BLEU on English-to-German, improving over previous best by over 2 BLEU.",
+   "zh": "它在英德翻译上达到28.4 BLEU，比之前最佳高出超过2 BLEU。",
+   "evidence": "arXiv:1706.03762 · “Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task”",
+   "audio": "en_4.mp3",
+   "audio_ms": 8376.0,
+   "dur": 9276
+  },
+  {
+   "type": "end",
+   "big": "Transformer",
+   "sub": "Attention-based, parallelizable, state-of-the-art",
+   "note": "Paper: Attention Is All You Need",
+   "en": "The Transformer shows attention alone can outperform recurrent and convolutional models.",
+   "zh": "Transformer表明，仅靠注意力就能超越循环和卷积模型。",
+   "evidence": null,
+   "audio": "en_5.mp3",
+   "audio_ms": 6240.0,
+   "dur": 7140
+  }
+ ],
+ "total": 42888
+}

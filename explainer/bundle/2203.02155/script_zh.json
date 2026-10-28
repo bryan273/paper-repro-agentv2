@@ -1,0 +1,100 @@
+{
+ "title": "Teaching AI to Follow Instructions",
+ "arxiv": "2203.02155",
+ "lang": "zh",
+ "scenes": [
+  {
+   "type": "title",
+   "en": "Teaching language models to follow instructions with human feedback.",
+   "zh": "用人类反馈教语言模型遵循指令。",
+   "evidence": null,
+   "big": "InstructGPT",
+   "sub": "Aligning models with human intent",
+   "audio": "zh_0.mp3",
+   "audio_ms": 4056.0,
+   "dur": 4956
+  },
+  {
+   "type": "cards",
+   "en": "Bigger models don't automatically follow what users actually want.",
+   "zh": "更大的模型并不会自动遵循用户真正想要的东西。",
+   "evidence": "arXiv:2203.02155",
+   "cards": [
+    {
+     "h": "Untruthful",
+     "t": "Models make up facts"
+    },
+    {
+     "h": "Toxic",
+     "t": "Harmful or biased outputs"
+    },
+    {
+     "h": "Not helpful",
+     "t": "Ignores user intent"
+    }
+   ],
+   "audio": "zh_1.mp3",
+   "audio_ms": 5064.0,
+   "dur": 5964
+  },
+  {
+   "type": "flow",
+   "en": "They fine-tune GPT-3 in three steps using human feedback.",
+   "zh": "他们用人类反馈分三步微调GPT-3。",
+   "evidence": "arXiv:2203.02155 · “Step 1: Collect demonstration data, and train a supervised policy.”",
+   "nodes": [
+    {
+     "h": "Demonstrations",
+     "t": "Labelers show desired behavior"
+    },
+    {
+     "h": "Reward model",
+     "t": "Learns human preferences"
+    },
+    {
+     "h": "PPO",
+     "t": "Optimizes policy on reward"
+    }
+   ],
+   "audio": "zh_2.mp3",
+   "audio_ms": 4248.0,
+   "dur": 5148
+  },
+  {
+   "type": "number",
+   "en": "The 1.3B model beats the 175B GPT-3, with 100 times fewer parameters.",
+   "zh": "13亿参数的模型胜过1750亿的GPT-3，参数少100倍。",
+   "evidence": "arXiv:2203.02155",
+   "value": 100,
+   "unit": "x fewer parameters",
+   "label": "1.3B InstructGPT preferred over 175B GPT-3",
+   "audio": "zh_3.mp3",
+   "audio_ms": 6984.0,
+   "dur": 7884
+  },
+  {
+   "type": "quote",
+   "en": "Labelers preferred InstructGPT outputs 85 percent of the time over GPT-3.",
+   "zh": "标注员有85%的时候更喜欢InstructGPT的输出。",
+   "evidence": "arXiv:2203.02155 · “175B InstructGPT outputs are preferred to GPT-3 outputs 85 ± 3% of the time”",
+   "text": "175B InstructGPT outputs are preferred to GPT-3 outputs 85 ± 3% of the time",
+   "source": "Results, Section 4.1",
+   "audio": "zh_4.mp3",
+   "audio_ms": 5856.0,
+   "dur": 6756
+  },
+  {
+   "type": "end",
+   "en": "Human feedback is a promising path to aligning models.",
+   "zh": "人类反馈是对齐模型的一条有希望的道路。",
+   "evidence": null,
+   "big": "Aligned",
+   "sub": "Human feedback works",
+   "note": "Models still make simple mistakes.",
+   "audio": "zh_5.mp3",
+   "audio_ms": 4344.0,
+   "dur": 5244
+  }
+ ],
+ "total": 35952
+}
