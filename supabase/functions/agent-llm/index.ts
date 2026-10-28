@@ -42,9 +42,20 @@ Deno.serve(async (req) => {
     const body: Record<string, unknown> = { model: MODEL, messages, max_tokens: Math.min(Number(max_tokens) || 2000, 4000), temperature: 0.2, thinking: { type: "disabled" } };
     if (Array.isArray(tools) && tools.length && tools.length <= 12) body.tools = tools;
     if (json_mode) body.response_format = { type: "json_object" };
-    const r = await fetch("https://api.deepseek.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(110_000) });
+    // DeepSeek first; if its account is out of credit and a StepFun key is set, StepFun answers instead
+    const STEP = Deno.env.get("STEPFUN_API_KEY");
+    const ask = (base: string, key: string, model: string, extra: Record<string, unknown>) =>
+      fetch(`${base}/chat/completions`, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...body, model, ...extra }), signal: AbortSignal.timeout(110_000) });
+    let r = await ask("https://api.deepseek.com/v1", KEY, MODEL, {});
+    if (!r.ok && [401, 402, 429].includes(r.status) && STEP) {
+      const { thinking: _t, ...rest } = body as Record<string, unknown>;
+      r = await fetch("https://api.stepfun.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${STEP}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...rest, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" }), signal: AbortSignal.timeout(110_000) });
+    }
     const out = await r.json();
-    if (!r.ok) return json({ error: out?.error?.message ?? "model error" }, 502);
+    if (!r.ok) {
+      if ([401, 402].includes(r.status)) return json({ error: "The AI service is temporarily out of credit. Please try again later.", code: "no_credit" }, 503);
+      return json({ error: out?.error?.message ?? "model error" }, 502);
+    }
     const u = out.usage ?? {};
     await db("agent_usage", { method: "POST", body: JSON.stringify({ visitor: vid, app, prompt_tokens: u.prompt_tokens ?? 0, completion_tokens: u.completion_tokens ?? 0 }) });
     return json({ message: out.choices?.[0]?.message, finish_reason: out.choices?.[0]?.finish_reason, usage: u });
