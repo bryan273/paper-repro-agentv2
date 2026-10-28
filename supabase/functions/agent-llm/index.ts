@@ -44,13 +44,16 @@ Deno.serve(async (req) => {
     if (json_mode) body.response_format = { type: "json_object" };
     // DeepSeek first; if its account is out of credit the same model family on the Paratera gateway answers, then StepFun if a key is set
     const PARA = Deno.env.get("PARATERA_API_KEY"), STEP = Deno.env.get("STEPFUN_API_KEY");
-    const post = (url: string, key: string, b: Record<string, unknown>) =>
-      fetch(url, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(b), signal: AbortSignal.timeout(110_000) });
+    // a call that stalls is cut after `ms` and reported as a 504, so the next provider (or a retry) can take over instead of hanging the visitor
+    const post = async (url: string, key: string, b: Record<string, unknown>, ms = 110_000) => {
+      try { return await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(b), signal: AbortSignal.timeout(ms) }); }
+      catch { return new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } }); }
+    };
     const { thinking: _t, ...plain } = body as Record<string, unknown>;
-    const paraCall = () => post("https://llmapi.paratera.com/v1/chat/completions", PARA!, { ...plain, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" });
+    const paraCall = () => post("https://llmapi.paratera.com/v1/chat/completions", PARA!, { ...body, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" }, 25_000);
     const viaParatera = async () => {
       let rr = await paraCall();
-      for (let k = 0; k < 2 && (rr.status === 429 || rr.status >= 500); k++) {   // the gateway answers 429 "no deployments available" for a few seconds at times
+      for (let k = 0; k < 2 && (rr.status === 429 || rr.status >= 500); k++) {   // also a 504 from the cut-off above   // the gateway answers 429 "no deployments available" for a few seconds at times
         await new Promise((res) => setTimeout(res, 3000));
         rr = await paraCall();
       }
@@ -58,10 +61,11 @@ Deno.serve(async (req) => {
     };
     // Paratera serves the same DeepSeek models and is the account with credit, so it goes first when its key is set
     let r = PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
-    if (!r.ok && PARA && KEY && [401, 402, 429, 500, 502, 503].includes(r.status)) r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
-    if (!r.ok && [401, 402, 429, 502, 503].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });
-    const out = await r.json();
+    if (!r.ok && PARA && KEY && [401, 402, 429, 500, 502, 503, 504].includes(r.status)) r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
+    if (!r.ok && [401, 402, 429, 502, 503, 504].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });
+    const out = await r.json().catch(() => ({}));
     if (!r.ok) {
+      if (r.status === 504) return json({ error: "The AI service is busy right now. Please try again in a minute.", code: "busy" }, 503);
       if ([401, 402].includes(r.status)) return json({ error: "The AI service is temporarily out of credit. Please try again later.", code: "no_credit" }, 503);
       return json({ error: out?.error?.message ?? "model error" }, 502);
     }
