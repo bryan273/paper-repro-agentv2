@@ -145,7 +145,10 @@ class ExplainerScene(Scene):
         el = self.renderer.time - type(self)._starts[i]
         for t, x in CUES.get(i, []):
             if x == w and t - lead > el + 0.03:
-                self.wait(t - lead - el); return
+                gap = t - lead - el
+                if gap > 0.7 and any(m["msg"] == "the frame is empty" for m in _audit_now(self, i)):
+                    type(self)._audit.append({"beat": i, "msg": f"the stage is empty for {gap:.1f} s while waiting for the word '{word}': keep the previous picture (or show the new one) until then, FadeOut and FadeIn together"})
+                self.wait(gap); return
     def tear_down(self):
         json.dump({"starts": type(self)._starts, "end": self.renderer.time}, open("beat_times.json", "w"))
         json.dump(type(self)._audit, open("audit.json", "w"))
@@ -187,6 +190,7 @@ DESIGN RULES
 - Variety: choose the form that fits what the narration says (a number -> BigNumber/Counter, a comparison of results -> Bars/HBars, a trend -> LinePlot, a process -> Pipeline, two approaches -> Compare, words or attention -> Tokens+Attention, an architecture -> Stack/NeuralNet, history -> Timeline, a formula -> Equation). Never use the same kind of picture in two beats in a row, use at least four different kinds in the section, and at most one beat may be plain boxes.
 - One idea per beat, big and centred; the main picture spans at least 8 units wide or 4 tall. Before a new idea, FadeOut what is no longer needed (or Transform the old picture into the new one when they are related).
 - Sync to the voice: the narration's word timings are given per beat. `self.until(i, "word")` waits inside beat i until that word is spoken; put it right before the animation that shows that thing, so it appears exactly when it is named (for example `self.until(3, "residual")` then `self.play(GrowArrow(shortcut))`). Use one to three cues per beat.
+- The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars).
 - Motion with purpose: entrances 0.5 to 1.0 s (FadeIn with shift, GrowFromCenter, Create, LaggedStart), then emphasise what the voice stresses (Indicate, Circumscribe, Flash, a colour change, a gentle scale). No long static holds, no spinning for its own sake.
 - Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
 - Never put text on an arrow or a line, never two labels in the same place; the picture is measured after every beat and any overlap is sent back to you.
