@@ -23,6 +23,12 @@ const count = async (q: string) => {
 const PASS = Deno.env.get("EXPLAINER_ADMIN_TOKEN") ?? Deno.env.get("SUITE_ADMIN_TOKEN") ?? "";
 const sameText = (a: string, b: string) => { let d = a.length ^ b.length; for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0); return d === 0; };
 
+async function grant(userId: string, amount: number, reason: string) {
+  const [u] = await db(`explainer_users?id=eq.${userId}&select=credits`);
+  await db(`explainer_users?id=eq.${userId}`, { method: "PATCH", body: JSON.stringify({ credits: Math.max(0, u.credits + amount) }) });
+  await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: userId, delta: amount, reason }) });
+}
+
 async function whoAmI(req: Request): Promise<string | null> {
   const pass = req.headers.get("x-admin-token");
   if (pass !== null) return PASS && sameText(pass, PASS) ? "admin" : null;
@@ -45,7 +51,23 @@ Deno.serve(async (req) => {
       const body = await req.json();
       if (body.op === "order_status") {
         if (!/^[0-9a-f-]{36}$/.test(String(body.id)) || !["new", "paid_claimed", "paid", "delivered", "cancelled"].includes(String(body.status))) return json({ error: "bad request" }, 400);
+        const [prev] = await db(`explainer_orders?id=eq.${body.id}&select=status,notes`);
         await db(`explainer_orders?id=eq.${body.id}`, { method: "PATCH", body: JSON.stringify({ status: body.status }) });
+        // a credit pack (notes "pack:10 user:<id> price:9") that becomes paid adds its credits exactly once
+        const m = /pack:(\d+) user:([0-9a-f-]{36})/.exec(prev?.notes ?? "");
+        if (m && body.status === "paid" && prev.status !== "paid") await grant(m[2], Number(m[1]), `bought pack x${m[1]}`);
+        return json({ ok: true });
+      }
+      if (body.op === "grant") {
+        const amount = Math.round(Number(body.amount));
+        if (!Number.isFinite(amount) || amount === 0 || Math.abs(amount) > 1000) return json({ error: "bad amount" }, 400);
+        const [usr] = await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}&select=id`);
+        if (!usr) return json({ error: "no such user" }, 404);
+        await grant(usr.id, amount, String(body.reason ?? "").slice(0, 80) || "admin grant");
+        return json({ ok: true });
+      }
+      if (body.op === "ban") {
+        await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}`, { method: "PATCH", body: JSON.stringify({ banned: !!body.banned }) });
         return json({ ok: true });
       }
       return json({ error: "unknown op" }, 400);
@@ -59,7 +81,7 @@ Deno.serve(async (req) => {
     const perDayMap: Record<string, number> = {};
     for (const j of jobs) { const d = String(j.created_at).slice(0, 10); perDayMap[d] = (perDayMap[d] ?? 0) + 1; }
     const perDay = Object.entries(perDayMap).sort().slice(-14).map(([date, n]) => ({ date, n }));
-    const counts = {
+    const counts: Record<string, number> = {
       jobs_total: await count("explainer_jobs?id=not.is.null"),
       jobs_24h: await count(`explainer_jobs?created_at=gte.${day}`),
       jobs_7d: await count(`explainer_jobs?created_at=gte.${week}`),
@@ -69,8 +91,29 @@ Deno.serve(async (req) => {
       orders_waiting: await count("explainer_orders?status=eq.paid_claimed"),
       feedback_total: await count("explainer_feedback?id=not.is.null"),
     };
+    // ---- members, event log and the funnel (visitor -> made a video -> signed up -> bought)
+    const users = await db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=300");
+    const perUser: Record<string, { n: number; last: string }> = {};
+    for (const j of await db("explainer_jobs?user_id=not.is.null&select=user_id,created_at&order=created_at.desc&limit=2000")) { const x = perUser[j.user_id] ??= { n: 0, last: j.created_at }; x.n++; }
+    const events = await db("explainer_events?select=id,created_at,actor,user_id,type,meta&order=id.desc&limit=300");
+    const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+    const evs = await db(`explainer_events?created_at=gte.${since}&select=actor,type,created_at&order=id.desc&limit=20000`);
+    const actors = (types: string[]) => new Set(evs.filter((e: { type: string }) => types.includes(e.type)).map((e: { actor: string }) => e.actor)).size;
+    const funnel = [
+      { step: "Visitors", n: actors(["visit"]) },
+      { step: "Started a video", n: actors(["job_created"]) },
+      { step: "Hit the free limit", n: actors(["quota_hit"]) },
+      { step: "Opened sign-up", n: actors(["open_signup"]) },
+      { step: "Signed up", n: actors(["signup"]) },
+      { step: "Ordered credits", n: actors(["order_created"]) },
+    ];
+    const byType: Record<string, number> = {};
+    for (const e of evs) byType[e.type] = (byType[e.type] ?? 0) + 1;
+    const memberJobs = await count("explainer_jobs?user_id=not.is.null");
+    const credits = await db("explainer_credit_log?select=id,created_at,user_id,delta,reason&order=id.desc&limit=100");
+    const contacts = feedback.filter((f: { kind: string }) => f.kind === "contact").length;
     // visitors are shown by a short id only (a hash made by the render function), never by IP
-    return json({ me, counts, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders, feedback });
+    return json({ me, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders, feedback });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
