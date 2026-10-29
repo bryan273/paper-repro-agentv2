@@ -22,9 +22,10 @@ dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="ut
 # a beat lasts as long as the longer of its two narrations, so both languages fit the same picture
 beats = [round(max(dur["en"][i]["dur"], dur["zh"][i]["dur"]) / 1000, 2) for i in idx]
 THEMES = {"classic": ("#04070c", "#3dff8f", "#4aa3ff", "#e9f3ff", "#8aa0b8"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
-          "sunset": ("#120a1f", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "mono": ("#050505", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
+          "sunset": ("#120a1f", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#050510", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#050505", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
 theme = json.load(open(os.path.join(d, "script_en.json"), encoding="utf-8")).get("theme") or "classic"
 BG, ACC, ACC2, TXT, MUT = THEMES.get(theme, THEMES["classic"])
+CINEMA = ("\nLook: cinematic documentary. Deep blue-black space, thin gold lines and gold highlights, slow smooth movement, a few faint drifting dots as background, generous empty space, labels in a serif font (font=\"Georgia\"). Each idea arrives like a title card: fade in, hold, fade out. Calm and elegant, never busy." if theme == "cinema" else "")
 work = os.path.join(d, f"manim_s{k}")
 shutil.rmtree(work, ignore_errors=True); os.makedirs(work)
 
@@ -56,7 +57,7 @@ Hard rules (the code is checked and rejected otherwise):
 - No files, images, SVGs, sound, network, OS access, config changes, getattr/eval/exec or dunder names.
 - Keep everything inside x in [-6.6, 6.6] and y in [-2.4, 3.7]; the bottom of the frame is reserved for subtitles. Never write the narration sentences on screen: on-screen text is short labels (at most 6 words), font_size 22 to 44, color TEXT or MUTED, highlights in ACCENT / ACCENT2.
 - Every number shown must come from the beat data given; never invent results.
-Craft: fill the stage (main shapes 2.5 to 6 units wide, filled with fill_opacity 0.15 to 0.35 in ACCENT/ACCENT2 with a bright stroke), never leave a beat as plain text on black. Pick ONE visual metaphor for the section and evolve it across beats; about one beat in five may just hold and emphasise (Indicate, Circumscribe) instead of adding something new. Keep the picture moving: entrances 0.6 to 1.2 s, then slow emphasis or camera-like shifts (VGroup.animate.shift/scale) instead of long static waits. Build a visual metaphor and evolve it across beats (Transform, ReplacementTransform, FadeIn/FadeOut, Create, Write, GrowArrow, Indicate, Circumscribe, LaggedStart, animate, ValueTracker, Axes with plot, NumberPlane, Dot, Arrow, Line, Rectangle, RoundedRectangle, Circle, VGroup.arrange). Clear the stage between ideas so it never gets cluttered. Smooth, calm pacing; nothing static for long."""
+{CINEMA}Craft: fill the stage (main shapes 2.5 to 6 units wide, filled with fill_opacity 0.15 to 0.35 in ACCENT/ACCENT2 with a bright stroke), never leave a beat as plain text on black. Pick ONE visual metaphor for the section and evolve it across beats; about one beat in five may just hold and emphasise (Indicate, Circumscribe) instead of adding something new. Keep the picture moving: entrances 0.6 to 1.2 s, then slow emphasis or camera-like shifts (VGroup.animate.shift/scale) instead of long static waits. Build a visual metaphor and evolve it across beats (Transform, ReplacementTransform, FadeIn/FadeOut, Create, Write, GrowArrow, Indicate, Circumscribe, LaggedStart, animate, ValueTracker, Axes with plot, NumberPlane, Dot, Arrow, Line, Rectangle, RoundedRectangle, Circle, VGroup.arrange). Clear the stage between ideas so it never gets cluttered. Smooth, calm pacing; nothing static for long."""
 
 def user_msg():
     b = []

@@ -96,8 +96,49 @@ Deno.serve(async (req) => {
         return bad ?? new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } });
       }
     };
+    // RKAPI first when its key is set: Claude Haiku answers in a few seconds and does tool calls. It must be streamed (RKAPI holds a whole answer for a minute or more),
+    // so the stream is read here and put back together as an ordinary chat-completion answer.
+    const RK = Deno.env.get("RKAPI_API_KEY");
+    const viaRkapi = async (): Promise<Response | null> => {
+      if (!RK) return null;
+      const t0 = Date.now();
+      for (let attempt = 0; attempt < 2 && Date.now() - t0 < 50_000; attempt++) {
+        try {
+          const rb: Record<string, unknown> = { model: Deno.env.get("RKAPI_APP_MODEL") ?? "claude-haiku-4-5-20251001", messages, max_tokens: body.max_tokens, temperature: 0.2, stream: true, stream_options: { include_usage: true } };
+          if (body.tools) rb.tools = body.tools;
+          const rr = await fetch("https://rkapi.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${RK}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (repro-suite)" }, body: JSON.stringify(rb), signal: AbortSignal.timeout(45_000) });
+          if (!rr.ok || !rr.body) { if ([429, 500, 502, 503, 504].includes(rr.status)) continue; return null; }
+          let text = "", fin = "stop", usage: Record<string, number> = {};
+          const calls: Record<number, { id: string; name: string; args: string }> = {};
+          const dec = new TextDecoder(); let buf = "";
+          for await (const chunk of rr.body) {
+            buf += dec.decode(chunk, { stream: true });
+            const lines = buf.split("\n"); buf = lines.pop() ?? "";
+            for (const l of lines) {
+              if (!l.startsWith("data:") || l.includes("[DONE]")) continue;
+              let ch; try { ch = JSON.parse(l.slice(5)); } catch { continue; }
+              if (ch.usage) usage = ch.usage;
+              const c = ch.choices?.[0]; if (!c) continue;
+              if (c.finish_reason) fin = c.finish_reason;
+              text += c.delta?.content ?? "";
+              for (const tc of c.delta?.tool_calls ?? []) {
+                const k = calls[tc.index ?? 0] ??= { id: "", name: "", args: "" };
+                k.id ||= tc.id ?? ""; k.name += tc.function?.name ?? ""; k.args += tc.function?.arguments ?? "";
+              }
+            }
+          }
+          if (json_mode) text = text.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");   // JSON mode is ignored by Claude: it wraps the answer in a code block
+          const tool_calls = Object.keys(calls).length ? Object.entries(calls).map(([i, k]) => ({ id: k.id || `call_${i}`, type: "function", function: { name: k.name, arguments: k.args || "{}" } })) : undefined;
+          if (!text.trim() && !tool_calls) continue;
+          const message: Record<string, unknown> = { role: "assistant", content: text || null };
+          if (tool_calls) message.tool_calls = tool_calls;
+          return new Response(JSON.stringify({ choices: [{ message, finish_reason: tool_calls ? "tool_calls" : fin }], usage: { prompt_tokens: usage.prompt_tokens ?? 0, completion_tokens: usage.completion_tokens ?? 0 } }), { status: 200, headers: { "Content-Type": "application/json" } });
+        } catch { /* try again, then fall through to the Paratera chain */ }
+      }
+      return null;
+    };
     // Paratera serves the same DeepSeek models and is the account with credit, so it goes first when its key is set
-    let r = PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
+    let r = (await viaRkapi()) ?? (PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body));
     const paraFailed = !!PARA && !r.ok;
     if (!r.ok && PARA && KEY && [401, 402, 429, 500, 502, 503, 504].includes(r.status)) r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
     if (!r.ok && [401, 402, 429, 502, 503, 504].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });

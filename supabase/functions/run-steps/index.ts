@@ -13,6 +13,7 @@ const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // REPRO_MODEL_<STEP> (READER, CRITIC, ROUTER, PLANNER, AUDIT) or REPRO_MODEL, written "provider:model" or just "model" (Paratera).
 const PROVIDERS: Record<string, { base: string; key: string }> = {
   paratera: { base: Deno.env.get("PARATERA_BASE_URL") ?? "https://llmapi.paratera.com/v1", key: "PARATERA_API_KEY" },
+  rkapi: { base: "https://rkapi.com/v1", key: "RKAPI_API_KEY" },   // Claude through RKAPI; the model is written rkapi:claude-haiku-4-5-20251001
   stepfun: { base: "https://api.stepfun.com/v1", key: "STEPFUN_API_KEY" },
   deepseek: { base: "https://api.deepseek.com/v1", key: "DEEPSEEK_API_KEY" },   // DeepSeek's own API: model "deepseek-flash" is DeepSeek-V4.1-Flash
 };
@@ -79,7 +80,10 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
   for (let attempt = 0; attempt < 8; attempt++) {
     try {
       // V4-Flash has been answering 429 "no deployments" for days; the sibling is only a last resort
-      const model = attempt % 4 === 3 ? SIBLING : MODEL();
+      // after four failed tries on RKAPI the step moves to Paratera so a bad hour on one provider does not fail the run
+      const fallback = attempt >= 4 && CUR.provider === "rkapi" && !!Deno.env.get("PARATERA_API_KEY");
+      const provName = fallback ? "paratera" : CUR.provider;
+      const model = fallback ? "DeepSeek-V4.1-Flash" : attempt % 4 === 3 ? SIBLING : MODEL();
       await note(`Calling ${model} (attempt ${attempt + 1})`);
       const ctl = new AbortController();
       const left = deadline - Date.now();
@@ -87,12 +91,12 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
       // the gateway sometimes accepts a request and then says nothing: give up after 20 s of silence and retry
       let timer = setTimeout(() => ctl.abort(), Math.min(30_000, left - 5_000));
       const rearm = () => { clearTimeout(timer); timer = setTimeout(() => ctl.abort(), Math.min(20_000, Math.max(deadline - Date.now() - 3_000, 1_000))); };
-      const prov = PROVIDERS[CUR.provider];
+      const prov = PROVIDERS[provName];
       const r = await fetch(`${prov.base}/chat/completions`, {
         method: "POST", signal: ctl.signal,
-        headers: { Authorization: `Bearer ${Deno.env.get(prov.key)}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${Deno.env.get(prov.key)}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (repro-suite)" },
         body: JSON.stringify({
-          model, ...((CUR.provider === "paratera" && /^DeepSeek/.test(model)) || CUR.provider === "deepseek" ? { thinking: { type: "disabled" } } : {}), stream: true, max_tokens: maxTokens, temperature: 0,
+          model, ...((provName === "paratera" && /^DeepSeek/.test(model)) || provName === "deepseek" ? { thinking: { type: "disabled" } } : {}), stream: true, max_tokens: maxTokens, temperature: 0,
           messages: [{ role: "system", content: system }, { role: "user", content: user }],
         }),
       });
