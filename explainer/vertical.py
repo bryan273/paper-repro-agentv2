@@ -41,5 +41,5 @@ bg = os.path.join(d, f"vbg_{lang}.png"); im.save(bg)
 out = os.path.join(d, f"{arxiv}_{lang}_vertical.mp4")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-loop", "1", "-i", bg, "-i", src, "-filter_complex",
                 f"[1:v]scale={W}:{VH}[v];[0:v][v]overlay=0:{VY}:shortest=1,format=yuv420p[o]", "-map", "[o]", "-map", "1:a",
-                "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", out], check=True)
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "25", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", out], check=True)
 print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
