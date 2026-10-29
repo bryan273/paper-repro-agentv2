@@ -3,6 +3,7 @@ Runs in GitHub Actions (.github/workflows/explainer-render.yml). usage: python r
 env: SUPABASE_URL, SUPABASE_SECRET, DEEPSEEK_API_KEY"""
 import sys, os, json, subprocess, urllib.request, traceback, datetime
 from concurrent.futures import ThreadPoolExecutor
+import threading, time
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SB, KEY = os.environ["SUPABASE_URL"].rstrip("/"), os.environ["SUPABASE_SECRET"]
@@ -52,17 +53,30 @@ try:
     meta = json.load(open(os.path.join(d, "sections.json"), encoding="utf-8"))
     secs = [{**m, "status": "waiting", "videos": {}} for m in meta]
     update(sections=secs)
-    for n, m in enumerate(meta):
-        update(stage=f"recording section {n + 1} of {len(meta)}")
+    # the heavy installs (fonts, Manim, Chromium) run in the background while the script is written; wait for them only now
+    if os.path.exists("/tmp/heavy.started"):
+        update(stage="getting the drawing tools ready")
+        for _ in range(900):
+            if os.path.exists("/tmp/heavy.done"): break
+            if os.path.exists("/tmp/heavy.failed"): raise RuntimeError("could not install the drawing tools")
+            time.sleep(1)
+    lock, rec_lock = threading.Lock(), threading.Lock()
+    animated = (row.get("style") or "") in ("animated", "cinema")
+    def section(n, m):
         drawn = False
-        if (row.get("style") or "") in ("animated", "cinema"):   # the AI draws this section with Manim; on failure the template player records it
+        if animated:   # the AI draws this section with Manim; on failure the template player records it
             drawn = subprocess.run([sys.executable, "manim_section.py", arxiv, str(m["i"])], cwd=ROOT).returncode == 0
         if not drawn:
-            with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))   # EN and ZH at the same time
-        for lang in ("en", "zh"):
-            secs[n]["videos"][lang] = upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4")
-        secs[n]["status"] = "done"
-        update(sections=secs)   # the page shows each section as soon as it is ready
+            with rec_lock:   # one browser pair at a time
+                with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))
+        vids = {lang: upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4") for lang in ("en", "zh")}
+        with lock:
+            secs[n]["videos"].update(vids); secs[n]["status"] = "done"
+            ready = sum(1 for s in secs if s["status"] == "done")
+            update(sections=secs, stage=f"sections ready: {ready} of {len(meta)}")   # the page shows each section as soon as it is ready
+    update(stage=f"drawing {len(meta)} sections")
+    with ThreadPoolExecutor(2 if animated else 1) as ex:   # two at a time: while one waits for the model the other renders
+        for f in [ex.submit(section, n, m) for n, m in enumerate(meta)]: f.result()
     videos = {}
     update(stage="putting the sections together")
     def assemble(lang):
