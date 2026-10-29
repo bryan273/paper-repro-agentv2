@@ -75,7 +75,9 @@ Deno.serve(async (req) => {
               return new Response(text, { status: 200, headers: { "Content-Type": "application/json" } });
             }
             last = rr;
-            if (![429, 500, 502, 503, 504].includes(rr.status)) break;   // a real refusal (bad key, bad request): do not hammer
+            // a 400 "Invalid model name" is the gateway having no deployments for a moment (its model list goes empty for minutes), so it is retried too
+            const transient = [429, 500, 502, 503, 504].includes(rr.status) || (rr.status === 400 && /Invalid model name/i.test(await rr.clone().text().catch(() => "")));
+            if (!transient) break;   // a real refusal (bad key, bad request): do not hammer
           } catch (e) {
             if ((e as Error).message === "dropped" || ctl[i].signal.aborted) throw e;
           }

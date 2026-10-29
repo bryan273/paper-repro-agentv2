@@ -126,21 +126,25 @@ def llm_one(mid, system, user, attempt=0):
     return json.loads(m.group(0) if m else txt), out.get("usage", {})
 
 def llm(system, user, model="deepseek"):
-    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem."""
+    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
+    The gateway's model list sometimes goes empty for a minute or two ("Invalid model name"), so a model that answers like that is waited out, not dropped."""
     if model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
-    elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"   # same DeepSeek models, served by the account that has credit
+    elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"
     order = [model] + [m for m in MODEL_ORDER if m != model]
     last = None
     for mid in order:
-        for attempt in range(2):
+        patient = mid in ("relay", "paratera")
+        for attempt in range(10 if patient else 2):
             try:
                 sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
-                last = e; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {e.read()[:200]!r}", flush=True)
-                if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
+                last = e; body = e.read()[:200]; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {body!r}", flush=True)
+                if patient and (e.code in (429, 500, 502, 503, 504) or (e.code == 400 and b"Invalid model name" in body)):
+                    time.sleep(min(6 + attempt * 2, 16)); continue   # no deployments for a moment: wait and ask again
                 if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
+                if patient: time.sleep(4)
     raise RuntimeError(f"all script models failed: {last}")
 
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()

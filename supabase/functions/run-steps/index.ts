@@ -76,10 +76,10 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
   // the gateway sometimes answers 429 "no deployments available"; wait, then try the sibling model
   const SIBLING = CUR.provider !== "paratera" ? CUR.model : MODEL() === "DeepSeek-V4-Flash" ? "DeepSeek-V4.1-Flash" : "DeepSeek-V4-Flash";
   // an Edge Function request ends after about 150 s, so thinking is off here (it took 90 s+ for the Reader alone)
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     try {
       // V4-Flash has been answering 429 "no deployments" for days; the sibling is only a last resort
-      const model = attempt === 4 ? SIBLING : MODEL();
+      const model = attempt % 4 === 3 ? SIBLING : MODEL();
       await note(`Calling ${model} (attempt ${attempt + 1})`);
       const ctl = new AbortController();
       const left = deadline - Date.now();
@@ -116,8 +116,8 @@ async function chat(system: string, user: string, maxTokens = 9000, job = ""): P
       if (out.trim()) return out;
     } catch (e) {
       await note(`Model call failed: ${(e as Error).message}`);
-      if (attempt === 4) throw e;
-      await new Promise((res) => setTimeout(res, 1500 * (attempt + 1)));
+      if (attempt === 7) throw e;
+      await new Promise((res) => setTimeout(res, Math.min(1500 * (attempt + 1), 7000)));
     }
   }
   throw new Error("empty model answer");
