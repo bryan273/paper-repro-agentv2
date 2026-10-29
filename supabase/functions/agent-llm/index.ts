@@ -61,20 +61,34 @@ Deno.serve(async (req) => {
         { delay: 4000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-northeast-2" } },
         { delay: 10000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-southeast-1" } },
       ];
+      // each copy keeps trying through short bursts of 429 "no deployments available" and 5xx until it succeeds or ~60 s have passed
+      const t0 = Date.now();
       const one = async (i: number): Promise<Response> => {
         await new Promise((res) => setTimeout(res, route[i].delay));
-        if (ctl[i].signal.aborted) throw new Error("dropped");
-        const rr = await fetch(route[i].url, { method: "POST", headers: { ...route[i].headers, "Content-Type": "application/json" }, body: JSON.stringify(bodyP), signal: AbortSignal.any([ctl[i].signal, AbortSignal.timeout(40_000)]) });
-        if (!rr.ok) throw Object.assign(new Error("status " + rr.status), { res: rr });
-        const text = await rr.text();   // read the body before the other copies are dropped, or an abort would cut it
-        if (ctl[i].signal.aborted) throw new Error("dropped");
-        return new Response(text, { status: 200, headers: { "Content-Type": "application/json" } });
+        let last: Response | null = null;
+        while (!ctl[i].signal.aborted && Date.now() - t0 < 60_000) {
+          try {
+            const rr = await fetch(route[i].url, { method: "POST", headers: { ...route[i].headers, "Content-Type": "application/json" }, body: JSON.stringify(bodyP), signal: AbortSignal.any([ctl[i].signal, AbortSignal.timeout(30_000)]) });
+            if (rr.ok) {
+              const text = await rr.text();   // read the body before the other copies are dropped, or an abort would cut it
+              if (ctl[i].signal.aborted) throw new Error("dropped");
+              return new Response(text, { status: 200, headers: { "Content-Type": "application/json" } });
+            }
+            last = rr;
+            if (![429, 500, 502, 503, 504].includes(rr.status)) break;   // a real refusal (bad key, bad request): do not hammer
+          } catch (e) {
+            if ((e as Error).message === "dropped" || ctl[i].signal.aborted) throw e;
+          }
+          await new Promise((res) => setTimeout(res, 2500));
+        }
+        throw Object.assign(new Error("gave up"), { res: last });
       };
       try {
         const win = await Promise.any([0, 1, 2].map((i) => one(i)));
         ctl.forEach((c) => { try { c.abort(); } catch { /* already done */ } });
         return win;
       } catch (e) {
+        ctl.forEach((c) => { try { c.abort(); } catch { /* already done */ } });
         const errs = (e as AggregateError).errors ?? [];
         const bad = errs.map((x: { res?: Response }) => x.res).find((x: Response | undefined) => x);
         return bad ?? new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } });
@@ -82,11 +96,13 @@ Deno.serve(async (req) => {
     };
     // Paratera serves the same DeepSeek models and is the account with credit, so it goes first when its key is set
     let r = PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
+    const paraFailed = !!PARA && !r.ok;
     if (!r.ok && PARA && KEY && [401, 402, 429, 500, 502, 503, 504].includes(r.status)) r = await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
     if (!r.ok && [401, 402, 429, 502, 503, 504].includes(r.status) && STEP) r = await post("https://api.stepfun.com/v1/chat/completions", STEP, { ...plain, model: Deno.env.get("STEPFUN_MODEL") ?? "step-3.5-flash" });
     const out = await r.json().catch(() => ({}));
     if (!r.ok) {
       if (r.status === 504) return json({ error: "The AI service is busy right now. Please try again in a minute.", code: "busy" }, 503);
+      if (paraFailed && [401, 402, 429, 500, 502, 503, 504].includes(r.status)) return json({ error: "The AI service is busy right now. Please try again in a minute.", code: "busy" }, 503);
       if ([401, 402].includes(r.status)) return json({ error: "The AI service is temporarily out of credit. Please try again later.", code: "no_credit" }, 503);
       return json({ error: out?.error?.message ?? "model error" }, 502);
     }
