@@ -89,6 +89,11 @@ def Counter(target, label="", decimals=1, suffix="", color=ACCENT, size=100):
         g.add(Text(wrap(label, 36), font_size=30, color=MUTED).next_to(anchor, DOWN, buff=0.95))
     return g, t
 
+def _unit(u):
+    """'%' sticks to the number, a word unit gets a space: 25.8 BLEU, 3.5%."""
+    u = str(u or "")
+    return (" " + u) if u[:1].isalpha() else u
+
 def Bars(labels, values, colors=None, highlight=None, w=8.0, h=3.4, unit="", decimals=None):
     """Vertical bar chart. Animate: Create(g.base), LaggedStart(*[GrowFromEdge(b, DOWN) for b in g.bars]), FadeIn(g.values), FadeIn(g.labels)."""
     n = len(values); vmax = max(abs(float(v)) for v in values) or 1
@@ -100,7 +105,7 @@ def Bars(labels, values, colors=None, highlight=None, w=8.0, h=3.4, unit="", dec
         x = -w / 2 + slot * (k + 0.5)
         b = Rectangle(width=bw, height=bh, stroke_width=0, fill_color=col, fill_opacity=0.9).move_to([x, bh / 2, 0])
         bars.add(b)
-        txt = (f"{float(v):.{decimals}f}" if decimals is not None else str(v)) + unit
+        txt = (f"{float(v):.{decimals}f}" if decimals is not None else str(v)) + _unit(unit)
         vals.add(fit(Text(txt, font_size=28, color=TEXT, weight=BOLD), slot * 0.95, 0.5).next_to(b, UP, buff=0.12))
         labs.add(fit(Text(wrap(lab, 12), font_size=24, color=MUTED, line_spacing=0.85), slot * 0.95, 0.9).next_to([x, 0, 0], DOWN, buff=0.22))
     base = Line([-w / 2, 0, 0], [w / 2, 0, 0], color=MUTED, stroke_width=2)
@@ -119,7 +124,7 @@ def HBars(labels, values, colors=None, highlight=None, w=7.0, unit="", decimals=
         b = Rectangle(width=bl, height=row * 0.62, stroke_width=0, fill_color=col, fill_opacity=0.9).move_to([bl / 2, y, 0])
         bars.add(b)
         labs.add(fit(Text(str(lab), font_size=26, color=TEXT), 3.6, row * 0.8).next_to([0, y, 0], LEFT, buff=0.25))
-        txt = (f"{float(v):.{decimals}f}" if decimals is not None else str(v)) + unit
+        txt = (f"{float(v):.{decimals}f}" if decimals is not None else str(v)) + _unit(unit)
         vals.add(fit(Text(txt, font_size=26, color=TEXT, weight=BOLD), 2, row * 0.8).next_to(b, RIGHT, buff=0.15))
     g = VGroup(bars, vals, labs); g.bars, g.values, g.labels = bars, vals, labs
     fit(g, 12.4, 5.4)
@@ -207,11 +212,16 @@ def Tokens(words, highlight=None, color=ACCENT2, size=30):
 def Attention(tokens, pairs, weights=None, color=ACCENT):
     """Arcs above the chips from word i to word j; weights 0..1 set the thickness. Animate: LaggedStart(*[Create(a) for a in arcs])."""
     arcs = VGroup()
-    for k, (i, j) in enumerate(pairs):
-        wgt = weights[k] if weights else 0.7
+    def shape(i, j, wgt):
         p, q = tokens[i].get_top() + UP * 0.08, tokens[j].get_top() + UP * 0.08
+        return ArcBetweenPoints(p, q, angle=-PI * 0.75 if p[0] < q[0] else PI * 0.75, color=color, stroke_width=2 + 7 * wgt, stroke_opacity=0.35 + 0.6 * wgt)
+    for k, (i, j) in enumerate(pairs):
         if i == j: continue
-        arcs.add(ArcBetweenPoints(p, q, angle=-PI * 0.75 if p[0] < q[0] else PI * 0.75, color=color, stroke_width=2 + 7 * wgt, stroke_opacity=0.35 + 0.6 * wgt))
+        wgt = weights[k] if weights else 0.7
+        a = shape(i, j, wgt)
+        # the arcs stay on top of their words even when the token row is moved or scaled later
+        a.add_updater(lambda m, i=i, j=j, wgt=wgt: m.become(shape(i, j, wgt).set_stroke(opacity=m.get_stroke_opacity())))
+        arcs.add(a)
     return arcs
 
 def NeuralNet(layers=(3, 4, 4, 2), w=7.0, h=3.6, color=ACCENT, labels=None):
