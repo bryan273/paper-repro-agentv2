@@ -1,0 +1,44 @@
+# The Paper Repro Agent page (static files in app/frontend/public/repro) goes to the Pages site folder /repro/ when it changes on main.
+name: deploy-main-site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/frontend/public/repro/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-main-site
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          sparse-checkout: app/frontend/public/repro
+      - name: Publish to the Pages site
+        env:
+          DEPLOY_KEY: ${{ secrets.SITE_DEPLOY_KEY }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -z "$DEPLOY_KEY" ]; then echo "::notice::SITE_DEPLOY_KEY is not set in this repo, so nothing was published."; exit 0; fi
+          mkdir -p ~/.ssh && printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/site_key && chmod 600 ~/.ssh/site_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/site_key -o IdentitiesOnly=yes"
+          git clone --depth 1 git@github.com:bryan273/repro-suite.git site
+          rm -rf site/repro && mkdir -p site/repro && cp -r app/frontend/public/repro/. site/repro/
+          cd site
+          git config user.name "repro-suite bot" && git config user.email "bot@users.noreply.github.com"
+          git add -A repro
+          if git diff --cached --quiet; then echo "nothing changed"; exit 0; fi
+          git commit -q -m "repro: ${GITHUB_SHA::7} $(printf '%s' "$COMMIT_MSG" | head -n1 | cut -c1-100)"
+          for i in 1 2 3 4 5 6; do git push && exit 0; git pull --rebase -q; done
+          exit 1
