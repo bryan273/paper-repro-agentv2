@@ -151,6 +151,28 @@ def subs_and_audio(vid, times):
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
     shutil.rmtree(os.path.join(work, "media", "videos", "section", "720p30", "partial_movie_files"), ignore_errors=True)   # frames of the animation are not needed once it is muxed
 
+REVIEW_MODEL = ("claude-sonnet-4-6", os.environ.get("RKAPI_API_KEY", ""))
+
+def review(vid, times):
+    """Look at one frame per beat, like a viewer would, and say what is wrong with the picture (text on text, text outside its box, empty frame). '' = fine."""
+    import base64
+    if not REVIEW_MODEL[1]: return ""
+    starts = times["starts"]; content = []
+    for n in range(len(beats)):
+        t = starts[n] + max(0.6, beats[n] * 0.85)
+        jpg = os.path.join(work, f"review_{n}.jpg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", vid, "-frames:v", "1", "-vf", "scale=768:-1", "-q:v", "4", jpg], check=True, cwd=work)
+        content += [{"type": "text", "text": f"Beat {n} (narration: {sc['scenes'][idx[n]]['en'][:90]})"}, {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(open(jpg, "rb").read()).decode()}}]
+    content.insert(0, {"type": "text", "text": "These are frames from a explainer animation, one per beat. Find only real visual defects: text drawn over other text or shapes so it is hard to read, text spilling outside its box or outside the frame, labels cut off, a frame that is empty or nearly empty while the narration talks about something. "
+                                              "Ignore style. Reply exactly OK if there are none, otherwise one line per defect: `Beat N: what is wrong and where`."})
+    body = json.dumps({"model": REVIEW_MODEL[0], "max_tokens": 600, "temperature": 0, "messages": [{"role": "user", "content": content}]}).encode()
+    req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + REVIEW_MODEL[1], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
+    try:
+        txt = json.load(urllib.request.urlopen(req, timeout=120))["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print("review failed:", str(e)[:120]); return ""
+    return "" if txt.upper().startswith("OK") else txt[:900]
+
 messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg()}]
 t0 = time.time()
 for attempt in range(4):
@@ -168,8 +190,25 @@ for attempt in range(4):
         vid, problem = render(code)
     print(f"attempt {attempt + 1} ({model}): {'ok' if vid else 'failed: ' + (problem or '')[:300]} ({round(time.time() - t0)}s)", flush=True)
     if vid:
+        times = json.load(open(os.path.join(work, "beat_times.json")))
+        found = review(vid, times)
+        print("review:", found or "no defects", flush=True)
+        if found and time.time() - t0 < 420:
+            keep = os.path.join(work, "keep_v1.mp4"); shutil.copy(vid, keep); keep_times = dict(times); fixed = False
+            try:
+                code2, raw2 = ask(messages + [{"role": "assistant", "content": raw}, {"role": "user", "content": f"The animation rendered, but a reviewer looking at the frames found these defects:\n{found}\nFix them (spread things out, shrink or shorten labels, clear the stage between ideas) and return the whole corrected class in one ```python block, keeping every rule."}], model, key)
+                code2 = strip_imports(code2)
+                if not check(code2):
+                    vid2, problem2 = render(code2)
+                    if vid2:
+                        vid, times, code = vid2, json.load(open(os.path.join(work, "beat_times.json"))), code2
+                        fixed = True; print("review fix: ok", flush=True)
+                    else: print("review fix failed, keeping the first version:", (problem2 or "")[:120], flush=True)
+            except Exception as e:
+                print("review fix skipped:", str(e)[:120], flush=True)
+            if not fixed: vid, times = keep, keep_times   # a failed fix must not replace the version that worked
         open(os.path.join(work, "final_code.py"), "w", encoding="utf-8").write(code)
-        subs_and_audio(vid, json.load(open(os.path.join(work, "beat_times.json"))))
+        subs_and_audio(vid, times)
         sys.exit(0)
     messages += [{"role": "assistant", "content": raw}, {"role": "user", "content": f"That did not work:\n{problem}\nFix it and return the whole corrected class in one ```python block, keeping every rule."}]
 print("no working animation after 4 tries")
