@@ -47,11 +47,25 @@ try:
     run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--url", row["source_url"]] if row.get("source_url") else []))
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
-    update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the English video")
+    update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the sections")
+    meta = json.load(open(os.path.join(d, "sections.json"), encoding="utf-8"))
+    secs = [{**m, "status": "waiting", "videos": {}} for m in meta]
+    update(sections=secs)
+    for n, m in enumerate(meta):
+        update(stage=f"recording section {n + 1} of {len(meta)}")
+        for lang in ("en", "zh"):
+            run("record.py", arxiv, lang, "--part", str(m["i"]))
+            secs[n]["videos"][lang] = upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4")
+        secs[n]["status"] = "done"
+        update(sections=secs)   # the page shows each section as soon as it is ready
     videos = {}
+    update(stage="putting the sections together")
     for lang in ("en", "zh"):
-        if lang == "zh": update(stage="recording the Chinese video")
-        run("record.py", arxiv, lang); run("vertical.py", arxiv, lang)
+        lst = os.path.join(d, f"concat_{lang}.txt")
+        with open(lst, "w") as fh:
+            for m in meta: fh.write(f"file '{arxiv}_{lang}_s{m['i']}.mp4'\n")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", "-movflags", "+faststart", os.path.join(d, f"{arxiv}_{lang}.mp4")], check=True)
+        run("vertical.py", arxiv, lang)
         videos[lang] = upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4")
         videos[lang + "_vertical"] = upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4")
         update(videos=videos)

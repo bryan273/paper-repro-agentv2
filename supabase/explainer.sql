@@ -25,3 +25,6 @@ on conflict (id) do update set public = true;
 alter table explainer_jobs add column if not exists tone text not null default 'teacher';
 alter table explainer_jobs add column if not exists seconds int not null default 36;
 alter table explainer_jobs add column if not exists custom text not null default '';
+
+-- a video is made of sections, each its own short video; the page shows them one by one as they finish
+alter table explainer_jobs add column if not exists sections jsonb;

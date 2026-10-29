@@ -67,7 +67,7 @@ def paper(arxiv):
 
 SYSTEM = """You turn one research paper into a short, accurate explainer video script. Return ONLY JSON.
 Style: {TONE} Never invent facts or numbers: every number or claim must come from the PAPER TEXT given.
-Schema: {"title":str,"scenes":[scene,...]}. Each scene has: "type", "en" (one spoken sentence, max 22 words), "zh" (the same sentence in Chinese, natural),
+Schema: {"title":str,"section":{"title":str(max 7 words),"title_zh":str,"text":str(2 to 3 plain sentences for a reader of this part),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (one spoken sentence, max 22 words), "zh" (the same sentence in Chinese, natural),
 "evidence" (a verbatim quote of at most 25 words copied exactly from the paper text that supports the scene, or null for title/end), plus fields by type:
 - "title": {"big":str,"sub":str}  (big = 1-2 words, sub = short line; first scene)
 - "cards": {"cards":[{"h":str(max 3 words),"t":str(max 9 words)}, 2 to 4 items]}  (use for problem / ideas / comparison)
@@ -85,60 +85,23 @@ TONES = {
     "eli5": "for a complete beginner: everyday analogies, no jargon (explain any term in plain words the first time), very short sentences.",
     "story": "a narrative: start from the problem the researchers faced, build tension, then the turn and the payoff.",
 }
-SECTIONS = ["the problem and why it matters", "the key idea", "how the method works, step by step", "the experiments and main results", "what the results mean, the limits and the takeaway"]
+SECTIONS = ["the problem and why it matters", "what earlier approaches did and where they fall short", "the key idea", "the main components or architecture",
+            "how it works and is trained, step by step", "the experimental setup", "the main results", "ablations and what drives the results",
+            "limits and open questions", "what it means and the takeaway"]
 
 def part_plan(seconds):
-    """A long video is written in parts, each about two minutes, so no single model call has to produce it all."""
-    n = 1 if seconds <= 150 else min(6, round(seconds / 110))
+    """The video is written as sections of roughly 50 seconds, each its own short video, so no single model call has to write it all."""
+    n = max(1, min(10, round(seconds / 50)))
     return n, [round(seconds / n)] * n
 
 def order_for(i, n):
     if n == 1: return "Order: title, problem (cards), key idea (tokens or flow), how it works (flow or cards), result (number), end."
+    L = len(SECTIONS); lo, hi = i * L // n, max(i * L // n, (i + 1) * L // n - 1)
+    focus = "; then ".join(SECTIONS[lo:hi + 1])
     first, last = i == 0, i == n - 1
-    a, b = SECTIONS[min(len(SECTIONS) - 1, i * len(SECTIONS) // n)], SECTIONS[min(len(SECTIONS) - 1, max(i * len(SECTIONS) // n, (i + 1) * len(SECTIONS) // n - 1))]
-    focus = a if a == b else a + ", then " + b
-    return (f"This is part {i + 1} of {n} of one video. Cover only: {focus}. " + ("Start with a title scene. " if first else "Do NOT use a title scene; continue smoothly from the previous part. ") + ("End with an end scene." if last else "Do NOT use an end scene; stop after the last point of this part."))
-
-
-MODELS = {   # selectable script writers: id -> (base url, model name, env key, extra body)
-    "deepseek": ("https://api.deepseek.com/v1", "deepseek-flash", "DEEPSEEK_API_KEY", {"thinking": {"type": "disabled"}}),
-    "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
-    "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
-}
-MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
-MODEL_ORDER = ["relay", "deepseek", "paratera", "stepfun"]
-
-def llm_one(mid, system, user):
-    base, name, keyname, extra = MODELS[mid]
-    if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
-    body = json.dumps({"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-                       "temperature": 0.3, "max_tokens": 8000, "response_format": {"type": "json_object"}, **extra}).encode()
-    hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json"}
-    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": "ap-northeast-2", "x-timeout-ms": "120000"})
-    else: url = base + "/chat/completions"
-    r = urllib.request.Request(url, body, hdr)
-    out = json.load(urllib.request.urlopen(r, timeout=180))
-    txt = out["choices"][0]["message"]["content"] or ""
-    m = re.search(r"\{.*\}", txt, re.S)
-    return json.loads(m.group(0) if m else txt), out.get("usage", {})
-
-def llm(system, user, model="deepseek"):
-    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem."""
-    if model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
-    elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"   # same DeepSeek models, served by the account that has credit
-    order = [model] + [m for m in MODEL_ORDER if m != model]
-    last = None
-    for mid in order:
-        for attempt in range(2):
-            try:
-                sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
-            except urllib.error.HTTPError as e:
-                last = e; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {e.read()[:200]!r}", flush=True)
-                if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
-                if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
-            except Exception as e:
-                last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
-    raise RuntimeError(f"all script models failed: {last}")
+    return (f"This is section {i + 1} of {n} of one video; each section is a short video of its own. Cover only: {focus}. "
+            + ("Start with a title scene. " if first else "Do NOT use a title scene; open straight into the point. ")
+            + ("End with an end scene." if last else "Do NOT use an end scene; stop after the last point of this section."))
 
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
@@ -205,4 +168,16 @@ async def main():
         json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))
+        for k in range(len(sc.get("sections") or [])):
+            part = [s for s in scenes if s.get("sec") == k]
+            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
+                               open(os.path.join(out, f"script_{lang}_s{k}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    meta = []
+    for k, sec in enumerate(sc.get("sections") or []):
+        part = [s for s in sc["scenes"] if s.get("sec") == k]
+        if not part: continue
+        meta.append({"i": k, "title": sec.get("title") or f"Part {k + 1}", "title_zh": sec.get("title_zh") or sec.get("title") or f"第 {k + 1} 部分",
+                     "text": sec.get("text") or " ".join(s["en"] for s in part), "text_zh": sec.get("text_zh") or "".join(s["zh"] for s in part),
+                     "takeaway": sec.get("takeaway") or "", "takeaway_zh": sec.get("takeaway_zh") or ""})
+    json.dump(meta, open(os.path.join(out, "sections.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 asyncio.run(main())
