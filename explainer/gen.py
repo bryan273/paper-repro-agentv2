@@ -67,7 +67,7 @@ def paper(arxiv):
 
 SYSTEM = """You turn one research paper into a short, accurate explainer video script. Return ONLY JSON.
 Style: {TONE} Never invent facts or numbers: every number or claim must come from the PAPER TEXT given.
-Schema: {"title":str,"section":{"title":str(max 7 words),"title_zh":str,"text":str(2 to 3 plain sentences for a reader of this part),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (one spoken sentence, max 22 words), "zh" (the same sentence in Chinese, natural),
+Schema: {"title":str,"section":{"title":str(max 7 words, names what the section is about, never the paper title),"title_zh":str,"text":str(2 to 3 plain sentences that explain the content itself as a reader would want it, e.g. "Older models read a sentence one word at a time, which is slow..."; never write \"this part\" or \"this section\"),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (one spoken sentence, max 22 words), "zh" (the same sentence in Chinese, natural),
 "evidence" (a verbatim quote of at most 25 words copied exactly from the paper text that supports the scene, or null for title/end), plus fields by type:
 - "title": {"big":str,"sub":str}  (big = 1-2 words, sub = short line; first scene)
 - "cards": {"cards":[{"h":str(max 3 words),"t":str(max 9 words)}, 2 to 4 items]}  (use for problem / ideas / comparison)
