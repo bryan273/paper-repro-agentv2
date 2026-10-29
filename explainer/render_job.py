@@ -123,5 +123,10 @@ except Exception as e:
     msg = str(e)
     if "402" in msg or "Insufficient" in msg or "gen.py" in msg and "non-zero" in msg:
         msg = "The video service is temporarily out of credit or unavailable. Please try again later; no daily quota was used."
+    elif isinstance(e, subprocess.CalledProcessError):
+        # name the step instead of showing the raw command line; the full trace is in the Actions log
+        step = {"record.py": "recording a section", "manim_section.py": "drawing a section", "vertical.py": "making the vertical cut", "ffmpeg": "putting the sections together"}
+        what = next((v for k, v in step.items() if k in " ".join(map(str, e.cmd))), "rendering")
+        msg = f"The video stopped while {what}. Please try again; no daily quota was used."
     update(status="failed", stage=None, error=msg[:400])
     sys.exit(1)
