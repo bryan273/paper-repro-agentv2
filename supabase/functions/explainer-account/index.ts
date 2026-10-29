@@ -8,7 +8,7 @@ import { CORS, json, db, sha, actorOf, userOf, quotaFor, logEvent, hashPassword,
 
 const USERNAME = /^[a-z0-9_]{3,20}$/;
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download"]);
-const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 9 }, "30": { credits: 30, price: 25 }, "100": { credits: 100, price: 79 } };
+const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 10 }, "30": { credits: 30, price: 25 }, "100": { credits: 100, price: 79 } };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
