@@ -53,7 +53,7 @@ def _bb(m):
 def _shown(m):
     try:
         parts = m.family_members_with_points()[:6] or [m]
-        return any(max(p.get_fill_opacity(), p.get_stroke_opacity() if p.get_stroke_width() > 0 else 0) > 0.08 for p in parts)
+        return any(max(p.get_fill_opacity(), p.get_stroke_opacity() if p.get_stroke_width() > 0 else 0) > 0.03 for p in parts)
     except Exception:
         return True
 
@@ -193,6 +193,7 @@ DESIGN RULES
 - The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars).
 - Motion with purpose: entrances 0.5 to 1.0 s (FadeIn with shift, GrowFromCenter, Create, LaggedStart), then emphasise what the voice stresses (Indicate, Circumscribe, Flash, a colour change, a gentle scale). No long static holds, no spinning for its own sake.
 - Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
+- Never leave dimmed leftovers behind a new picture (set_opacity(0.1) ghosts): FadeOut them completely.
 - Never put text on an arrow or a line, never two labels in the same place; the picture is measured after every beat and any overlap is sent back to you.
 {CINEMA}"""
 
