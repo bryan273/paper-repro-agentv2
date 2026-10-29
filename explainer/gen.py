@@ -111,13 +111,13 @@ MODELS = {   # selectable script writers: id -> (base url, model name, env key, 
 MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
 MODEL_ORDER = ["relay", "deepseek", "paratera", "stepfun"]
 
-def llm_one(mid, system, user):
+def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
     body = json.dumps({"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
                        "temperature": 0.3, "max_tokens": 8000, "response_format": {"type": "json_object"}, **extra}).encode()
     hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json"}
-    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": "ap-northeast-2", "x-timeout-ms": "120000"})
+    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": ("ap-northeast-2", "ap-southeast-1")[attempt % 2], "x-timeout-ms": "120000"})
     else: url = base + "/chat/completions"
     r = urllib.request.Request(url, body, hdr)
     out = json.load(urllib.request.urlopen(r, timeout=180))
@@ -134,7 +134,7 @@ def llm(system, user, model="deepseek"):
     for mid in order:
         for attempt in range(2):
             try:
-                sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
+                sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
                 last = e; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {e.read()[:200]!r}", flush=True)
                 if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
@@ -185,8 +185,24 @@ async def main():
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
-        sysmsg = SYSTEM.replace("{SECONDS}", str(a.seconds)).replace("{WORDS}", str(int(a.seconds * 2.4)))
-        sc, usage = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model); print("llm usage", usage)
+        n, secs = part_plan(a.seconds)
+        custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
+        def one(i):
+            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom)
+            return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model)
+        if n == 1:
+            sc, usage = one(0)
+            for x in sc["scenes"]: x["sec"] = 0
+            sc["sections"] = [sc.pop("section", None) or {}]
+        else:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=3) as ex: results = list(ex.map(one, range(n)))
+            sc = {"title": results[0][0].get("title") or title, "scenes": [], "sections": []}
+            for k, (r, _) in enumerate(results):
+                for x in (r.get("scenes") or []): x["sec"] = k; sc["scenes"].append(x)
+                sc["sections"].append(r.get("section") or {})
+            usage = dict(results[0][1] or {})
+        print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
         bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if a.url else title; sc["unverified"] = [str(b) for b in bad]
