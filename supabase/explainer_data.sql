@@ -11,3 +11,7 @@ create table if not exists explainer_orders (
 );
 alter table explainer_feedback enable row level security;
 alter table explainer_orders enable row level security;
+
+-- Payment claims: a customer taps "I have paid" after scanning the QR; the owner confirms in the admin dashboard.
+alter table explainer_orders add column if not exists pay_method text default '';
+alter table explainer_orders add column if not exists paid_at timestamptz;

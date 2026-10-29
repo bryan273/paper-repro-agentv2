@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test guide - Paper Repro Suite</title>
+<link rel="stylesheet" href="fonts/fonts.css?v=20261029a">
+<style>
+:root{--bg:#f7f5f0;--surface:#fff;--ink:#17171c;--muted:#6a6a75;--line:#e4e0d8;--acc:#5b4bff;--acct:#ecebff;--ok:#1f8a70;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 80px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:10px;font:700 17px "Space Grotesk",Inter,sans-serif}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#5b4bff,#8a5cff);color:#fff;display:grid;place-items:center;font:700 16px "Space Grotesk",sans-serif}
+.lang{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font:500 13px Inter,"Microsoft YaHei",sans-serif;cursor:pointer}
+h1{font:700 clamp(30px,6vw,46px)/1.08 "Space Grotesk",Inter,sans-serif;letter-spacing:-.03em;margin:0 0 10px}
+h2{font:700 22px "Space Grotesk",Inter,sans-serif;margin:34px 0 10px;letter-spacing:-.02em}
+.lead{color:var(--muted);font-size:17px;margin:0 0 18px}
+.pill{display:inline-block;background:var(--acct);color:var(--acc);border-radius:999px;padding:4px 12px;font:600 12px Inter,sans-serif;margin-right:6px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin:12px 0}
+.card h3{margin:0 0 6px;font:700 17px "Space Grotesk",Inter,sans-serif}
+.meta{color:var(--muted);font-size:13px;margin:0 0 8px}
+ol,ul{margin:6px 0 0;padding-left:22px}
+li{margin:5px 0}
+a{color:var(--acc);font-weight:600;text-decoration:none}
+a:hover{text-decoration:underline}
+.btn{display:inline-block;background:var(--acc);color:#fff;border-radius:999px;padding:10px 18px;font-weight:600;margin-top:8px}
+.btn:hover{text-decoration:none;filter:brightness(1.08)}
+.note{border-left:4px solid var(--acc);background:var(--acct);padding:10px 14px;border-radius:0 12px 12px 0;margin:14px 0;font-size:15px}
+.q li{margin:8px 0}
+[data-l]{display:none}
+html[data-lang="en"] [data-l="en"],html[data-lang="zh"] [data-l="zh"]{display:revert}
+html[data-lang="en"] span[data-l="en"],html[data-lang="zh"] span[data-l="zh"],html[data-lang="en"] a[data-l="en"],html[data-lang="zh"] a[data-l="zh"]{display:inline}
+@media print{.lang{display:none}body{background:#fff}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="logo">R</span><span>Paper Repro Suite</span></div>
+    <button class="lang" id="lang" type="button">中文</button>
+  </header>
+
+  <h1><span data-l="en">User testing guide</span><span data-l="zh">用户测试指南</span></h1>
+  <p class="lead">
+    <span data-l="en">Thank you for helping us test. You do not need an account. It takes about 20 minutes. There are no wrong answers: if something is confusing, that is exactly what we want to hear.</span>
+    <span data-l="zh">谢谢你来帮我们测试。不需要注册账号，大约 20 分钟。没有对错之分：如果哪里让你困惑，那正是我们最想听到的。</span>
+  </p>
+  <p>
+    <span class="pill"><span data-l="en">No account needed</span><span data-l="zh">无需账号</span></span>
+    <span class="pill"><span data-l="en">English and 中文</span><span data-l="zh">中英文都可以</span></span>
+    <span class="pill"><span data-l="en">Phone or laptop</span><span data-l="zh">手机或电脑</span></span>
+  </p>
+
+  <div class="note">
+    <span data-l="en"><b>One thing to know:</b> making a video takes about 4 minutes. Start it first, then try the other tasks while you wait. You can make up to 3 videos today.</span>
+    <span data-l="zh"><b>先说一件事：</b>做一个视频大约需要 4 分钟。请先开始制作，等待时再试其他任务。你今天最多可以做 3 个视频。</span>
+  </div>
+
+  <h2><span data-l="en">Main task: Paper Explainer (about 10 minutes)</span><span data-l="zh">主要任务：Paper Explainer（约 10 分钟）</span></h2>
+  <div class="card">
+    <h3><span data-l="en">Turn a paper into a video</span><span data-l="zh">把一篇论文变成视频</span></h3>
+    <p class="meta"><a href="https://paper-explainer-aiid.vercel.app" target="_blank" rel="noopener">paper-explainer-aiid.vercel.app</a></p>
+    <ol data-l="en">
+      <li>Open the site and press <b>Make a video</b>. Paste an arXiv link, a PDF link, or a DOI of a paper you know (or use <code>arxiv.org/abs/1706.03762</code>).</li>
+      <li>Choose the language and voice you like, then start. Watch the progress bar.</li>
+      <li>While you wait, scroll the page: look at <b>Examples</b>, <b>How it works</b> and <b>Pricing</b>.</li>
+      <li>When the video is ready, watch at least the first 30 seconds. Is the voice clear? Do the on-screen quotes look right?</li>
+      <li>Try the 中文 button at the top right. Is anything missing or odd?</li>
+    </ol>
+    <ol data-l="zh">
+      <li>打开网站，点击 <b>Make a video</b>。粘贴一篇你熟悉的论文的 arXiv 链接、PDF 链接或 DOI（也可以用 <code>arxiv.org/abs/1706.03762</code>）。</li>
+      <li>选择你喜欢的语言和声音，然后开始，留意进度条。</li>
+      <li>等待期间滚动页面，看看 <b>Examples</b>、<b>How it works</b> 和 <b>Pricing</b>。</li>
+      <li>视频完成后，至少看前 30 秒。声音清楚吗？屏幕上的引文看起来对吗？</li>
+      <li>点右上角的“中文”按钮，有没有缺失或奇怪的地方？</li>
+    </ol>
+    <a class="btn" href="https://paper-explainer-aiid.vercel.app" target="_blank" rel="noopener"><span data-l="en">Open Paper Explainer</span><span data-l="zh">打开 Paper Explainer</span></a>
+  </div>
+  <div class="card">
+    <h3><span data-l="en">Look at the price and ordering (optional)</span><span data-l="zh">看看价格和下单流程（可选）</span></h3>
+    <ul data-l="en">
+      <li>On <b>Pricing</b>, press <b>Order a Studio video</b> (¥10). Fill the form, then choose WeChat Pay or Alipay.</li>
+      <li>You do not have to pay. Please do not tap <b>I have paid</b> unless you really paid.</li>
+      <li>Tell us: was it clear what happens next? Is ¥10 fair?</li>
+    </ul>
+    <ul data-l="zh">
+      <li>在 <b>Pricing</b> 点击 <b>Order a Studio video</b>（¥10）。填写表单，然后选择微信支付或支付宝。</li>
+      <li>不用真的付款。除非你真的付了款，请不要点“我已付款”。</li>
+      <li>告诉我们：接下来会发生什么，清楚吗？¥10 合理吗？</li>
+    </ul>
+  </div>
+
+  <h2><span data-l="en">Other apps (pick one, about 5 minutes)</span><span data-l="zh">其他应用（任选一个，约 5 分钟）</span></h2>
+  <div class="card">
+    <h3>Paper Repro Agent</h3>
+    <p class="meta"><a href="https://paper-repro-aiid.vercel.app/repro/" target="_blank" rel="noopener">paper-repro-aiid.vercel.app/repro</a></p>
+    <p data-l="en">An agent re-runs a paper's results from scratch and gives a verdict. Open a <b>recorded run</b> (instant, free), read the verdict, and tell us if you understand what it says.</p>
+    <p data-l="zh">智能体会从头重新运行论文的结果并给出结论。打开一个<b>已录制的运行</b>（即时、免费），读一下结论，告诉我们你是否理解。</p>
+  </div>
+  <div class="card">
+    <h3>Repro Lite</h3>
+    <p class="meta"><a href="https://repro-lite-aiid.vercel.app" target="_blank" rel="noopener">repro-lite-aiid.vercel.app</a></p>
+    <p data-l="en">Type a claim such as "Isolation Forest reaches ROC AUC about 0.95 on breast cancer" and press <b>Run check</b>. It runs in your browser and takes 1 to 2 minutes.</p>
+    <p data-l="zh">输入一个结论，例如“Isolation Forest 在 breast cancer 数据集上 ROC AUC 约 0.95”，然后点击 <b>Run check</b>。它在你的浏览器里运行，需要 1 到 2 分钟。</p>
+  </div>
+  <div class="card">
+    <h3>Reading Companion</h3>
+    <p class="meta"><a href="https://reading-companion-aiid.vercel.app" target="_blank" rel="noopener">reading-companion-aiid.vercel.app</a></p>
+    <p data-l="en">Ask a question about a paper (for example "What is the main result of arXiv 1607.01759?") and press <b>Start reading</b>. An answer with numbered sources appears in about 2 to 3 minutes.</p>
+    <p data-l="zh">就一篇论文提问（例如“arXiv 1607.01759 的主要结论是什么？”），然后点击 <b>Start reading</b>。大约 2 到 3 分钟后会出现带编号来源的回答。</p>
+  </div>
+
+  <h2><span data-l="en">Tell us what you think</span><span data-l="zh">告诉我们你的想法</span></h2>
+  <div class="card q">
+    <p data-l="en" style="margin-top:0">Please answer these out loud to the team, or in the feedback form at the bottom of <a href="https://paper-explainer-aiid.vercel.app/#feedback" target="_blank" rel="noopener">Paper Explainer</a>:</p>
+    <p data-l="zh" style="margin-top:0">请当面告诉团队，或填写 <a href="https://paper-explainer-aiid.vercel.app/#feedback" target="_blank" rel="noopener">Paper Explainer</a> 页面底部的反馈表：</p>
+    <ol data-l="en">
+      <li>Was it clear what to do in the first 30 seconds? Where did you hesitate?</li>
+      <li>Did anything break, look wrong, or take too long?</li>
+      <li>Was the video useful? Who would you send it to, and why?</li>
+      <li>Is ¥10 for a reviewed video fair, too high, or too low?</li>
+      <li>On a scale of 1 to 5, how likely are you to use it again? What one thing would raise it?</li>
+    </ol>
+    <ol data-l="zh">
+      <li>前 30 秒你知道该做什么吗？你在哪里犹豫了？</li>
+      <li>有没有出错、显示不对或等太久的地方？</li>
+      <li>视频有用吗？你会发给谁，为什么？</li>
+      <li>¥10 一个人工审核的视频，合理、太贵还是太便宜？</li>
+      <li>1 到 5 分，你再次使用的可能性有多大？哪一点最能让分数更高？</li>
+    </ol>
+  </div>
+
+  <h2><span data-l="en">If something goes wrong</span><span data-l="zh">如果出了问题</span></h2>
+  <ul data-l="en">
+    <li>A video stuck for more than 8 minutes: tell the team, and try a different paper link.</li>
+    <li>An answer is slow: the AI service can be slow at busy times. Wait a minute or try again.</li>
+    <li>Orange dot in the Paper Repro Agent top bar: live runs are offline, so use the recorded samples.</li>
+  </ul>
+  <ul data-l="zh">
+    <li>视频卡住超过 8 分钟：告诉团队，并换一个论文链接再试。</li>
+    <li>回答很慢：繁忙时 AI 服务可能较慢，请等一分钟或重试。</li>
+    <li>Paper Repro Agent 顶栏出现橙色圆点：在线运行暂时不可用，请使用已录制的示例。</li>
+  </ul>
+  <p class="meta" style="margin-top:26px"><span data-l="en">Tsinghua AIID capstone, Group 1. Thank you!</span><span data-l="zh">清华 AIID 课程项目，第 1 组。谢谢你！</span></p>
+</div>
+<script>
+(function(){
+  var root=document.documentElement,btn=document.getElementById('lang');
+  function set(l){root.setAttribute('data-lang',l);root.lang=l==='zh'?'zh-CN':'en';btn.textContent=l==='zh'?'English':'中文';try{localStorage.setItem('guide.lang',l)}catch(e){}}
+  var saved='';try{saved=localStorage.getItem('guide.lang')||''}catch(e){}
+  set(saved||((navigator.language||'').toLowerCase().indexOf('zh')===0?'zh':'en'));
+  btn.addEventListener('click',function(){set(root.getAttribute('data-lang')==='en'?'zh':'en')});
+})();
+</script>
+</body>
+</html>

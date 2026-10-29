@@ -1,6 +1,7 @@
 // Feedback and Studio orders for Paper Explainer, so the site does not depend on any one host's own database.
 //   POST {type:"feedback", id?, data:{rating,use_case,comment,email,arxiv,kind}}  -> {id}
 //   POST {type:"order", data:{email,arxiv,language,notes}}                          -> {id}
+//   POST {type:"order_paid", id, method:"wechat"|"alipay"}                          -> {ok}   (customer taps "I have paid")
 //   GET  ?count=1                                                                   -> {count}
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -40,6 +41,13 @@ Deno.serve(async (req) => {
       if (!EMAIL.test(row.email) || !row.arxiv) return json({ error: "email and paper link are required" }, 400);
       const [r] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) });
       return json({ id: r.id });
+    }
+    if (body.type === "order_paid") {
+      // the customer says they paid; the owner checks the payment and confirms in the admin dashboard
+      if (!/^[0-9a-f-]{36}$/.test(String(body.id))) return json({ error: "bad id" }, 400);
+      const method = ["wechat", "alipay"].includes(String(body.method)) ? String(body.method) : "";
+      await db(`explainer_orders?id=eq.${body.id}&status=eq.new`, { method: "PATCH", body: JSON.stringify({ status: "paid_claimed", pay_method: method, paid_at: new Date().toISOString() }) });
+      return json({ ok: true });
     }
     return json({ error: "unknown type" }, 400);
   } catch (e) {
