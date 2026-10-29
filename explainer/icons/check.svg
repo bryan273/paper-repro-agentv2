@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:03c8e362a064c4a094016be85e63289825cf3ecbccb73714138df2b7df2d5026
-size 316
+<!-- @license lucide-static v0.460.0 - ISC -->
+<svg
+  class="lucide lucide-check"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 6 9 17l-5-5" />
+</svg>

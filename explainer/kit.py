@@ -50,9 +50,13 @@ def Icon(name, size=1.0, color=ACCENT, stroke=3.5):
     scan-search workflow microscope flask-conical award timer coins server cloud camera music video bot user code chart-column
     chart-line chart-pie arrow-right split merge. An unknown name gives a dot."""
     p = os.path.join(ICON_DIR, f"{name}.svg")
-    if not os.path.exists(p):
+    try:
+        ok = os.path.exists(p) and open(p, encoding="utf-8").read(200).lstrip().startswith("<")
+        m = SVGMobject(p) if ok else None
+    except Exception:
+        m = None
+    if m is None:   # missing or unreadable icon: a dot, never a crash
         return Dot(radius=size * 0.3, color=color)
-    m = SVGMobject(p)
     m.set_fill(opacity=0).set_stroke(color, width=stroke)
     m.scale_to_fit_height(size)
     return m

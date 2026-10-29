@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:342f3300d42355068660e0b0649288c83ce4e2f284d979c7110dcc2dc1f3fae8
-size 455
+<!-- @license lucide-static v0.460.0 - ISC -->
+<svg
+  class="lucide lucide-bot"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 8V4H8" />
+  <rect width="16" height="12" x="4" y="8" rx="2" />
+  <path d="M2 14h2" />
+  <path d="M20 14h2" />
+  <path d="M15 13v2" />
+  <path d="M9 13v2" />
+</svg>
