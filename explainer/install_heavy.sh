@@ -4,6 +4,7 @@ touch /tmp/heavy.started
 {
   sudo apt-get install -y -q --no-install-recommends fonts-noto-cjk libcairo2-dev libpango1.0-dev pkg-config \
     || { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends fonts-noto-cjk libcairo2-dev libpango1.0-dev pkg-config; }
+  sudo apt-get install -y -q --no-install-recommends fonts-inter || true   # a clean sans font for the animations; Pango falls back without it
   pip install -q playwright manim
   python -m playwright install --with-deps chromium
 } > /tmp/heavy.log 2>&1 && touch /tmp/heavy.done || touch /tmp/heavy.failed

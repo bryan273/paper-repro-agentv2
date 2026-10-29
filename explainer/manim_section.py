@@ -21,6 +21,13 @@ idx = [i for i, s in enumerate(sc["scenes"]) if s.get("sec") == k]
 dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="utf-8"))["scenes"] for lang in ("en", "zh")}
 # a beat lasts as long as the longer of its two narrations, so both languages fit the same picture
 beats = [round(max(dur["en"][i]["dur"], dur["zh"][i]["dur"]) / 1000, 2) for i in idx]
+NARR_DELAY = 0.15   # each narration clip starts this long after its beat
+def words_of(lang, i):
+    try: return json.load(open(os.path.join(d, f"{lang}_{i}.words.json"), encoding="utf-8"))
+    except Exception: return []
+norm = lambda w: re.sub(r"[^0-9a-z]+", "", str(w).lower())
+# per beat: [seconds from the beat start, word] of the English narration, so a picture can appear on the word that names it
+CUES = {n: [[round(a + NARR_DELAY, 2), norm(w)] for a, _, w in words_of("en", i) if norm(w)] for n, i in enumerate(idx)}
 THEMES = {"classic": ("#04070c", "#3dff8f", "#4aa3ff", "#e9f3ff", "#8aa0b8"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
           "sunset": ("#120a1f", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#050510", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#050505", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
 theme = json.load(open(os.path.join(d, "script_en.json"), encoding="utf-8")).get("theme") or "classic"
@@ -34,23 +41,12 @@ import numpy as np, math, random, json, contextlib
 config.background_color = "{BG}"
 BG, ACCENT, ACCENT2, TEXT, MUTED = "{BG}", "{ACC}", "{ACC2}", "{TXT}", "{MUT}"
 BEATS = {beats!r}
+CUES = {CUES!r}
+PALETTE = [ACCENT, ACCENT2, "#ffb547", "#ff6b9a", "#a78bfa"]
+FONT = {('"Inter"' if os.name != "nt" else '""')}
+ICON_DIR = {os.path.join(ROOT, "icons")!r}
 '''
-HARNESS_BODY = r'''
-def Lbl(s, size=30, color=TEXT, w=None):
-    """A text label, shrunk to fit a width if one is given."""
-    t = Text(str(s), font_size=size, color=color)
-    if w is not None and t.width > w: t.scale_to_fit_width(w)
-    return t
-
-def Box(s, w=3.0, h=1.3, color=ACCENT, size=32, fill=0.22):
-    """A rounded box with its label centred inside; the label is shrunk until it fits with a margin. Returns VGroup(rect, text)."""
-    r = RoundedRectangle(corner_radius=0.12, width=w, height=h, color=color, fill_opacity=fill, stroke_width=3)
-    t = Text(str(s), font_size=size, color=TEXT)
-    if t.width > w - 0.3: t.scale_to_fit_width(w - 0.3)
-    if t.height > h - 0.2: t.scale_to_fit_height(h - 0.2)
-    t.move_to(r)
-    return VGroup(r, t)
-
+HARNESS_BODY = open(os.path.join(ROOT, "kit.py"), encoding="utf-8").read() + r'''
 def _bb(m):
     return (m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1])
 
@@ -82,9 +78,9 @@ def _audit_now(scene, i):
                 if id(m) in glyphs or id(m) in skip: continue
                 if isinstance(m, (Text, MarkupText)):
                     if _shown(m) and m.width > 0.01: texts.append(m)
-                elif isinstance(m, VMobject) and len(m.points) > 0 and not m.submobjects and (m.width > 0.02 or m.height > 0.02) and _shown(m):
+                elif isinstance(m, VMobject) and len(m.points) > 0 and (m.width > 0.02 or m.height > 0.02) and _shown(m):
                     shapes.append(m)
-        name = lambda t: '"' + str(getattr(t, "text", "?"))[:32] + '"'
+        name = lambda t: '"' + str(getattr(t, "original_text", None) or getattr(t, "text", "?"))[:32] + '"'
         for a in range(len(texts)):
             ta = _bb(texts[a])
             if ta[0] < -6.9 or ta[1] > 6.9 or ta[3] > 3.9:
@@ -96,7 +92,22 @@ def _audit_now(scene, i):
                 if w * h > 0.15 * min((ta[1] - ta[0]) * (ta[3] - ta[2]), (tb[1] - tb[0]) * (tb[3] - tb[2])) and w > 0.05 and h > 0.04:
                     out.append(f"text {name(texts[a])} overlaps text {name(texts[b])}: put them apart (next_to with buff 0.3, or arrange)")
             for sh in shapes:
-                sb = _bb(sh); thin = min(sb[1] - sb[0], sb[3] - sb[2]) < 0.15
+                sb = _bb(sh)
+                try: closed = sh.is_closed()
+                except Exception: closed = True
+                if not closed:
+                    # a line, arrow or arc: look at the path itself, not its bounding box; the ends may touch what they point at
+                    if not (_overlap(ta, sb, 0.02)[0] > 0):
+                        continue
+                    hits = 0
+                    for f in np.linspace(0.15, 0.85, 36):
+                        p = sh.point_from_proportion(f)
+                        if ta[0] + 0.04 < p[0] < ta[1] - 0.04 and ta[2] + 0.04 < p[1] < ta[3] - 0.04: hits += 1
+                    if hits:
+                        out.append(f"a line or arrow at ({(sb[0] + sb[1]) / 2:.1f}, {(sb[2] + sb[3]) / 2:.1f}) runs through text {name(texts[a])}: route it around the label or move the label off it")
+                    continue
+                if max(sb[1] - sb[0], sb[3] - sb[2]) < 0.3: continue   # dots and arrow tips
+                thin = min(sb[1] - sb[0], sb[3] - sb[2]) < 0.15
                 w, h = _overlap(ta, sb, 0.02 if thin else 0.0)
                 if not (w > 0 and h > 0): continue
                 inside = sb[0] <= ta[0] + 0.03 and sb[1] >= ta[1] - 0.03 and sb[2] <= ta[2] + 0.03 and sb[3] >= ta[3] - 0.03
@@ -128,34 +139,65 @@ class ExplainerScene(Scene):
         left = BEATS[i] - (self.renderer.time - t0)
         if left > 0.02: self.wait(left)
         type(self)._audit.extend(_audit_now(self, i))
+    def until(self, i, word, lead=0.15):
+        """Inside beat i: wait until the narrator says `word` (the first one still ahead), so what is drawn next appears on that word."""
+        w = re.sub(r"[^0-9a-z]+", "", str(word).lower().split()[0] if str(word).split() else "")
+        el = self.renderer.time - type(self)._starts[i]
+        for t, x in CUES.get(i, []):
+            if x == w and t - lead > el + 0.03:
+                self.wait(t - lead - el); return
     def tear_down(self):
         json.dump({"starts": type(self)._starts, "end": self.renderer.time}, open("beat_times.json", "w"))
         json.dump(type(self)._audit, open("audit.json", "w"))
 '''
 HARNESS = HARNESS_HEAD + HARNESS_BODY
 
-SYSTEM = f"""You are an expert Manim Community (v0.19+) animator in the style of 3Blue1Brown. You write ONE scene that explains one section of a research paper, synced to its narration beats.
-Return ONLY Python code in one ```python block: a single class `Section(ExplainerScene)` with `construct(self)`. Do not import anything: `from manim import *`, `np`, `math`, `random` and the colour constants BG, ACCENT, ACCENT2, TEXT, MUTED are already available, and so is BEATS (seconds per beat).
-Hard rules (the code is checked and rejected otherwise):
-- For every beat i, in order, one block `with self.beat(i):`. Inside it, the animations' run_time plus waits must total at most BEATS[i] seconds (the harness waits out the rest). Every beat must visibly change something.
-- NO LaTeX is installed: never use Tex, MathTex, DecimalNumber, Integer, Variable, Matrix, Brace, BraceLabel, BarChart, Title, Code, MathTable, add_coordinates, get_axis_labels, get_graph_label. Write every label, number and formula with Text or MarkupText (use unicode like √ Σ × ≈ → ≤ ² ³). For a changing number use a ValueTracker with always_redraw(lambda: Text(f"{{t.get_value():.1f}}", ...)).
-- No files, images, SVGs, sound, network, OS access, config changes, getattr/eval/exec or dunder names.
-- Keep everything inside x in [-6.6, 6.6] and y in [-2.4, 3.7]; the bottom of the frame is reserved for subtitles. Never write the narration sentences on screen: on-screen text is short labels (at most 6 words), font_size 22 to 44, color TEXT or MUTED, highlights in ACCENT / ACCENT2.
-- Every number shown must come from the beat data given; never invent results.
-Layout (the picture is measured after every beat; overlaps are sent back to you to fix):
-- Use the ready helpers: `Box(label, w, h, color)` is a rounded box with its label centred and auto-shrunk to fit; `Lbl(text, size, color, w)` is a label shrunk to a max width. Put every label INSIDE a Box, or next to a shape with `.next_to(shape, DOWN/UP, buff=0.3)`.
-- Never put text on an arrow or a line; label an arrow from above or below with buff 0.25. Draw connectors between the edges of boxes (`Arrow(a.get_right(), b.get_left(), buff=0.1)`), never through a label.
-- Lay rows and columns out with `VGroup(...).arrange(RIGHT or DOWN, buff=0.5)` and `.move_to(...)`/`.shift(...)`; leave at least 0.3 units between boxes; at most 5 boxes in a row (each at most 2.2 wide) and at most 4 stacked rows.
-- Make it BIG and readable on a phone: Box at least 2.6 x 1.2 with size 30 or more, the main picture spanning at least 8 units wide or 4.5 tall, title labels size 38 to 44, never text smaller than 26. Use two or three big elements per beat instead of five small ones.
-- Text inside a box must be at most 3 words per line; shorten labels instead of shrinking below font_size 22.
-- Before adding something new, `FadeOut` what is no longer needed so two ideas never share the same space.
-{CINEMA}Craft: fill the stage (main shapes 2.5 to 6 units wide, filled with fill_opacity 0.15 to 0.35 in ACCENT/ACCENT2 with a bright stroke), never leave a beat as plain text on black. Pick ONE visual metaphor for the section and evolve it across beats; about one beat in five may just hold and emphasise (Indicate, Circumscribe) instead of adding something new. Keep the picture moving: entrances 0.6 to 1.2 s, then slow emphasis or camera-like shifts (VGroup.animate.shift/scale) instead of long static waits. Build a visual metaphor and evolve it across beats (Transform, ReplacementTransform, FadeIn/FadeOut, Create, Write, GrowArrow, Indicate, Circumscribe, LaggedStart, animate, ValueTracker, Axes with plot, NumberPlane, Dot, Arrow, Line, Rectangle, RoundedRectangle, Circle, VGroup.arrange). Clear the stage between ideas so it never gets cluttered. Smooth, calm pacing; nothing static for long."""
+SYSTEM = f"""You are the motion designer of a high-quality explainer channel (think 3Blue1Brown, Kurzgesagt, a good YouTube tutorial). You write ONE Manim Community scene that explains one section of a research paper, synced word by word to its narration.
+Return ONLY Python code in one ```python block: a single class `Section(ExplainerScene)` with `construct(self)`. Do not import anything: `from manim import *`, `np`, `math`, `random`, the colours BG, ACCENT, ACCENT2, TEXT, MUTED, PALETTE (5 colours) and BEATS (seconds per beat) are available.
+
+HARD RULES (checked; the code is rejected otherwise)
+- For every beat i, in order, one block `with self.beat(i):`. Inside it, run_times plus waits total at most BEATS[i] seconds (the rest is waited out for you). Every beat visibly changes something.
+- NO LaTeX: never Tex, MathTex, DecimalNumber, Integer, Variable, Matrix, Brace, BraceLabel, BarChart, Title, Code, MathTable, add_coordinates, get_axis_labels, get_graph_label. All text is Text (unicode is fine: √ Σ × ≈ → ≤ ² ³).
+- No files, SVGs, images, sound, network, OS access, config, getattr/eval/exec, dunder names.
+- Everything inside x [-6.6, 6.6], y [-2.4, 3.7] (the bottom is the caption strip). Never write narration sentences on screen: labels of at most 6 words. Text size 26 or more.
+- Every number on screen comes from the beat data; never invent results.
+
+THE DESIGN KIT (use these: they are laid out, sized and spaced for you, so nothing overlaps)
+  Heading(text)                                   title at the top for a beat that needs one
+  BigNumber(value, label)  /  g, t = Counter(target, label, decimals, suffix) then self.play(t.animate.set_value(target))
+  Bars(labels, values, highlight=i, unit="%")      .base .bars .values .labels ; GrowFromEdge(b, DOWN)
+  HBars(labels, values, highlight=i)               rankings ; GrowFromEdge(b, LEFT)
+  LinePlot(ys, xs, x_label, y_label)               .axes .curve ; trends, training curves, scaling
+  Donut(percent, label)                            .ring .arc .value ; a share or a rate
+  Compare(left_title, [..], right_title, [..])     .left .right .left_items .right_items ; before/after, old/new, problem/fix
+  Pipeline([steps], icons=[..])                    .nodes .arrows .labels ; a process, a method, data flow
+  Timeline([(when, what), ..])                     .line .events ; history, stages of training
+  IconRow([(icon, label), ..])  /  IconLabel(icon, label)  /  Icon(name, size, color)
+  Tokens([words], highlight=[i])  +  Attention(tokens, [(i, j), ..], weights)   language, attention, tokenisation
+  NeuralNet((3, 5, 5, 2), labels=[..])             .edges .layers ; models, layers
+  Heatmap(matrix, row_labels, col_labels)          .cells ; attention maps, confusion matrices, similarity
+  Stack([bottom .. top labels])                    .layers ; architectures, stacks of blocks
+  Equation(["y", "=", "F(x)", "+", "x"], colors=[..])   build a formula piece by piece, Indicate the key part
+  Quote(text, source)                              a short line quoted from the paper
+  Venn(a, b, both)  /  Callout(target, text, UR)  /  Box(label, w, h, color)  /  Lbl(text, size, color, w)  /  fit(mob, w, h)  /  wrap(text, n)
+  Icons: brain cpu database file-text image globe zap layers search lock users clock target trending-up trending-down eye message-square book-open graduation-cap lightbulb puzzle network git-branch shuffle repeat filter scale gauge rocket shield-check sparkles languages type cog box boxes grid-3x3 list-ordered check x alert-triangle sigma function-square scan-search workflow microscope flask-conical award timer coins server cloud camera music video bot user code chart-column chart-line chart-pie arrow-right split merge
+  Every kit piece is a VGroup you can move (.move_to, .shift, .scale, .to_edge), animate, Transform and FadeOut. You may also draw your own shapes when the idea needs it.
+
+DESIGN RULES
+- Variety: choose the form that fits what the narration says (a number -> BigNumber/Counter, a comparison of results -> Bars/HBars, a trend -> LinePlot, a process -> Pipeline, two approaches -> Compare, words or attention -> Tokens+Attention, an architecture -> Stack/NeuralNet, history -> Timeline, a formula -> Equation). Never use the same kind of picture in two beats in a row, use at least four different kinds in the section, and at most one beat may be plain boxes.
+- One idea per beat, big and centred; the main picture spans at least 8 units wide or 4 tall. Before a new idea, FadeOut what is no longer needed (or Transform the old picture into the new one when they are related).
+- Sync to the voice: the narration's word timings are given per beat. `self.until(i, "word")` waits inside beat i until that word is spoken; put it right before the animation that shows that thing, so it appears exactly when it is named (for example `self.until(3, "residual")` then `self.play(GrowArrow(shortcut))`). Use one to three cues per beat.
+- Motion with purpose: entrances 0.5 to 1.0 s (FadeIn with shift, GrowFromCenter, Create, LaggedStart), then emphasise what the voice stresses (Indicate, Circumscribe, Flash, a colour change, a gentle scale). No long static holds, no spinning for its own sake.
+- Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
+- Never put text on an arrow or a line, never two labels in the same place; the picture is measured after every beat and any overlap is sent back to you.
+{CINEMA}"""
 
 def user_msg():
     b = []
     for n, i in enumerate(idx):
         s = {kk: v for kk, v in sc["scenes"][i].items() if kk not in ("zh", "audio", "audio_ms", "dur", "sec", "evidence")}
-        b.append({"beat": n, "seconds": beats[n], **s})
+        cue = " ".join(f"{w}@{t:.1f}" for t, w in CUES.get(n, []))
+        b.append({"beat": n, "seconds": beats[n], **s, "spoken_words_at": cue})
     return (f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {meta.get('title', '')}\nWHAT IT EXPLAINS: {meta.get('text', '')}\n"
             f"KEY TAKEAWAY: {meta.get('takeaway', '')}\nBEATS (the narration said during each beat, with the visual hint and data):\n{json.dumps(b, ensure_ascii=False, indent=1)}")
 
@@ -214,30 +256,70 @@ def render(code):
         return None, tail or f"manim exited {p.returncode}"
     return vid, None
 
-def subs_and_audio(vid, times):
-    """Two-line subtitles (Chinese over English, like the template videos) burned in, and each language's narration placed at its beat."""
-    starts, end = times["starts"], times["end"]
-    font = "Microsoft YaHei" if os.name == "nt" else "Noto Sans CJK SC"
+def ass_color(h):
+    h = h.lstrip("#"); return f"&H00{h[4:6]}{h[2:4]}{h[0:2]}&"
+
+def caption_track(lang, starts, end):
+    """Captions in the video's own language, a short phrase at a time, the word being spoken lit in the accent colour (like a good tutorial).
+    Falls back to whole sentences when the voice gave no word timings."""
+    font = ("Microsoft YaHei" if os.name == "nt" else ("Noto Sans CJK SC" if lang == "zh" else "Inter"))
     ts = lambda t: f"{int(t // 3600)}:{int(t % 3600 // 60):02d}:{t % 60:05.2f}"
-    esc = lambda s: s.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
-    ass = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1280", "PlayResY: 720", "", "[V4+ Styles]",
+    esc = lambda x: x.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
+    hi = ass_color(ACC)
+    ass = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1280", "PlayResY: 720", "WrapStyle: 0", "", "[V4+ Styles]",
            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-           f"Style: S,{font},36,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,0,0,1,2.4,1,2,70,70,30,1", "", "[Events]",
+           f"Style: S,{font},{40 if lang == 'en' else 42},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,3,0,2,90,90,42,1", "", "[Events]",
            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
+    PUNCT = ".,;:?!\u3002\uff0c\uff1b\uff1a\uff1f\uff01\u3001"
     for n, i in enumerate(idx):
-        a, b = starts[n], (starts[n + 1] if n + 1 < len(starts) else end)
-        s = sc["scenes"][i]
-        ass.append(f"Dialogue: 0,{ts(a + 0.05)},{ts(max(a + 0.5, b - 0.1))},S,,0,0,0,,{esc(s['zh'])}\\N{{\\b0\\i1\\fs24\\c&H00D8C7B9&}}{esc(s['en'])}")
-    open(os.path.join(work, "subs.ass"), "w", encoding="utf-8").write("\n".join(ass) + "\n")
+        a0, b0 = starts[n], (starts[n + 1] if n + 1 < len(starts) else end)
+        sent = sc["scenes"][i][lang]
+        ws = words_of(lang, i)
+        if not ws:
+            ass.append(f"Dialogue: 0,{ts(a0 + 0.05)},{ts(max(a0 + 0.5, b0 - 0.1))},S,,0,0,0,,{esc(sent)}"); continue
+        # cut the sentence at each spoken word, so punctuation and spacing come from the script
+        pieces, cur = [], 0
+        for k, (t, _, w) in enumerate(ws):
+            pos = sent.find(w, cur)
+            if pos < 0: pieces.append([t, w]); continue
+            pieces.append([t, None, pos]); cur = pos + len(w)
+        spans = []
+        for k, p in enumerate(pieces):
+            if p[1] is not None: spans.append([p[0], p[1]]); continue
+            nxt = next((q[2] for q in pieces[k + 1:] if q[1] is None), len(sent))
+            spans.append([p[0], sent[p[2]:nxt].strip() if lang == "en" else sent[p[2]:nxt].strip()])
+        # phrases: up to 7 words (English) or 16 characters (Chinese), cut after punctuation
+        chunks, cur_c = [], []
+        for t, txt in spans:
+            cur_c.append([t, txt])
+            size = len(cur_c) if lang == "en" else sum(len(x[1]) for x in cur_c)
+            if (lang == "en" and size >= 7) or (lang == "zh" and size >= 16) or (txt and txt[-1] in PUNCT and size >= (3 if lang == "en" else 6)):
+                chunks.append(cur_c); cur_c = []
+        if cur_c: chunks.append(cur_c)
+        sep = " " if lang == "en" else ""
+        for c, ch in enumerate(chunks):
+            c_end = (a0 + NARR_DELAY + chunks[c + 1][0][0]) if c + 1 < len(chunks) else max(a0 + 0.6, b0 - 0.1)
+            for k, (t, txt) in enumerate(ch):
+                st = a0 + NARR_DELAY + (ch[0][0] if k == 0 else t)
+                en_ = (a0 + NARR_DELAY + ch[k + 1][0]) if k + 1 < len(ch) else c_end
+                if en_ <= st + 0.02: continue
+                line = sep.join((f"{{\\c{hi}}}{esc(x)}{{\\c&H00FFFFFF&}}" if j == k else esc(x)) for j, (_, x) in enumerate(ch))
+                ass.append(f"Dialogue: 0,{ts(st)},{ts(en_)},S,,0,0,0,,{line}")
+    open(os.path.join(work, f"subs_{lang}.ass"), "w", encoding="utf-8").write("\n".join(ass) + "\n")
+
+def subs_and_audio(vid, times):
+    """Captions in each language (phrase by phrase, the spoken word highlighted) burned in, and each language's narration placed at its beat."""
+    starts, end = times["starts"], times["end"]
+    for lang in ("en", "zh"): caption_track(lang, starts, end)
     for lang in ("en", "zh"):
         inputs, filt = ["-i", vid], []
         for n, i in enumerate(idx):
             inputs += ["-i", os.path.join(d, f"{lang}_{i}.mp3")]
-            ms = int(starts[n] * 1000) + 150
+            ms = int((starts[n] + NARR_DELAY) * 1000)
             filt.append(f"[{n + 1}:a]adelay={ms}|{ms}[a{n}]")
         mix = "".join(f"[a{n}]" for n in range(len(idx))) + f"amix=inputs={len(idx)}:normalize=0,apad=whole_dur={end:.2f}[aout]"
         out = os.path.join(d, f"{slug}_{lang}_s{k}.mp4")
-        subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(filt) + ";" + mix + ";[0:v]subtitles=subs.ass[v]",
+        subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(filt) + ";" + mix + ";[0:v]subtitles=subs_" + lang + ".ass[v]",
                         "-map", "[v]", "-map", "[aout]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
                         "-t", f"{end:.2f}", "-movflags", "+faststart", out], check=True, cwd=work)   # an explicit length: an unbounded padded stream filled the runner disk
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
@@ -294,7 +376,7 @@ for attempt in range(4):
             if not found or time.time() - t0 > 600: break
             keep = os.path.join(work, f"keep_{rnd}.mp4"); shutil.copy(vid, keep); keep_times = dict(times); fixed = False
             try:
-                code2, raw2 = ask(messages + [{"role": "assistant", "content": raw}, {"role": "user", "content": f"The animation rendered, but the picture has these defects:\n{found}\nFix them (use Box so labels fit, move things apart, shorten labels, FadeOut old things first) and return the whole corrected class in one ```python block, keeping every rule."}], model, key)
+                code2, raw2 = ask(messages + [{"role": "assistant", "content": raw}, {"role": "user", "content": f"The animation rendered, but the picture has these defects:\n{found}\nFix them (use the kit pieces, which are spaced for you; move things apart, shorten labels, FadeOut old things first) and return the whole corrected class in one ```python block, keeping every rule."}], model, key)
                 code2 = strip_imports(code2)
                 if not check(code2):
                     vid2, problem2 = render(code2)

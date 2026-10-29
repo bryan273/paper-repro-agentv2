@@ -202,7 +202,16 @@ async def tts(text, voice, path):
     for k in range(6):
         try:
             proxy = None if k % 2 == 0 or os.name != "nt" else "http://127.0.0.1:7897"   # local proxy only on the laptop
-            await asyncio.wait_for(edge_tts.Communicate(text, voice, rate="-4%", proxy=proxy).save(path), 45)
+            # streamed so the word timings come along: captions and animations are cued on the spoken word
+            async def run():
+                words = []
+                comm = edge_tts.Communicate(text, voice, rate="-4%", proxy=proxy, boundary="WordBoundary")
+                with open(path, "wb") as fh:
+                    async for ch in comm.stream():
+                        if ch["type"] == "audio": fh.write(ch["data"])
+                        elif ch["type"] == "WordBoundary": words.append([round(ch["offset"] / 1e7, 3), round((ch["offset"] + ch["duration"]) / 1e7, 3), ch["text"]])
+                json.dump(words, open(path[:-4] + ".words.json", "w", encoding="utf-8"), ensure_ascii=False)
+            await asyncio.wait_for(run(), 45)
             if os.path.getsize(path) > 2000: return
         except Exception as e:
             last = e; await asyncio.sleep(1.5)
