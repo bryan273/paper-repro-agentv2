@@ -127,7 +127,9 @@ function show(i){
   clearAll();idx=i;const sc=S.scenes[i];
   scene.innerHTML="";textPts=null;
   if(!["title","end"].includes(sc.type)){textPts=null;}
-  (B[sc.type]||B.cards)(sc,sc.dur);
+  // a scene with odd data (cards as text, missing nodes) must not stop the recording: fall back to a plain title card
+  ["cards","nodes","bars"].forEach(k=>{if(sc[k]!=null&&!Array.isArray(sc[k]))sc[k]=typeof sc[k]==="object"?Object.values(sc[k]):[];});
+  try{(B[sc.type]||B.cards)(sc,sc.dur);}catch(e){console.error("scene",i,e);scene.innerHTML="";try{B.title({...sc,type:"title",title:sc.title||sc.heading||""},sc.dur);}catch(_){}}
   $("#zh").textContent=sc.zh||"";$("#en").textContent=sc.en||"";
   $("#srcline").textContent=sc.evidence?("Source: "+sc.evidence):"";
   $("#badge").textContent=(i+1)+" / "+S.scenes.length;
