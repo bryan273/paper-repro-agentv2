@@ -50,14 +50,28 @@ Deno.serve(async (req) => {
       catch { return new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } }); }
     };
     const { thinking: _t, ...plain } = body as Record<string, unknown>;
-    const paraCall = () => post("https://llmapi.paratera.com/v1/chat/completions", PARA!, { ...body, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" }, 25_000);
-    const viaParatera = async () => {
-      let rr = await paraCall();
-      for (let k = 0; k < 2 && (rr.status === 429 || rr.status >= 500); k++) {   // also a 504 from the cut-off above   // the gateway answers 429 "no deployments available" for a few seconds at times
-        await new Promise((res) => setTimeout(res, 3000));
-        rr = await paraCall();
+    // The overseas hop to the gateway stalls now and then, so the call is hedged: a second and third copy start 7 s and 14 s later, the first good answer wins and the rest are dropped
+    const viaParatera = async (): Promise<Response> => {
+      const bodyP = { ...body, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" };
+      const ctl = [0, 1, 2].map(() => new AbortController());
+      const one = async (i: number): Promise<Response> => {
+        await new Promise((res) => setTimeout(res, i * 7000));
+        if (ctl[i].signal.aborted) throw new Error("dropped");
+        const rr = await fetch("https://llmapi.paratera.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${PARA}`, "Content-Type": "application/json" }, body: JSON.stringify(bodyP), signal: AbortSignal.any([ctl[i].signal, AbortSignal.timeout(40_000)]) });
+        if (!rr.ok) throw Object.assign(new Error("status " + rr.status), { res: rr });
+        const text = await rr.text();   // read the body before the other copies are dropped, or an abort would cut it
+        if (ctl[i].signal.aborted) throw new Error("dropped");
+        return new Response(text, { status: 200, headers: { "Content-Type": "application/json" } });
+      };
+      try {
+        const win = await Promise.any([0, 1, 2].map((i) => one(i)));
+        ctl.forEach((c) => { try { c.abort(); } catch { /* already done */ } });
+        return win;
+      } catch (e) {
+        const errs = (e as AggregateError).errors ?? [];
+        const bad = errs.map((x: { res?: Response }) => x.res).find((x: Response | undefined) => x);
+        return bad ?? new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } });
       }
-      return rr;
     };
     // Paratera serves the same DeepSeek models and is the account with credit, so it goes first when its key is set
     let r = PARA ? await viaParatera() : await post("https://api.deepseek.com/v1/chat/completions", KEY, body);
