@@ -24,6 +24,12 @@ jobs:
       RKAPI_OPENAI_KEY: ${{ secrets.RKAPI_OPENAI_KEY }}   # gpt-5.6-terra draws the Manim animations
       RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}   # Claude through RKAPI: writes the scripts (Haiku) and the Manim animations (Sonnet)   # the working model provider; gen.py uses it for the DeepSeek models when set
     steps:
+      - name: Free disk space
+        working-directory: .
+        run: |
+          # the runner image ships tools we never use and about 14 GB free is not enough for fonts, Chromium, Manim and the frames
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift || true
+          df -h / | tail -1
       - uses: actions/checkout@v4
         with:
           sparse-checkout: explainer
@@ -42,4 +48,6 @@ jobs:
           pip install -q -r requirements.txt
           python -m playwright install --with-deps chromium
       - name: Render
-        run: python render_job.py "${{ inputs.job_id }}"
+        run: |
+          df -h / | tail -1
+          python render_job.py "${{ inputs.job_id }}"

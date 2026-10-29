@@ -148,6 +148,7 @@ def subs_and_audio(vid, times):
                         "-map", "[v]", "-map", "[aout]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
                         "-shortest", "-movflags", "+faststart", out], check=True, cwd=work)
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
+    shutil.rmtree(os.path.join(work, "media", "videos", "section", "720p30", "partial_movie_files"), ignore_errors=True)   # frames of the animation are not needed once it is muxed
 
 messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg()}]
 t0 = time.time()
