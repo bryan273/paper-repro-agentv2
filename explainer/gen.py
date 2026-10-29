@@ -108,33 +108,49 @@ MODELS = {   # selectable script writers: id -> (base url, model name, env key, 
     "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
     "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
 }
+MODELS["rkapi"] = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1", os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001"), "RKAPI_API_KEY", {})
 MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
-MODEL_ORDER = ["relay", "deepseek", "paratera", "stepfun"]
+MODEL_ORDER = ["rkapi", "relay", "deepseek", "paratera", "stepfun"]
 
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
-    body = json.dumps({"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-                       "temperature": 0.3, "max_tokens": 8000, "response_format": {"type": "json_object"}, **extra}).encode()
-    hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json"}
-    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": ("ap-northeast-2", "ap-southeast-1")[attempt % 2], "x-timeout-ms": "120000"})
+    stream = mid == "rkapi"   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
+    payload = {"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.3, "max_tokens": 8000, **extra}
+    if stream: payload["stream"] = True
+    elif mid not in ("relay", "paratera"): payload["response_format"] = {"type": "json_object"}   # the DeepSeek gateway answers empty in JSON mode under load; the reply is parsed leniently instead
+    hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"}
+    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": ("ap-northeast-2", "ap-southeast-1")[attempt % 2], "x-timeout-ms": "90000"})
     else: url = base + "/chat/completions"
-    r = urllib.request.Request(url, body, hdr)
-    out = json.load(urllib.request.urlopen(r, timeout=180))
-    txt = out["choices"][0]["message"]["content"] or ""
+    r = urllib.request.Request(url, json.dumps(payload).encode(), hdr)
+    resp = urllib.request.urlopen(r, timeout=100)
+    if stream:
+        txt, usage = "", {}
+        for raw in resp:
+            line = raw.decode("utf-8", "ignore").strip()
+            if not line.startswith("data:") or line.endswith("[DONE]"): continue
+            try: ch = json.loads(line[5:])
+            except Exception: continue
+            for c in ch.get("choices") or []: txt += (c.get("delta") or {}).get("content") or ""
+            usage = ch.get("usage") or usage
+    else:
+        out = json.load(resp); txt = out["choices"][0]["message"]["content"] or ""; usage = out.get("usage", {})
     m = re.search(r"\{.*\}", txt, re.S)
-    return json.loads(m.group(0) if m else txt), out.get("usage", {})
+    return json.loads(m.group(0) if m else txt), usage
 
 def llm(system, user, model="deepseek"):
     """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
     The gateway's model list sometimes goes empty for a minute or two ("Invalid model name"), so a model that answers like that is waited out, not dropped."""
-    if model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
+    if model == "deepseek" and ENV.get("RKAPI_API_KEY"): model = "rkapi"
+    elif model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
     elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"
     order = [model] + [m for m in MODEL_ORDER if m != model]
-    last = None
+    last = None; t_end = time.time() + 300
     for mid in order:
         patient = mid in ("relay", "paratera")
-        for attempt in range(10 if patient else 2):
+        if mid == "rkapi" and not ENV.get("RKAPI_API_KEY"): continue
+        for attempt in range(6 if patient else 2):
+            if time.time() > t_end and last is not None: break
             try:
                 sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
@@ -200,7 +216,7 @@ async def main():
             sc["sections"] = [sc.pop("section", None) or {}]
         else:
             from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(max_workers=3) as ex: results = list(ex.map(one, range(n)))
+            with ThreadPoolExecutor(max_workers=2) as ex: results = list(ex.map(one, range(n)))
             sc = {"title": results[0][0].get("title") or title, "scenes": [], "sections": []}
             for k, (r, _) in enumerate(results):
                 for x in (r.get("scenes") or []): x["sec"] = k; sc["scenes"].append(x)
