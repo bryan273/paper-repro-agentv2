@@ -8,10 +8,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.abspath(__file__))
 slug, k = sys.argv[1], int(sys.argv[2])
 d = os.path.join(ROOT, "out", slug)
-KEY = os.environ.get("RKAPI_API_KEY", "")
 BASE = os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1"
-MODEL = os.environ.get("MANIM_MODEL", "claude-sonnet-4-6")
-if not KEY: print("no RKAPI_API_KEY: template player instead"); sys.exit(2)
+# (model, key): measured on the same section, gpt-5.6-terra drew the richest pictures (charts, diagrams) in about 2 minutes, Sonnet 4.6 was the steady second
+LADDER = [(m, os.environ.get(k, "")) for m, k in (("gpt-5.6-terra", "RKAPI_OPENAI_KEY"), ("claude-sonnet-4-6", "RKAPI_API_KEY"))]
+if os.environ.get("MANIM_MODEL"): LADDER = [(os.environ["MANIM_MODEL"], os.environ.get("RKAPI_API_KEY", ""))]
+LADDER = [(m, k) for m, k in LADDER if k]
+if not LADDER: print("no RKAPI key: template player instead"); sys.exit(2)
 
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 meta = next((m for m in json.load(open(os.path.join(d, "sections.json"), encoding="utf-8")) if m["i"] == k), {})
@@ -70,6 +72,9 @@ BANNED = {"Tex", "MathTex", "SingleStringMathTex", "DecimalNumber", "Integer", "
           "urllib", "importlib", "builtins", "contextlib", "json"}
 BANNED_ATTR = {"add_coordinates", "get_axis_labels", "get_x_axis_label", "get_y_axis_label", "get_graph_label", "renderer", "camera", "file_writer"}
 
+def strip_imports(code):
+    return "\n".join(l for l in code.splitlines() if not re.match(r"\s*(import\s+\w|from\s+\w+(\.\w+)*\s+import\s)", l))
+
 def check(code):
     """Static gate before anything runs: the class is there, one beat block per beat, and nothing outside plain drawing."""
     tree = ast.parse(code)
@@ -82,9 +87,9 @@ def check(code):
     if used != list(range(len(beats))): return f"use `with self.beat(i):` exactly once for each beat 0..{len(beats) - 1} (found {used})"
     return None
 
-def ask(messages):
-    body = json.dumps({"model": MODEL, "max_tokens": 9000, "temperature": 0.4, "stream": True, "messages": messages}).encode()
-    req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + KEY, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
+def ask(messages, model, key):
+    body = json.dumps({"model": model, "max_tokens": 9000, "temperature": 0.4, "stream": True, "messages": messages}).encode()
+    req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
     txt = ""
     for raw in urllib.request.urlopen(req, timeout=240):   # streamed: RKAPI stalls non-streamed answers
         line = raw.decode("utf-8", "ignore").strip()
@@ -146,22 +151,24 @@ def subs_and_audio(vid, times):
 
 messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg()}]
 t0 = time.time()
-for attempt in range(3):
+for attempt in range(4):
+    model, key = LADDER[(attempt if attempt < 2 else attempt - 2) % len(LADDER)] if len(LADDER) > 1 else LADDER[0]   # terra, then Sonnet, then each once more
     try:
-        code, raw = ask(messages)
+        code, raw = ask(messages, model, key)
+        code = strip_imports(code)
     except Exception as e:
-        print("model call failed:", e); time.sleep(5); continue
+        print(f"{model} call failed:", str(e)[:150]); time.sleep(3); continue
     problem = None
     try: problem = check(code)
     except SyntaxError as e: problem = f"SyntaxError: {e}"
     vid = None
     if not problem:
         vid, problem = render(code)
-    print(f"attempt {attempt + 1}: {'ok' if vid else 'failed: ' + (problem or '')[:300]} ({round(time.time() - t0)}s)", flush=True)
+    print(f"attempt {attempt + 1} ({model}): {'ok' if vid else 'failed: ' + (problem or '')[:300]} ({round(time.time() - t0)}s)", flush=True)
     if vid:
         open(os.path.join(work, "final_code.py"), "w", encoding="utf-8").write(code)
         subs_and_audio(vid, json.load(open(os.path.join(work, "beat_times.json"))))
         sys.exit(0)
     messages += [{"role": "assistant", "content": raw}, {"role": "user", "content": f"That did not work:\n{problem}\nFix it and return the whole corrected class in one ```python block, keeping every rule."}]
-print("no working animation after 3 tries")
+print("no working animation after 4 tries")
 sys.exit(2)
