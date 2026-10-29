@@ -36,5 +36,5 @@ for i, s in enumerate(scenes):
 mix = "".join(f"[a{i}]" for i in range(len(scenes))) + f"amix=inputs={len(scenes)}:normalize=0[aout]"
 out = os.path.join(d, f"{arxiv.replace('/', '_')}_{lang}{'_s' + part if part != '' else ''}{'_trial' if limit else ''}.mp4")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(0, lead - 0.3):.2f}", "-i", vid, *inputs, "-filter_complex", ";".join(filt) + ";" + mix, "-map", "0:v", "-map", "[aout]",
-                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "23", "-r", "30", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", out], check=True)
+                "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-crf", "23", "-r", "30", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", out], check=True)
 print(out, round(os.path.getsize(out) / 1e6, 1), "MB", round(total, 1), "s")

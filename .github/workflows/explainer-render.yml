@@ -28,10 +28,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: explainer/requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-v1
       - name: Install
         run: |
-          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg fonts-noto-cjk
-          pip install -q edge-tts playwright pillow pymupdf
+          sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg fonts-noto-cjk
+          pip install -q -r requirements.txt
           python -m playwright install --with-deps chromium
       - name: Render
         run: python render_job.py "${{ inputs.job_id }}"

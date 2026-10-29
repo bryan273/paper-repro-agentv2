@@ -1,0 +1,4 @@
+edge-tts
+playwright
+pillow
+pymupdf

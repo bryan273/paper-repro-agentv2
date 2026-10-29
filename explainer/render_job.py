@@ -2,6 +2,7 @@
 Runs in GitHub Actions (.github/workflows/explainer-render.yml). usage: python render_job.py <job_id>
 env: SUPABASE_URL, SUPABASE_SECRET, DEEPSEEK_API_KEY"""
 import sys, os, json, subprocess, urllib.request, traceback, datetime
+from concurrent.futures import ThreadPoolExecutor
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SB, KEY = os.environ["SUPABASE_URL"].rstrip("/"), os.environ["SUPABASE_SECRET"]
@@ -53,22 +54,23 @@ try:
     update(sections=secs)
     for n, m in enumerate(meta):
         update(stage=f"recording section {n + 1} of {len(meta)}")
+        with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))   # EN and ZH at the same time
         for lang in ("en", "zh"):
-            run("record.py", arxiv, lang, "--part", str(m["i"]))
             secs[n]["videos"][lang] = upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4")
         secs[n]["status"] = "done"
         update(sections=secs)   # the page shows each section as soon as it is ready
     videos = {}
     update(stage="putting the sections together")
-    for lang in ("en", "zh"):
+    def assemble(lang):
         lst = os.path.join(d, f"concat_{lang}.txt")
         with open(lst, "w") as fh:
             for m in meta: fh.write(f"file '{arxiv}_{lang}_s{m['i']}.mp4'\n")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", "-movflags", "+faststart", os.path.join(d, f"{arxiv}_{lang}.mp4")], check=True)
         run("vertical.py", arxiv, lang)
-        videos[lang] = upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4")
-        videos[lang + "_vertical"] = upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4")
-        update(videos=videos)
+        return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4"), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4")
+    with ThreadPoolExecutor(2) as ex:
+        for lang, wide, tall in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall
+    update(videos=videos)
     upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json")
     update(status="done", stage=None, videos=videos)
     print("done", videos)
