@@ -32,6 +32,8 @@ CI checks the code, and the owner can render a test video from the site after th
 | a web app repo | that repo's `ci-cd` workflow builds and publishes its folder on the Pages site |
 | `supabase/*.sql` | nothing: database changes are applied by hand by the owner |
 
+One-time owner setup for the automatic deploys (a deploy key and a Supabase token): [docs/OWNER-SETUP.md](docs/OWNER-SETUP.md).
+
 Because the renderer runs whatever is on `main`, a broken merge breaks every video until it is fixed. That is why
 `explainer/` changes need a green `animation kit renders` check and a look from the owner.
 
