@@ -92,7 +92,8 @@ try:
         poster = None
         try:
             mp4 = os.path.join(d, f"{arxiv}_en_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
-            poster = upload(best_still(mp4, jpg), f"{arxiv}/{arxiv}_s{m['i']}.jpg")
+            if not os.path.exists(jpg): best_still(mp4, jpg)   # the animation step already picked a settled frame; the template player gets the brightest one
+            poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg")
         except Exception as e: print("poster skipped:", str(e)[:100])
         with lock:
             secs[n]["videos"].update(vids); secs[n]["status"] = "done"

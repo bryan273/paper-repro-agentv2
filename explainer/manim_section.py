@@ -9,9 +9,9 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 slug, k = sys.argv[1], int(sys.argv[2])
 d = os.path.join(ROOT, "out", slug)
 BASE = os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1"
-# (model, key): measured on the same section, gpt-5.6-terra drew the richest pictures (charts, diagrams) in about 2 minutes, Sonnet 4.6 was the steady second
-LADDER = [(m, os.environ.get(k, "")) for m, k in (("gpt-5.6-terra", "RKAPI_OPENAI_KEY"), ("claude-sonnet-4-6", "RKAPI_API_KEY"))]
-if os.environ.get("MANIM_MODEL"): LADDER = [(os.environ["MANIM_MODEL"], os.environ.get("RKAPI_API_KEY", ""))]
+# (model, key): measured on the same section (29 Oct): gpt-6.1-sol drew the cleanest, best spaced pictures at terra's price; terra drew richer but messier ones; gpt-6-astra is as clean but 5x the price; claude-opus-4-8 only wrote small floating text; Sonnet 4.6 is the steady last resort
+LADDER = [(m, os.environ.get(k, "")) for m, k in (("gpt-6.1-sol", "RKAPI_OPENAI_KEY"), ("gpt-5.6-terra", "RKAPI_OPENAI_KEY"), ("claude-sonnet-4-6", "RKAPI_API_KEY"))]
+if os.environ.get("MANIM_MODEL"): LADDER = [(os.environ["MANIM_MODEL"], os.environ.get("RKAPI_OPENAI_KEY" if os.environ["MANIM_MODEL"].startswith("gpt") else "RKAPI_API_KEY", ""))]
 LADDER = [(m, k) for m, k in LADDER if k]
 if not LADDER: print("no RKAPI key: template player instead"); sys.exit(2)
 
@@ -117,6 +117,14 @@ def _audit_now(scene, i):
                     out.append(f"a line or arrow at {at} crosses text {name(texts[a])}: route it around the label or move the label off it")
                 elif not thin and not inside and not swallow and w * h > 0.06 * (ta[1] - ta[0]) * (ta[3] - ta[2]):
                     out.append(f"text {name(texts[a])} sticks out of or cuts the edge of a {type(sh).__name__} at {at}: fit the label inside (use Box) or move it clear")
+        for sh in shapes:
+            if isinstance(sh, Arc) and not isinstance(sh, (Circle, Dot)) and sh.get_arc_length() > 0.8:
+                ends = [sh.get_start(), sh.get_end()]
+                others = [_bb(t) for t in texts] + [_bb(o) for o in shapes if o is not sh and not isinstance(o, Arc)]
+                lost = [e for e in ends if not any(b[0] - 0.45 <= e[0] <= b[1] + 0.45 and b[2] - 0.45 <= e[1] <= b[3] + 0.45 for b in others)]
+                if lost:
+                    c = sh.get_center()
+                    out.append(f"an arc around ({c[0]:.1f}, {c[1]:.1f}) is floating: its end at ({lost[0][0]:.1f}, {lost[0][1]:.1f}) touches nothing; keep arcs attached to the words or boxes they connect (move them together with their row)")
         if not texts and not shapes:
             out.append("the frame is empty")
     except Exception:
@@ -190,7 +198,7 @@ DESIGN RULES
 - Variety: choose the form that fits what the narration says (a number -> BigNumber/Counter, a comparison of results -> Bars/HBars, a trend -> LinePlot, a process -> Pipeline, two approaches -> Compare, words or attention -> Tokens+Attention, an architecture -> Stack/NeuralNet, history -> Timeline, a formula -> Equation). Never use the same kind of picture in two beats in a row, use at least four different kinds in the section, and at most one beat may be plain boxes.
 - One idea per beat, big and centred; the main picture spans at least 8 units wide or 4 tall. Before a new idea, FadeOut what is no longer needed (or Transform the old picture into the new one when they are related).
 - Sync to the voice: the narration's word timings are given per beat. `self.until(i, "word")` waits inside beat i until that word is spoken; put it right before the animation that shows that thing, so it appears exactly when it is named (for example `self.until(3, "residual")` then `self.play(GrowArrow(shortcut))`). Use one to three cues per beat.
-- The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars).
+- The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars). Things that belong together move together: `VGroup(tk, arcs).animate.shift(UP)`.
 - Motion with purpose: entrances 0.5 to 1.0 s (FadeIn with shift, GrowFromCenter, Create, LaggedStart), then emphasise what the voice stresses (Indicate, Circumscribe, Flash, a colour change, a gentle scale). No long static holds, no spinning for its own sake.
 - Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
 - Never leave dimmed leftovers behind a new picture (set_opacity(0.1) ghosts): FadeOut them completely.
@@ -228,7 +236,7 @@ def check(code):
     return None
 
 def ask(messages, model, key):
-    body = json.dumps({"model": model, "max_tokens": 9000, "temperature": 0.4, "stream": True, "messages": messages}).encode()
+    body = json.dumps({"model": model, "max_tokens": 16000, "temperature": 0.4, "stream": True, "messages": messages}).encode()
     req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
     txt = ""
     for raw in urllib.request.urlopen(req, timeout=240):   # streamed: RKAPI stalls non-streamed answers
@@ -237,7 +245,9 @@ def ask(messages, model, key):
         try: txt += (json.loads(line[5:])["choices"][0].get("delta") or {}).get("content") or ""
         except Exception: pass
     m = re.search(r"```(?:python)?\s*(.*?)```", txt, re.S)
-    return (m.group(1) if m else txt).strip(), txt
+    if m: return m.group(1).strip(), txt
+    # no closing fence (the answer was cut or the model just stopped): drop an opening fence and any text before it
+    return (re.sub(r"^[\s\S]*?```(?:python)?\s*", "", txt, count=1) if "```" in txt else txt).strip(), txt
 
 def render(code):
     open(os.path.join(work, "section.py"), "w", encoding="utf-8").write(HARNESS + "\n\n" + code + "\n")
@@ -252,7 +262,7 @@ def render(code):
         cmd = ["sudo", "unshare", "-n", "sudo", "-u", getpass.getuser(), "env", "-i", *[f"{a}={b}" for a, b in env.items() if b]] + cmd
         env = None
     try:
-        p = subprocess.run(cmd, cwd=work, env=env, capture_output=True, text=True, timeout=420)
+        p = subprocess.run(cmd, cwd=work, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=420)
     except subprocess.TimeoutExpired:
         return None, "rendering took too long: use fewer objects and simpler animations"
     vid = next((os.path.join(r, f) for r, _, fs in os.walk(os.path.join(work, "media")) for f in fs if f == "section.mp4"), None)
@@ -330,32 +340,67 @@ def subs_and_audio(vid, times):
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
     shutil.rmtree(os.path.join(work, "media", "videos", "section", "720p30", "partial_movie_files"), ignore_errors=True)   # frames of the animation are not needed once it is muxed
 
-REVIEW_MODEL = ("claude-sonnet-4-6", os.environ.get("RKAPI_API_KEY", ""))
+REVIEW_MODEL = (os.environ.get("REVIEW_MODEL", "claude-sonnet-4-6"), os.environ.get("RKAPI_API_KEY", ""))
+
+def frames_at(vid, t_list, tag, width=640):
+    out = []
+    for n, t in enumerate(t_list):
+        jpg = os.path.join(work, f"{tag}_{n}.jpg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(0.0, t):.2f}", "-i", vid, "-frames:v", "1", "-vf", f"scale={width}:-1", "-q:v", "5", jpg], check=True, cwd=work)
+        out.append(jpg)
+    return out
 
 def review(vid, times):
-    """Look at one frame per beat, like a viewer would, and say what is wrong with the picture (text on text, text outside its box, empty frame). '' = fine."""
+    """Watch the animation the way a viewer does, in time: three frames per beat (soon after it starts, in the middle, just before it ends) with what the narrator says then.
+    Checks that the picture matches the words, that it changes and settles cleanly, and that nothing is garbled. '' = fine."""
     import base64
     if not REVIEW_MODEL[1]: return ""
-    starts = times["starts"]; content = []
+    starts = times["starts"]; end = times["end"]; content = []
     for n in range(len(beats)):
-        t = starts[n] + max(0.6, beats[n] * 0.85)
-        jpg = os.path.join(work, f"review_{n}.jpg")
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", vid, "-frames:v", "1", "-vf", "scale=768:-1", "-q:v", "4", jpg], check=True, cwd=work)
-        content += [{"type": "text", "text": f"Beat {n} (narration: {sc['scenes'][idx[n]]['en'][:90]})"}, {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(open(jpg, "rb").read()).decode()}}]
-    content.insert(0, {"type": "text", "text": "These are frames from a explainer animation, one per beat. Find only real visual defects: text drawn over other text or shapes so it is hard to read, text spilling outside its box or outside the frame, labels cut off, a frame that is empty or nearly empty while the narration talks about something, text or boxes so small that they are hard to read on a phone (the picture fills less than a third of the frame width). "
-                                              "Ignore style. Reply exactly OK if there are none, otherwise one line per defect: `Beat N: what is wrong and where`."})
-    body = json.dumps({"model": REVIEW_MODEL[0], "max_tokens": 600, "temperature": 0, "messages": [{"role": "user", "content": content}]}).encode()
+        a0 = starts[n]; b0 = starts[n + 1] if n + 1 < len(starts) else end
+        ts = [a0 + 0.35 * (b0 - a0), a0 + 0.65 * (b0 - a0), b0 - 0.25]
+        said = sc["scenes"][idx[n]]["en"]
+        content.append({"type": "text", "text": f"BEAT {n} ({b0 - a0:.1f} s). Narrator says: \"{said}\"  Frames at 35%, 65% and the end of the beat:"})
+        for jpg in frames_at(vid, ts, f"rv{n}"):
+            content.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(open(jpg, "rb").read()).decode()}})
+    content.insert(0, {"type": "text", "text": (
+        "You are a strict video editor reviewing an explainer animation of a research paper. For each beat you see three frames in time order and what the narrator says during it. "
+        "Report ONLY real problems, at most 8, most serious first, one line each as `Beat N: problem -> fix`. Look for:\n"
+        "1. MISMATCH: the picture does not show what the narrator says (random words, a generic diagram, wrong numbers, a chart whose bars do not match the claim).\n"
+        "2. BROKEN: shapes that look wrong or distorted, arcs or arrows that float and touch nothing, text that is garbled, blurry or overlapping, labels cut off or outside the frame.\n"
+        "3. LEFTOVERS: ghosts or half-faded elements from the previous beat still visible in the end frame; two ideas sharing the stage.\n"
+        "4. STATIC OR EMPTY: all three frames identical although the narrator moves on, or an empty stage.\n"
+        "5. TOO SMALL: text or pictures that would be unreadable on a phone.\n"
+        "If everything is good, reply exactly OK.")})
+    body = json.dumps({"model": REVIEW_MODEL[0], "max_tokens": 900, "temperature": 0, "messages": [{"role": "user", "content": content}]}).encode()
     req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + REVIEW_MODEL[1], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
     try:
-        txt = json.load(urllib.request.urlopen(req, timeout=120))["choices"][0]["message"]["content"].strip()
+        txt = json.load(urllib.request.urlopen(req, timeout=180))["choices"][0]["message"]["content"].strip()
     except Exception as e:
         print("review failed:", str(e)[:120]); return ""
-    return "" if txt.upper().startswith("OK") else txt[:900]
+    return "" if txt.upper().startswith("OK") else txt[:1400]
+
+def make_poster(vid, times):
+    """The poster of this section: among the settled end-of-beat frames, the one with the most picture on it (never a mid-fade frame)."""
+    try:
+        from PIL import Image
+        starts, end = times["starts"], times["end"]
+        ts = [(starts[n + 1] if n + 1 < len(starts) else end) - 0.3 for n in range(len(starts))]
+        best, pick = -1.0, None
+        for jpg in frames_at(vid, ts, "poster", 960):
+            im = Image.open(jpg).convert("L").crop((0, 0, 960, 400))
+            px = list(im.getdata()); bgv = sorted(px)[len(px) // 4]
+            ink = sum(1 for v in px if v > bgv + 40) / len(px)
+            score = ink if ink < 0.45 else 0.45 - (ink - 0.45)   # a picture, not a wall of colour
+            if score > best: best, pick = score, jpg
+        if pick: shutil.copy(pick, os.path.join(d, f"{slug}_s{k}.jpg"))
+    except Exception as e:
+        print("poster skipped:", str(e)[:100])
 
 messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user_msg()}]
 t0 = time.time()
 for attempt in range(4):
-    model, key = LADDER[(attempt if attempt < 2 else attempt - 2) % len(LADDER)] if len(LADDER) > 1 else LADDER[0]   # terra, then Sonnet, then each once more
+    model, key = LADDER[attempt % len(LADDER)]   # sol, terra, Sonnet, then sol again
     try:
         code, raw = ask(messages, model, key)
         code = strip_imports(code)
@@ -394,6 +439,7 @@ for attempt in range(4):
                 print("fix skipped:", str(e)[:120], flush=True)
             if not fixed: vid, times = keep, keep_times; break   # a failed fix must not replace the version that worked
         open(os.path.join(work, "final_code.py"), "w", encoding="utf-8").write(code)
+        make_poster(vid, times)
         subs_and_audio(vid, times)
         sys.exit(0)
     messages += [{"role": "assistant", "content": raw}, {"role": "user", "content": f"That did not work:\n{problem}\nFix it and return the whole corrected class in one ```python block, keeping every rule."}]

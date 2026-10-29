@@ -212,16 +212,12 @@ def Tokens(words, highlight=None, color=ACCENT2, size=30):
 def Attention(tokens, pairs, weights=None, color=ACCENT):
     """Arcs above the chips from word i to word j; weights 0..1 set the thickness. Animate: LaggedStart(*[Create(a) for a in arcs])."""
     arcs = VGroup()
-    def shape(i, j, wgt):
-        p, q = tokens[i].get_top() + UP * 0.08, tokens[j].get_top() + UP * 0.08
-        return ArcBetweenPoints(p, q, angle=-PI * 0.75 if p[0] < q[0] else PI * 0.75, color=color, stroke_width=2 + 7 * wgt, stroke_opacity=0.35 + 0.6 * wgt)
     for k, (i, j) in enumerate(pairs):
         if i == j: continue
         wgt = weights[k] if weights else 0.7
-        a = shape(i, j, wgt)
-        # the arcs stay on top of their words even when the token row is moved or scaled later
-        a.add_updater(lambda m, i=i, j=j, wgt=wgt: m.become(shape(i, j, wgt).set_stroke(opacity=m.get_stroke_opacity())))
-        arcs.add(a)
+        p, q = tokens[i].get_top() + UP * 0.08, tokens[j].get_top() + UP * 0.08
+        arcs.add(ArcBetweenPoints(p, q, angle=-PI * 0.75 if p[0] < q[0] else PI * 0.75, color=color, stroke_width=2 + 7 * wgt, stroke_opacity=0.35 + 0.6 * wgt))
+    # the arcs belong to the row: to move, scale or fade the row, do it to VGroup(tokens, arcs)
     return arcs
 
 def NeuralNet(layers=(3, 4, 4, 2), w=7.0, h=3.6, color=ACCENT, labels=None):
