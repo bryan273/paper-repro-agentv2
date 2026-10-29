@@ -142,11 +142,11 @@ def subs_and_audio(vid, times):
             inputs += ["-i", os.path.join(d, f"{lang}_{i}.mp3")]
             ms = int(starts[n] * 1000) + 150
             filt.append(f"[{n + 1}:a]adelay={ms}|{ms}[a{n}]")
-        mix = "".join(f"[a{n}]" for n in range(len(idx))) + f"amix=inputs={len(idx)}:normalize=0,apad[aout]"
+        mix = "".join(f"[a{n}]" for n in range(len(idx))) + f"amix=inputs={len(idx)}:normalize=0,apad=whole_dur={end:.2f}[aout]"
         out = os.path.join(d, f"{slug}_{lang}_s{k}.mp4")
         subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(filt) + ";" + mix + ";[0:v]subtitles=subs.ass[v]",
                         "-map", "[v]", "-map", "[aout]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k",
-                        "-shortest", "-movflags", "+faststart", out], check=True, cwd=work)
+                        "-t", f"{end:.2f}", "-movflags", "+faststart", out], check=True, cwd=work)   # an explicit length: an unbounded padded stream filled the runner disk
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
     shutil.rmtree(os.path.join(work, "media", "videos", "section", "720p30", "partial_movie_files"), ignore_errors=True)   # frames of the animation are not needed once it is muxed
 
