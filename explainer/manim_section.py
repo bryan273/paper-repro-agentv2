@@ -340,7 +340,8 @@ def subs_and_audio(vid, times):
         print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
     shutil.rmtree(os.path.join(work, "media", "videos", "section", "720p30", "partial_movie_files"), ignore_errors=True)   # frames of the animation are not needed once it is muxed
 
-REVIEW_MODEL = (os.environ.get("REVIEW_MODEL", "claude-sonnet-4-6"), os.environ.get("RKAPI_API_KEY", ""))
+# measured: Opus 4.8 catches wrong order or wrong content against the narration, Sonnet mostly just sees "static"
+REVIEW_MODEL = (os.environ.get("REVIEW_MODEL", "claude-opus-4-8"), os.environ.get("RKAPI_API_KEY", ""))
 
 def frames_at(vid, t_list, tag, width=640):
     out = []
