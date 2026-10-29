@@ -125,6 +125,16 @@ def _audit_now(scene, i):
                 if lost:
                     c = sh.get_center()
                     out.append(f"an arc around ({c[0]:.1f}, {c[1]:.1f}) is floating: its end at ({lost[0][0]:.1f}, {lost[0][1]:.1f}) touches nothing; keep arcs attached to the words or boxes they connect (move them together with their row)")
+        seen = getattr(type(scene), "_age", None)
+        if seen is None: seen = type(scene)._age = {}
+        now = {id(t) for t in texts}
+        for key in list(seen):
+            if key not in now: del seen[key]
+        for t in texts:
+            seen[id(t)] = seen.get(id(t), 0) + 1
+            c = t.get_center()
+            if seen[id(t)] >= 3 and c[1] < 3.0:
+                out.append(f"text {name(t)} has been on the stage for {seen[id(t)]} beats: it is a leftover, remove it together with the rest of the old picture (self.wipe() at the start of the beat)")
         if not texts and not shapes:
             out.append("the frame is empty")
     except Exception:
@@ -147,6 +157,10 @@ class ExplainerScene(Scene):
         left = BEATS[i] - (self.renderer.time - t0)
         if left > 0.02: self.wait(left)
         type(self)._audit.extend(_audit_now(self, i))
+    def wipe(self, t=0.45):
+        """Fade everything off the stage: the clean start of a new idea."""
+        if self.mobjects:
+            self.play(FadeOut(*self.mobjects), run_time=t)
     def until(self, i, word, lead=0.15):
         """Inside beat i: wait until the narrator says `word` (the first one still ahead), so what is drawn next appears on that word."""
         w = re.sub(r"[^0-9a-z]+", "", str(word).lower().split()[0] if str(word).split() else "")
@@ -198,7 +212,7 @@ DESIGN RULES
 - Variety: choose the form that fits what the narration says (a number -> BigNumber/Counter, a comparison of results -> Bars/HBars, a trend -> LinePlot, a process -> Pipeline, two approaches -> Compare, words or attention -> Tokens+Attention, an architecture -> Stack/NeuralNet, history -> Timeline, a formula -> Equation). Never use the same kind of picture in two beats in a row, use at least four different kinds in the section, and at most one beat may be plain boxes.
 - One idea per beat, big and centred; the main picture spans at least 8 units wide or 4 tall. Before a new idea, FadeOut what is no longer needed (or Transform the old picture into the new one when they are related).
 - Sync to the voice: the narration's word timings are given per beat. `self.until(i, "word")` waits inside beat i until that word is spoken; put it right before the animation that shows that thing, so it appears exactly when it is named (for example `self.until(3, "residual")` then `self.play(GrowArrow(shortcut))`). Use one to three cues per beat.
-- The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars). Things that belong together move together: `VGroup(tk, arcs).animate.shift(UP)`.
+- Start every beat that brings a NEW idea with `self.wipe()` (fades everything off in 0.45 s) unless you Transform the old picture into the new one; nothing from an earlier idea (labels, captions, numbers) may stay on the stage, text that stays for 3 beats is reported as a leftover. The stage is never empty: each beat starts from the previous picture (Transform it, or FadeOut old and FadeIn new in the SAME self.play) and the main picture of a beat appears in its first second; use until() for the parts that follow (the second bar, the highlight, the arrow), never to delay the whole picture. Remove a group as a whole (FadeOut(group)), never leave half of a picture (arcs without their words, labels without their bars). Things that belong together move together: `VGroup(tk, arcs).animate.shift(UP)`.
 - Motion with purpose: entrances 0.5 to 1.0 s (FadeIn with shift, GrowFromCenter, Create, LaggedStart), then emphasise what the voice stresses (Indicate, Circumscribe, Flash, a colour change, a gentle scale). No long static holds, no spinning for its own sake.
 - Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
 - Never leave dimmed leftovers behind a new picture (set_opacity(0.1) ghosts): FadeOut them completely.
