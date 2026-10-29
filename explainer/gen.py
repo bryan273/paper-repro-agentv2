@@ -81,8 +81,9 @@ Order: title, problem (cards), key idea (tokens or flow), how it works (flow or 
 MODELS = {   # selectable script writers: id -> (base url, model name, env key, extra body)
     "deepseek": ("https://api.deepseek.com/v1", "deepseek-flash", "DEEPSEEK_API_KEY", {"thinking": {"type": "disabled"}}),
     "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
+    "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
 }
-MODEL_ORDER = ["deepseek", "stepfun"]
+MODEL_ORDER = ["deepseek", "paratera", "stepfun"]
 
 def llm_one(mid, system, user):
     base, name, keyname, extra = MODELS[mid]
@@ -97,6 +98,7 @@ def llm_one(mid, system, user):
 
 def llm(system, user, model="deepseek"):
     """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem."""
+    if model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"   # same DeepSeek models, served by the account that has credit
     order = [model] + [m for m in MODEL_ORDER if m != model]
     last = None
     for mid in order:
@@ -105,6 +107,7 @@ def llm(system, user, model="deepseek"):
                 sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
                 last = e
+                if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
                 if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
             except Exception as e:
                 last = e

@@ -287,11 +287,15 @@ def test_finish_needs_a_run_with_no_arguments(sb):
     assert not ex.has_good
 
 
+_ROOT = Path(__file__).resolve().parent.parent
+_WEB = _ROOT / "web" if (_ROOT / "web").exists() else _ROOT / "app" / "frontend" / "public" / "repro"
+
+
 def test_directory_is_self_consistent():
     """web/directory.json: every listed paper exists once, each group member is an author of one of its papers."""
     import json
     from pathlib import Path
-    d = json.loads((Path(__file__).resolve().parent.parent / "web" / "directory.json").read_text(encoding="utf-8"))
+    d = json.loads((_WEB / "directory.json").read_text(encoding="utf-8"))
     assert d["groups"]
     for g in d["groups"]:
         assert g["institute"] and g["name"] and len(set(g["papers"])) == len(g["papers"])
@@ -306,7 +310,7 @@ def test_replays_are_strict_json():
     from pathlib import Path
     def bad(c):
         raise ValueError(c)
-    for f in (Path(__file__).resolve().parent.parent / "web" / "demo-runs").glob("*.jsonl"):
+    for f in (_WEB / "demo-runs").glob("*.jsonl"):
         for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
             if line.strip():
                 json.loads(line, parse_constant=bad)
@@ -332,7 +336,7 @@ def test_fit_estimate_python_and_js_agree():
         if not shutil.which("node"):
             continue
         js = json.loads(subprocess.run(
-            ["node", "-e", "global.window={};global.navigator={};require('./web/fit.js');"
+            ["node", "-e", "global.window={};global.navigator={};require('./" + _WEB.relative_to(_ROOT).as_posix() + "/fit.js');"
              f"console.log(JSON.stringify(window.Fit.estimate({json.dumps(compute)},{json.dumps(m)})))"],
             capture_output=True, text=True, cwd=Path(__file__).resolve().parent.parent, check=True).stdout)
         assert js["feasible"] == py["feasible"]
