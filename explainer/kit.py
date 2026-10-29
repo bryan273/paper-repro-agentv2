@@ -143,13 +143,13 @@ def LinePlot(ys, xs=None, x_label="", y_label="", w=8.0, h=3.8, color=ACCENT):
     g = VGroup(ax, curve, xl, yl); g.axes, g.curve, g.x_label, g.y_label = ax, curve, xl, yl
     return g.move_to([0, 0.1, 0])
 
-def Compare(left_title, left_items, right_title, right_items, left_color=MUTED, right_color=ACCENT, left_icon="x", right_icon="check"):
-    """Two columns: before / after, old / new, problem / solution. Animate: FadeIn(g.left), then FadeIn(g.right) or item by item (g.left_items, g.right_items)."""
+def Compare(left_title, left_items, right_title, right_items, left_color=MUTED, right_color=ACCENT, left_icon=None, right_icon=None):
+    """Two columns: before / after, old / new, problem / solution. Bullets are neutral dots; pass left_icon="x", right_icon="check" ONLY when the left really is the bad side and the right the good one. Animate: FadeIn(g.left), then FadeIn(g.right) or item by item (g.left_items, g.right_items)."""
     def col(title, items, color, icon, x):
         t = fit(Text(str(title), font_size=36, weight=BOLD, color=color), 5.6, 0.7)
         rows = VGroup()
         for it in items[:4]:
-            ic = Icon(icon, 0.42, color)
+            ic = Icon(icon, 0.42, color) if icon else Dot(radius=0.07, color=color).shift(UP * 0.1)
             tx = fit(Text(wrap(it, 24), font_size=27, color=TEXT, line_spacing=0.9), 4.9, 1.1)
             rows.add(VGroup(ic, tx).arrange(RIGHT, buff=0.25, aligned_edge=UP))
         rows.arrange(DOWN, aligned_edge=LEFT, buff=0.38)

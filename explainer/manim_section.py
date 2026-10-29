@@ -120,7 +120,7 @@ def _audit_now(scene, i):
         for sh in shapes:
             if isinstance(sh, Arc) and not isinstance(sh, (Circle, Dot)) and sh.get_arc_length() > 0.8:
                 ends = [sh.get_start(), sh.get_end()]
-                others = [_bb(t) for t in texts] + [_bb(o) for o in shapes if o is not sh and not isinstance(o, Arc)]
+                others = [_bb(t) for t in texts] + [_bb(o) for o in shapes if o is not sh and (isinstance(o, Circle) or not isinstance(o, Arc))]
                 lost = [e for e in ends if not any(b[0] - 0.45 <= e[0] <= b[1] + 0.45 and b[2] - 0.45 <= e[1] <= b[3] + 0.45 for b in others)]
                 if lost:
                     c = sh.get_center()
@@ -219,6 +219,23 @@ BANNED = {"Tex", "MathTex", "SingleStringMathTex", "DecimalNumber", "Integer", "
           "vars", "getattr", "setattr", "delattr", "input", "breakpoint", "exit", "quit", "help", "os", "sys", "subprocess", "socket", "shutil", "pathlib", "requests",
           "urllib", "importlib", "builtins", "contextlib", "json"}
 BANNED_ATTR = {"add_coordinates", "get_axis_labels", "get_x_axis_label", "get_y_axis_label", "get_graph_label", "renderer", "camera", "file_writer"}
+
+def tidy(code):
+    """Models sometimes put a sentence before or after the code, or leave a fence open. Keep the largest part that parses."""
+    code = code.replace("\r\n", "\n")
+    try:
+        ast.parse(code); return code
+    except SyntaxError:
+        pass
+    lines = code.split("\n")
+    head = next((n for n, l in enumerate(lines) if re.match(r"(class |def |@|[A-Za-z_]\w* *=|for |with )", l)), 0)
+    for tail in range(len(lines), max(head, len(lines) - 25), -1):
+        part = "\n".join(lines[head:tail]).rstrip()
+        try:
+            ast.parse(part); return part
+        except SyntaxError:
+            continue
+    return code
 
 def strip_imports(code):
     return "\n".join(l for l in code.splitlines() if not re.match(r"\s*(import\s+\w|from\s+\w+(\.\w+)*\s+import\s)", l))
@@ -404,12 +421,12 @@ for attempt in range(4):
     model, key = LADDER[attempt % len(LADDER)]   # sol, terra, Sonnet, then sol again
     try:
         code, raw = ask(messages, model, key)
-        code = strip_imports(code)
+        code = strip_imports(tidy(code))
     except Exception as e:
         print(f"{model} call failed:", str(e)[:150]); time.sleep(3); continue
     problem = None
     try: problem = check(code)
-    except SyntaxError as e: problem = f"SyntaxError: {e}"
+    except SyntaxError as e: problem = f"SyntaxError: {e}"; print("code starts:", repr(code[:160]), "... ends:", repr(code[-120:]), flush=True)
     vid = None
     if not problem:
         vid, problem = render(code)
@@ -428,7 +445,7 @@ for attempt in range(4):
             keep = os.path.join(work, f"keep_{rnd}.mp4"); shutil.copy(vid, keep); keep_times = dict(times); fixed = False
             try:
                 code2, raw2 = ask(messages + [{"role": "assistant", "content": raw}, {"role": "user", "content": f"The animation rendered, but the picture has these defects:\n{found}\nFix them (use the kit pieces, which are spaced for you; move things apart, shorten labels, FadeOut old things first) and return the whole corrected class in one ```python block, keeping every rule."}], model, key)
-                code2 = strip_imports(code2)
+                code2 = strip_imports(tidy(code2))
                 if not check(code2):
                     vid2, problem2 = render(code2)
                     geo2 = issues() if vid2 else geo
