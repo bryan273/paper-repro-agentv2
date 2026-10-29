@@ -133,11 +133,11 @@ def llm(system, user, model="deepseek"):
             try:
                 sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
-                last = e
+                last = e; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {e.read()[:200]!r}", flush=True)
                 if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
                 if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
             except Exception as e:
-                last = e
+                last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
     raise RuntimeError(f"all script models failed: {last}")
 
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
