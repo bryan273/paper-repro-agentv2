@@ -20,3 +20,8 @@ alter table public.explainer_jobs enable row level security;   -- no policies: o
 
 insert into storage.buckets (id, name, public) values ('explainer-videos', 'explainer-videos', true)
 on conflict (id) do update set public = true;
+
+-- style options chosen per video: look (style = theme name), narration tone, length in seconds and an optional note from the viewer
+alter table explainer_jobs add column if not exists tone text not null default 'teacher';
+alter table explainer_jobs add column if not exists seconds int not null default 36;
+alter table explainer_jobs add column if not exists custom text not null default '';
