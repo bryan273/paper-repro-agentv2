@@ -27,7 +27,7 @@ def update(**f):
 
 def upload(local, name):
     with open(local, "rb") as fh:
-        req("POST", f"/storage/v1/object/explainer-videos/{name}", fh.read(), "video/mp4" if name.endswith(".mp4") else "application/json", {"x-upsert": "true"})
+        req("POST", f"/storage/v1/object/explainer-videos/{name}", fh.read(), "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json", {"x-upsert": "true"})
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
@@ -70,8 +70,17 @@ try:
             with rec_lock:   # one browser pair at a time
                 with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))
         vids = {lang: upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4") for lang in ("en", "zh")}
+        # a still from the middle of the English cut, so the player shows a picture instead of a black box
+        poster = None
+        try:
+            mp4 = os.path.join(d, f"{arxiv}_en_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
+            dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4], capture_output=True, text=True).stdout.strip() or 6)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(1.0, dur * 0.4):.2f}", "-i", mp4, "-frames:v", "1", "-vf", "scale=960:-2", "-q:v", "4", jpg], check=True)
+            poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg")
+        except Exception as e: print("poster skipped:", str(e)[:100])
         with lock:
             secs[n]["videos"].update(vids); secs[n]["status"] = "done"
+            if poster: secs[n]["poster"] = poster
             ready = sum(1 for s in secs if s["status"] == "done")
             update(sections=secs, stage=f"sections ready: {ready} of {len(meta)}")   # the page shows each section as soon as it is ready
     update(stage=f"drawing {len(meta)} sections")
