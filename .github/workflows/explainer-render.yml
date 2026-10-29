@@ -20,7 +20,8 @@ jobs:
       SUPABASE_URL: https://vzvyghmtsakixlhzzuol.supabase.co
       SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-      PARATERA_API_KEY: ${{ secrets.PARATERA_API_KEY }}   # the working model provider; gen.py uses it for the DeepSeek models when set
+      PARATERA_API_KEY: ${{ secrets.PARATERA_API_KEY }}
+      RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}   # Claude through RKAPI: writes the scripts (Haiku) and the Manim animations (Sonnet)   # the working model provider; gen.py uses it for the DeepSeek models when set
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +37,7 @@ jobs:
           key: playwright-chromium-v1
       - name: Install
         run: |
-          sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg fonts-noto-cjk
+          sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg fonts-noto-cjk libcairo2-dev libpango1.0-dev pkg-config
           pip install -q -r requirements.txt
           python -m playwright install --with-deps chromium
       - name: Render

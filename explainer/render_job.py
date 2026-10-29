@@ -54,7 +54,11 @@ try:
     update(sections=secs)
     for n, m in enumerate(meta):
         update(stage=f"recording section {n + 1} of {len(meta)}")
-        with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))   # EN and ZH at the same time
+        drawn = False
+        if (row.get("style") or "") == "animated":   # the AI draws this section with Manim; on failure the template player records it
+            drawn = subprocess.run([sys.executable, "manim_section.py", arxiv, str(m["i"])], cwd=ROOT).returncode == 0
+        if not drawn:
+            with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))   # EN and ZH at the same time
         for lang in ("en", "zh"):
             secs[n]["videos"][lang] = upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4")
         secs[n]["status"] = "done"

@@ -165,6 +165,22 @@ def llm(system, user, model="deepseek"):
 
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
+def normalize(sc):
+    """A scene missing the fields its type needs becomes a plain card scene, so one sloppy scene cannot break the video."""
+    need = {"title": ("big",), "cards": ("cards",), "tokens": ("words",), "flow": ("nodes",), "number": ("value",), "quote": ("text",), "end": ("big",)}
+    keep = []
+    for s in sc.get("scenes") or []:
+        if not isinstance(s, dict) or not s.get("en") or not s.get("zh"): continue
+        t = s.get("type")
+        ok = t in need and all(s.get(f) not in (None, "", []) for f in need[t])
+        if ok and t == "number":
+            try: float(str(s["value"]).replace(",", ""))
+            except ValueError: ok = False
+        if not ok: s["type"] = "cards"; s["cards"] = s.get("cards") if isinstance(s.get("cards"), list) and s["cards"] else [{"h": "Key point", "t": s["en"][:50]}]
+        keep.append(s)
+    sc["scenes"] = keep
+    return sc
+
 def verify(sc, text):
     """keep evidence only if it really is in the paper (whitespace/punctuation tolerant)"""
     nt = norm(text); bad = []
@@ -224,7 +240,7 @@ async def main():
             usage = dict(results[0][1] or {})
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
-        bad = verify(sc, text); print("unverified:", bad)
+        normalize(sc); bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if a.url else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for lang, voice in (("en", a.voice_en), ("zh", a.voice_zh)):
