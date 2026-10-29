@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
   if (!KEY || !SRV || req.headers.get("authorization") !== `Bearer ${SRV}`) return new Response("forbidden", { status: 403 });
   try {
     const r = await fetch("https://llmapi.paratera.com/v1/chat/completions", {
-      method: "POST", headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: await req.text(), signal: AbortSignal.timeout(40_000),
+      method: "POST", headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: await req.text(), signal: AbortSignal.timeout(Math.min(Number(req.headers.get("x-timeout-ms")) || 40_000, 120_000)),
     });
     return new Response(await r.text(), { status: r.status, headers: { "Content-Type": "application/json" } });
   } catch (e) {
