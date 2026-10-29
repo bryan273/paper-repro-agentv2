@@ -21,6 +21,39 @@ async function get(url: string, ms = 20_000) {
   cache.set(url, { t: Date.now(), v });
   return v;
 }
+// arXiv rate-limits shared egress addresses (429) and sometimes stalls, so the query API is tried on both of its hosts, twice, with short timeouts
+async function arxivApi(query: string): Promise<string> {
+  let last: unknown = null;
+  for (let round = 0; round < 2; round++) {
+    for (const host of ["export.arxiv.org", "arxiv.org"]) {
+      try { return await get(`https://${host}/api/query?${query}`, 8_000); } catch (e) { last = e; }
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  throw last instanceof Error ? last : new Error("arXiv did not answer");
+}
+type Hit = { id: string; title: string; summary: string; published: string; authors: string[] };
+// when arXiv's own search cannot be reached from here, other public indexes that carry arXiv ids answer instead
+async function searchFallback(q: string, n: number): Promise<Hit[]> {
+  const out: Hit[] = [];
+  try {
+    const r = await fetch(`https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(q)}&limit=${Math.min(n * 3, 20)}&fields=title,abstract,publicationDate,authors,externalIds`, { headers: UA, signal: AbortSignal.timeout(10_000) });
+    if (r.ok) for (const p of (await r.json()).data ?? []) if (p.externalIds?.ArXiv) out.push({ id: p.externalIds.ArXiv, title: p.title ?? "", summary: p.abstract ?? "", published: (p.publicationDate ?? "").slice(0, 10), authors: (p.authors ?? []).map((a: { name: string }) => a.name) });
+  } catch { /* try the next index */ }
+  if (out.length) return out.slice(0, n);
+  try {
+    const r = await fetch(`https://api.openalex.org/works?search=${encodeURIComponent(q + " arxiv")}&per-page=${Math.min(n * 3, 25)}&select=title,abstract_inverted_index,publication_date,authorships,locations`, { headers: UA, signal: AbortSignal.timeout(10_000) });
+    if (r.ok) for (const w of (await r.json()).results ?? []) {
+      const loc = (w.locations ?? []).map((l: { landing_page_url?: string }) => l.landing_page_url ?? "").find((u: string) => /arxiv\.org\/abs\//.test(u));
+      if (!loc) continue;
+      const inv = w.abstract_inverted_index as Record<string, number[]> | null;
+      const words: string[] = [];
+      if (inv) for (const [word, pos] of Object.entries(inv)) for (const i of pos) words[i] = word;
+      out.push({ id: loc.replace(/^.*\/abs\//, "").replace(/v\d+$/, ""), title: w.title ?? "", summary: words.join(" "), published: String(w.publication_date ?? "").slice(0, 10), authors: (w.authorships ?? []).map((a: { author?: { display_name?: string } }) => a.author?.display_name ?? "") });
+    }
+  } catch { /* nothing left to try */ }
+  return out.slice(0, n);
+}
 function entries(xml: string) {
   return [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((m) => {
     const e = m[1], g = (tag: string) => (e.match(new RegExp(`<${tag}[^>]*>([^]*?)</${tag}>`)) ?? [, ""])[1].replace(/\s+/g, " ").trim();
@@ -36,12 +69,17 @@ Deno.serve(async (req) => {
     if (action === "search") {
       const q = String(query ?? "").slice(0, 200);
       if (q.length < 3) return json({ error: "query too short" }, 400);
-      const xml = await get(`https://export.arxiv.org/api/query?search_query=${encodeURIComponent("all:" + q)}&max_results=${Math.min(Number(limit) || 6, 10)}&sortBy=relevance`);
-      return json({ results: entries(xml).map((e) => ({ ...e, summary: e.summary.slice(0, 700) })) });
+      const n = Math.min(Number(limit) || 6, 10);
+      // arXiv's own search is tried first; if it has not answered within 4 s the fallback indexes run alongside it and the first usable answer wins
+      const viaArxiv = async () => entries(await get(`https://export.arxiv.org/api/query?search_query=${encodeURIComponent("all:" + q)}&max_results=${n}&sortBy=relevance`, 8_000));
+      const viaOthers = async () => { await new Promise((r) => setTimeout(r, 4000)); const r = await searchFallback(q, n); if (!r.length) throw new Error("no results"); return r; };
+      let results: Hit[];
+      try { results = await Promise.any([viaArxiv(), viaOthers()]); } catch { throw new Error("Paper search is unavailable right now, please try again."); }
+      return json({ results: results.map((e) => ({ ...e, summary: e.summary.slice(0, 700) })) });
     }
     if (!ID.test(String(id ?? ""))) return json({ error: "bad arXiv id" }, 400);
     if (action === "abstract") {
-      const e = entries(await get(`https://export.arxiv.org/api/query?id_list=${id}`))[0];
+      const e = entries(await arxivApi(`id_list=${id}`))[0];
       return json(e ? { paper: e } : { error: "not found" }, e ? 200 : 404);
     }
     if (action === "text") {
