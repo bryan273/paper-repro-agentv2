@@ -50,14 +50,21 @@ Deno.serve(async (req) => {
       catch { return new Response(JSON.stringify({ error: { message: "The AI service did not answer in time." } }), { status: 504, headers: { "Content-Type": "application/json" } }); }
     };
     const { thinking: _t, ...plain } = body as Record<string, unknown>;
-    // The overseas hop to the gateway stalls now and then, so the call is hedged: a second and third copy start 7 s and 14 s later, the first good answer wins and the rest are dropped
+    // The overseas hop to the gateway stalls now and then, so the call is hedged: a second and third copy start 4 s and 10 s later, the first good answer wins and the rest are dropped
     const viaParatera = async (): Promise<Response> => {
       const bodyP = { ...body, model: Deno.env.get("PARATERA_MODEL") ?? "DeepSeek-V4.1-Flash" };
       const ctl = [0, 1, 2].map(() => new AbortController());
+      const SRV = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), SB = Deno.env.get("SUPABASE_URL");
+      // copy 0 goes straight to the gateway; copies 1 and 2 go through llm-relay running in Asian regions, which reach it far more reliably
+      const route = [
+        { delay: 0, url: "https://llmapi.paratera.com/v1/chat/completions", headers: { Authorization: `Bearer ${PARA}` } },
+        { delay: 4000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-northeast-2" } },
+        { delay: 10000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-southeast-1" } },
+      ];
       const one = async (i: number): Promise<Response> => {
-        await new Promise((res) => setTimeout(res, i * 7000));
+        await new Promise((res) => setTimeout(res, route[i].delay));
         if (ctl[i].signal.aborted) throw new Error("dropped");
-        const rr = await fetch("https://llmapi.paratera.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${PARA}`, "Content-Type": "application/json" }, body: JSON.stringify(bodyP), signal: AbortSignal.any([ctl[i].signal, AbortSignal.timeout(40_000)]) });
+        const rr = await fetch(route[i].url, { method: "POST", headers: { ...route[i].headers, "Content-Type": "application/json" }, body: JSON.stringify(bodyP), signal: AbortSignal.any([ctl[i].signal, AbortSignal.timeout(40_000)]) });
         if (!rr.ok) throw Object.assign(new Error("status " + rr.status), { res: rr });
         const text = await rr.text();   // read the body before the other copies are dropped, or an abort would cut it
         if (ctl[i].signal.aborted) throw new Error("dropped");

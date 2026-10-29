@@ -1,0 +1,4 @@
+{
+  "redirects": [{ "source": "/", "destination": "/repro/", "permanent": false }],
+  "rewrites": [{ "source": "/repro", "destination": "/repro/index.html" }]
+}
