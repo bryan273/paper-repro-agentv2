@@ -42,7 +42,7 @@ def Lbl(s, size=30, color=TEXT, w=None):
     if w is not None and t.width > w: t.scale_to_fit_width(w)
     return t
 
-def Box(s, w=2.6, h=1.0, color=ACCENT, size=28, fill=0.22):
+def Box(s, w=3.0, h=1.3, color=ACCENT, size=32, fill=0.22):
     """A rounded box with its label centred inside; the label is shrunk until it fits with a margin. Returns VGroup(rect, text)."""
     r = RoundedRectangle(corner_radius=0.12, width=w, height=h, color=color, fill_opacity=fill, stroke_width=3)
     t = Text(str(s), font_size=size, color=TEXT)
@@ -146,6 +146,7 @@ Layout (the picture is measured after every beat; overlaps are sent back to you 
 - Use the ready helpers: `Box(label, w, h, color)` is a rounded box with its label centred and auto-shrunk to fit; `Lbl(text, size, color, w)` is a label shrunk to a max width. Put every label INSIDE a Box, or next to a shape with `.next_to(shape, DOWN/UP, buff=0.3)`.
 - Never put text on an arrow or a line; label an arrow from above or below with buff 0.25. Draw connectors between the edges of boxes (`Arrow(a.get_right(), b.get_left(), buff=0.1)`), never through a label.
 - Lay rows and columns out with `VGroup(...).arrange(RIGHT or DOWN, buff=0.5)` and `.move_to(...)`/`.shift(...)`; leave at least 0.3 units between boxes; at most 5 boxes in a row (each at most 2.2 wide) and at most 4 stacked rows.
+- Make it BIG and readable on a phone: Box at least 2.6 x 1.2 with size 30 or more, the main picture spanning at least 8 units wide or 4.5 tall, title labels size 38 to 44, never text smaller than 26. Use two or three big elements per beat instead of five small ones.
 - Text inside a box must be at most 3 words per line; shorten labels instead of shrinking below font_size 22.
 - Before adding something new, `FadeOut` what is no longer needed so two ideas never share the same space.
 {CINEMA}Craft: fill the stage (main shapes 2.5 to 6 units wide, filled with fill_opacity 0.15 to 0.35 in ACCENT/ACCENT2 with a bright stroke), never leave a beat as plain text on black. Pick ONE visual metaphor for the section and evolve it across beats; about one beat in five may just hold and emphasise (Indicate, Circumscribe) instead of adding something new. Keep the picture moving: entrances 0.6 to 1.2 s, then slow emphasis or camera-like shifts (VGroup.animate.shift/scale) instead of long static waits. Build a visual metaphor and evolve it across beats (Transform, ReplacementTransform, FadeIn/FadeOut, Create, Write, GrowArrow, Indicate, Circumscribe, LaggedStart, animate, ValueTracker, Axes with plot, NumberPlane, Dot, Arrow, Line, Rectangle, RoundedRectangle, Circle, VGroup.arrange). Clear the stage between ideas so it never gets cluttered. Smooth, calm pacing; nothing static for long."""
@@ -254,7 +255,7 @@ def review(vid, times):
         jpg = os.path.join(work, f"review_{n}.jpg")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", vid, "-frames:v", "1", "-vf", "scale=768:-1", "-q:v", "4", jpg], check=True, cwd=work)
         content += [{"type": "text", "text": f"Beat {n} (narration: {sc['scenes'][idx[n]]['en'][:90]})"}, {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(open(jpg, "rb").read()).decode()}}]
-    content.insert(0, {"type": "text", "text": "These are frames from a explainer animation, one per beat. Find only real visual defects: text drawn over other text or shapes so it is hard to read, text spilling outside its box or outside the frame, labels cut off, a frame that is empty or nearly empty while the narration talks about something. "
+    content.insert(0, {"type": "text", "text": "These are frames from a explainer animation, one per beat. Find only real visual defects: text drawn over other text or shapes so it is hard to read, text spilling outside its box or outside the frame, labels cut off, a frame that is empty or nearly empty while the narration talks about something, text or boxes so small that they are hard to read on a phone (the picture fills less than a third of the frame width). "
                                               "Ignore style. Reply exactly OK if there are none, otherwise one line per defect: `Beat N: what is wrong and where`."})
     body = json.dumps({"model": REVIEW_MODEL[0], "max_tokens": 600, "temperature": 0, "messages": [{"role": "user", "content": content}]}).encode()
     req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + REVIEW_MODEL[1], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
