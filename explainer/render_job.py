@@ -30,6 +30,24 @@ def upload(local, name):
         req("POST", f"/storage/v1/object/explainer-videos/{name}", fh.read(), "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json", {"x-upsert": "true"})
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
+def best_still(mp4, jpg, tries=9):
+    """The most visible frame of a clip (mean brightness plus contrast), written to jpg."""
+    from PIL import Image, ImageStat
+    dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4], capture_output=True, text=True).stdout.strip() or 6)
+    best, pick = -1.0, None
+    for k in range(tries):
+        t = dur * (0.12 + 0.76 * k / max(1, tries - 1))
+        tmp = jpg + f".{k}.jpg"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.2f}", "-i", mp4, "-frames:v", "1", "-vf", "scale=960:-2", "-q:v", "4", tmp], check=True)
+        st = ImageStat.Stat(Image.open(tmp).convert("L").crop((0, 0, 960, 380)))   # the picture area, without the subtitle strip
+        score = st.mean[0] + st.stddev[0]
+        if score > best: best, pick = score, tmp
+    os.replace(pick, jpg)
+    for k in range(tries):
+        try: os.remove(jpg + f".{k}.jpg")
+        except OSError: pass
+    return jpg
+
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
 key = row["arxiv"]
 model, voice = row.get("model") or "deepseek", row.get("voice") or "female"
@@ -70,13 +88,11 @@ try:
             with rec_lock:   # one browser pair at a time
                 with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))
         vids = {lang: upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4") for lang in ("en", "zh")}
-        # a still from the middle of the English cut, so the player shows a picture instead of a black box
+        # a still from the English cut, so the player shows a picture instead of a black box: the brightest of several frames (some beats fade through black)
         poster = None
         try:
             mp4 = os.path.join(d, f"{arxiv}_en_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
-            dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4], capture_output=True, text=True).stdout.strip() or 6)
-            subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{max(1.0, dur * 0.4):.2f}", "-i", mp4, "-frames:v", "1", "-vf", "scale=960:-2", "-q:v", "4", jpg], check=True)
-            poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg")
+            poster = upload(best_still(mp4, jpg), f"{arxiv}/{arxiv}_s{m['i']}.jpg")
         except Exception as e: print("poster skipped:", str(e)[:100])
         with lock:
             secs[n]["videos"].update(vids); secs[n]["status"] = "done"
