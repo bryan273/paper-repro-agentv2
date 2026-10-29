@@ -20,6 +20,7 @@ jobs:
       SUPABASE_URL: https://vzvyghmtsakixlhzzuol.supabase.co
       SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      PARATERA_API_KEY: ${{ secrets.PARATERA_API_KEY }}   # the working model provider; gen.py uses it for the DeepSeek models when set
     steps:
       - uses: actions/checkout@v4
         with:

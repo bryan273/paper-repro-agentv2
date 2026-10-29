@@ -5,7 +5,7 @@
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GH_TOKEN = Deno.env.get("GH_DISPATCH_TOKEN");
-const GH_REPO = Deno.env.get("GH_REPO") ?? "bryan273/paper-repro-agent";
+const GH_REPO = Deno.env.get("GH_REPO") ?? "bryan273/paper-repro-agentv2";
 const PER_VISITOR_DAY = Number(Deno.env.get("EXPLAINER_PER_VISITOR_DAY") ?? "3");
 const DAILY = Number(Deno.env.get("EXPLAINER_DAILY") ?? "40");
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };

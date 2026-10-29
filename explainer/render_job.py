@@ -36,8 +36,14 @@ VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-U
 arxiv = key if (model, voice) == ("deepseek", "female") else f"{key}-{model}-{voice}"
 d = os.path.join(ROOT, "out", arxiv)
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
+# Claim the job: only one renderer (the laptop worker or a GitHub Actions run) may take a queued job, so it is never rendered twice.
 try:
-    update(status="running", stage="reading the paper and writing the script")
+    got = req("PATCH", f"/rest/v1/explainer_jobs?id=eq.{job}&status=eq.queued", {"status": "running", "stage": "reading the paper and writing the script", "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat()}, extra={"Prefer": "return=representation"})
+except Exception as e:
+    print("could not claim the job:", e); sys.exit(0)
+if not got:
+    print("job is not queued any more (another renderer has it), nothing to do"); sys.exit(0)
+try:
     run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", "36", *(["--url", row["source_url"]] if row.get("source_url") else []))
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
