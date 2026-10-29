@@ -103,6 +103,46 @@ def order_for(i, n):
             + ("Start with a title scene. " if first else "Do NOT use a title scene; open straight into the point. ")
             + ("End with an end scene." if last else "Do NOT use an end scene; stop after the last point of this section."))
 
+MODELS = {   # selectable script writers: id -> (base url, model name, env key, extra body)
+    "deepseek": ("https://api.deepseek.com/v1", "deepseek-flash", "DEEPSEEK_API_KEY", {"thinking": {"type": "disabled"}}),
+    "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
+    "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
+}
+MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
+MODEL_ORDER = ["relay", "deepseek", "paratera", "stepfun"]
+
+def llm_one(mid, system, user):
+    base, name, keyname, extra = MODELS[mid]
+    if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
+    body = json.dumps({"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                       "temperature": 0.3, "max_tokens": 8000, "response_format": {"type": "json_object"}, **extra}).encode()
+    hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json"}
+    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": "ap-northeast-2", "x-timeout-ms": "120000"})
+    else: url = base + "/chat/completions"
+    r = urllib.request.Request(url, body, hdr)
+    out = json.load(urllib.request.urlopen(r, timeout=180))
+    txt = out["choices"][0]["message"]["content"] or ""
+    m = re.search(r"\{.*\}", txt, re.S)
+    return json.loads(m.group(0) if m else txt), out.get("usage", {})
+
+def llm(system, user, model="deepseek"):
+    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem."""
+    if model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
+    elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"   # same DeepSeek models, served by the account that has credit
+    order = [model] + [m for m in MODEL_ORDER if m != model]
+    last = None
+    for mid in order:
+        for attempt in range(2):
+            try:
+                sc, usage = llm_one(mid, system, user); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
+            except urllib.error.HTTPError as e:
+                last = e; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {e.read()[:200]!r}", flush=True)
+                if e.code == 429 and mid == "paratera" and attempt == 0: time.sleep(4); continue   # the gateway is briefly out of deployments
+                if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
+            except Exception as e:
+                last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
+    raise RuntimeError(f"all script models failed: {last}")
+
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
 def verify(sc, text):
