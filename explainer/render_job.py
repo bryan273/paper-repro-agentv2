@@ -26,8 +26,15 @@ def update(**f):
             import time; time.sleep(3 * (k + 1))
 
 def upload(local, name):
+    ctype = "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json"
+    # multipart with a cacheControl field is the only form Storage honours: a plain body is served "private, no-cache", so every
+    # play went back to the origin. The file names carry the job id and are never rewritten, so a year of caching is safe.
+    b = "----rs" + os.urandom(8).hex()
     with open(local, "rb") as fh:
-        req("POST", f"/storage/v1/object/explainer-videos/{name}", fh.read(), "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json", {"x-upsert": "true"})
+        crlf = "\r\n"
+        head = crlf.join([f"--{b}", 'Content-Disposition: form-data; name="cacheControl"', "", "31536000", f"--{b}", 'Content-Disposition: form-data; name=""; filename="f"', f"Content-Type: {ctype}", "", ""])
+        body = head.encode() + fh.read() + (crlf + f"--{b}--" + crlf).encode()
+    req("POST", f"/storage/v1/object/explainer-videos/{name}", body, f"multipart/form-data; boundary={b}", {"x-upsert": "true"})
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
 def best_still(mp4, jpg, tries=9):
