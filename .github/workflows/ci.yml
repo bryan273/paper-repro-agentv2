@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -79,7 +79,7 @@ jobs:
         with:
           lfs: false
           sparse-checkout: explainer
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
