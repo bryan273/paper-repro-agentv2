@@ -26,7 +26,7 @@ jobs:
       RKAPI_OPENAI_KEY: ${{ secrets.RKAPI_OPENAI_KEY }}   # gpt-5.6-terra draws the Manim animations
       RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}   # Claude through RKAPI: writes the scripts (Haiku) and the Manim animations (Sonnet)   # the working model provider; gen.py uses it for the DeepSeek models when set
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: explainer
       - uses: actions/setup-python@v5
