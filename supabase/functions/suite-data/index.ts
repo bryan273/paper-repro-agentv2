@@ -40,6 +40,10 @@ const publicItem = (r: { id: number; created_at: string; data: Record<string, un
   for (const [k, v] of Object.entries(r.data ?? {})) if (!HIDDEN.has(k)) out[k] = v;
   return out;
 };
+// Read-only preview: until ADMIN_VIEW_OPEN is set to "0", the request list and stats can be read without the token (e-mail addresses masked).
+// Changing anything (admin_update, board_import) always needs the token.
+const VIEW_OPEN = (Deno.env.get("ADMIN_VIEW_OPEN") ?? "1") !== "0";
+const maskEmail = (e: unknown) => { const t = String(e ?? ""); const [u, d] = t.split("@"); return d ? `${u.slice(0, 1)}***@${d}` : t ? "***" : ""; };
 const needAdmin = (req: Request) => { if (!ADMIN || req.headers.get("x-admin-token") !== ADMIN) throw new Fail(403, "forbidden"); };
 
 // ---------- boards ----------
@@ -289,7 +293,9 @@ Deno.serve(async (req) => {
     if (op === "model_data") return json(await modelData(body.models, body.top));
 
     if (op.startsWith("admin_") || op === "board_import") {
-      needAdmin(req);
+      const readOnly = op === "admin_list" || op === "admin_stats";
+      const viewer = readOnly && VIEW_OPEN && !req.headers.get("x-admin-token");
+      if (!viewer) needAdmin(req);
       if (op === "board_import") {
         checkPayload(body.payload);
         await db("suite_boards?on_conflict=slug", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ slug: str(body.slug, 32), title: str(body.title, 200), description: str(body.description, 8000), payload: body.payload, edit_hash: await hex(rand(32, "abcdef0123456789")), created_at: body.created_at ?? new Date().toISOString() }) });
@@ -302,7 +308,7 @@ Deno.serve(async (req) => {
         if (!r.ok) throw new Error(`db ${r.status}`);
         const total = Number((r.headers.get("content-range") ?? "").split("/")[1]) || 0;
         const rows = await r.json();
-        return json({ items: rows.map((x: { id: number; created_at: string; data: Row }) => ({ id: x.id, created_at: x.created_at, ...x.data })), total });
+        return json({ items: rows.map((x: { id: number; created_at: string; data: Row }) => ({ id: x.id, created_at: x.created_at, ...x.data, ...(viewer ? { email: maskEmail((x.data as Row).email) } : {}) })), total, viewer });
       }
       if (op === "admin_update") {
         const id = String(body.id ?? ""), status = String(body.status ?? "");

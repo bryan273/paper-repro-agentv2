@@ -8,6 +8,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SB, KEY = os.environ["SUPABASE_URL"].rstrip("/"), os.environ["SUPABASE_SECRET"]
 job = sys.argv[1]
+os.environ.setdefault("USAGE_FILE", os.path.join(ROOT, f"usage_{job[:8]}.jsonl"))   # every model call of this render is logged here (usage.py)
 
 def req(method, path, body=None, ctype="application/json", extra=None):
     h = {"apikey": KEY, "Authorization": "Bearer " + KEY, "Content-Type": ctype, **(extra or {})}
@@ -63,6 +64,15 @@ VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-U
 arxiv = f"{key}-{job[:8]}"
 d = os.path.join(ROOT, "out", arxiv)
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
+def cost_fields():
+    """What this render cost (estimated from token counts, see usage.py); empty if the ledger is unreadable."""
+    try:
+        import usage
+        t = usage.summary()
+        return {"cost_usd": t["usd"], "usage": t}
+    except Exception as e:
+        print("cost summary skipped:", str(e)[:100]); return {}
+
 # Claim the job: only one renderer (the laptop worker or a GitHub Actions run) may take a queued job, so it is never rendered twice.
 try:
     got = req("PATCH", f"/rest/v1/explainer_jobs?id=eq.{job}&status=eq.queued", {"status": "running", "stage": "reading the paper and writing the script", "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat()}, extra={"Prefer": "return=representation"})
@@ -123,7 +133,7 @@ try:
         for lang, wide, tall in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall
     update(videos=videos)
     upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json")
-    update(status="done", stage=None, videos=videos)
+    update(status="done", stage=None, videos=videos, **cost_fields())
     print("done", videos)
 except Exception as e:
     traceback.print_exc()
@@ -135,5 +145,5 @@ except Exception as e:
         step = {"record.py": "recording a section", "manim_section.py": "drawing a section", "vertical.py": "making the vertical cut", "ffmpeg": "putting the sections together"}
         what = next((v for k, v in step.items() if k in " ".join(map(str, e.cmd))), "rendering")
         msg = f"The video stopped while {what}. Please try again; no daily quota was used."
-    update(status="failed", stage=None, error=msg[:400])
+    update(status="failed", stage=None, error=msg[:400], **cost_fields())
     sys.exit(1)

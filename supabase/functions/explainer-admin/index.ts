@@ -29,6 +29,11 @@ async function grant(userId: string, amount: number, reason: string) {
   await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: userId, delta: amount, reason }) });
 }
 
+// Read-only preview: until ADMIN_VIEW_OPEN is set to "0", anyone can open the dashboard without a passcode. Changing anything
+// (order status, credits, bans) still needs the passcode, and e-mail addresses are masked in what the preview shows.
+const VIEW_OPEN = (Deno.env.get("ADMIN_VIEW_OPEN") ?? "1") !== "0";
+const maskEmail = (e: unknown) => { const t = String(e ?? ""); const [u, d] = t.split("@"); return d ? `${u.slice(0, 1)}***@${d}` : t ? "***" : ""; };
+
 async function whoAmI(req: Request): Promise<string | null> {
   const pass = req.headers.get("x-admin-token");
   if (pass !== null) return PASS && sameText(pass, PASS) ? "admin" : null;
@@ -43,9 +48,11 @@ async function whoAmI(req: Request): Promise<string | null> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
-    const me = await whoAmI(req);
+    let me = await whoAmI(req);
+    let viewer = false;
+    if (!me && VIEW_OPEN && req.method === "GET" && !req.headers.get("x-admin-token")) { me = "viewer"; viewer = true; }
     if (!me) return json({ error: "Wrong passcode." }, 401);
-    if (me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
+    if (!viewer && me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
 
     if (req.method === "POST") {
       const body = await req.json();
@@ -75,7 +82,7 @@ Deno.serve(async (req) => {
 
     const day = new Date(Date.now() - 86400_000).toISOString();
     const week = new Date(Date.now() - 7 * 86400_000).toISOString();
-    const jobs = await db("explainer_jobs?select=id,created_at,arxiv,source_url,title,status,model,voice,visitor,error&order=created_at.desc&limit=200");
+    const jobs = await db("explainer_jobs?select=id,created_at,arxiv,source_url,title,status,model,voice,visitor,error,seconds,cost_usd,usage&order=created_at.desc&limit=200");
     const orders = await db("explainer_orders?select=*&order=created_at.desc&limit=200");
     const feedback = await db("explainer_feedback?select=id,created_at,rating,use_case,comment,email,arxiv,kind&order=created_at.desc&limit=100");
     const perDayMap: Record<string, number> = {};
@@ -90,6 +97,17 @@ Deno.serve(async (req) => {
       orders_total: await count("explainer_orders?id=not.is.null"),
       orders_waiting: await count("explainer_orders?status=eq.paid_claimed"),
       feedback_total: await count("explainer_feedback?id=not.is.null"),
+    };
+    // ---- cost: summed from the per-render token ledger (an estimate, see explainer/usage.py)
+    const costOf = (list: { cost_usd: number | null; created_at: string }[], since?: string) => list.filter((j) => !since || j.created_at >= since).reduce((a, j) => a + Number(j.cost_usd ?? 0), 0);
+    const priced = jobs.filter((j: { cost_usd: number | null }) => j.cost_usd !== null);
+    const costs = {
+      total_usd: Math.round(costOf(jobs) * 100) / 100,
+      usd_24h: Math.round(costOf(jobs, day) * 100) / 100,
+      usd_7d: Math.round(costOf(jobs, week) * 100) / 100,
+      priced_jobs: priced.length,
+      avg_usd: priced.length ? Math.round((costOf(jobs) / priced.length) * 1000) / 1000 : 0,
+      note: "Estimated from token counts and a price table; only renders since cost tracking started are priced.",
     };
     // ---- members, event log and the funnel (visitor -> made a video -> signed up -> bought)
     const users = await db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=300");
@@ -113,7 +131,7 @@ Deno.serve(async (req) => {
     const credits = await db("explainer_credit_log?select=id,created_at,user_id,delta,reason&order=id.desc&limit=100");
     const contacts = feedback.filter((f: { kind: string }) => f.kind === "contact").length;
     // visitors are shown by a short id only (a hash made by the render function), never by IP
-    return json({ me, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders, feedback });
+    return json({ me, viewer, costs, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders: viewer ? orders.map((o: Record<string, unknown>) => ({ ...o, contact: maskEmail(o.contact), email: maskEmail(o.email) })) : orders, feedback: viewer ? feedback.map((f: { email: string }) => ({ ...f, email: maskEmail(f.email) })) : feedback });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
