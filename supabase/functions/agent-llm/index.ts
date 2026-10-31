@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       const ctl = [0, 1, 2].map(() => new AbortController());
       const SRV = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), SB = Deno.env.get("SUPABASE_URL");
       // copy 0 goes straight to the gateway; copies 1 and 2 go through llm-relay running in Asian regions, which reach it far more reliably
-      const route = [
+      const route: { delay: number; url: string; headers: Record<string, string> }[] = [
         { delay: 0, url: "https://llmapi.paratera.com/v1/chat/completions", headers: { Authorization: `Bearer ${PARA}` } },
         { delay: 4000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-northeast-2" } },
         { delay: 10000, url: `${SB}/functions/v1/llm-relay`, headers: { Authorization: `Bearer ${SRV}`, "x-region": "ap-southeast-1" } },

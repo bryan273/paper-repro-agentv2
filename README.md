@@ -1,5 +1,7 @@
 # Paper Repro Agent
 
+> Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md). You do not need any key or `.env` to run the checks or the web apps.
+
 An autonomous agent that takes a research paper (and its code, if any), writes or adapts the code,
 runs it in a sandbox, and returns a verdict on whether the paper's headline number holds, with the
 evidence. Every step is visible live: what each agent is thinking, every command and its output, how

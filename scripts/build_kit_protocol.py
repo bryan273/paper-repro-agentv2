@@ -30,7 +30,7 @@ import json  # noqa: E402
 fn = ROOT / "supabase" / "functions" / "run-steps"
 fn.mkdir(parents=True, exist_ok=True)
 (fn / "prompts.json").write_text(json.dumps({
-    "READER": P.READER, "ROUTER": P.ROUTER.replace("{wall_minutes}", "60"), "PLANNER": P.PLANNER,
+    "READER": P.READER, "ROUTER": P.ROUTER.replace("{wall_minutes}", "60"), "PLANNER": P.PLANNER, "VERIFIER": P.VERIFIER,
 }, ensure_ascii=False, indent=1), encoding="utf-8")
 print("wrote", fn / "prompts.json")
 

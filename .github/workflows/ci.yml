@@ -1,0 +1,91 @@
+# Checks that run on every push and pull request. None of them uses a secret: a pull request can never read one.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: python tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -q -r requirements.txt pytest pillow
+      - name: Every Python file compiles
+        run: python -m compileall -q explainer repro app scripts
+      - name: Agent unit tests (no model calls)
+        run: python -m pytest tests/test_core.py -q
+      - name: Video pipeline unit tests (no keys, no renderer)
+        run: python -m pytest explainer/tests/test_helpers.py -q
+
+  functions:
+    name: supabase functions type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: deno check
+        run: |
+          fail=0
+          for f in supabase/functions/*/index.ts; do
+            echo "== $f"; deno check "$f" || fail=1
+          done
+          exit $fail
+
+  secrets:
+    name: no secrets in the diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Look for keys, tokens and private keys
+        run: |
+          pattern='sbp_[0-9a-f]{20,}|sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}'
+          if git grep -InE "$pattern" -- . ':!*.lock' ':!package-lock.json' ':!.github/workflows/ci.yml'; then
+            echo "::error::a key or token is committed. Remove it, rotate it, and keep it in the environment instead."; exit 1
+          fi
+          echo "clean"
+
+  kit-smoke:
+    name: animation kit renders (Manim)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          sparse-checkout: explainer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: explainer/requirements.txt
+      - name: System libraries (Cairo, Pango, ffmpeg, fonts)
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg libcairo2-dev libpango1.0-dev pkg-config fonts-noto-cjk
+      - run: pip install -q manim numpy
+      - name: Render every kit piece and run the layout audit
+        run: python explainer/tests/kit_smoke.py
