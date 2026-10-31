@@ -26,8 +26,15 @@ def update(**f):
             import time; time.sleep(3 * (k + 1))
 
 def upload(local, name):
+    ctype = "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json"
+    # multipart with a cacheControl field is the only form Storage honours: a plain body is served "private, no-cache", so every
+    # play went back to the origin. The file names carry the job id and are never rewritten, so a year of caching is safe.
+    b = "----rs" + os.urandom(8).hex()
     with open(local, "rb") as fh:
-        req("POST", f"/storage/v1/object/explainer-videos/{name}", fh.read(), "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json", {"x-upsert": "true"})
+        crlf = "\r\n"
+        head = crlf.join([f"--{b}", 'Content-Disposition: form-data; name="cacheControl"', "", "31536000", f"--{b}", 'Content-Disposition: form-data; name=""; filename="f"', f"Content-Type: {ctype}", "", ""])
+        body = head.encode() + fh.read() + (crlf + f"--{b}--" + crlf).encode()
+    req("POST", f"/storage/v1/object/explainer-videos/{name}", body, f"multipart/form-data; boundary={b}", {"x-upsert": "true"})
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
 def best_still(mp4, jpg, tries=9):
@@ -123,5 +130,10 @@ except Exception as e:
     msg = str(e)
     if "402" in msg or "Insufficient" in msg or "gen.py" in msg and "non-zero" in msg:
         msg = "The video service is temporarily out of credit or unavailable. Please try again later; no daily quota was used."
+    elif isinstance(e, subprocess.CalledProcessError):
+        # name the step instead of showing the raw command line; the full trace is in the Actions log
+        step = {"record.py": "recording a section", "manim_section.py": "drawing a section", "vertical.py": "making the vertical cut", "ffmpeg": "putting the sections together"}
+        what = next((v for k, v in step.items() if k in " ".join(map(str, e.cmd))), "rendering")
+        msg = f"The video stopped while {what}. Please try again; no daily quota was used."
     update(status="failed", stage=None, error=msg[:400])
     sys.exit(1)
