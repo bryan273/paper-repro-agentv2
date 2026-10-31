@@ -275,6 +275,10 @@ def ask(messages, model, key):
         if not line.startswith("data:") or line.endswith("[DONE]"): continue
         try: txt += (json.loads(line[5:])["choices"][0].get("delta") or {}).get("content") or ""
         except Exception: pass
+    try:
+        import usage as _u
+        _u.rec(model, None, None, json.dumps(messages, ensure_ascii=False), txt, "draw")
+    except Exception: pass
     m = re.search(r"```(?:python)?\s*(.*?)```", txt, re.S)
     if m: return m.group(1).strip(), txt
     # no closing fence (the answer was cut or the model just stopped): drop an opening fence and any text before it
@@ -407,7 +411,12 @@ def review(vid, times):
     body = json.dumps({"model": REVIEW_MODEL[0], "max_tokens": 900, "temperature": 0, "messages": [{"role": "user", "content": content}]}).encode()
     req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + REVIEW_MODEL[1], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
     try:
-        txt = json.load(urllib.request.urlopen(req, timeout=180))["choices"][0]["message"]["content"].strip()
+        out = json.load(urllib.request.urlopen(req, timeout=180)); txt = out["choices"][0]["message"]["content"].strip()
+        try:
+            import usage as _u
+            u = out.get("usage") or {}
+            _u.rec(REVIEW_MODEL[0], u.get("prompt_tokens"), u.get("completion_tokens"), "", txt, "review")
+        except Exception: pass
     except Exception as e:
         print("review failed:", str(e)[:120]); return ""
     return "" if txt.upper().startswith("OK") else txt[:1400]

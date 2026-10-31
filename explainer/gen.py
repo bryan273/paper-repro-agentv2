@@ -135,6 +135,10 @@ def llm_one(mid, system, user, attempt=0):
             usage = ch.get("usage") or usage
     else:
         out = json.load(resp); txt = out["choices"][0]["message"]["content"] or ""; usage = out.get("usage", {})
+    try:
+        import usage as _u
+        _u.rec(name, usage.get("prompt_tokens"), usage.get("completion_tokens"), system + user, txt, "script")
+    except Exception: pass
     m = re.search(r"\{.*\}", txt, re.S)
     return json.loads(m.group(0) if m else txt), usage
 
