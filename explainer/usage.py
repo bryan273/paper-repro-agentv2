@@ -1,11 +1,11 @@
 """Token and cost ledger for one render. Every model call appends one line to the file named by USAGE_FILE
 (render_job.py sets it per job and reads the totals at the end, so the admin page can show what a video cost).
 Token counts come from the API when it reports them; otherwise they are estimated from the text length (est: true).
-PRICE is USD per 1M tokens (input, output) and is an ESTIMATE: edit it when the provider prices change."""
+PRICE is per 1M tokens (input, output) as RKAPI bills it: the catalogue price in veritask-ai services/llm_clients/model_registry.py times the group multiplier (terra and astra 2x, claude and sol 1x). It is an ESTIMATE: cached input is billed cheaper, and RKAPI credit is not dollars."""
 import json, os, threading
 PRICE = {
     "claude-haiku-4-5": (1.0, 5.0), "claude-sonnet-4-6": (3.0, 15.0), "claude-opus-4-8": (5.0, 25.0),
-    "gpt-6.1-sol": (2.5, 15.0), "gpt-5.6-terra": (2.5, 15.0), "gpt-6-astra": (10.0, 50.0),
+    "gpt-6.1-sol": (2.0, 10.0), "gpt-5.6-terra": (4.0, 24.0), "gpt-6-astra": (20.0, 100.0),
     "deepseek-v4.1-flash": (0.14, 0.28),
 }
 DEFAULT_PRICE = (3.0, 15.0)
