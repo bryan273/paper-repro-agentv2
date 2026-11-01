@@ -40,7 +40,7 @@
       live = true;
       $("#arxivSearch").hidden = false;   // searching all of arXiv needs the runner
       $("#status").className = "status live";
-      $("#statusText").textContent = `Runner online · ${h.resources.cpu_cores} CPU cores · ${h.resources.ram_gb} GB RAM · GPU ${h.resources.gpu} · spent ¥${h.global_spend_cny}`;
+      $("#statusText").textContent = `Runner online · ${h.resources.cpu_cores} CPU cores · ${h.resources.ram_gb} GB RAM · GPU ${h.resources.gpu}`;
       $("#keyLabel").hidden = !h.needs_key;
       try { $("#keyIn").value = localStorage.getItem("accessKey") || ""; } catch (e) {}
     } catch (e) {

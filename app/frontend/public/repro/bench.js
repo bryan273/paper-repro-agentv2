@@ -39,13 +39,12 @@
 
   function head() {
     const c = D.tracks.clean, i = D.tracks.inject;
-    const spent = c.by_model.reduce((a, m) => a + (m.cost_total || 0), 0) + (i.by_model || []).reduce((a, m) => a + (m.cost_total || 0), 0);
     const upd = D.updated || "";
     return `<section class="aah"><div><span class="bpill">${esc(T("Pilot"))}${upd ? " · " + esc(upd) : ""}</span>
       <h1>${esc(T("Paper Repro Index"))}</h1>
       <p class="muted">${esc(T("How well models reproduce research papers. Same steps, same judge, only the model that writes the code changes."))}</p></div>
       <div class="aast"><div><b>${D.models.length}</b><span>${esc(T("models"))}</span></div><div><b>${new Set(c.runs.map((r) => r.paper_id)).size}</b><span>${esc(T("papers"))}</span></div>
-      <div><b>${c.runs.length + i.runs.filter((r) => r.status !== "error").length}</b><span>${esc(T("runs"))}: ${c.runs.length} ${esc(T("normal"))} + ${i.runs.filter((r) => r.status !== "error").length} ${esc(T("with a planted mistake"))}</span></div><div><b>${yuan(spent)}</b><span>${esc(T("spent"))}</span></div></div></section>`;
+      </div></section>`;
   }
 
   function tabs() {

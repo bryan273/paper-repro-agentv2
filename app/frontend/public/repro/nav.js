@@ -106,7 +106,12 @@
   steps.forEach((s, k) => s.querySelector("button").addEventListener("click", () => { held = true; clearInterval(timer); light(k); track.forEach((t, n) => t.classList.toggle("done", n <= k)); }));
   if (steps.length) {
     light(0);
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) timer = setInterval(() => { if (!held) light((cur + 1) % steps.length); }, 3600);
+    const stage = document.querySelector(".pstage");
+    let visible = true;
+    // the journey only runs while it is on screen and the tab is open; offscreen it is frozen so it never costs frames
+    const tick = () => { if (!held && visible && !document.hidden) light((cur + 1) % steps.length); };
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) timer = setInterval(tick, 3600);
+    if (stage && "IntersectionObserver" in window) new IntersectionObserver((es) => { visible = es[0].isIntersecting; stage.classList.toggle("paused", !visible); }, { threshold: 0.2 }).observe(stage);
   }
 
   setPane(PANES.includes(location.hash.replace("#", "")) ? location.hash.replace("#", "") : "start", true);
