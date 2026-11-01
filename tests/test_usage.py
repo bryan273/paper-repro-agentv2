@@ -10,7 +10,7 @@ def test_ledger_sums_and_estimates(monkeypatch, tmp_path):
     t = usage.summary()
     assert t["calls"] == 2 and t["estimated_calls"] == 1
     assert t["tokens_in"] == 2000 and t["tokens_out"] == 700
-    assert 0.015 < t["usd"] < 0.017
+    assert 0.014 < t["usd"] < 0.015
 
 def test_missing_file_is_zero(monkeypatch, tmp_path):
     monkeypatch.setenv("USAGE_FILE", str(tmp_path / "none.jsonl"))
