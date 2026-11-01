@@ -102,12 +102,12 @@ Deno.serve(async (req) => {
     const costOf = (list: { cost_usd: number | null; created_at: string }[], since?: string) => list.filter((j) => !since || j.created_at >= since).reduce((a, j) => a + Number(j.cost_usd ?? 0), 0);
     const priced = jobs.filter((j: { cost_usd: number | null }) => j.cost_usd !== null);
     const costs = {
-      total_usd: Math.round(costOf(jobs) * 100) / 100,
-      usd_24h: Math.round(costOf(jobs, day) * 100) / 100,
-      usd_7d: Math.round(costOf(jobs, week) * 100) / 100,
+      total_usd: Math.round(costOf(jobs) * 10000) / 10000,
+      usd_24h: Math.round(costOf(jobs, day) * 10000) / 10000,
+      usd_7d: Math.round(costOf(jobs, week) * 10000) / 10000,
       priced_jobs: priced.length,
-      avg_usd: priced.length ? Math.round((costOf(jobs) / priced.length) * 1000) / 1000 : 0,
-      note: "Estimated from token counts and a price table; only renders since cost tracking started are priced.",
+      avg_usd: priced.length ? Math.round((costOf(jobs) / priced.length) * 10000) / 10000 : 0,
+      note: "Real USD, estimated from token counts, the RKAPI price table and the credit rate (0.196 RMB per credit); only renders since cost tracking started are priced.",
     };
     // ---- members, event log and the funnel (visitor -> made a video -> signed up -> bought)
     const users = await db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=300");
