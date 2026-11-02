@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
 
 const USERNAME = /^[a-z0-9_]{3,20}$/;
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download"]);
@@ -49,11 +49,15 @@ Deno.serve(async (req) => {
       if (!USERNAME.test(username)) return json({ error: "Username: 3 to 20 characters, letters, numbers or underscore." }, 400);
       if (password.length < 8 || password.length > 72) return json({ error: "Password: 8 to 72 characters." }, 400);
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.signup&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`) >= 3) return json({ error: "Too many sign-ups from here. Try again later." }, 429);
+      // the visitor id comes from the browser, so sign-ups are also counted per network address (generous, for shared campus connections)
+      const ipActor = await sha(`${clientIp(req)}|explainer-ip`);
+      if (await count(`explainer_events?actor=eq.${ipActor}&type=eq.signup_ip&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`) >= 10) return json({ error: "Too many sign-ups from this network today. Try again tomorrow." }, 429);
       if ((await db(`explainer_users?username=eq.${username}&select=id`)).length) return json({ error: "That username is taken." }, 409);
       const { salt, hash } = await hashPassword(password);
       const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
       await logEvent(actor, "signup", { username }, user.id);
+      await logEvent(ipActor, "signup_ip", {}, user.id);
       const token = await newSession(user.id);
       return json({ token, user: publicUser(user), quota: await quotaFor(user, actor) });
     }
