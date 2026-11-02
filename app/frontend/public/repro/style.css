@@ -646,12 +646,15 @@ input,select{border-radius:12px;background:var(--surface);padding:11px 13px}
 @keyframes fill{to{width:100%}}
 /* 4 clean re-run */
 .rerun{display:flex;align-items:center;gap:26px}
-.spin{width:96px;height:96px;border-radius:50%;border:6px solid rgba(255,255,255,.12);border-top-color:#FF8A5B;border-right-color:#FFC15E;flex:none}
-.spin{position:relative}.spin::after{content:"¹3";position:absolute;inset:0;display:grid;place-items:center;font:700 38px var(--body);color:#5FE3A1;opacity:0}
-.pscene.on .spin{animation:rot 1.2s linear 2,ringdone .4s 2.9s forwards}
-.pscene.on .spin::after{animation:fi .4s 3s forwards}
-@keyframes ringdone{to{border-color:#5FE3A1;transform:none}}
-@keyframes rot{to{transform:rotate(360deg)}}
+.spin{position:relative;width:96px;height:96px;flex:none}
+.spin svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+.spin circle{fill:none;stroke-width:6}
+.spin .t{stroke:rgba(255,255,255,.12)}
+.spin .f{stroke:#FF8A5B;stroke-linecap:round;stroke-dasharray:276.5;stroke-dashoffset:276.5}
+.spin::after{content:"\2713";position:absolute;inset:0;display:grid;place-items:center;font:700 38px var(--body);color:#5FE3A1;opacity:0}
+.pscene.on .spin .f{animation:ringfill 3s cubic-bezier(.4,0,.2,1) .3s forwards}
+.pscene.on .spin::after{animation:fi .4s 3.3s forwards}
+@keyframes ringfill{0%{stroke-dashoffset:276.5;stroke:#FF8A5B}85%{stroke:#FFC15E}100%{stroke-dashoffset:0;stroke:#5FE3A1}}
 .rerun ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;font-size:14px}
 .rerun li{display:flex;gap:10px;align-items:center;opacity:0}
 .rerun li::before{content:"\2713";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#5FE3A1;color:#10281B;font:700 12px var(--body)}
