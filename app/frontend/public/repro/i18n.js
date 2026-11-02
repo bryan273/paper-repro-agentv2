@@ -588,7 +588,7 @@
     [/^Runner online · ([0-9]+) CPU cores · ([0-9.]+) GB RAM · GPU ([^ ]+) · spent ¥([0-9.]+)$/, (m) => "运行器在线 · " + m[1] + " 个 CPU 核 · " + m[2] + " GB 内存 · GPU " + m[3] + " · 已花费 ¥" + m[4]]
   ];
   let lang = "en";
-  try { lang = localStorage.getItem("lang") || (/^zh/i.test(navigator.language) ? "zh" : "en"); } catch (e) {}
+  try { lang = localStorage.getItem("repro.lang") || localStorage.getItem("lang") || (/^zh/i.test(navigator.language) ? "zh" : "en"); } catch (e) {}
   const orig = new WeakMap();
   const wrote = new WeakMap();   // what this file last wrote into a text node, so its own change is not taken for the app's
   const REV = {};
@@ -643,7 +643,7 @@
   window.getLang = () => lang;
   function init() {
     const b = document.getElementById("langBtn");
-    if (b) b.onclick = () => { lang = lang === "zh" ? "en" : "zh"; try { localStorage.setItem("lang", lang); } catch (e) {} apply(); };
+    if (b) b.onclick = () => { lang = lang === "zh" ? "en" : "zh"; try { localStorage.setItem("lang", lang); localStorage.setItem("repro.lang", lang); } catch (e) {} apply(); };
     mo.observe(document.body, { childList: true, subtree: true, characterData: true });
     apply();
   }
