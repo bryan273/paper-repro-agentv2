@@ -651,7 +651,7 @@ input,select{border-radius:12px;background:var(--surface);padding:11px 13px}
 .spin circle{fill:none;stroke-width:6}
 .spin .t{stroke:rgba(255,255,255,.12)}
 .spin .f{stroke:#FF8A5B;stroke-linecap:round;stroke-dasharray:276.5;stroke-dashoffset:276.5}
-.spin::after{content:"¹3";position:absolute;inset:0;display:grid;place-items:center;font:700 38px var(--body);color:#5FE3A1;opacity:0}
+.spin::after{content:"\2713";position:absolute;inset:0;display:grid;place-items:center;font:700 38px var(--body);color:#5FE3A1;opacity:0}
 .pscene.on .spin .f{animation:ringfill 3s cubic-bezier(.4,0,.2,1) .3s forwards}
 .pscene.on .spin::after{animation:fi .4s 3.3s forwards}
 @keyframes ringfill{0%{stroke-dashoffset:276.5;stroke:#FF8A5B}85%{stroke:#FFC15E}100%{stroke-dashoffset:0;stroke:#5FE3A1}}
