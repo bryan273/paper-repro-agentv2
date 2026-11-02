@@ -230,7 +230,14 @@ async def main():
     a = ap.parse_args()
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
     LABEL = (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
-    title, abstract, text = paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
+    try:
+        title, abstract, text = paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
+    except Exception as e:
+        # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
+        note = str(e) if isinstance(e, RuntimeError) else "We could not find or open that paper. Check the link or arXiv id and try again."
+        if os.environ.get("USER_ERROR_FILE"):
+            open(os.environ["USER_ERROR_FILE"], "w", encoding="utf-8").write(note)
+        raise
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
