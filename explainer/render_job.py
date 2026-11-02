@@ -1,7 +1,7 @@
 """Server renderer: one queued Paper Explainer job -> EN and ZH MP4s (16:9 and 9:16) in Supabase Storage.
 Runs in GitHub Actions (.github/workflows/explainer-render.yml). usage: python render_job.py <job_id>
 env: SUPABASE_URL, SUPABASE_SECRET, DEEPSEEK_API_KEY"""
-import sys, os, json, subprocess, urllib.request, traceback, datetime
+import sys, os, json, subprocess, urllib.request, traceback, datetime, tempfile
 from concurrent.futures import ThreadPoolExecutor
 import threading, time
 sys.stdout.reconfigure(encoding="utf-8")
@@ -63,6 +63,8 @@ VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-U
 # files and uploads are named by this slug, so one paper can exist in several model / voice versions
 arxiv = f"{key}-{job[:8]}"
 d = os.path.join(ROOT, "out", arxiv)
+USER_ERROR_FILE = os.path.join(tempfile.gettempdir(), "explainer_user_error_%s.txt" % os.getpid())
+os.environ["USER_ERROR_FILE"] = USER_ERROR_FILE
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
 def cost_fields():
     """What this render cost (estimated from token counts, see usage.py); empty if the ledger is unreadable."""
@@ -138,7 +140,9 @@ try:
 except Exception as e:
     traceback.print_exc()
     msg = str(e)
-    if "402" in msg or "Insufficient" in msg or "gen.py" in msg and "non-zero" in msg:
+    if os.path.exists(USER_ERROR_FILE) and open(USER_ERROR_FILE, encoding="utf-8").read().strip():
+        msg = open(USER_ERROR_FILE, encoding="utf-8").read().strip() + " No daily quota was used."
+    elif "402" in msg or "Insufficient" in msg or "gen.py" in msg and "non-zero" in msg:
         msg = "The video service is temporarily out of credit or unavailable. Please try again later; no daily quota was used."
     elif isinstance(e, subprocess.CalledProcessError):
         # name the step instead of showing the raw command line; the full trace is in the Actions log
