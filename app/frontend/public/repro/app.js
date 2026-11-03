@@ -317,7 +317,7 @@
   const doneFor = (id) => recsFor(id).length + (jobDone[id] || []).length;
   async function loadJobs() {
     try {
-      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_jobs?status=eq.done&or=(agent.is.null,agent.neq.recorded-run-seed)&select=id,arxiv_id,verdict,agent,model,requested_by,created_at&order=created_at.desc", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      const r = await fetch("https://wzdkroxbfrlqijbeiwpk.supabase.co/rest/v1/repro_jobs?status=eq.done&or=(agent.is.null,agent.neq.recorded-run-seed)&select=id,arxiv_id,verdict,agent,model,requested_by,created_at&order=created_at.desc", { headers: { apikey: "sb_publishable_kY0o-keKCbzmMkqOGU7ykw_t0ZXgAh_" } });
       jobDone = {};
       for (const j of r.ok ? await r.json() : []) { const id = arxivIdOf(j.arxiv_id); if (id) (jobDone[id] = jobDone[id] || []).push(j); }
     } catch (e) {}
@@ -326,7 +326,7 @@
   async function loadDirectory() {
     // one shared copy in Supabase (editable without a redeploy); the file next to the page is the fallback
     try {
-      const r = await fetch("https://vzvyghmtsakixlhzzuol.supabase.co/rest/v1/repro_directory?key=eq.directory&select=data", { headers: { apikey: "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc" } });
+      const r = await fetch("https://wzdkroxbfrlqijbeiwpk.supabase.co/rest/v1/repro_directory?key=eq.directory&select=data", { headers: { apikey: "sb_publishable_kY0o-keKCbzmMkqOGU7ykw_t0ZXgAh_" } });
       const j = r.ok ? await r.json() : [];
       dir = j[0] && j[0].data && j[0].data.groups ? j[0].data : null;
     } catch (e) { dir = null; }

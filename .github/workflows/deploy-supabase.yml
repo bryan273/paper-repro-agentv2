@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PROJECT_REF: vzvyghmtsakixlhzzuol
+  PROJECT_REF: wzdkroxbfrlqijbeiwpk
 
 jobs:
   deploy:
