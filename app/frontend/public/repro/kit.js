@@ -5,8 +5,8 @@
    read jobs and call two functions (supabase/schema.sql); it holds no model key and no secret. */
 (function () {
   "use strict";
-  const SB_URL = "https://vzvyghmtsakixlhzzuol.supabase.co";
-  const SB_KEY = "sb_publishable_KMh-HF6q3wnJvux9OSes2g_XLtn2aBc";
+  const SB_URL = "https://wzdkroxbfrlqijbeiwpk.supabase.co";
+  const SB_KEY = "sb_publishable_kY0o-keKCbzmMkqOGU7ykw_t0ZXgAh_";
   const NL = String.fromCharCode(10);
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

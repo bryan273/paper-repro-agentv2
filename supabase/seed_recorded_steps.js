@@ -4,7 +4,7 @@ const { Client } = require("pg"); const fs = require("fs");
 const dir = require("path").join(__dirname, "..", "web", "demo-runs") + "/";
 const strip = (e) => { const o = { ...e }; for (const k of ["seq", "t", "ts", "type"]) delete o[k]; return o; };
 (async () => {
-  const c = new Client({ host: "aws-0-ap-northeast-2.pooler.supabase.com", port: 5432, user: "postgres.vzvyghmtsakixlhzzuol", password: process.env.DBPW, database: "postgres", ssl: { rejectUnauthorized: false } });
+  const c = new Client({ host: "aws-0-ap-northeast-2.pooler.supabase.com", port: 5432, user: "postgres.wzdkroxbfrlqijbeiwpk", password: process.env.DBPW, database: "postgres", ssl: { rejectUnauthorized: false } });
   await c.connect();
   console.log("deleted test jobs:", (await c.query("delete from repro_jobs")).rowCount);
   const idx = JSON.parse(fs.readFileSync(dir + "index.json", "utf8"));
