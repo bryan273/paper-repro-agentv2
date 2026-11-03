@@ -176,6 +176,8 @@ def normalize(sc):
     for s in sc.get("scenes") or []:
         if not isinstance(s, dict) or not s.get("en") or not s.get("zh"): continue
         t = s.get("type")
+        for f in ("cards", "nodes", "words"):   # a model sometimes wraps the list as {"cards": [...]}, as the prompt example is written
+            if isinstance(s.get(f), dict): s[f] = s[f].get(f) if isinstance(s[f].get(f), list) else None
         ok = t in need and all(s.get(f) not in (None, "", []) for f in need[t])
         if ok and t == "number":
             try: float(str(s["value"]).replace(",", ""))
