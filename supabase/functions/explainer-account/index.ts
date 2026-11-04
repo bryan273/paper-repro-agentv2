@@ -7,7 +7,7 @@
 import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
 
 const USERNAME = /^[a-z0-9_]{3,20}$/;
-const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download"]);
+const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 10 }, "30": { credits: 30, price: 25 }, "100": { credits: 100, price: 79 } };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
       const type = String(body.type ?? "");
       if (!EVENTS.has(type)) return json({ error: "unknown event" }, 400);
       const user = await userOf(req);
-      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60) }, user?.id ?? null);
+      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12) }, user?.id ?? null);
       return json({ ok: true });
     }
 
