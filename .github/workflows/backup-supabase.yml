@@ -1,0 +1,31 @@
+name: backup-supabase
+
+# Daily copy of every table in the Supabase project, kept as a private artifact for 30 days.
+# A failed run (a table that could not be read in full) shows up as a red run and GitHub emails the owner.
+on:
+  schedule:
+    - cron: "17 19 * * *" # 03:17 China time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dump tables
+        env:
+          SUPABASE_URL: https://wzdkroxbfrlqijbeiwpk.supabase.co
+          SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+        run: python scripts/backup_db.py backup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supabase-${{ github.run_id }}
+          path: backup
+          retention-days: 30
