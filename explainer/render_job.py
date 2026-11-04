@@ -38,6 +38,9 @@ def upload(local, name):
     req("POST", f"/storage/v1/object/explainer-videos/{name}", body, f"multipart/form-data; boundary={b}", {"x-upsert": "true"})
     return f"{SB}/storage/v1/object/public/explainer-videos/{name}"
 
+def clip_dur(mp4):
+    return float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4], capture_output=True, text=True).stdout.strip() or 0)
+
 def best_still(mp4, jpg, tries=9):
     """The most visible frame of a clip (mean brightness plus contrast), written to jpg."""
     from PIL import Image, ImageStat
@@ -126,15 +129,32 @@ try:
     update(stage="putting the sections together")
     def assemble(lang):
         lst = os.path.join(d, f"concat_{lang}.txt")
+        offs, t = [], 0.0   # each section's [start, end] within the concatenated video, in this language (narration length differs en/zh)
         with open(lst, "w") as fh:
-            for m in meta: fh.write(f"file '{arxiv}_{lang}_s{m['i']}.mp4'\n")
+            for m in meta:
+                fh.write(f"file '{arxiv}_{lang}_s{m['i']}.mp4'\n")
+                dur = clip_dur(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"))
+                offs.append([round(t, 2), round(t + dur, 2)]); t += dur
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", "-movflags", "+faststart", os.path.join(d, f"{arxiv}_{lang}.mp4")], check=True)
         run("vertical.py", arxiv, lang)
-        return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4"), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4")
+        return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4"), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4"), offs
+    offsets = {}
     with ThreadPoolExecutor(2) as ex:
-        for lang, wide, tall in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall
+        for lang, wide, tall, offs in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall; offsets[lang] = offs
     update(videos=videos)
     upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json")
+    # the per-section clips were only needed live, while sections finished one at a time; now that the full video exists each section
+    # plays from it over a time range, so the clip (the same picture, stored twice) is removed from Storage instead of kept forever
+    deleted = False
+    try:
+        req("DELETE", "/storage/v1/object/explainer-videos", {"prefixes": [f"{arxiv}/{arxiv}_{lg}_s{m['i']}.mp4" for lg in ("en", "zh") for m in meta]})
+        deleted = True
+    except Exception as e:
+        print("section clip cleanup skipped:", str(e)[:120])
+    for n, m in enumerate(meta):
+        secs[n]["clip"] = {"en": offsets["en"][n], "zh": offsets["zh"][n]}
+        if deleted: secs[n].pop("videos", None)
+    update(sections=secs)
     update(status="done", stage=None, videos=videos, **cost_fields())
     print("done", videos)
 except Exception as e:
