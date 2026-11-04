@@ -67,6 +67,14 @@ def main():
         json.dump(manifest, f, indent=1)
     if failed or not manifest["tables"]:
         sys.exit(1)
+    # record the run so the admin panel can say when the last good backup was taken
+    req = urllib.request.Request(
+        URL + "/rest/v1/ops_backup_log",
+        data=json.dumps({"tables": len(manifest["tables"]), "rows": sum(manifest["tables"].values()), "source": os.environ.get("BACKUP_SOURCE", "github-actions")}).encode(),
+        headers={"apikey": KEY, "Authorization": "Bearer " + KEY, "Content-Type": "application/json", "Prefer": "return=minimal"},
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=60)
 
 
 main()
