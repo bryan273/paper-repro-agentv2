@@ -131,7 +131,9 @@ Deno.serve(async (req) => {
     const credits = await db("explainer_credit_log?select=id,created_at,user_id,delta,reason&order=id.desc&limit=100");
     const contacts = feedback.filter((f: { kind: string }) => f.kind === "contact").length;
     // visitors are shown by a short id only (a hash made by the render function), never by IP
-    return json({ me, viewer, costs, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders: viewer ? orders.map((o: Record<string, unknown>) => ({ ...o, contact: maskEmail(o.contact), email: maskEmail(o.email) })) : orders, feedback: viewer ? feedback.map((f: { email: string }) => ({ ...f, email: maskEmail(f.email) })) : feedback });
+    // sizes against the free-plan limits, LLM calls and the last backup (see supabase/ops.sql); a failure here must not hide the rest of the dashboard
+    const ops = await db("rpc/ops_stats", { method: "POST", body: "{}" }).catch(() => null);
+    return json({ me, viewer, ops, costs, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders: viewer ? orders.map((o: Record<string, unknown>) => ({ ...o, contact: maskEmail(o.contact), email: maskEmail(o.email) })) : orders, feedback: viewer ? feedback.map((f: { email: string }) => ({ ...f, email: maskEmail(f.email) })) : feedback });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
