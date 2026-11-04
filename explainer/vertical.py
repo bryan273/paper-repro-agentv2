@@ -9,6 +9,7 @@ try: LABEL = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8")).g
 except Exception: LABEL = f"arXiv:{arxiv}"
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 src = os.path.join(d, f"{arxiv}_{lang}.mp4")
+# drawn at 1080x1920 and scaled to 720x1280 on output: the picture is flat vector graphics, so the smaller frame looks the same and the file is a quarter of the size
 W, H = 1080, 1920
 VH = 608                       # 16:9 video scaled to full width
 VY = (H - VH) // 2 - 40
@@ -40,6 +41,6 @@ for i, ln in enumerate(foot):
 bg = os.path.join(d, f"vbg_{lang}.png"); im.save(bg)
 out = os.path.join(d, f"{arxiv}_{lang}_vertical.mp4")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-loop", "1", "-i", bg, "-i", src, "-filter_complex",
-                f"[1:v]scale={W}:{VH}[v];[0:v][v]overlay=0:{VY}:shortest=1,format=yuv420p[o]", "-map", "[o]", "-map", "1:a",
-                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "25", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", out], check=True)
+                f"[1:v]scale={W}:{VH}[v];[0:v][v]overlay=0:{VY}:shortest=1,scale=720:1280,format=yuv420p[o]", "-map", "[o]", "-map", "1:a",
+                "-c:v", "libx264", "-preset", "slow", "-crf", "28", "-r", "30", "-c:a", "copy", "-movflags", "+faststart", out], check=True)
 print(out, round(os.path.getsize(out) / 1e6, 1), "MB")
