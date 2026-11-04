@@ -82,21 +82,40 @@ Deno.serve(async (req) => {
 
     const day = new Date(Date.now() - 86400_000).toISOString();
     const week = new Date(Date.now() - 7 * 86400_000).toISOString();
-    const jobs = await db("explainer_jobs?select=id,created_at,arxiv,source_url,title,status,model,voice,visitor,error,seconds,cost_usd,usage&order=created_at.desc&limit=200");
-    const orders = await db("explainer_orders?select=*&order=created_at.desc&limit=200");
-    const feedback = await db("explainer_feedback?select=id,created_at,rating,use_case,comment,email,arxiv,kind&order=created_at.desc&limit=100");
+    const since = new Date(Date.now() - 30 * 86400_000).toISOString();
+    // every query is independent and the database is in another region from the function, so run them all at once: one after another this took 5 s
+    const [jobs, orders, feedback, jobsTotal, jobs24h, jobs7d, jobsFailed, ordersTotal, ordersWaiting, feedbackTotal, users, userJobs, events, evs, memberJobs, credits, ops] = await Promise.all([
+      db("explainer_jobs?select=id,created_at,arxiv,source_url,title,status,model,voice,visitor,error,seconds,cost_usd,usage&order=created_at.desc&limit=200"),
+      db("explainer_orders?select=*&order=created_at.desc&limit=200"),
+      db("explainer_feedback?select=id,created_at,rating,use_case,comment,email,arxiv,kind&order=created_at.desc&limit=100"),
+      count("explainer_jobs?id=not.is.null"),
+      count(`explainer_jobs?created_at=gte.${day}`),
+      count(`explainer_jobs?created_at=gte.${week}`),
+      count("explainer_jobs?status=eq.failed"),
+      count("explainer_orders?id=not.is.null"),
+      count("explainer_orders?status=eq.paid_claimed"),
+      count("explainer_feedback?id=not.is.null"),
+      db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=300"),
+      db("explainer_jobs?user_id=not.is.null&select=user_id,created_at&order=created_at.desc&limit=2000"),
+      db("explainer_events?select=id,created_at,actor,user_id,type,meta&order=id.desc&limit=300"),
+      db(`explainer_events?created_at=gte.${since}&select=actor,type,created_at&order=id.desc&limit=20000`),
+      count("explainer_jobs?user_id=not.is.null"),
+      db("explainer_credit_log?select=id,created_at,user_id,delta,reason&order=id.desc&limit=100"),
+      // sizes against the free-plan limits, LLM calls and the last backup (see supabase/ops.sql); a failure here must not hide the rest of the dashboard
+      db("rpc/ops_stats", { method: "POST", body: "{}" }).catch(() => null),
+    ]);
     const perDayMap: Record<string, number> = {};
     for (const j of jobs) { const d = String(j.created_at).slice(0, 10); perDayMap[d] = (perDayMap[d] ?? 0) + 1; }
     const perDay = Object.entries(perDayMap).sort().slice(-14).map(([date, n]) => ({ date, n }));
     const counts: Record<string, number> = {
-      jobs_total: await count("explainer_jobs?id=not.is.null"),
-      jobs_24h: await count(`explainer_jobs?created_at=gte.${day}`),
-      jobs_7d: await count(`explainer_jobs?created_at=gte.${week}`),
-      jobs_failed: await count("explainer_jobs?status=eq.failed"),
+      jobs_total: jobsTotal,
+      jobs_24h: jobs24h,
+      jobs_7d: jobs7d,
+      jobs_failed: jobsFailed,
       visitors: new Set(jobs.map((j: { visitor: string }) => j.visitor)).size,
-      orders_total: await count("explainer_orders?id=not.is.null"),
-      orders_waiting: await count("explainer_orders?status=eq.paid_claimed"),
-      feedback_total: await count("explainer_feedback?id=not.is.null"),
+      orders_total: ordersTotal,
+      orders_waiting: ordersWaiting,
+      feedback_total: feedbackTotal,
     };
     // ---- cost: summed from the per-render token ledger (an estimate, see explainer/usage.py)
     const costOf = (list: { cost_usd: number | null; created_at: string }[], since?: string) => list.filter((j) => !since || j.created_at >= since).reduce((a, j) => a + Number(j.cost_usd ?? 0), 0);
@@ -110,12 +129,8 @@ Deno.serve(async (req) => {
       note: "Real USD, estimated from token counts, the RKAPI price table and the credit rate (0.196 RMB per credit); only renders since cost tracking started are priced.",
     };
     // ---- members, event log and the funnel (visitor -> made a video -> signed up -> bought)
-    const users = await db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=300");
     const perUser: Record<string, { n: number; last: string }> = {};
-    for (const j of await db("explainer_jobs?user_id=not.is.null&select=user_id,created_at&order=created_at.desc&limit=2000")) { const x = perUser[j.user_id] ??= { n: 0, last: j.created_at }; x.n++; }
-    const events = await db("explainer_events?select=id,created_at,actor,user_id,type,meta&order=id.desc&limit=300");
-    const since = new Date(Date.now() - 30 * 86400_000).toISOString();
-    const evs = await db(`explainer_events?created_at=gte.${since}&select=actor,type,created_at&order=id.desc&limit=20000`);
+    for (const j of userJobs) { const x = perUser[j.user_id] ??= { n: 0, last: j.created_at }; x.n++; }
     const actors = (types: string[]) => new Set(evs.filter((e: { type: string }) => types.includes(e.type)).map((e: { actor: string }) => e.actor)).size;
     const funnel = [
       { step: "Visitors", n: actors(["visit"]) },
@@ -127,12 +142,8 @@ Deno.serve(async (req) => {
     ];
     const byType: Record<string, number> = {};
     for (const e of evs) byType[e.type] = (byType[e.type] ?? 0) + 1;
-    const memberJobs = await count("explainer_jobs?user_id=not.is.null");
-    const credits = await db("explainer_credit_log?select=id,created_at,user_id,delta,reason&order=id.desc&limit=100");
     const contacts = feedback.filter((f: { kind: string }) => f.kind === "contact").length;
     // visitors are shown by a short id only (a hash made by the render function), never by IP
-    // sizes against the free-plan limits, LLM calls and the last backup (see supabase/ops.sql); a failure here must not hide the rest of the dashboard
-    const ops = await db("rpc/ops_stats", { method: "POST", body: "{}" }).catch(() => null);
     return json({ me, viewer, ops, costs, funnel, byType, contacts, users: users.map((u: { id: string }) => ({ ...u, jobs: perUser[u.id]?.n ?? 0, last_job: perUser[u.id]?.last ?? null })), events: events.map((e: { actor: string }) => ({ ...e, actor: e.actor.slice(0, 8) })), credits, counts: { ...counts, users_total: users.length, member_jobs: memberJobs }, perDay, jobs: jobs.map((j: { visitor: string }) => ({ ...j, visitor: String(j.visitor ?? "").slice(0, 8) })), orders: viewer ? orders.map((o: Record<string, unknown>) => ({ ...o, contact: maskEmail(o.contact), email: maskEmail(o.email) })) : orders, feedback: viewer ? feedback.map((f: { email: string }) => ({ ...f, email: maskEmail(f.email) })) : feedback });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
