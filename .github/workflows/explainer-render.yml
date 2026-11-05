@@ -64,10 +64,8 @@ jobs:
         run: |
           if [ -z "$PKP_KEY" ] || [ -z "$PKP_HOST" ]; then echo "archive not configured, skipped"; exit 0; fi
           install -m 700 -d ~/.ssh
-          printf '%s
-' "$PKP_KEY" > ~/.ssh/pkp_key && chmod 600 ~/.ssh/pkp_key
-          printf '[%s]:%s %s
-' "$PKP_HOST" "$PKP_PORT" "$PKP_HOSTKEY" > ~/.ssh/pkp_known_hosts
+          echo "$PKP_KEY" > ~/.ssh/pkp_key && chmod 600 ~/.ssh/pkp_key
+          echo "[$PKP_HOST]:$PKP_PORT $PKP_HOSTKEY" > ~/.ssh/pkp_known_hosts
           SSH="ssh -i $HOME/.ssh/pkp_key -p $PKP_PORT -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/pkp_known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
           for d in out/*/; do
             slug=$(basename "$d")
