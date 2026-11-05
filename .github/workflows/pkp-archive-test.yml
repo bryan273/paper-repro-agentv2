@@ -24,6 +24,6 @@ jobs:
           echo "[$PKP_HOST]:$PKP_PORT $PKP_HOSTKEY" > ~/.ssh/pkp_known_hosts
           SSH="ssh -i $HOME/.ssh/pkp_key -p $PKP_PORT -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/pkp_known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
           mkdir -p t/_archive_test && echo "archive test $(date -u +%FT%TZ)" > t/_archive_test/scenes.json
-          if rsync -a -e "$SSH" --include='scenes.json' --exclude='*' t/_archive_test/ "$PKP_USER@$PKP_HOST:experiments/paper-explainer/_archive_test/"; then echo "RESULT: rsync upload OK"; else echo "RESULT: rsync upload FAILED"; fi
+          if rsync -a --mkpath -e "$SSH" --include='scenes.json' --exclude='*' t/_archive_test/ "$PKP_USER@$PKP_HOST:paper-explainer/_archive_test/"; then echo "RESULT: rsync upload OK"; else echo "RESULT: rsync upload FAILED"; fi
           if $SSH "$PKP_USER@$PKP_HOST" "ls /" 2>&1 | head -2; then :; fi
           rm -f ~/.ssh/pkp_key

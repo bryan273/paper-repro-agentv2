@@ -69,6 +69,6 @@ jobs:
           SSH="ssh -i $HOME/.ssh/pkp_key -p $PKP_PORT -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/pkp_known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
           for d in out/*/; do
             slug=$(basename "$d")
-            rsync -a -e "$SSH" --include='*_en.mp4' --include='*_zh.mp4' --include='*_vertical.mp4' --include='scenes.json' --exclude='*' "$d" "$PKP_USER@$PKP_HOST:experiments/paper-explainer/$slug/"
+            rsync -a --mkpath -e "$SSH" --include='*_en.mp4' --include='*_zh.mp4' --include='*_vertical.mp4' --include='scenes.json' --exclude='*' "$d" "$PKP_USER@$PKP_HOST:paper-explainer/$slug/"
           done
           shred -u ~/.ssh/pkp_key || rm -f ~/.ssh/pkp_key
