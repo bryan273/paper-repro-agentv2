@@ -6,7 +6,6 @@
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
 import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
 
-const USERNAME = /^[a-z0-9_]{3,20}$/;
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 10 }, "30": { credits: 30, price: 25 }, "100": { credits: 100, price: 79 } };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,14 +44,15 @@ Deno.serve(async (req) => {
     }
 
     if (op === "register") {
-      const username = str(body.username, 40).trim().toLowerCase(), password = String(body.password ?? "");
-      if (!USERNAME.test(username)) return json({ error: "Username: 3 to 20 characters, letters, numbers or underscore." }, 400);
+      // the sign-in name is an e-mail address; nothing is sent to it and it is not verified (the stored column is still called username)
+      const username = str(body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
+      if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
       if (password.length < 8 || password.length > 72) return json({ error: "Password: 8 to 72 characters." }, 400);
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.signup&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`) >= 3) return json({ error: "Too many sign-ups from here. Try again later." }, 429);
       // the visitor id comes from the browser, so sign-ups are also counted per network address (generous, for shared campus connections)
       const ipActor = await sha(`${clientIp(req)}|explainer-ip`);
       if (await count(`explainer_events?actor=eq.${ipActor}&type=eq.signup_ip&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`) >= 10) return json({ error: "Too many sign-ups from this network today. Try again tomorrow." }, 429);
-      if ((await db(`explainer_users?username=eq.${username}&select=id`)).length) return json({ error: "That username is taken." }, 409);
+      if ((await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id`)).length) return json({ error: "That email already has an account. Log in instead." }, 409);
       const { salt, hash } = await hashPassword(password);
       const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
@@ -63,13 +63,13 @@ Deno.serve(async (req) => {
     }
 
     if (op === "login") {
-      const username = str(body.username, 40).trim().toLowerCase(), password = String(body.password ?? "");
+      const username = str(body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
       const since = new Date(Date.now() - 15 * 60_000).toISOString();
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.login_fail&created_at=gte.${since}`) >= 8) return json({ error: "Too many wrong attempts. Wait 15 minutes." }, 429);
       const rows = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,credits,created_at,salt,pass_hash,banned`);
       const row = rows[0];
       const ok = row && sameText((await hashPassword(password, row.salt)).hash, row.pass_hash);
-      if (!ok) { await logEvent(actor, "login_fail", { username }); return json({ error: "Wrong username or password." }, 401); }
+      if (!ok) { await logEvent(actor, "login_fail", { username }); return json({ error: "Wrong email or password." }, 401); }
       if (row.banned) return json({ error: "This account is disabled. Please contact us." }, 403);
       await db(`explainer_users?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ last_login: new Date().toISOString() }) });
       await logEvent(actor, "login", {}, row.id);
