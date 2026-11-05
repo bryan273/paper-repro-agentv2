@@ -29,3 +29,9 @@ jobs:
           name: supabase-${{ github.run_id }}
           path: backup
           retention-days: 30
+      # After the backup is safely stored: fail the run (GitHub emails the owner) when the project nears a free-plan limit
+      - name: Early warning on limits
+        env:
+          SUPABASE_URL: https://wzdkroxbfrlqijbeiwpk.supabase.co
+          SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+        run: python scripts/ops_alert.py
