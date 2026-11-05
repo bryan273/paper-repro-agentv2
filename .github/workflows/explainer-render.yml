@@ -49,3 +49,28 @@ jobs:
         run: |
           df -h / | tail -1
           python render_job.py "${{ inputs.job_id }}"
+      # Optional cold copy of the finished videos on a server with a spare folder. The host, port and key live only in secrets (this repo is
+      # public), the step is skipped when they are not set, and a failure here never fails the render: the videos are already in Supabase.
+      - name: Archive the finished videos (optional)
+        if: success()
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          PKP_HOST: ${{ secrets.PKP_HOST }}
+          PKP_PORT: ${{ secrets.PKP_PORT }}
+          PKP_USER: ${{ secrets.PKP_USER }}
+          PKP_KEY: ${{ secrets.PKP_KEY }}
+          PKP_HOSTKEY: ${{ secrets.PKP_HOSTKEY }}
+        run: |
+          if [ -z "$PKP_KEY" ] || [ -z "$PKP_HOST" ]; then echo "archive not configured, skipped"; exit 0; fi
+          install -m 700 -d ~/.ssh
+          printf '%s
+' "$PKP_KEY" > ~/.ssh/pkp_key && chmod 600 ~/.ssh/pkp_key
+          printf '[%s]:%s %s
+' "$PKP_HOST" "$PKP_PORT" "$PKP_HOSTKEY" > ~/.ssh/pkp_known_hosts
+          SSH="ssh -i $HOME/.ssh/pkp_key -p $PKP_PORT -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/pkp_known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20"
+          for d in out/*/; do
+            slug=$(basename "$d")
+            rsync -a -e "$SSH" --include='*_en.mp4' --include='*_zh.mp4' --include='*_vertical.mp4' --include='scenes.json' --exclude='*' "$d" "$PKP_USER@$PKP_HOST:experiments/paper-explainer/$slug/"
+          done
+          shred -u ~/.ssh/pkp_key || rm -f ~/.ssh/pkp_key
