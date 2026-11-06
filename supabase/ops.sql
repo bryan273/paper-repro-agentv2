@@ -10,6 +10,17 @@ create table if not exists public.ops_backup_log (
 );
 alter table public.ops_backup_log enable row level security;
 
+-- Cloudflare R2 holds the finished videos (free plan: 10 GB). The renders and the daily retention run write the bucket size here;
+-- a video older than 14 days is removed and its job is marked expired (expired_at), so the page offers "make it again".
+create table if not exists public.ops_r2_usage (
+  id bigserial primary key,
+  taken_at timestamptz not null default now(),
+  bytes bigint not null,
+  objects int not null
+);
+alter table public.ops_r2_usage enable row level security;
+alter table public.explainer_jobs add column if not exists expired_at timestamptz;
+
 create or replace function public.ops_stats() returns jsonb
 language sql security definer set search_path = public, storage as $$
   select jsonb_build_object(
@@ -42,6 +53,11 @@ language sql security definer set search_path = public, storage as $$
           'plays_30d', coalesce((select sum(n) from ev where type = 'video_play'), 0),
           'downloads_30d', coalesce((select sum(n) from ev where type = 'video_download'), 0),
           'est_bytes', coalesce((select sum(ev.n * case ev.k when 'vertical' then sz.v when 'section' then sz.s else sz.m end) from ev, sz), 0))),
+    'r2', (select to_jsonb(r) from (select taken_at, bytes, objects from ops_r2_usage order by id desc limit 1) r),
+    'r2_daily', coalesce((select jsonb_agg(jsonb_build_object('d', to_char(d, 'MM-DD'), 'bytes', b) order by d)
+        from (select taken_at::date d, max(bytes) b from ops_r2_usage where taken_at >= now() - interval '14 days' group by 1) x), '[]'::jsonb),
+    'stuck_jobs', (select count(*) from explainer_jobs where status in ('queued', 'running') and updated_at < now() - interval '30 minutes'),
+    'expired_jobs', (select count(*) from explainer_jobs where expired_at is not null),
     'jobs', coalesce((select jsonb_object_agg(status, n) from (select status, count(*) n from explainer_jobs group by 1) j), '{}'::jsonb),
     'last_backup', (select to_jsonb(b) from (select taken_at, tables, rows, source from ops_backup_log order by id desc limit 1) b)
   );

@@ -29,9 +29,7 @@ def update(**f):
 R2 = {k: os.environ.get(k, "") for k in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "R2_PUBLIC_BASE")}
 _r2 = None
 
-def r2_put(local, name, ctype):
-    """Final videos, posters and scenes.json go to Cloudflare R2 (10 GB free, no egress fees), so watching and downloading cost Supabase nothing.
-    Returns the public URL. Raises if R2 is not configured or the upload fails; the caller then falls back to Supabase Storage."""
+def r2_client():
     global _r2
     if not all(R2.values()): raise RuntimeError("R2 not configured")
     if _r2 is None:
@@ -39,9 +37,25 @@ def r2_put(local, name, ctype):
         from botocore.config import Config
         _r2 = boto3.client("s3", endpoint_url=f"https://{R2['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com", aws_access_key_id=R2["R2_ACCESS_KEY_ID"],
                            aws_secret_access_key=R2["R2_SECRET_ACCESS_KEY"], region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": 5}))
+    return _r2
+
+def r2_put(local, name, ctype):
+    """Final videos, posters and scenes.json go to Cloudflare R2 (10 GB free, no egress fees), so watching and downloading cost Supabase nothing.
+    Returns the public URL. Raises if R2 is not configured or the upload fails; the caller then falls back to Supabase Storage."""
     with open(local, "rb") as fh:   # names carry the job id and are never rewritten, so a year of caching is safe
-        _r2.put_object(Bucket=R2["R2_BUCKET"], Key=name, Body=fh.read(), ContentType=ctype, CacheControl="public, max-age=31536000, immutable")
+        r2_client().put_object(Bucket=R2["R2_BUCKET"], Key=name, Body=fh.read(), ContentType=ctype, CacheControl="public, max-age=31536000, immutable")
     return f"{R2['R2_PUBLIC_BASE'].rstrip('/')}/{name}"
+
+def record_r2_usage():
+    """Writes the bucket size into ops_r2_usage so the admin panel shows how much of the free 10 GB is used. Best effort: never fails a render."""
+    try:
+        if not all(R2.values()): return
+        total = n = 0
+        for page in r2_client().get_paginator("list_objects_v2").paginate(Bucket=R2["R2_BUCKET"]):
+            total += sum(o["Size"] for o in page.get("Contents", [])); n += len(page.get("Contents", []))
+        req("POST", "/rest/v1/ops_r2_usage", {"bytes": total, "objects": n}, extra={"Prefer": "return=minimal"})
+    except Exception as e:
+        print("R2 usage record skipped:", str(e)[:120])
 
 def upload(local, name, final=False):
     ctype = "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json"
@@ -176,6 +190,7 @@ try:
         if deleted: secs[n].pop("videos", None)
     update(sections=secs)
     update(status="done", stage=None, videos=videos, **cost_fields())
+    record_r2_usage()
     print("done", videos)
 except Exception as e:
     traceback.print_exc()
