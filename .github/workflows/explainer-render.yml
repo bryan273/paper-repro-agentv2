@@ -24,6 +24,11 @@ jobs:
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
       PARATERA_API_KEY: ${{ secrets.PARATERA_API_KEY }}
       RKAPI_OPENAI_KEY: ${{ secrets.RKAPI_OPENAI_KEY }}   # gpt-5.6-terra draws the Manim animations
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
       RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}   # Claude through RKAPI: writes the scripts (Haiku) and the Manim animations (Sonnet)   # the working model provider; gen.py uses it for the DeepSeek models when set
     steps:
       - uses: actions/checkout@v7
@@ -42,7 +47,7 @@ jobs:
         run: |
           # only what writing the script needs (ffmpeg measures the narration); the rest installs in the background
           sudo apt-get install -y -q --no-install-recommends ffmpeg || { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg; }
-          pip install -q edge-tts pillow pymupdf
+          pip install -q edge-tts pillow pymupdf boto3
           chmod +x install_heavy.sh
           setsid nohup ./install_heavy.sh > /dev/null 2>&1 < /dev/null &
       - name: Render

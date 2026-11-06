@@ -1,6 +1,6 @@
 """Server renderer: one queued Paper Explainer job -> EN and ZH MP4s (16:9 and 9:16) in Supabase Storage.
 Runs in GitHub Actions (.github/workflows/explainer-render.yml). usage: python render_job.py <job_id>
-env: SUPABASE_URL, SUPABASE_SECRET, DEEPSEEK_API_KEY"""
+env: SUPABASE_URL, SUPABASE_SECRET, DEEPSEEK_API_KEY; optional R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_BASE (final files go to Cloudflare R2)"""
 import sys, os, json, subprocess, urllib.request, traceback, datetime, tempfile
 from concurrent.futures import ThreadPoolExecutor
 import threading, time
@@ -26,8 +26,28 @@ def update(**f):
             if k == 4: raise
             import time; time.sleep(3 * (k + 1))
 
-def upload(local, name):
+R2 = {k: os.environ.get(k, "") for k in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "R2_PUBLIC_BASE")}
+_r2 = None
+
+def r2_put(local, name, ctype):
+    """Final videos, posters and scenes.json go to Cloudflare R2 (10 GB free, no egress fees), so watching and downloading cost Supabase nothing.
+    Returns the public URL. Raises if R2 is not configured or the upload fails; the caller then falls back to Supabase Storage."""
+    global _r2
+    if not all(R2.values()): raise RuntimeError("R2 not configured")
+    if _r2 is None:
+        import boto3
+        from botocore.config import Config
+        _r2 = boto3.client("s3", endpoint_url=f"https://{R2['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com", aws_access_key_id=R2["R2_ACCESS_KEY_ID"],
+                           aws_secret_access_key=R2["R2_SECRET_ACCESS_KEY"], region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": 5}))
+    with open(local, "rb") as fh:   # names carry the job id and are never rewritten, so a year of caching is safe
+        _r2.put_object(Bucket=R2["R2_BUCKET"], Key=name, Body=fh.read(), ContentType=ctype, CacheControl="public, max-age=31536000, immutable")
+    return f"{R2['R2_PUBLIC_BASE'].rstrip('/')}/{name}"
+
+def upload(local, name, final=False):
     ctype = "video/mp4" if name.endswith(".mp4") else "image/jpeg" if name.endswith(".jpg") else "application/json"
+    if final:
+        try: return r2_put(local, name, ctype)
+        except Exception as e: print("R2 upload skipped, using Supabase Storage:", str(e)[:160])
     # multipart with a cacheControl field is the only form Storage honours: a plain body is served "private, no-cache", so every
     # play went back to the origin. The file names carry the job id and are never rewritten, so a year of caching is safe.
     b = "----rs" + os.urandom(8).hex()
@@ -115,7 +135,7 @@ try:
         try:
             mp4 = os.path.join(d, f"{arxiv}_en_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
             if not os.path.exists(jpg): best_still(mp4, jpg)   # the animation step already picked a settled frame; the template player gets the brightest one
-            poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg")
+            poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg", final=True)
         except Exception as e: print("poster skipped:", str(e)[:100])
         with lock:
             secs[n]["videos"].update(vids); secs[n]["status"] = "done"
@@ -137,12 +157,12 @@ try:
                 offs.append([round(t, 2), round(t + dur, 2)]); t += dur
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", "-movflags", "+faststart", os.path.join(d, f"{arxiv}_{lang}.mp4")], check=True)
         run("vertical.py", arxiv, lang)
-        return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4"), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4"), offs
+        return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4", final=True), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4", final=True), offs
     offsets = {}
     with ThreadPoolExecutor(2) as ex:
         for lang, wide, tall, offs in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall; offsets[lang] = offs
     update(videos=videos)
-    upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json")
+    upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json", final=True)
     # the per-section clips were only needed live, while sections finished one at a time; now that the full video exists each section
     # plays from it over a time range, so the clip (the same picture, stored twice) is removed from Storage instead of kept forever
     deleted = False
