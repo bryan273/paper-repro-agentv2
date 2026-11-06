@@ -67,13 +67,23 @@ def main():
     s3 = boto3.client("s3", endpoint_url="https://%s.r2.cloudflarestorage.com" % os.environ["R2_ACCOUNT_ID"], aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
                       aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"], region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": 5}))
 
+    newest = {}
+
     def scan():
         sizes, n = {}, 0
+        newest.clear()
         for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket):
             for o in page.get("Contents", []):
-                sizes[o["Key"].rsplit("/", 1)[0] + "/"] = sizes.get(o["Key"].rsplit("/", 1)[0] + "/", 0) + o["Size"]
+                pre = o["Key"].rsplit("/", 1)[0] + "/"
+                sizes[pre] = sizes.get(pre, 0) + o["Size"]
+                newest[pre] = max(newest.get(pre, o["LastModified"]), o["LastModified"])
                 n += 1
         return sizes, n
+
+    def remove_prefix(prefix):
+        keys = [o["Key"] for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix) for o in page.get("Contents", [])]
+        for i in range(0, len(keys), 1000):
+            s3.delete_objects(Bucket=bucket, Delete={"Objects": [{"Key": k} for k in keys[i:i + 1000]]})
 
     sizes, n = scan()
     print("bucket: %.1f MB in %d files" % (sum(sizes.values()) / 1048576, n))
@@ -85,10 +95,16 @@ def main():
         print("  %s %s (%s, %.1f MB)%s" % (jid[:8], prefix, why, sizes.get(prefix, 0) / 1048576, " [dry run]" if DRY else ""))
         if DRY:
             continue
-        keys = [o["Key"] for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix) for o in page.get("Contents", [])]
-        for i in range(0, len(keys), 1000):
-            s3.delete_objects(Bucket=bucket, Delete={"Objects": [{"Key": k} for k in keys[i:i + 1000]]})
+        remove_prefix(prefix)
         sbcall("PATCH", "/rest/v1/explainer_jobs?id=eq.%s" % jid, {"expired_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "videos": {}})
+    # leftovers of deleted jobs
+    ids = [j["id"] for j in json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_jobs?select=id&limit=5000", headers=hdr), timeout=60))]
+    orphans = pick_orphans(dict(newest), ids, datetime.datetime.now(datetime.timezone.utc))
+    print("orphan folders (no job row): %d" % len(orphans))
+    for prefix in orphans:
+        print("  %s (%.1f MB)%s" % (prefix, sizes.get(prefix, 0) / 1048576, " [dry run]" if DRY else ""))
+        if not DRY:
+            remove_prefix(prefix)
     sizes, n = scan()
     total = sum(sizes.values())
     print("bucket after: %.1f MB in %d files" % (total / 1048576, n))
