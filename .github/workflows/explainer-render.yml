@@ -13,7 +13,9 @@ concurrency:
   group: explainer-render-${{ inputs.job_id }}
 jobs:
   render:
-    runs-on: ubuntu-latest
+    # RENDER_RUNNER (repository variable, a JSON runner label) moves the renders to another machine in one command, see docs/RUNNER.md;
+    # unset, they run on GitHub's own runner
+    runs-on: ${{ fromJSON(vars.RENDER_RUNNER || '"ubuntu-latest"') }}
     timeout-minutes: 75
     defaults:
       run:
@@ -44,10 +46,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-v1
       - name: Base install
+        timeout-minutes: 10   # a mirror or pip stall once held this step for 17 minutes; a bounded step fails fast and the retries below cover it
         run: |
           # only what writing the script needs (ffmpeg measures the narration); the rest installs in the background
-          sudo apt-get install -y -q --no-install-recommends ffmpeg || { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg; }
-          pip install -q edge-tts pillow pymupdf boto3
+          for try in 1 2 3; do
+            { sudo apt-get install -y -q --no-install-recommends ffmpeg || { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg; }; } && break
+            echo "apt attempt $try failed"; sleep 5
+          done
+          for try in 1 2 3; do pip install -q --timeout 60 edge-tts pillow pymupdf boto3 && break; echo "pip attempt $try failed"; sleep 5; done
           chmod +x install_heavy.sh
           setsid nohup ./install_heavy.sh > /dev/null 2>&1 < /dev/null &
       - name: Render

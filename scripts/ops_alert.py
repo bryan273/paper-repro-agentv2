@@ -46,6 +46,7 @@ rows = [
     ("Database", ops["db_bytes"], 500 * MB, 0.7),
     ("Egress estimate (30 d)", ops["egress"]["est_bytes"], 5 * 1024 * MB, 0.6),
 ]
+bad = []
 r2 = r2_bytes()
 if r2 is not None:
     rows.append(("R2 bucket", r2, 10 * 1024 * MB, 0.7))
@@ -56,7 +57,12 @@ for name, used, limit, warn in rows:
     print(f"{name}: {used / MB:.0f} MB of {limit / MB:.0f} MB ({pct:.0%}, warns at {warn:.0%}){flag}")
     if pct >= warn:
         bad.append(f"{name} at {pct:.0%} of the free limit")
+stuck_since = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+stuck = call(f"/rest/v1/explainer_jobs?select=id,status,stage&status=in.(queued,running)&updated_at=lt.{stuck_since}")
 print(f"Failed video jobs in the last 24 h: {len(failed)}")
+print(f"Jobs stuck for more than 30 min (queued or running): {len(stuck)}")
+if stuck:
+    bad.append(f"{len(stuck)} video job(s) stuck for over 30 minutes: the renderer may be down (check the explainer-render runs, or switch RENDER_RUNNER)")
 if len(failed) >= 3:
     bad.append(f"{len(failed)} video jobs failed in the last 24 hours")
 if bad:

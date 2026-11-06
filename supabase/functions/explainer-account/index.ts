@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       const actor = await actorOf(req, req.headers.get("x-visitor-id"));
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
-        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at&order=created_at.desc&limit=50`));
+        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at,expired_at&order=created_at.desc&limit=50`));
       }
       if (u.searchParams.get("ledger")) {
         if (!user) return json({ error: "Sign in first." }, 401);

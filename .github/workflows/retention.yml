@@ -1,0 +1,36 @@
+name: retention
+
+# Daily: videos on Cloudflare R2 are kept 14 days, then removed and their job marked expired ("make it again"); if the bucket still passes 9 GB
+# (free plan: 10 GB) the oldest go first. Also records the bucket size for the admin panel. Run by hand with dry_run=true to see what would go.
+on:
+  schedule:
+    - cron: "40 19 * * *" # 03:40 China time
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = only list what would be removed"
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  retention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q boto3
+      - name: Remove expired videos
+        env:
+          SUPABASE_URL: https://wzdkroxbfrlqijbeiwpk.supabase.co
+          SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
+        run: python scripts/r2_maintain.py ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
