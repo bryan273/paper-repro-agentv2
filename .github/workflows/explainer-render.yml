@@ -13,7 +13,9 @@ concurrency:
   group: explainer-render-${{ inputs.job_id }}
 jobs:
   render:
-    runs-on: ubuntu-latest
+    # RENDER_RUNNER (repository variable, a JSON runner label) moves the renders to another machine in one command, see docs/RUNNER.md;
+    # unset, they run on GitHub's own runner
+    runs-on: ${{ fromJSON(vars.RENDER_RUNNER || '"ubuntu-latest"') }}
     timeout-minutes: 75
     defaults:
       run:
