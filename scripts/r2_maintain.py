@@ -43,6 +43,14 @@ def pick_expired(jobs, sizes, now, base):
     return out
 
 
+def pick_orphans(prefixes, job_ids, now, min_age_days=2):
+    """prefixes: {prefix: newest LastModified}. A job folder is named <paper>-<first 8 chars of the job id>; one with no matching job row (a job that was
+    deleted) and nothing written for min_age_days is leftover, so it is removed. Folders that are not job folders (underscore names) are skipped."""
+    ids8 = {i[:8] for i in job_ids}
+    cutoff = now - datetime.timedelta(days=min_age_days)
+    return sorted(p for p, newest in prefixes.items() if not p.startswith("_") and p.rstrip("/")[-8:] not in ids8 and newest < cutoff)
+
+
 def main():
     import boto3
     from botocore.config import Config
