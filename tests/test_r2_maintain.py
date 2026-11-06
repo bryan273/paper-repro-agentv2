@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
-from r2_maintain import GB, HARD_LIMIT, pick_expired  # noqa: E402
+from r2_maintain import GB, HARD_LIMIT, pick_expired, pick_orphans  # noqa: E402
 
 BASE = "https://pub-x.r2.dev"
 NOW = datetime.datetime(2026, 11, 20, tzinfo=datetime.timezone.utc)
@@ -40,3 +40,10 @@ def test_over_9gb_removes_oldest_first_until_8_5gb():
 def test_under_the_limit_nothing_extra_goes():
     jobs = [job("a", 1), job("b", 2)]
     assert pick_expired(jobs, {"1409.0473-a/": GB, "1409.0473-b/": GB}, NOW, BASE) == []
+
+
+def test_orphans_are_folders_without_a_job_and_old_enough():
+    old, fresh = NOW - datetime.timedelta(days=5), NOW - datetime.timedelta(hours=3)
+    prefixes = {"1409.0473-eefcd171/": old, "1409.0473-aaaaaaaa/": old, "1409.0473-bbbbbbbb/": fresh, "_check/": old}
+    got = pick_orphans(prefixes, ["aaaaaaaa-1111-2222-3333-444444444444"], NOW)
+    assert got == ["1409.0473-eefcd171/"]   # aaaaaaaa has a job, bbbbbbbb is too new (maybe a running render), _check is not a job folder
