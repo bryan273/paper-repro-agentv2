@@ -33,6 +33,24 @@ export function quoteFound(quote: string, text: string): boolean {
   return parts.every((q) => inOrder(q, t));
 }
 
+/** The page of the paper a quote is on (1-based), or null when the pages are not known. */
+export function pageOf(quote: string, pages: string[] | null | undefined): number | null {
+  if (!pages?.length) return null;
+  const parts = quote.split("...").flatMap((s) => s.split(ELLIPSIS)).map((s) => norm(s).split(" ").filter(Boolean)).filter((w) => w.length >= 3);
+  const np = pages.map((p) => norm(p));
+  for (const w of parts) for (let k = 0; k + 4 <= w.length; k += 3) { const win = w.slice(k, k + 5).join(" "); const hit = np.findIndex((p) => p.includes(win)); if (hit >= 0) return hit + 1; }
+  return null;
+}
+type Beat = { t: number; sec: number; x?: string; ev?: string; pg?: number | null };
+/** The moment of the video that says (most nearly) what a quote says: the scene whose evidence and narration share the most words with it. */
+export function momentOf(quote: string, beats: Beat[] | null | undefined): Beat | null {
+  if (!beats?.length) return null;
+  const q = new Set(norm(quote).split(" ").filter((w) => w.length > 3));
+  let best: Beat | null = null, top = 0;
+  for (const b of beats) { const w = new Set(norm(`${b.ev ?? ""} ${b.x ?? ""}`).split(" ")); let n = 0; for (const x of q) if (w.has(x)) n++; if (n > top) { top = n; best = b; } }
+  return top >= 3 ? best : null;
+}
+
 /** The model sometimes stops mid-answer (token limit, long Chinese text) or leaves a quote unescaped. Keep every block that is complete. */
 export function lenientParse(s: string): { blocks?: unknown; followups?: unknown } | null {
   const ok = (v: unknown): v is { blocks: unknown[] } => !!v && typeof v === "object" && Array.isArray((v as { blocks?: unknown }).blocks);
@@ -123,7 +141,7 @@ Deno.serve(async (req) => {
     const secIdx = Number.isInteger(b.section) ? Number(b.section) : -1;
     if (intent === "ask" && q.length < 2) return json({ error: "Type a question first." }, 400);
 
-    const [job] = await db(`explainer_jobs?id=eq.${jobId}&select=id,arxiv,title,status,expired_at,paper_text,sections`);
+    const [job] = await db(`explainer_jobs?id=eq.${jobId}&select=id,arxiv,title,status,expired_at,paper_text,sections,paper_pages,timeline`);
     if (!job || job.status !== "done") return json({ error: "Open a finished video first." }, 404);
     if (job.expired_at) return json({ error: "This video has expired, so its paper text is gone. Make it again to ask questions." }, 410);
 
@@ -165,13 +183,14 @@ Deno.serve(async (req) => {
       content = String(out.message?.content ?? "").replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
       parsed = lenientParse(content) ?? salvage(content);
     }
-    type Block = { kind: "paper" | "general" | "unverified"; text: string; quote?: string };
+    type Block = { kind: "paper" | "general" | "unverified"; text: string; quote?: string; page?: number; t?: number; sec?: number };
+    const beats = (job.timeline?.[lang] ?? job.timeline?.en ?? job.timeline?.zh) as Beat[] | undefined;
     const blocks: Block[] = [];
     for (const x of (Array.isArray(parsed?.blocks) ? parsed!.blocks as Record<string, unknown>[] : []).slice(0, 6)) {
       const t = String(x?.text ?? "").trim().slice(0, 900);
       if (!t) continue;
       const quote = String(x?.quote ?? "").trim().slice(0, 300);
-      if (x?.kind === "paper" && quote) blocks.push(quoteFound(quote, text) ? { kind: "paper", text: t, quote } : { kind: "unverified", text: t, quote });
+      if (x?.kind === "paper" && quote) blocks.push(quoteFound(quote, text) ? { kind: "paper", text: t, quote, ...(() => { const pg = pageOf(quote, job.paper_pages); const m = momentOf(quote, beats); return { ...(pg ? { page: pg } : {}), ...(m ? { t: m.t, sec: m.sec } : {}) }; })() } : { kind: "unverified", text: t, quote });
       else if (mode !== "paper") blocks.push({ kind: "general", text: t });
       else blocks.push({ kind: "general", text: t });
     }

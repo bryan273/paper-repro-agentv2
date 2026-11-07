@@ -7,7 +7,7 @@ const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 const ADMINS = (Deno.env.get("EXPLAINER_ADMIN_EMAILS") ?? "bryantjandra273@gmail.com").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-admin-token", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-admin-token, x-session", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 const db = async (path: string, init: RequestInit = {}) => {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, { ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) } });
@@ -31,12 +31,20 @@ async function grant(userId: string, amount: number, reason: string) {
 
 // Read-only preview: until ADMIN_VIEW_OPEN is set to "0", anyone can open the dashboard without a passcode. Changing anything
 // (order status, credits, bans) still needs the passcode, and e-mail addresses are masked in what the preview shows.
-const VIEW_OPEN = (Deno.env.get("ADMIN_VIEW_OPEN") ?? "1") !== "0";
+const VIEW_OPEN = (Deno.env.get("ADMIN_VIEW_OPEN") ?? "0") !== "0";
 const maskEmail = (e: unknown) => { const t = String(e ?? ""); const [u, d] = t.split("@"); return d ? `${u.slice(0, 1)}***@${d}` : t ? "***" : ""; };
 
 async function whoAmI(req: Request): Promise<string | null> {
   const pass = req.headers.get("x-admin-token");
   if (pass !== null) return PASS && sameText(pass, PASS) ? "admin" : null;
+  // a signed-in member of the suite whose address is on the admin list (the same sign-in as the navbar)
+  const sess = req.headers.get("x-session");
+  if (sess) {
+    const r = await fetch(`${SB_URL}/functions/v1/explainer-account?me=1`, { headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, "x-session": sess } });
+    const j = r.ok ? await r.json().catch(() => null) : null;
+    const name = String(j?.user?.username ?? "").toLowerCase();
+    return name ? name : null;
+  }
   const token = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
   if (!token) return null;
   const r = await fetch(`${SB_URL}/auth/v1/user`, { headers: { apikey: ANON, Authorization: `Bearer ${token}` } });
@@ -51,7 +59,7 @@ Deno.serve(async (req) => {
     let me = await whoAmI(req);
     let viewer = false;
     if (!me && VIEW_OPEN && req.method === "GET" && !req.headers.get("x-admin-token")) { me = "viewer"; viewer = true; }
-    if (!me) return json({ error: "Wrong passcode." }, 401);
+    if (!me) return json({ error: "Sign in with an admin account (Log in, top right)." }, 401);
     if (!viewer && me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
 
     if (req.method === "POST") {

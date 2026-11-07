@@ -18,13 +18,18 @@ if not LADDER: print("no RKAPI key: template player instead"); sys.exit(2)
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 meta = next((m for m in json.load(open(os.path.join(d, "sections.json"), encoding="utf-8")) if m["i"] == k), {})
 idx = [i for i, s in enumerate(sc["scenes"]) if s.get("sec") == k]
-dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="utf-8"))["scenes"] for lang in ("en", "zh")}
+LANGS = [lg for lg in ("en", "zh") if os.path.exists(os.path.join(d, f"script_{lg}.json"))]   # a video made in one language has one script
+dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="utf-8"))["scenes"] for lang in LANGS}
 # a beat lasts as long as the longer of its two narrations, so both languages fit the same picture
-beats = [round(max(dur["en"][i]["dur"], dur["zh"][i]["dur"]) / 1000, 2) for i in idx]
+beats = [round(max(dur[lg][i]["dur"] for lg in LANGS) / 1000, 2) for i in idx]
 NARR_DELAY = 0.15   # each narration clip starts this long after its beat
 def words_of(lang, i):
     try: return json.load(open(os.path.join(d, f"{lang}_{i}.words.json"), encoding="utf-8"))
-    except Exception: return []
+    except Exception: pass
+    if lang == "en" and LANGS and "en" not in LANGS:   # Chinese-only video: spread the English words of the scene over the Chinese narration, so the picture still appears roughly on its word
+        ws = (sc["scenes"][i].get("en") or "").split(); total = dur[LANGS[0]][i]["audio_ms"] / 1000 if ws else 0
+        return [[round(total * n / len(ws), 3), round(total * (n + 1) / len(ws), 3), w] for n, w in enumerate(ws)]
+    return []
 norm = lambda w: re.sub(r"[^0-9a-z]+", "", str(w).lower())
 # per beat: [seconds from the beat start, word] of the English narration, so a picture can appear on the word that names it
 CUES = {n: [[round(a + NARR_DELAY, 2), norm(w)] for a, _, w in words_of("en", i) if norm(w)] for n, i in enumerate(idx)}
@@ -360,8 +365,8 @@ def caption_track(lang, starts, end):
 def subs_and_audio(vid, times):
     """Captions in each language (phrase by phrase, the spoken word highlighted) burned in, and each language's narration placed at its beat."""
     starts, end = times["starts"], times["end"]
-    for lang in ("en", "zh"): caption_track(lang, starts, end)
-    for lang in ("en", "zh"):
+    for lang in LANGS: caption_track(lang, starts, end)
+    for lang in LANGS:
         inputs, filt = ["-i", vid], []
         for n, i in enumerate(idx):
             inputs += ["-i", os.path.join(d, f"{lang}_{i}.mp3")]

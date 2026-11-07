@@ -7,7 +7,8 @@
 import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
-const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 10 }, "30": { credits: 30, price: 25 }, "100": { credits: 100, price: 79 } };
+const ADMIN_EMAILS = (Deno.env.get("EXPLAINER_ADMIN_EMAILS") ?? "bryantjandra273@gmail.com").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
+const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 30 } };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
@@ -28,7 +29,7 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();

@@ -96,6 +96,7 @@ def best_still(mp4, jpg, tries=9):
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
 key = row["arxiv"]
 model, voice = row.get("model") or "deepseek", row.get("voice") or "female"
+LG = ("en", "zh") if (row.get("langs") or "both") not in ("en", "zh") else (row["langs"],)   # the languages this video is made in
 VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-US-GuyNeural", "zh-CN-YunxiNeural")}
 # files and uploads are named by this slug, so one paper can exist in several model / voice versions
 arxiv = f"{key}-{job[:8]}"
@@ -127,7 +128,7 @@ try:
         os.makedirs(d, exist_ok=True); upfile = os.path.join(d, "upload.pdf")
         r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
-    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in ("en", "zh") else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
     try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
@@ -151,12 +152,12 @@ try:
             drawn = subprocess.run([sys.executable, "manim_section.py", arxiv, str(m["i"])], cwd=ROOT).returncode == 0
         if not drawn:
             with rec_lock:   # one browser pair at a time
-                with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), ("en", "zh")))
-        vids = {lang: upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4") for lang in ("en", "zh")}
+                with ThreadPoolExecutor(2) as ex: list(ex.map(lambda lg: run("record.py", arxiv, lg, "--part", str(m["i"])), LG))
+        vids = {lang: upload(os.path.join(d, f"{arxiv}_{lang}_s{m['i']}.mp4"), f"{arxiv}/{arxiv}_{lang}_s{m['i']}.mp4") for lang in LG}
         # a still from the English cut, so the player shows a picture instead of a black box: the brightest of several frames (some beats fade through black)
         poster = None
         try:
-            mp4 = os.path.join(d, f"{arxiv}_en_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
+            mp4 = os.path.join(d, f"{arxiv}_{LG[0]}_s{m['i']}.mp4"); jpg = os.path.join(d, f"{arxiv}_s{m['i']}.jpg")
             if not os.path.exists(jpg): best_still(mp4, jpg)   # the animation step already picked a settled frame; the template player gets the brightest one
             poster = upload(jpg, f"{arxiv}/{arxiv}_s{m['i']}.jpg", final=True)
         except Exception as e: print("poster skipped:", str(e)[:100])
@@ -166,7 +167,7 @@ try:
             ready = sum(1 for s in secs if s["status"] == "done")
             update(sections=secs, stage=f"sections ready: {ready} of {len(meta)}")   # the page shows each section as soon as it is ready
     update(stage=f"drawing {len(meta)} sections")
-    with ThreadPoolExecutor(2 if animated else 1) as ex:   # two at a time: while one waits for the model the other renders
+    with ThreadPoolExecutor((3 if len(meta) >= 3 else 2) if animated else 1) as ex:   # up to three at a time: while one waits for the model the other renders
         for f in [ex.submit(section, n, m) for n, m in enumerate(meta)]: f.result()
     videos = {}
     update(stage="putting the sections together")
@@ -183,21 +184,51 @@ try:
         return lang, upload(os.path.join(d, f"{arxiv}_{lang}.mp4"), f"{arxiv}/{arxiv}_{lang}.mp4", final=True), upload(os.path.join(d, f"{arxiv}_{lang}_vertical.mp4"), f"{arxiv}/{arxiv}_{lang}_vertical.mp4", final=True), offs
     offsets = {}
     with ThreadPoolExecutor(2) as ex:
-        for lang, wide, tall, offs in ex.map(assemble, ("en", "zh")): videos[lang] = wide; videos[lang + "_vertical"] = tall; offsets[lang] = offs
+        for lang, wide, tall, offs in ex.map(assemble, LG): videos[lang] = wide; videos[lang + "_vertical"] = tall; offsets[lang] = offs
     update(videos=videos)
     upload(os.path.join(d, "scenes.json"), f"{arxiv}/scenes.json", final=True)
     # the per-section clips were only needed live, while sections finished one at a time; now that the full video exists each section
     # plays from it over a time range, so the clip (the same picture, stored twice) is removed from Storage instead of kept forever
     deleted = False
     try:
-        req("DELETE", "/storage/v1/object/explainer-videos", {"prefixes": [f"{arxiv}/{arxiv}_{lg}_s{m['i']}.mp4" for lg in ("en", "zh") for m in meta]})
+        req("DELETE", "/storage/v1/object/explainer-videos", {"prefixes": [f"{arxiv}/{arxiv}_{lg}_s{m['i']}.mp4" for lg in LG for m in meta]})
         deleted = True
     except Exception as e:
         print("section clip cleanup skipped:", str(e)[:120])
     for n, m in enumerate(meta):
-        secs[n]["clip"] = {"en": offsets["en"][n], "zh": offsets["zh"][n]}
+        secs[n]["clip"] = {lg: offsets[lg][n] for lg in LG}
         if deleted: secs[n].pop("videos", None)
     update(sections=secs)
+    # where each scene is in the video and on which page of the paper its evidence sits: the player and the Ask tab jump to them
+    try:
+        import re as _re
+        nrm = lambda t: _re.sub(r"[^a-z0-9]+", " ", str(t).lower()).strip()
+        try: pages = json.load(open(os.path.join(d, "pages.json"), encoding="utf-8"))
+        except Exception: pages = []
+        npages = [nrm(p) for p in pages]
+        def page_of(q):
+            w = nrm(q).split()
+            for k in range(0, max(1, len(w) - 5), 3):
+                win = " ".join(w[k:k + 6])
+                if len(w) >= 5:
+                    for n_, p_ in enumerate(npages):
+                        if win in p_: return n_ + 1
+            return None
+        raw = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))["scenes"]
+        timeline = {}
+        for lg in LG:
+            scr = json.load(open(os.path.join(d, f"script_{lg}.json"), encoding="utf-8"))["scenes"]
+            rows = []
+            for n, m in enumerate(meta):
+                mine = [(i, s_) for i, s_ in enumerate(scr) if s_.get("sec") == m["i"]]
+                span = max(0.1, offsets[lg][n][1] - offsets[lg][n][0]); tot = max(1, sum(s_["dur"] for _, s_ in mine)); acc = 0
+                for i, s_ in mine:
+                    ev = (raw[i].get("evidence") or "") if i < len(raw) else ""
+                    rows.append({"t": round(offsets[lg][n][0] + span * acc / tot, 1), "sec": n, "x": (s_.get(lg) or "")[:220], "pg": page_of(ev) if ev else None, "ev": ev[:200]})
+                    acc += s_["dur"]
+            timeline[lg] = rows
+        update(timeline=timeline, **({"paper_pages": [p[:5000] for p in pages]} if pages else {}))
+    except Exception as e: print("timeline skipped:", str(e)[:160])
     update(status="done", stage=None, videos=videos, **cost_fields())
     record_r2_usage()
     print("done", videos)
