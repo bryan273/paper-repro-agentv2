@@ -63,7 +63,7 @@ def page_texts(data):
     try:
         import fitz
         doc = fitz.open(stream=data, filetype="pdf")
-        return [re.sub(r"\s+", " ", p.get_text()).strip()[:7000] for p in doc][:60]
+        return [re.sub(r"\s+", " ", p.get_text().replace(chr(0), " ")).strip()[:7000] for p in doc][:60]
     except Exception as e:
         print("page texts skipped:", str(e)[:100]); return []
 
@@ -218,6 +218,8 @@ def llm_one(mid, system, user, attempt=0):
         if fixed is None: raise
         return fixed, usage
 
+RK_DEAD_UNTIL = [0.0]
+
 def llm(system, user, model="deepseek"):
     """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
     The gateway's model list sometimes goes empty for a minute or two ("Invalid model name"), so a model that answers like that is waited out, not dropped."""
@@ -225,6 +227,7 @@ def llm(system, user, model="deepseek"):
     elif model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
     elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"
     order = [model] + [m for m in MODEL_ORDER if m != model]
+    if time.time() < RK_DEAD_UNTIL[0]: order = [m for m in order if m != "rkapi"] or order   # the gateway just failed every call: do not spend a minute on it for each section
     last = None; t_end = time.time() + 300
     for mid in order:
         patient = mid in ("relay", "paratera")
@@ -239,7 +242,9 @@ def llm(system, user, model="deepseek"):
                     time.sleep(min(6 + attempt * 2, 16)); continue   # no deployments for a moment: wait and ask again
                 if mid == "rkapi" and e.code in (429, 500, 502, 503, 504) and attempt < 2:
                     time.sleep(4 * (attempt + 1)); continue   # a busy moment on the gateway (several sections ask at once): ask again before giving up on it
-                if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
+                if e.code in (401, 402, 403, 429, 502, 503):   # out of credit, no access or busy: try the next model
+                    if mid == "rkapi": RK_DEAD_UNTIL[0] = time.time() + 600
+                    break
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
                 if patient: time.sleep(4)

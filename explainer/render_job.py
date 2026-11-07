@@ -227,7 +227,10 @@ try:
                     rows.append({"t": round(offsets[lg][n][0] + span * acc / tot, 1), "sec": n, "x": (s_.get(lg) or "")[:220], "pg": page_of(ev) if ev else None, "ev": ev[:200]})
                     acc += s_["dur"]
             timeline[lg] = rows
-        update(timeline=timeline, **({"paper_pages": [p[:5000] for p in pages]} if pages else {}))
+        update(timeline=timeline)
+        if pages:   # a PDF page can carry NUL characters, which the database refuses in text: strip them, and never let this cost the timeline
+            try: update(paper_pages=[p.replace(chr(0), "")[:5000] for p in pages])
+            except Exception as e: print("paper pages skipped:", str(e)[:120])
     except Exception as e: print("timeline skipped:", str(e)[:160])
     update(status="done", stage=None, videos=videos, **cost_fields())
     record_r2_usage()
