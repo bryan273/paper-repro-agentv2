@@ -12,6 +12,9 @@ if os.path.exists(_dotenv):
         if "=" in line and not line.startswith("#"):
             k, v = line.rstrip("\n").split("=", 1); ENV.setdefault(k, v.strip().strip('"'))
 
+def get_bytes(url, ms=40):
+    return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (paper-explainer)"}), timeout=ms).read(30_000_000)
+
 def get(url, ms=40):
     return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "paper-explainer/0.1"}), timeout=ms).read().decode("utf-8", "ignore")
 
@@ -55,6 +58,15 @@ def paper_url(url):
     if len(text) < 1500: raise RuntimeError("Could not read enough text from that link. Try a direct PDF link.")
     return title[:200], text[:1500], text[:60000]
 
+def page_texts(data):
+    """The text of each page of a PDF (so an answer or a scene can say which page its sentence is on). Best effort: [] if the PDF cannot be read."""
+    try:
+        import fitz
+        doc = fitz.open(stream=data, filetype="pdf")
+        return [re.sub(r"\s+", " ", p.get_text()).strip()[:7000] for p in doc][:60]
+    except Exception as e:
+        print("page texts skipped:", str(e)[:100]); return []
+
 def paper_file(path):
     """A PDF the visitor uploaded (already saved on this machine). Returns (title, abstract, text)."""
     import fitz
@@ -81,7 +93,7 @@ def paper(arxiv):
 
 SYSTEM = """You turn one research paper into a short, accurate explainer video script. Return ONLY JSON.
 Style: {TONE} Never invent facts or numbers: every number or claim must come from the PAPER TEXT given.
-Schema: {"title":str,"section":{"title":str(max 7 words, names what the section is about, never the paper title),"title_zh":str,"text":str(2 to 3 plain sentences that explain the content itself as a reader would want it, e.g. "Older models read a sentence one word at a time, which is slow..."; never write \"this part\" or \"this section\"),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (one spoken sentence, max 22 words), "zh" (the same sentence in Chinese, natural),
+Schema: {"title":str,"section":{"title":str(max 7 words, names what the section is about, never the paper title),"title_zh":str,"text":str(2 to 3 plain sentences that explain the content itself as a reader would want it, e.g. "Older models read a sentence one word at a time, which is slow..."; never write \"this part\" or \"this section\"),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (the spoken narration of this scene: 2 sentences, 18 to 32 words, that flow as continuous speech; title and end scenes use one short sentence), "zh" (the same narration in natural spoken Chinese, not a word-for-word translation),
 "evidence" (a verbatim quote of at most 25 words copied exactly from the paper text that supports the scene, or null for title/end), plus fields by type:
 - "title": {"big":str,"sub":str}  (big = 1-2 words, sub = short line; first scene)
 - "cards": {"cards":[{"h":str(max 3 words),"t":str(max 9 words)}, 2 to 4 items]}  (use for problem / ideas / comparison)
@@ -90,7 +102,7 @@ Schema: {"title":str,"section":{"title":str(max 7 words, names what the section 
 - "number": {"value":number,"unit":str,"label":str,"bars":[{"label":str,"value":number}...] optional}  (a headline result; value must appear in the paper)
 - "quote": {"text":str,"source":str}  (text must be a verbatim quote)
 - "end": {"big":str,"sub":str,"note":str}  (last scene)
-{ORDER} Total spoken length about {SECONDS} seconds at normal speed (about {WORDS} words in all, counting English only). Each scene is one short sentence; use as many scenes as that length needs and vary the scene types.{CUSTOM}"""
+{ORDER} Total spoken length about {SECONDS} seconds at normal speed (about {WORDS} words in all, counting English only). Write it as one person talking to a friend, not as a list of captions: join the scenes with natural transitions ("So", "Here is the catch", "That is why", "Now"), start the next scene from where the last one stopped, never repeat what an earlier scene already said, and make an abstract idea concrete with one short example or analogy when it helps. Use as many scenes as that length needs and vary the scene types.{CUSTOM}"""
 
 TONES = {
     "teacher": "simple words, one idea per scene, like a clear teacher.",
@@ -103,12 +115,33 @@ SECTIONS = ["the problem and why it matters", "what earlier approaches did and w
             "how it works and is trained, step by step", "the experimental setup", "the main results", "ablations and what drives the results",
             "limits and open questions", "what it means and the takeaway"]
 
+PLAN_SYSTEM = """You plan a short explainer video about one research paper that is told in {N} consecutive sections. Return ONLY JSON: {"sections":[{"title":str(max 7 words),"focus":str(one sentence),"points":[3 or 4 short concrete points from the paper this section explains, each a different fact, method step or number]}]} with exactly {N} sections.
+Rules: the sections follow the paper's own logic (problem, idea, method, evidence, meaning) and tell one story from first to last; no point appears in two sections; every point comes from the PAPER TEXT; the last section ends on what it means for the reader."""
+
+def plan_sections(title, text, n, model):
+    """One cheap call that decides what each section covers, so the sections written in parallel do not repeat each other."""
+    try:
+        r, _ = llm(PLAN_SYSTEM.replace("{N}", str(n)), f"TITLE: {title}\n\nPAPER TEXT:\n{text[:30000]}", model)
+        sec = r.get("sections") or []
+        if len(sec) == n and all(isinstance(x, dict) and x.get("title") for x in sec): return sec
+    except Exception as e: print("plan skipped:", str(e)[:120], flush=True)
+    return None
+
 def part_plan(seconds):
     """The video is written as sections of roughly 50 seconds, each its own short video, so no single model call has to write it all."""
     n = max(1, min(10, round(seconds / 50)))
     return n, [round(seconds / n)] * n
 
-def order_for(i, n):
+def order_for(i, n, plan=None):
+    if n > 1 and plan and len(plan) == n:
+        me = plan[i]; others = "; ".join(f"{k + 1}. {p['title']}" for k, p in enumerate(plan) if k != i)
+        before = f" The section before this one covered: {plan[i - 1]['title']}; continue from there without recapping it." if i else ""
+        after = f" The section after this one covers: {plan[i + 1]['title']}; leave that to it." if i < n - 1 else ""
+        pts = "; ".join(me.get("points") or [])
+        return (f"This is section {i + 1} of {n} of one video; each section is a short video of its own, and together they tell one story. This section is about: {me['title']} ({me.get('focus', '')}). "
+                f"Cover these points, in this order: {pts}. The other sections of the video are: {others}. Do NOT cover their content here, and do not repeat it.{before}{after} "
+                + ("Start with a title scene. " if i == 0 else "Do NOT use a title scene; open straight into the point. ")
+                + ("End with an end scene." if i == n - 1 else "Do NOT use an end scene; stop after the last point of this section."))
     if n == 1: return "Order: title, problem (cards), key idea (tokens or flow), how it works (flow or cards), result (number), end."
     L = len(SECTIONS); lo, hi = i * L // n, max(i * L // n, (i + 1) * L // n - 1)
     focus = "; then ".join(SECTIONS[lo:hi + 1])
@@ -125,6 +158,31 @@ MODELS = {   # selectable script writers: id -> (base url, model name, env key, 
 MODELS["rkapi"] = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1", os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001"), "RKAPI_API_KEY", {})
 MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
 MODEL_ORDER = ["rkapi", "relay", "deepseek", "paratera", "stepfun"]
+
+def lenient_json(txt):
+    """A model that stops mid-answer or leaves one bad quote: keep everything up to the last complete value instead of losing the whole call."""
+    start = txt.find("{")
+    if start < 0: return None
+    body = txt[start:]; tries = 0
+    p = body.rfind("}")
+    while p > 0 and tries < 80:
+        stack, in_str, esc = [], False, False
+        for ch in body[:p + 1]:
+            if in_str:
+                if esc: esc = False
+                elif ch == chr(92): esc = True
+                elif ch == '"': in_str = False
+                continue
+            if ch == '"': in_str = True
+            elif ch in "{[": stack.append("}" if ch == "{" else "]")
+            elif ch in "}]" and stack: stack.pop()
+        if not in_str:
+            try:
+                v = json.loads(body[:p + 1] + "".join(reversed(stack)))
+                if isinstance(v, dict) and v.get("scenes"): return v
+            except Exception: pass
+        p = body.rfind("}", 0, p); tries += 1
+    return None
 
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
@@ -154,7 +212,11 @@ def llm_one(mid, system, user, attempt=0):
         _u.rec(name, usage.get("prompt_tokens"), usage.get("completion_tokens"), system + user, txt, "script")
     except Exception: pass
     m = re.search(r"\{.*\}", txt, re.S)
-    return json.loads(m.group(0) if m else txt), usage
+    try: return json.loads(m.group(0) if m else txt), usage
+    except json.JSONDecodeError:
+        fixed = lenient_json(txt)
+        if fixed is None: raise
+        return fixed, usage
 
 def llm(system, user, model="deepseek"):
     """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
@@ -167,7 +229,7 @@ def llm(system, user, model="deepseek"):
     for mid in order:
         patient = mid in ("relay", "paratera")
         if mid == "rkapi" and not ENV.get("RKAPI_API_KEY"): continue
-        for attempt in range(6 if patient else 2):
+        for attempt in range(6 if patient else 3):
             if time.time() > t_end and last is not None: break
             try:
                 sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
@@ -175,6 +237,8 @@ def llm(system, user, model="deepseek"):
                 last = e; body = e.read()[:200]; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {body!r}", flush=True)
                 if patient and (e.code in (429, 500, 502, 503, 504) or (e.code == 400 and b"Invalid model name" in body)):
                     time.sleep(min(6 + attempt * 2, 16)); continue   # no deployments for a moment: wait and ask again
+                if mid == "rkapi" and e.code in (429, 500, 502, 503, 504) and attempt < 2:
+                    time.sleep(4 * (attempt + 1)); continue   # a busy moment on the gateway (several sections ask at once): ask again before giving up on it
                 if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
@@ -237,17 +301,29 @@ async def tts(text, voice, path):
             last = e; await asyncio.sleep(1.5)
     raise RuntimeError(f"tts failed: {last}")
 
+def trim_tail(path):
+    """The speech engine leaves about half a second of silence after every clip; with many clips that reads as a stop after every sentence."""
+    tmp = path[:-4] + ".trim.mp3"
+    af = "areverse,silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.12,areverse"
+    r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-af", af, "-c:a", "libmp3lame", "-q:a", "4", tmp], capture_output=True)
+    if r.returncode == 0 and os.path.exists(tmp) and os.path.getsize(tmp) > 2000: os.replace(tmp, path)
+    elif os.path.exists(tmp): os.remove(tmp)
+
 def dur_ms(path):
     return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path]).decode().strip()) * 1000
 
 async def main():
     ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--file", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
-    ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default="")
+    ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default=""); ap.add_argument("--langs", default="both")
     a = ap.parse_args()
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
     LABEL = 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     try:
         title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text)); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
+        try:
+            pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
+            if pdf[:5] == b"%PDF-": json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
+        except Exception as e: print("pdf pages skipped:", str(e)[:100])
     except Exception as e:
         # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
         note = str(e) if isinstance(e, RuntimeError) else "We could not find or open that paper. Check the link or arXiv id and try again."
@@ -259,8 +335,10 @@ async def main():
     else:
         n, secs = part_plan(a.seconds)
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
+        plan = plan_sections(title, text, n, a.model) if n > 1 else None
+        print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         def one(i):
-            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom)
+            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom)
             return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model)
         if n == 1:
             sc, usage = one(0)
@@ -268,7 +346,7 @@ async def main():
             sc["sections"] = [sc.pop("section", None) or {}]
         else:
             from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(max_workers=2) as ex: results = list(ex.map(one, range(n)))
+            with ThreadPoolExecutor(max_workers=min(n, 5)) as ex: results = list(ex.map(one, range(n)))
             sc = {"title": results[0][0].get("title") or title, "scenes": [], "sections": []}
             for k, (r, _) in enumerate(results):
                 for x in (r.get("scenes") or []): x["sec"] = k; sc["scenes"].append(x)
@@ -279,26 +357,29 @@ async def main():
         normalize(sc); bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file) else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    for lang, voice in (("en", a.voice_en), ("zh", a.voice_zh)):
+    LANGS = ["en", "zh"] if a.langs == "both" else [a.langs]   # a viewer who needs one language does not wait for the other
+    VOICE = {"en": a.voice_en, "zh": a.voice_zh}
+    gate = asyncio.Semaphore(8)   # narration is a few clips per section: fetch them side by side, in every language at once
+    async def clip(lang, i, s):
+        p = os.path.join(out, f"{lang}_{i}.mp3")
+        if not (os.path.exists(p) and os.path.getsize(p) > 2000):
+            async with gate: await tts(s[lang], VOICE[lang], p)
+            trim_tail(p)
+    await asyncio.gather(*(clip(lg, i, s) for lg in LANGS for i, s in enumerate(sc["scenes"])))
+    for lang in LANGS:
         scenes = json.loads(json.dumps(sc["scenes"]))
-        gate = asyncio.Semaphore(4)   # narration for a long video is many short clips: fetch a few at a time
-        async def clip(i, s):
-            p = os.path.join(out, f"{lang}_{i}.mp3")
-            if not (os.path.exists(p) and os.path.getsize(p) > 2000):
-                async with gate: await tts(s[lang], voice, p)
-        await asyncio.gather(*(clip(i, s) for i, s in enumerate(scenes)))
         for i, s in enumerate(scenes):
             p = os.path.join(out, f"{lang}_{i}.mp3")
-            s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 900, 3200))
-            if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 4200)
+            s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 350, 2600))   # a small breath after each scene, not a pause
+            if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 3600)
             if s.get("evidence") is not None: s["evidence"] = f"{LABEL} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else LABEL
             elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
-        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
+        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))
         for k in range(len(sc.get("sections") or [])):
             part = [s for s in scenes if s.get("sec") == k]
-            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
+            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
                                open(os.path.join(out, f"script_{lang}_s{k}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     meta = []
     for k, sec in enumerate(sc.get("sections") or []):

@@ -67,3 +67,6 @@ create table if not exists public.explainer_chats (
   primary key (job_id, owner)
 );
 alter table public.explainer_chats enable row level security;
+alter table public.explainer_jobs add column if not exists langs text;
+alter table public.explainer_jobs add column if not exists timeline jsonb;
+alter table public.explainer_jobs add column if not exists paper_pages jsonb;

@@ -39,7 +39,7 @@
   if (st && stt) { const sync = () => { st.title = stt.textContent; }; sync(); new MutationObserver(sync).observe(stt, { childList: true, characterData: true, subtree: true }); }
 
   function mark(name) {
-    $$(".tbnav a, .tbsheet a").forEach((a) => a.classList.toggle("on", !!((a.dataset.pane && a.dataset.pane === name) || (a.dataset.page && a.dataset.page === name))));
+    $$(".tbsub a, .tbsheet a").forEach((a) => a.classList.toggle("on", !!((a.dataset.pane && a.dataset.pane === name) || (a.dataset.page && a.dataset.page === name))));
   }
   if (!onIndex) { mark(document.body.dataset.page || ""); return; }
 
@@ -60,7 +60,7 @@
     openMenu(false);
     if (!viaHash) { e.preventDefault(); history.replaceState(null, "", location.pathname + "#start"); setPane("start"); }
   });
-  $$(".tbnav a[data-pane], .tbsheet a[data-pane]").forEach((a) => a.addEventListener("click", (e) => {
+  $$(".tbsub a[data-pane], .tbsheet a[data-pane]").forEach((a) => a.addEventListener("click", (e) => {
     openMenu(false);
     e.preventDefault();
     if (location.hash !== "#" + a.dataset.pane) history.pushState(null, "", "#" + a.dataset.pane);

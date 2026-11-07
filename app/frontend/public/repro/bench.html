@@ -17,38 +17,43 @@ body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-appl
 </head>
 <body class="benchpage" data-page="bench">
 <header class="tb" id="tb">
-  <a class="brand" href="index.html#start" id="homeBtn" aria-label="Home"><span class="logo" aria-hidden="true">R</span><b>Paper Repro Agent</b></a>
-  <nav class="tbnav" aria-label="Main">
-    <a href="index.html#start" data-pane="start">Reproduce</a>
-    <a href="index.html#papers" data-pane="papers">Papers</a>
-    <a href="index.html#runs" data-pane="runs">Runs</a>
-    <a href="bench.html" data-page="bench">Benchmark</a>
-    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">Paper Repro Suite <span aria-hidden="true">&#9662;</span></button>
+ <div class="tbrow">
+  <a class="brand" href="https://bryan273.github.io/repro-suite/hub/" aria-label="Repro Suite home"><span class="logo" aria-hidden="true">R</span><b>Repro Suite</b></a>
+  <nav class="tbnav" aria-label="Repro Suite">
+    <a href="https://bryan273.github.io/repro-suite/explainer/">Explain</a>
+    <a href="https://bryan273.github.io/repro-suite/repro/index.html">Check</a>
+    <a href="https://bryan273.github.io/repro-suite/lite/">Quick check</a>
+    <a href="https://bryan273.github.io/repro-suite/reading/">Read</a>
+    <a href="https://bryan273.github.io/repro-suite/indexboard/">Boards</a>
+    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">More <span aria-hidden="true">&#9662;</span></button>
       <div class="suitemenu" id="suiteMenu" hidden>
-        <a href="https://bryan273.github.io/repro-suite/explainer/"><b>Paper Explainer</b><span>Turn a paper into a short narrated video</span></a>
-        <a href="https://bryan273.github.io/repro-suite/lite/"><b>Repro Lite</b><span>Check one claim in your browser</span></a>
-        <a href="https://bryan273.github.io/repro-suite/reading/"><b>Reading Companion</b><span>Read arXiv papers with cited answers</span></a>
-        <a href="https://bryan273.github.io/repro-suite/indexboard/b/5dhum9j5h0"><b>IndexBoard</b><span>Honest leaderboards with ties</span></a>
-        <a href="https://bryan273.github.io/repro-suite/desk/"><b>Repro Desk</b><span>Ask for a human-checked reproduction</span></a>
-        <a href="https://bryan273.github.io/repro-suite/hub/"><b>All apps</b><span>The Repro Suite home</span></a>
+        <a href="https://bryan273.github.io/repro-suite/desk/"><b>Human check</b><span>Ask for a human-checked reproduction</span></a>
+        <a href="https://bryan273.github.io/repro-suite/hub/"><b>Overview</b><span>The Repro Suite home</span></a>
       </div></div>
   </nav>
   <div class="tbact" id="themeSlot"><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button><button class="ghost icon" id="menuBtn" type="button" aria-label="Menu" aria-controls="tbsheet" aria-expanded="false">&#9776;</button></div>
+ </div>
+ <nav class="tbsub" aria-label="Check a paper">
+    <a href="index.html#start" id="homeBtn" data-pane="start">Reproduce</a>
+    <a href="index.html#papers" data-pane="papers">Papers</a>
+    <a href="index.html#runs" data-pane="runs">Runs</a>
+    <a href="bench.html" data-page="bench">Benchmark</a>
+ </nav>
 </header>
 <div class="tbsheet" id="tbsheet">
-  <div class="navh">Reproduce</div>
+  <div class="navh">Repro Suite</div>
+  <a href="https://bryan273.github.io/repro-suite/explainer/">Explain</a>
+  <a href="https://bryan273.github.io/repro-suite/repro/index.html">Check</a>
+  <a href="https://bryan273.github.io/repro-suite/lite/">Quick check</a>
+  <a href="https://bryan273.github.io/repro-suite/reading/">Read</a>
+  <a href="https://bryan273.github.io/repro-suite/indexboard/">Boards</a>
+  <a href="https://bryan273.github.io/repro-suite/desk/">Human check</a>
+  <a href="https://bryan273.github.io/repro-suite/hub/">Overview</a>
+  <div class="navh">Check a paper</div>
   <a href="index.html#start" data-pane="start">Reproduce a paper</a>
   <a href="index.html#papers" data-pane="papers">Browse papers</a>
   <a href="index.html#runs" data-pane="runs">Completed runs</a>
   <a href="bench.html" data-page="bench">Benchmark</a>
-  <div class="navh">Learn</div>
-  <a href="https://bryan273.github.io/repro-suite/explainer/">Paper Explainer</a>
-  <div class="navh">Paper Repro Suite</div>
-  <a href="https://bryan273.github.io/repro-suite/lite/">Repro Lite</a>
-  <a href="https://bryan273.github.io/repro-suite/reading/">Reading Companion</a>
-  <a href="https://bryan273.github.io/repro-suite/indexboard/b/5dhum9j5h0">IndexBoard</a>
-  <a href="https://bryan273.github.io/repro-suite/desk/">Repro Desk</a>
-  <a href="https://bryan273.github.io/repro-suite/hub/">All apps</a>
 </div>
 
 <main class="bench" id="bench"><p class="muted">Loading...</p></main>
