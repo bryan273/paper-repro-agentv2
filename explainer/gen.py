@@ -159,6 +159,31 @@ MODELS["rkapi"] = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1"
 MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
 MODEL_ORDER = ["rkapi", "relay", "deepseek", "paratera", "stepfun"]
 
+def lenient_json(txt):
+    """A model that stops mid-answer or leaves one bad quote: keep everything up to the last complete value instead of losing the whole call."""
+    start = txt.find("{")
+    if start < 0: return None
+    body = txt[start:]; tries = 0
+    p = body.rfind("}")
+    while p > 0 and tries < 80:
+        stack, in_str, esc = [], False, False
+        for ch in body[:p + 1]:
+            if in_str:
+                if esc: esc = False
+                elif ch == chr(92): esc = True
+                elif ch == '"': in_str = False
+                continue
+            if ch == '"': in_str = True
+            elif ch in "{[": stack.append("}" if ch == "{" else "]")
+            elif ch in "}]" and stack: stack.pop()
+        if not in_str:
+            try:
+                v = json.loads(body[:p + 1] + "".join(reversed(stack)))
+                if isinstance(v, dict) and v.get("scenes"): return v
+            except Exception: pass
+        p = body.rfind("}", 0, p); tries += 1
+    return None
+
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
@@ -187,7 +212,11 @@ def llm_one(mid, system, user, attempt=0):
         _u.rec(name, usage.get("prompt_tokens"), usage.get("completion_tokens"), system + user, txt, "script")
     except Exception: pass
     m = re.search(r"\{.*\}", txt, re.S)
-    return json.loads(m.group(0) if m else txt), usage
+    try: return json.loads(m.group(0) if m else txt), usage
+    except json.JSONDecodeError:
+        fixed = lenient_json(txt)
+        if fixed is None: raise
+        return fixed, usage
 
 def llm(system, user, model="deepseek"):
     """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
