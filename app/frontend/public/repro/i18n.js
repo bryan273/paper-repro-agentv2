@@ -531,7 +531,7 @@
     "Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.":
       "输入 arXiv 编号，即可得到这篇论文的讲解短视频，配有中英文旁白。视频中的每句引文和每个数字都会与论文原文核对。",
     "Watch an explainer →": "观看讲解视频 →", "Supporting tools": "辅助工具",
-    "Reproduce": "复现", "Learn": "学习", "Tools": "工具", "Start a reproduction": "开始复现", "Browse papers": "浏览论文",
+    "Reproduce": "复现", "Explain": "解说", "Check": "复现核验", "Quick check": "快速核验", "Read": "阅读", "Boards": "榜单", "Human check": "人工核对", "Overview": "总览", "More": "更多", "Check a paper": "核验论文", "Repro Suite": "Repro Suite", "Learn": "学习", "Tools": "工具", "Start a reproduction": "开始复现", "Browse papers": "浏览论文",
     "Completed runs": "已完成的运行", "All apps": "全部应用", "part of Repro Suite": "Repro Suite 的一部分", "Library": "论文库", "Results": "结果",
     "Papers grouped by research group, with the verdict of every paper already reproduced. Pick one to start a reproduction.":
       "按课题组整理的论文，已复现的论文会显示结论。选一篇即可开始复现。",
