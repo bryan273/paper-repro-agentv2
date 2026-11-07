@@ -28,3 +28,19 @@ alter table explainer_jobs add column if not exists custom text not null default
 
 -- a video is made of sections, each its own short video; the page shows them one by one as they finish
 alter table explainer_jobs add column if not exists sections jsonb;
+
+-- PDF uploads: a private bucket (20 MB, PDF only) and the bookkeeping that ties each file to a visitor and, once used, to a job.
+-- The renderer deletes the file when the job ends; scripts/uploads_sweep.py removes the ones that never became a job.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('explainer-uploads', 'explainer-uploads', false, 20971520, array['application/pdf'])
+on conflict (id) do update set public = false, file_size_limit = 20971520, allowed_mime_types = array['application/pdf'];
+create table if not exists public.explainer_uploads (
+  path text primary key,
+  actor text not null,
+  name text,
+  size bigint,
+  job_id uuid,
+  created_at timestamptz not null default now()
+);
+create index if not exists explainer_uploads_actor on public.explainer_uploads (actor, created_at desc);
+alter table public.explainer_uploads enable row level security;   -- no policies: only the service role reads or writes

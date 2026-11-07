@@ -55,6 +55,20 @@ def paper_url(url):
     if len(text) < 1500: raise RuntimeError("Could not read enough text from that link. Try a direct PDF link.")
     return title[:200], text[:1500], text[:60000]
 
+def paper_file(path):
+    """A PDF the visitor uploaded (already saved on this machine). Returns (title, abstract, text)."""
+    import fitz
+    data = open(path, "rb").read(30_000_000)
+    if data[:5] != b"%PDF-": raise RuntimeError("That file is not a PDF.")
+    try: doc = fitz.open(stream=data, filetype="pdf")
+    except Exception: raise RuntimeError("That PDF could not be opened. It may be damaged or password protected.")
+    text = "\n".join(p.get_text() for p in doc)
+    title = (doc.metadata or {}).get("title") or ""
+    if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
+    text = re.sub(r"[ \t]+", " ", text).strip()
+    if len(text) < 1500: raise RuntimeError("Could not read enough text from that PDF. Scanned pages without text are not supported.")
+    return title[:200], text[:1500], text[:60000]
+
 def paper(arxiv):
     xml = get(f"https://export.arxiv.org/api/query?id_list={arxiv}")
     title = re.sub(r"\s+", " ", re.search(r"<title>(.*?)</title>", xml.split("<entry>")[1], re.S).group(1)).strip()
@@ -227,13 +241,13 @@ def dur_ms(path):
     return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path]).decode().strip()) * 1000
 
 async def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
+    ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--file", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
     ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default="")
     a = ap.parse_args()
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
-    LABEL = (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
+    LABEL = 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     try:
-        title, abstract, text = paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
+        title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text))
     except Exception as e:
         # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
         note = str(e) if isinstance(e, RuntimeError) else "We could not find or open that paper. Check the link or arXiv id and try again."
@@ -263,7 +277,7 @@ async def main():
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
         normalize(sc); bad = verify(sc, text); print("unverified:", bad)
-        sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if a.url else title; sc["unverified"] = [str(b) for b in bad]
+        sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file) else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     for lang, voice in (("en", a.voice_en), ("zh", a.voice_zh)):
         scenes = json.loads(json.dumps(sc["scenes"]))
@@ -277,7 +291,7 @@ async def main():
             p = os.path.join(out, f"{lang}_{i}.mp3")
             s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 900, 3200))
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 4200)
-            if s.get("evidence") is not None: s["evidence"] = f"arXiv:{a.arxiv} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else f"arXiv:{a.arxiv}"
+            if s.get("evidence") is not None: s["evidence"] = f"{LABEL} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else LABEL
             elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
         json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

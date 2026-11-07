@@ -119,8 +119,15 @@ except Exception as e:
     print("could not claim the job:", e); sys.exit(0)
 if not got:
     print("job is not queued any more (another renderer has it), nothing to do"); sys.exit(0)
+# a PDF the visitor uploaded: copy it from the private bucket next to the work files; it is deleted again when the job ends
+UP_PATH = (row.get("source_url") or "")[len("upload:"):] if (row.get("source_url") or "").startswith("upload:") else ""
+upfile = ""
 try:
-    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--url", row["source_url"]] if row.get("source_url") else []))
+    if UP_PATH:
+        os.makedirs(d, exist_ok=True); upfile = os.path.join(d, "upload.pdf")
+        r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
+        with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
+    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
     update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the sections")
@@ -206,3 +213,7 @@ except Exception as e:
         msg = f"The video stopped while {what}. Please try again; no daily quota was used."
     update(status="failed", stage=None, error=msg[:400], **cost_fields())
     sys.exit(1)
+finally:
+    if UP_PATH:   # the visitor's file is private: gone as soon as the job is over, whatever the outcome
+        try: req("DELETE", "/storage/v1/object/explainer-uploads", {"prefixes": [UP_PATH]})
+        except Exception as e_: print("upload cleanup skipped:", str(e_)[:120])
