@@ -8,6 +8,9 @@ if FONT:
 
 def wrap(s, n=22):
     """Break a label into lines of at most n characters (on spaces)."""
+    if re.search(r"[\u4e00-\u9fff]", str(s)) and " " not in str(s).strip():   # Chinese has no spaces: break it every few characters
+        t = str(s).strip(); step = max(4, n // 2)
+        return "\n".join(t[i:i + step] for i in range(0, len(t), step)) or t
     words, lines, cur = str(s).split(), [], ""
     for w in words:
         if cur and len(cur) + 1 + len(w) > n:

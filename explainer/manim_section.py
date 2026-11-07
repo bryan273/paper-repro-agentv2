@@ -48,7 +48,7 @@ BG, ACCENT, ACCENT2, TEXT, MUTED = "{BG}", "{ACC}", "{ACC2}", "{TXT}", "{MUT}"
 BEATS = {beats!r}
 CUES = {CUES!r}
 PALETTE = [ACCENT, ACCENT2, "#ffb547", "#ff6b9a", "#a78bfa"]
-FONT = {('"Inter"' if os.name != "nt" else '""')}
+FONT = {('"Noto Sans CJK SC"' if LANGS == ["zh"] else '"Inter"') if os.name != "nt" else '""'}
 ICON_DIR = {os.path.join(ROOT, "icons")!r}
 '''
 HARNESS_BODY = open(os.path.join(ROOT, "kit.py"), encoding="utf-8").read() + r'''
