@@ -96,7 +96,7 @@ def main():
         if DRY:
             continue
         remove_prefix(prefix)
-        sbcall("PATCH", "/rest/v1/explainer_jobs?id=eq.%s" % jid, {"expired_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "videos": {}})
+        sbcall("PATCH", "/rest/v1/explainer_jobs?id=eq.%s" % jid, {"expired_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "videos": {}, "paper_text": None})
     # leftovers of deleted jobs
     ids = [j["id"] for j in json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_jobs?select=id&limit=5000", headers=hdr), timeout=60))]
     orphans = pick_orphans(dict(newest), ids, datetime.datetime.now(datetime.timezone.utc))
