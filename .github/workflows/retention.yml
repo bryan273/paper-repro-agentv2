@@ -34,3 +34,8 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
           R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
         run: python scripts/r2_maintain.py ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+      - name: Remove uploaded PDFs that never became a video
+        env:
+          SUPABASE_URL: https://wzdkroxbfrlqijbeiwpk.supabase.co
+          SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+        run: python scripts/uploads_sweep.py ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
