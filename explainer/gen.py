@@ -374,12 +374,12 @@ async def main():
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 3600)
             if s.get("evidence") is not None: s["evidence"] = f"{LABEL} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else LABEL
             elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
-        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
+        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))
         for k in range(len(sc.get("sections") or [])):
             part = [s for s in scenes if s.get("sec") == k]
-            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
+            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
                                open(os.path.join(out, f"script_{lang}_s{k}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     meta = []
     for k, sec in enumerate(sc.get("sections") or []):

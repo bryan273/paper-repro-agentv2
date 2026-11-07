@@ -130,7 +130,7 @@ function show(i){
   // a scene with odd data (cards as text, missing nodes) must not stop the recording: fall back to a plain title card
   ["cards","nodes","bars"].forEach(k=>{if(sc[k]!=null&&!Array.isArray(sc[k]))sc[k]=typeof sc[k]==="object"?Object.values(sc[k]):[];});
   try{(B[sc.type]||B.cards)(sc,sc.dur);}catch(e){console.error("scene",i,e);scene.innerHTML="";try{B.title({...sc,type:"title",title:sc.title||sc.heading||""},sc.dur);}catch(_){}}
-  $("#zh").textContent=sc.zh||"";$("#en").textContent=sc.en||"";
+  const mono=!!S.mono;$("#zh").textContent=mono?(sc[S.lang]||""):(sc.zh||"");$("#en").textContent=mono?"":(sc.en||"");$("#zh").style.fontSize=(mono&&S.lang==="en")?"1.9em":"";
   $("#srcline").textContent=sc.evidence?("Source: "+sc.evidence):"";
   $("#badge").textContent=(i+1)+" / "+S.scenes.length;
   if(audioOn&&sc.audio&&!P.has("rec")){playAudio(sc.audio);}else if(audioOn&&!sc.audio&&P.has("speak")){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(P.get("speak")==="zh"?sc.zh:sc.en);u.lang=P.get("speak")==="zh"?"zh-CN":"en-US";u.rate=1.02;speechSynthesis.speak(u);}catch(e){}}
