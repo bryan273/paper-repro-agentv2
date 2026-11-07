@@ -128,6 +128,8 @@ try:
         r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
     run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
+    except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
     update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the sections")

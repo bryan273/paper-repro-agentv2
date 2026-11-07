@@ -44,3 +44,26 @@ create table if not exists public.explainer_uploads (
 );
 create index if not exists explainer_uploads_actor on public.explainer_uploads (actor, created_at desc);
 alter table public.explainer_uploads enable row level security;   -- no policies: only the service role reads or writes
+
+-- Ask tab: the paper text kept with a finished video (removed with the video when it expires), a per-visitor question counter,
+-- and each visitor's saved chat per video.
+alter table public.explainer_jobs add column if not exists paper_text text;
+create table if not exists public.explainer_asks (
+  id bigint generated always as identity primary key,
+  job_id uuid,
+  actor text not null,
+  user_id uuid,
+  intent text,
+  tokens int not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists explainer_asks_actor on public.explainer_asks (actor, created_at desc);
+alter table public.explainer_asks enable row level security;
+create table if not exists public.explainer_chats (
+  job_id uuid not null,
+  owner text not null,
+  messages jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (job_id, owner)
+);
+alter table public.explainer_chats enable row level security;
