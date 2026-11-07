@@ -334,11 +334,12 @@ async def main():
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
         n, secs = part_plan(a.seconds)
+        lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else ""
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
         plan = plan_sections(title, text, n, a.model) if n > 1 else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         def one(i):
-            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom)
+            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note)
             return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model)
         if n == 1:
             sc, usage = one(0)
