@@ -774,3 +774,6 @@ html { scroll-behavior: smooth; }
 /* touch targets */
 .pipesteps button { min-height: 44px; }
 .tb .brand { min-height: 40px; }
+
+/* the account button joins the top bar: make room on a phone */
+@media(max-width:560px){.tbact #status{display:none}.tbact .hlab{display:none}}
