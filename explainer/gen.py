@@ -200,7 +200,7 @@ def llm(system, user, model="deepseek"):
     for mid in order:
         patient = mid in ("relay", "paratera")
         if mid == "rkapi" and not ENV.get("RKAPI_API_KEY"): continue
-        for attempt in range(6 if patient else 2):
+        for attempt in range(6 if patient else 3):
             if time.time() > t_end and last is not None: break
             try:
                 sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
@@ -208,6 +208,8 @@ def llm(system, user, model="deepseek"):
                 last = e; body = e.read()[:200]; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {body!r}", flush=True)
                 if patient and (e.code in (429, 500, 502, 503, 504) or (e.code == 400 and b"Invalid model name" in body)):
                     time.sleep(min(6 + attempt * 2, 16)); continue   # no deployments for a moment: wait and ask again
+                if mid == "rkapi" and e.code in (429, 500, 502, 503, 504) and attempt < 2:
+                    time.sleep(4 * (attempt + 1)); continue   # a busy moment on the gateway (several sections ask at once): ask again before giving up on it
                 if e.code in (401, 402, 403, 429, 502, 503): break   # out of credit, no access or busy: try the next model
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
