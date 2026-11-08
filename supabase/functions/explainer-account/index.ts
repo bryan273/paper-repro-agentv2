@@ -31,6 +31,18 @@ const planInfo = async (userId: string | undefined): Promise<{ plan: string | nu
   return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until } : { plan: null, plan_until: until };
 };
 
+// Students: a school e-mail (.edu, .ac.xx, .edu.xx) may claim 3 months of the Plus features (interactive checks, unlimited Deep questions) once. No free videos come with it,
+// because the e-mail address is not verified; the cost of a wrong claim is a few AI calls.
+const STUDENT_RE = /(^|\.)(edu|ac)(\.[a-z]{2,3})?$/i;
+const STUDENT_DAYS = 92;
+const studentEligible = async (user: { id: string; username: string } | null): Promise<boolean> => {
+  if (!user) return false;
+  const domain = String(user.username).split("@")[1] ?? "";
+  if (!STUDENT_RE.test(domain)) return false;
+  const evs = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&limit=30`).catch(() => []);
+  return !evs.some((e: { meta?: { source?: string } }) => e.meta?.source === "student");
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
@@ -51,7 +63,7 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ ...(await planInfo(user?.id)), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...(await planInfo(user?.id)), student_eligible: await studentEligible(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -64,6 +76,15 @@ Deno.serve(async (req) => {
       const user = await userOf(req);
       await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12) }, user?.id ?? null);
       return json({ ok: true });
+    }
+
+    if (op === "student_trial") {
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      if (!(await studentEligible(user))) return json({ error: "The student trial needs a school e-mail address (.edu or .ac) and can be claimed once.", code: "not_eligible" }, 403);
+      const until = new Date(Date.now() + STUDENT_DAYS * 86400_000).toISOString();
+      await logEvent("", "plan", { plan: "plus", until, source: "student" }, user.id);
+      return json({ ok: true, until });
     }
 
     if (op === "profile_save") {
