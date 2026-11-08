@@ -146,9 +146,11 @@ Deno.serve(async (req) => {
     const secIdx = Number.isInteger(b.section) ? Number(b.section) : -1;
     if (intent === "ask" && q.length < 2) return json({ error: "Type a question first." }, 400);
 
-    const [job] = await db(`explainer_jobs?id=eq.${jobId}&select=id,arxiv,title,status,expired_at,paper_text,sections,paper_pages,timeline`);
+    const [job] = await db(`explainer_jobs?id=eq.${jobId}&select=id,arxiv,title,status,expired_at,paper_text,sections,paper_pages,timeline,visitor`);
     if (!job || job.status !== "done") return json({ error: "Open a finished video first." }, 404);
     if (job.expired_at) return json({ error: "This video has expired, so its paper text is gone. Make it again to ask questions." }, 410);
+    // a shared link is for watching: asking, quizzes and answers need a free account, unless this browser made the video itself
+    if (!user && String(job.visitor ?? "") !== (await actorOf(req, b.visitor))) return json({ error: "Sign up free to ask questions about this video. The link lets you watch it.", code: "login_to_ask" }, 401);
 
     const qsetKey = `quizset:${jobId}:${lang}`;
     if (intent === "quizall" && !b.final) {   // the questions of the parts are written once for a video and then shared
@@ -172,7 +174,7 @@ Deno.serve(async (req) => {
       if (!user) return json({ error: "The stronger model is free to try once you sign up.", code: "deep_signup" }, 402);
       const cap = plan === "plus" ? DEEP_PER_VIDEO_PLUS : DEEP_PER_VIDEO;
       const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep&select=id`)).length;
-      if (tried >= cap) return json({ error: plan === "plus" ? `You used the ${cap} careful answers Plus gives for this video. Pro makes them unlimited.` : `You used your ${cap} free careful answers for this video. Plus gives ${DEEP_PER_VIDEO_PLUS}, Pro is unlimited.`, code: "deep_premium" }, 402);
+      if (tried >= cap) return json({ error: plan === "plus" ? `You used the ${cap} in-depth answers Plus gives for this video. Pro makes them unlimited.` : `You used your ${cap} free in-depth answers for this video. Plus gives ${DEEP_PER_VIDEO_PLUS}, Pro is unlimited.`, code: "deep_premium" }, 402);
     }
     if ((intent === "quiz" || intent === "quizall") && !isAdmin(user) && !plan) {
       const qs = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.quiz&created_at=gte.${since}&select=id`)).length;
@@ -201,7 +203,7 @@ Deno.serve(async (req) => {
     const secTitle = sec ? String((sec[`title_${lang}`] ?? sec.title) || sec.title || "") : "";
     const secText = sec ? String((sec[`text_${lang}`] ?? sec.text) || sec.text || "") : "";
     if (intent === "quiz") {
-      const qsys = `You write ONE multiple-choice question that checks whether a viewer understood one part of a research-paper video. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"question":str,"options":[str,str,str],"answer":0|1|2,"why":str}. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences saying why the right option is right, using the paper's idea. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 16000)}`;
+      const qsys = `You write ONE multiple-choice question that checks whether a viewer understood one part of a research-paper video. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"question":str,"options":[str,str,str],"answer":0|1|2,"why":str,"more":str} where "more" is a friendly, simpler re-explanation of the part in 3 or 4 sentences with one everyday example. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences saying why the right option is right, using the paper's idea. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 16000)}`;
       const qr = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
@@ -209,14 +211,14 @@ Deno.serve(async (req) => {
       });
       const qo = await qr.json().catch(() => ({}));
       if (!qr.ok) return json({ error: qo.error ?? "The tutor is busy. Please try again in a minute.", code: qo.code ?? "busy" }, qr.status === 429 ? 429 : 503);
-      let qz: { question?: string; options?: unknown; answer?: unknown; why?: string } = {};
+      let qz: { question?: string; options?: unknown; answer?: unknown; why?: string; more?: string } = {};
       try { qz = JSON.parse(String(qo.message?.content ?? "").replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); } catch { /* unreadable */ }
       const opts = Array.isArray(qz.options) ? qz.options.map((o) => String(o).slice(0, 140)).slice(0, 3) : [];
       const ans = Number(qz.answer);
       if (!qz.question || opts.length !== 3 || !(ans >= 0 && ans <= 2)) return json({ error: "Could not write a question for this part. Try again.", code: "bad_quiz" }, 502);
       const qu = qo.usage ?? {};
       await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: "quiz", tokens: (qu.prompt_tokens ?? 0) + (qu.completion_tokens ?? 0) }) });
-      return json({ quiz: { question: String(qz.question).slice(0, 300), options: opts, answer: ans, why: String(qz.why ?? "").slice(0, 400) } });
+      return json({ quiz: { question: String(qz.question).slice(0, 300), options: opts, answer: ans, why: String(qz.why ?? "").slice(0, 400), more: String((qz as { more?: string }).more ?? "").slice(0, 900) } });
     }
     if (intent === "quizall") {
       const final = !!b.final;
@@ -225,12 +227,12 @@ Deno.serve(async (req) => {
       const n = final ? Math.min(8, Math.max(5, secs.length + 1)) : secs.length;
       const outline = secs.map((x, i) => `PART ${i + 1}: ${x.title}. ${x.text}`.slice(0, 1400)).join("\n");
       const qsys = final
-        ? `You write a final test of ${n} multiple-choice questions that checks whether a viewer understood a whole research-paper video. Cover every part at least once and mix easy and harder questions. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"quizzes":[{"section":0-based index of the part the question is about,"question":str,"options":[str,str,str],"answer":0|1|2,"why":str}]} with exactly ${n} items. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 14000)}`
-        : `You write ONE multiple-choice question for each of the ${n} parts of a research-paper video, to check that a viewer understood that part. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"quizzes":[{"section":0-based index of the part,"question":str,"options":[str,str,str],"answer":0|1|2,"why":str}]} with exactly ${n} items, in the order of the parts. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences saying why the right option is right. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 14000)}`;
+        ? `You write a final test of ${n} multiple-choice questions that checks whether a viewer understood a whole research-paper video. Cover every part at least once and mix easy and harder questions. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"quizzes":[{"section":0-based index of the part the question is about,"question":str,"options":[str,str,str],"answer":0|1|2,"why":str,"more":str}]} with exactly ${n} items. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences; "more" is a friendly, simpler re-explanation of that idea in 3 or 4 sentences, with one everyday example, for a viewer who did not get it. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 14000)}`
+        : `You write ONE multiple-choice question for each of the ${n} parts of a research-paper video, to check that a viewer understood that part. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"quizzes":[{"section":0-based index of the part,"question":str,"options":[str,str,str],"answer":0|1|2,"why":str,"more":str}]} with exactly ${n} items, in the order of the parts. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences saying why the right option is right; "more" is a friendly, simpler re-explanation of that part in 3 or 4 sentences, with one everyday example, for a viewer who did not get it. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 14000)}`;
       const qr = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
-        body: JSON.stringify({ app: "companion", messages: [{ role: "system", content: qsys }, { role: "user", content: `The parts of the video:\n${outline}\nWrite the ${final ? "final test" : "questions"}.` }], max_tokens: 3200, json_mode: true, visitor: actor, ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
+        body: JSON.stringify({ app: "companion", messages: [{ role: "system", content: qsys }, { role: "user", content: `The parts of the video:\n${outline}\nWrite the ${final ? "final test" : "questions"}.` }], max_tokens: 4500, json_mode: true, visitor: actor, ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
       });
       const qo = await qr.json().catch(() => ({}));
       if (!qr.ok) return json({ error: qo.error ?? "The tutor is busy. Please try again in a minute.", code: qo.code ?? "busy" }, qr.status === 429 ? 429 : 503);
@@ -240,7 +242,7 @@ Deno.serve(async (req) => {
         const opts = Array.isArray(z.options) ? z.options.map((o: unknown) => String(o).slice(0, 140)).slice(0, 3) : [];
         const ans = Number(z.answer);
         const sec = Number.isInteger(z.section) && z.section >= 0 && z.section < secs.length ? Number(z.section) : Math.min(k, secs.length - 1);
-        return z.question && opts.length === 3 && ans >= 0 && ans <= 2 ? { section: sec, question: String(z.question).slice(0, 300), options: opts, answer: ans, why: String(z.why ?? "").slice(0, 400) } : null;
+        return z.question && opts.length === 3 && ans >= 0 && ans <= 2 ? { section: sec, question: String(z.question).slice(0, 300), options: opts, answer: ans, why: String(z.why ?? "").slice(0, 400), more: String(z.more ?? "").slice(0, 900) } : null;
       }).filter(Boolean);
       if (quizzes.length < Math.min(3, n)) return json({ error: "Could not write the questions. Try again.", code: "bad_quiz" }, 502);
       const qu = qo.usage ?? {};
