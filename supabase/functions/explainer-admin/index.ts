@@ -78,6 +78,29 @@ Deno.serve(async (req) => {
         }
         return json({ ok: true });
       }
+      if (body.op === "verify_list") {   // proofs waiting for a decision, with a one-hour link to look at each file
+        const rows = await db(`explainer_events?type=eq.verify&select=id,user_id,created_at,meta&order=created_at.desc&limit=60`);
+        const out = [];
+        for (const r of rows) {
+          const [usr] = await db(`explainer_users?id=eq.${r.user_id}&select=username`).catch(() => []);
+          let link = "";
+          try {
+            const sg = await fetch(`${SB_URL}/storage/v1/object/sign/explainer-uploads/${r.meta.path}`, { method: "POST", headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: 3600 }) });
+            if (sg.ok) link = `${SB_URL}/storage/v1${(await sg.json()).signedURL}`;
+          } catch { /* no link */ }
+          out.push({ id: r.id, user_id: r.user_id, username: usr?.username ?? "", created_at: r.created_at, role: r.meta.role, school: r.meta.school, status: r.meta.status, link });
+        }
+        return json({ items: out });
+      }
+      if (body.op === "verify_decide") {
+        if (!/^[0-9a-f-]{36}$/.test(String(body.id))) return json({ error: "bad request" }, 400);
+        const [ev] = await db(`explainer_events?id=eq.${body.id}&type=eq.verify&select=user_id,meta`);
+        if (!ev || ev.meta.status !== "pending") return json({ error: "already decided" }, 409);
+        const ok = !!body.approve;
+        await db(`explainer_events?id=eq.${body.id}`, { method: "PATCH", body: JSON.stringify({ meta: { ...ev.meta, status: ok ? "approved" : "rejected" } }) });
+        if (ok) await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: ev.user_id, meta: { plan: "plus", until: new Date(Date.now() + 31 * 86400_000).toISOString(), source: ev.meta.role } }) });
+        return json({ ok: true });
+      }
       if (body.op === "grant") {
         const amount = Math.round(Number(body.amount));
         if (!Number.isFinite(amount) || amount === 0 || Math.abs(amount) > 1000) return json({ error: "bad amount" }, 400);

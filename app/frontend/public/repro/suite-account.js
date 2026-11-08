@@ -1,3 +1,4 @@
+try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9a-f]{8}$/i.test(r)) localStorage.setItem('pe-ref', r.toLowerCase()); } catch (_) {}
 /* One account for the whole Paperlit. Framework-free so the React apps and the static Paper Repro Agent pages run the same file.
    All apps share one origin, so the session in localStorage (pe-session) is the single sign-in; the account service is explainer-account.
    Guests make no network call here. Mounts into the top bar (.stb-act or .tbact) and re-mounts if the bar is re-rendered. */
@@ -183,7 +184,8 @@
         draw('', true, em);
         d.querySelector('form').pw.value = pw;
         try {
-          const out = await call(mode, { username: em, password: pw });
+          let ref; try { ref = localStorage.getItem('pe-ref') || undefined; } catch (_) {}
+          const out = await call(mode, mode === 'register' ? { username: em, password: pw, ref } : { username: em, password: pw });
           set(out.user, out.token);
           sync();
           d.close();
