@@ -35,7 +35,7 @@ norm = lambda w: re.sub(r"[^0-9a-z]+", "", str(w).lower())
 CUES = {n: [[round(a + NARR_DELAY, 2), norm(w)] for a, _, w in words_of("en", i) if norm(w)] for n, i in enumerate(idx)}
 THEMES = {"classic": ("#04070c", "#3dff8f", "#4aa3ff", "#e9f3ff", "#8aa0b8"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
           "sunset": ("#120a1f", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#050510", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#050505", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
-theme = json.load(open(os.path.join(d, "script_en.json"), encoding="utf-8")).get("theme") or "classic"
+theme = json.load(open(os.path.join(d, f"script_{LANGS[0]}.json"), encoding="utf-8")).get("theme") or "classic"
 BG, ACC, ACC2, TXT, MUT = THEMES.get(theme, THEMES["classic"])
 CINEMA = ("\nLook: cinematic documentary. Deep blue-black space, thin gold lines and gold highlights, slow smooth movement, a few faint drifting dots as background, generous empty space, labels in a serif font (font=\"Georgia\"). Each idea arrives like a title card: fade in, hold, fade out. Calm and elegant, never busy." if theme == "cinema" else "")
 work = os.path.join(d, f"manim_s{k}")
