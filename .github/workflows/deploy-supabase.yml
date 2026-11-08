@@ -55,6 +55,6 @@ jobs:
           for fn in $fns; do
             [ -f "$fn/index.ts" ] || { echo "skip $fn (removed)"; continue; }
             echo "== deploy $fn"
-            supabase functions deploy "$fn" --project-ref "$PROJECT_REF" --no-verify-jwt || fail=1
+            supabase functions deploy "$fn" --project-ref "$PROJECT_REF" --use-api --no-verify-jwt --yes || fail=1
           done
           exit $fail
