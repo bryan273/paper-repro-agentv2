@@ -5,7 +5,7 @@
 // cannot be found downgrades the block to "unverified", and a paper claim with no quote is shown as "general". "General" blocks are
 // background, analogies and prerequisites from the model's own knowledge and say so. Mode "paper" allows paper blocks only.
 // The model call goes through the shared agent-llm gateway (RKAPI Haiku first, Paratera after), so its budgets and fallbacks apply.
-import { CORS, SB_URL, SB_SERVICE, actorOf, db, json, userOf, logEvent } from "../_shared/explainer.ts";
+import { CORS, SB_URL, SB_SERVICE, actorOf, db, json, userOf, logEvent, isAdmin } from "../_shared/explainer.ts";
 
 const PER_DAY_GUEST = Number(Deno.env.get("EXPLAINER_ASK_GUEST_DAY") ?? "8");
 const PER_DAY_MEMBER = Number(Deno.env.get("EXPLAINER_ASK_MEMBER_DAY") ?? "40");
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
     const limit = user ? PER_DAY_MEMBER : PER_DAY_GUEST;
     const since = new Date(Date.now() - 86400_000).toISOString();
     const used = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&created_at=gte.${since}&select=id`)).length;
-    if (used >= limit) {
+    if (used >= limit && !isAdmin(user)) {
       return json({ error: user ? "You reached today's question limit. Try again tomorrow." : `You used your ${limit} free questions today. Sign up free for more.`, code: user ? "ask_member" : "ask_guest" }, 429);
     }
 
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
       const r = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
-        body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 2600 : 1600, json_mode: true, visitor: actor }),
+        body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 2600 : 1600, json_mode: true, visitor: actor, ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
       });
       out = await r.json().catch(() => ({}));
       if (!r.ok) return json({ error: out.error ?? "The tutor is busy. Please try again in a minute.", code: out.code ?? "busy" }, r.status === 429 ? 429 : 503);

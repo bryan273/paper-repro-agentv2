@@ -7,7 +7,7 @@
 import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
-const ADMIN_EMAILS = (Deno.env.get("EXPLAINER_ADMIN_EMAILS") ?? "bryantjandra273@gmail.com").toLowerCase().split(",").map((s) => s.trim()).filter(Boolean);
+import { ADMIN_EMAILS } from "../_shared/explainer.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 30 } };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
