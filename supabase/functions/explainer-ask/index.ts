@@ -5,7 +5,7 @@
 // cannot be found downgrades the block to "unverified", and a paper claim with no quote is shown as "general". "General" blocks are
 // background, analogies and prerequisites from the model's own knowledge and say so. Mode "paper" allows paper blocks only.
 // The model call goes through the shared agent-llm gateway (RKAPI Haiku first, Paratera after), so its budgets and fallbacks apply.
-import { CORS, SB_URL, SB_SERVICE, actorOf, db, json, userOf, logEvent, isAdmin } from "../_shared/explainer.ts";
+import { TIERS, activePlan, interactiveUse, CORS, SB_URL, SB_SERVICE, actorOf, db, count, json, userOf, logEvent, isAdmin } from "../_shared/explainer.ts";
 
 const PER_DAY_GUEST = Number(Deno.env.get("EXPLAINER_ASK_GUEST_DAY") ?? "8");
 const PER_DAY_MEMBER = Number(Deno.env.get("EXPLAINER_ASK_MEMBER_DAY") ?? "40");
@@ -105,9 +105,7 @@ async function arxivText(id: string): Promise<string> {
 }
 
 const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietnamese", id: "Indonesian", en: "English" };
-const DEEP_PER_VIDEO_PLUS = 30;   // Plus: 30 per video; Pro: unlimited
-const DEEP_PER_VIDEO = 10;   // a free member gets this many Deep answers for each video; any plan makes it unlimited
-const QUIZ_GUEST = 3, QUIZ_MEMBER = 12;
+const NEXT: Record<string, string> = { free: "Plus", plus: "Pro", pro: "Premium" };   // the plan to suggest when a limit is reached
 const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
 Write every answer in ${LANGNAME[lang] ?? "English"}.
 Return ONLY JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}
@@ -152,12 +150,31 @@ Deno.serve(async (req) => {
     // a shared link is for watching: asking, quizzes and answers need a free account, unless this browser made the video itself
     if (!user && String(job.visitor ?? "") !== (await actorOf(req, b.visitor))) return json({ error: "Sign up free to ask questions about this video. The link lets you watch it.", code: "login_to_ask" }, 401);
 
+    const actor = await actorOf(req, b.visitor);
+    const plan: string | null = user ? await activePlan(user.id) : null;
+    const tier = plan ?? (user ? "free" : "guest");
+    // interactive mode is counted per video and per month: the first time it opens on a video takes one, opening it again there is free
+    let interactive: { used: number; cap: number; left: number; resets: string } | undefined;
+    if (intent === "quiz" || intent === "quizall") {
+      const iu = await interactiveUse(user, actor, plan);
+      if (!iu.jobs.includes(jobId) && !isAdmin(user)) {
+        if (iu.left <= 0) {
+          const msg = !user ? "That was your free taste of interactive video. Sign up free for 2 a month."
+            : NEXT[tier] ? `You used the ${iu.cap} interactive videos of this month. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].interactive} a month.`
+            : `You used the ${iu.cap} interactive videos of this month. They come back on the 1st.`;
+          return json({ error: msg, code: user ? "quiz_quota" : "quiz_signup", interactive: { used: iu.used, cap: iu.cap, left: 0, resets: iu.resets } }, 402);
+        }
+        await logEvent(actor, "interactive", { job: jobId }, user?.id ?? null);
+        iu.used++; iu.left--;
+      }
+      interactive = { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets };
+    }
+
     const qsetKey = `quizset:${jobId}:${lang}`;
     if (intent === "quizall" && !b.final) {   // the questions of the parts are written once for a video and then shared
       const [hit] = await db(`explainer_events?actor=eq.${encodeURIComponent(qsetKey)}&type=eq.quizset&select=meta&order=created_at.desc&limit=1`).catch(() => []);
-      if (hit?.meta?.quizzes?.length) return json({ quizzes: hit.meta.quizzes, cached: true });
+      if (hit?.meta?.quizzes?.length) return json({ quizzes: hit.meta.quizzes, cached: true, interactive });
     }
-    const actor = await actorOf(req, b.visitor);
     const limit = user ? PER_DAY_MEMBER : PER_DAY_GUEST;
     const since = new Date(Date.now() - 86400_000).toISOString();
     const used = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&created_at=gte.${since}&select=id`)).length;
@@ -165,20 +182,11 @@ Deno.serve(async (req) => {
       return json({ error: user ? "You reached today's question limit. Try again tomorrow." : `You used your ${limit} free questions today. Sign up free for more.`, code: user ? "ask_member" : "ask_guest" }, 429);
     }
 
-    let plan: string | null = null;
-    if (user) {
-      const [pe] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
-      plan = pe?.meta?.until && new Date(pe.meta.until) > new Date() ? String(pe.meta.plan) : null;
-    }
-    if (deep && !isAdmin(user) && plan !== "pro") {
+    if (deep && !isAdmin(user)) {
       if (!user) return json({ error: "The stronger model is free to try once you sign up.", code: "deep_signup" }, 402);
-      const cap = plan === "plus" ? DEEP_PER_VIDEO_PLUS : DEEP_PER_VIDEO;
+      const cap = TIERS[tier].deep;
       const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep&select=id`)).length;
-      if (tried >= cap) return json({ error: plan === "plus" ? `You used the ${cap} in-depth answers Plus gives for this video. Pro makes them unlimited.` : `You used your ${cap} free in-depth answers for this video. Plus gives ${DEEP_PER_VIDEO_PLUS}, Pro is unlimited.`, code: "deep_premium" }, 402);
-    }
-    if ((intent === "quiz" || intent === "quizall") && !isAdmin(user) && !plan) {
-      const qs = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.quiz&created_at=gte.${since}&select=id`)).length;
-      if (qs >= (user ? QUIZ_MEMBER : QUIZ_GUEST)) return json({ error: user ? "You used today's free interactive checks. Unlimited checks are part of Plus." : "That was your free taste of interactive mode. Sign up free for more.", code: user ? "quiz_premium" : "quiz_signup" }, 402);
+      if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives for this video. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].deep}.` : `You used the ${cap} in-depth answers for this video. Quick answers stay open.`, code: "deep_premium" }, 402);
     }
 
     // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them
@@ -218,7 +226,7 @@ Deno.serve(async (req) => {
       if (!qz.question || opts.length !== 3 || !(ans >= 0 && ans <= 2)) return json({ error: "Could not write a question for this part. Try again.", code: "bad_quiz" }, 502);
       const qu = qo.usage ?? {};
       await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: "quiz", tokens: (qu.prompt_tokens ?? 0) + (qu.completion_tokens ?? 0) }) });
-      return json({ quiz: { question: String(qz.question).slice(0, 300), options: opts, answer: ans, why: String(qz.why ?? "").slice(0, 400), more: String((qz as { more?: string }).more ?? "").slice(0, 900) } });
+      return json({ quiz: { question: String(qz.question).slice(0, 300), options: opts, answer: ans, why: String(qz.why ?? "").slice(0, 400), more: String((qz as { more?: string }).more ?? "").slice(0, 900) } , interactive });
     }
     if (intent === "quizall") {
       const final = !!b.final;
@@ -248,7 +256,7 @@ Deno.serve(async (req) => {
       const qu = qo.usage ?? {};
       await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: "quiz", tokens: (qu.prompt_tokens ?? 0) + (qu.completion_tokens ?? 0) }) });
       if (!final) await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: qsetKey, type: "quizset", user_id: null, meta: { quizzes } }) }).catch(() => undefined);
-      return json({ quizzes });
+      return json({ quizzes, interactive });
     }
     const ask = intent === "simpler"
       ? `I did not understand this part of the video${secTitle ? ` ("${secTitle}")` : ""}: ${secText || q}\nExplain it again for a complete beginner, with an everyday analogy, and say what I should know first.`
@@ -292,7 +300,7 @@ Deno.serve(async (req) => {
     const u = out.usage ?? {};
     await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: deep ? "deep" : intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) });
     await logEvent(actor, "ask", { intent, mode }, user?.id ?? null).catch(() => undefined);
-    return json({ blocks, followups, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
+    return json({ blocks, followups, deep_left: deep ? Math.max(0, TIERS[tier].deep - (await count(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep`).catch(() => 0))) : undefined, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

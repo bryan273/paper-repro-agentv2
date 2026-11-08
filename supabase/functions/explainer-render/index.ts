@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
     const user = await userOf(req);
     if (seconds > 300 && !isAdmin(user)) {   // videos longer than 5 minutes are part of Pro
       const [pe] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []) : [];
-      const pro = pe?.meta?.plan === "pro" && pe?.meta?.until && new Date(pe.meta.until) > new Date();
+      const pro = ["pro", "premium"].includes(pe?.meta?.plan) && pe?.meta?.until && new Date(pe.meta.until) > new Date();
       if (!pro) return json({ error: "Videos longer than 5 minutes are part of Pro. Choose 5 minutes or less.", code: "length_pro" }, 402);
     }
     const vid = await actorOf(req, visitor);
