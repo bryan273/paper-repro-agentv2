@@ -31,16 +31,21 @@ const planInfo = async (userId: string | undefined): Promise<{ plan: string | nu
   return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until } : { plan: null, plan_until: until };
 };
 
-// Students: a school e-mail (.edu, .ac.xx, .edu.xx) may claim 3 months of the Plus features (interactive checks, unlimited Deep questions) once. No free videos come with it,
-// because the e-mail address is not verified; the cost of a wrong claim is a few AI calls.
-const STUDENT_RE = /(^|\.)(edu|ac)(\.[a-z]{2,3})?$/i;
-const STUDENT_DAYS = 92;
-const studentEligible = async (user: { id: string; username: string } | null): Promise<boolean> => {
-  if (!user) return false;
-  const domain = String(user.username).split("@")[1] ?? "";
-  if (!STUDENT_RE.test(domain)) return false;
-  const evs = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&limit=30`).catch(() => []);
-  return !evs.some((e: { meta?: { source?: string } }) => e.meta?.source === "student");
+// Students and teachers: one free month of Plus after an admin has looked at a proof (student card, enrolment letter, staff card or school page).
+// A request is an event of type "verify" with meta {role, path, school, status: pending | approved | rejected}; the admin decides in explainer-admin.
+const UP_BUCKET = "explainer-uploads";
+const verifyOf = async (user: { id: string } | null): Promise<{ role: string; status: string } | null> => {
+  if (!user) return null;
+  const [e] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.verify&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+  return e?.meta ? { role: String(e.meta.role), status: String(e.meta.status) } : null;
+};
+// inviting a friend: 10 free videos for the member who shared the link, up to 5 friends
+const REFERRAL_VIDEOS = 10, REFERRAL_MAX = 5;
+const refCode = (id: string) => id.slice(0, 8);
+const referralOf = async (user: { id: string } | null) => {
+  if (!user) return null;
+  const n = await count(`explainer_events?user_id=eq.${user.id}&type=eq.referral`).catch(() => 0);
+  return { code: refCode(user.id), invited: n, reward: REFERRAL_VIDEOS, max: REFERRAL_MAX };
 };
 
 Deno.serve(async (req) => {
@@ -63,7 +68,7 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ ...(await planInfo(user?.id)), student_eligible: await studentEligible(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...(await planInfo(user?.id)), verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -78,13 +83,31 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
-    if (op === "student_trial") {
+    if (op === "proof_upload_url") {   // step 1 of sending a proof: a one-time address into the private bucket
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);
-      if (!(await studentEligible(user))) return json({ error: "The student trial needs a school e-mail address (.edu or .ac) and can be claimed once.", code: "not_eligible" }, 403);
-      const until = new Date(Date.now() + STUDENT_DAYS * 86400_000).toISOString();
-      await logEvent("", "plan", { plan: "plus", until, source: "student" }, user.id);
-      return json({ ok: true, until });
+      const ext = String(body.ext ?? "").toLowerCase();
+      const size = Math.round(Number(body.size) || 0);
+      if (!["jpg", "jpeg", "png", "webp", "pdf"].includes(ext)) return json({ error: "Send a photo (JPG, PNG, WebP) or a PDF." }, 400);
+      if (!(size >= 1000 && size <= 6 * 1024 * 1024)) return json({ error: size > 6 * 1024 * 1024 ? "That file is larger than 6 MB." : "That file looks empty." }, 400);
+      const st = await verifyOf(user);
+      if (st && (st.status === "pending" || st.status === "approved")) return json({ error: st.status === "pending" ? "Your proof is already being checked." : "You already used your free month." }, 409);
+      const path = `proof/${user.id}/${crypto.randomUUID()}.${ext}`;
+      const sg = await fetch(`${Deno.env.get("SUPABASE_URL")}/storage/v1/object/upload/sign/${UP_BUCKET}/${path}`, { method: "POST", headers: { apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`, "Content-Type": "application/json" }, body: "{}" });
+      if (!sg.ok) throw new Error(`upload address ${sg.status}`);
+      const { url: signed } = await sg.json();
+      return json({ path, upload_url: `${Deno.env.get("SUPABASE_URL")}/storage/v1${signed}` });
+    }
+    if (op === "proof_submit") {
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const role = body.role === "teacher" ? "teacher" : "student";
+      const path = String(body.path ?? "");
+      if (!path.startsWith(`proof/${user.id}/`) || !/^proof\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp|pdf)$/.test(path)) return json({ error: "That file was not found. Please choose it again." }, 400);
+      const st = await verifyOf(user);
+      if (st && (st.status === "pending" || st.status === "approved")) return json({ error: "You already sent a proof." }, 409);
+      await logEvent("", "verify", { role, path, school: str(body.school, 120), status: "pending" }, user.id);
+      return json({ ok: true, verify: { role, status: "pending" } });
     }
 
     if (op === "profile_save") {
@@ -116,6 +139,19 @@ Deno.serve(async (req) => {
       const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
       await logEvent(actor, "signup", { username }, user.id);
+      const rc = String(body.ref ?? "").toLowerCase();
+      if (/^[0-9a-f]{8}$/.test(rc)) {   // came through a friend's link: the friend gets free videos (a few per friend, never from the same browser)
+        try {
+          const [inv] = await db(`explainer_users?id=gte.${rc}-0000-0000-0000-000000000000&id=lte.${rc}-ffff-ffff-ffff-ffffffffffff&select=id,credits&limit=1`);
+          const same = inv ? await count(`explainer_events?actor=eq.${actor}&user_id=eq.${inv.id}&type=eq.signup`) : 1;
+          const done = inv ? await count(`explainer_events?user_id=eq.${inv.id}&type=eq.referral`) : REFERRAL_MAX;
+          if (inv && !same && done < REFERRAL_MAX && inv.id !== user.id) {
+            await db(`explainer_users?id=eq.${inv.id}`, { method: "PATCH", body: JSON.stringify({ credits: inv.credits + REFERRAL_VIDEOS }) });
+            await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: inv.id, delta: REFERRAL_VIDEOS, reason: "friend joined" }) });
+            await logEvent(actor, "referral", { friend: user.id }, inv.id);
+          }
+        } catch { /* a failed reward never blocks a sign-up */ }
+      }
       await logEvent(ipActor, "signup_ip", {}, user.id);
       const token = await newSession(user.id);
       return json({ token, user: publicUser(user), quota: await quotaFor(user, actor) });
