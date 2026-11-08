@@ -33,7 +33,9 @@
 
   const css = document.createElement('style');
   css.textContent = `
-.sa{position:relative;flex:none;--sa-card:var(--stb-card,var(--surface,hsl(var(--card))));--sa-fg:var(--stb-fg,var(--ink,hsl(var(--foreground))));--sa-mut:var(--stb-mutedfg,var(--muted-c,hsl(var(--muted-foreground))));--sa-line:var(--stb-border,var(--line,hsl(var(--border))));font-family:Inter,'Noto Sans SC',system-ui,sans-serif}
+.sa,.sa-d{--sa-card:#ffffff;--sa-fg:#15151c;--sa-mut:#62627a;--sa-line:#e3e3ee;--sa-soft:#f1f0fb}
+[data-theme=dark] .sa,[data-theme=dark] .sa-d,.dark .sa,.dark .sa-d{--sa-card:#1b1b27;--sa-fg:#f3f3fa;--sa-mut:#a4a4bb;--sa-line:#34344a;--sa-soft:#262638}
+.sa{position:relative;flex:none;font-family:Inter,'Noto Sans SC',system-ui,sans-serif}
 .sa-btn{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 15px;border:0;border-radius:999px;background:#5b4bff;color:#fff;font:600 13.5px Inter,'Noto Sans SC',sans-serif;cursor:pointer;white-space:nowrap}
 .sa-btn:hover{background:#4a3bea}.sa-btn:focus-visible,.sa-me:focus-visible,.sa-d button:focus-visible,.sa-d a:focus-visible,.sa-m a:focus-visible,.sa-m button:focus-visible{outline:2px solid #5b4bff;outline-offset:2px}
 .sa-btn svg{display:none;width:17px;height:17px}
@@ -41,9 +43,11 @@
 .sa-m{position:absolute;z-index:80;top:calc(100% + 9px);right:0;width:240px;padding:8px;border:1px solid var(--sa-line);border-radius:14px;background:var(--sa-card);color:var(--sa-fg);box-shadow:0 16px 44px rgba(20,20,50,.18)}
 .sa-m p{margin:0;padding:7px 10px 10px;font-size:13px;line-height:1.4;overflow-wrap:anywhere}.sa-m p b{display:block;font-weight:600}.sa-m p span{color:var(--sa-mut)}
 .sa-m a,.sa-m button{display:block;width:100%;padding:9px 10px;border:0;border-radius:9px;background:none;color:var(--sa-fg);font:500 14px Inter,'Noto Sans SC',sans-serif;text-align:left;text-decoration:none;cursor:pointer}
-.sa-m a:hover,.sa-m button:hover{background:var(--stb-soft,var(--soft,hsl(var(--muted))))}
-.sa-d{width:min(420px,calc(100vw - 32px));padding:26px;border:1px solid var(--sa-line);border-radius:20px;background:var(--sa-card);color:var(--sa-fg);font-family:Inter,'Noto Sans SC',system-ui,sans-serif;box-shadow:0 30px 80px rgba(20,20,50,.3)}
-.sa-d::backdrop{background:rgba(16,16,32,.46)}
+.sa-m a:hover,.sa-m button:hover{background:var(--sa-soft)}
+.sa-d{width:min(420px,calc(100vw - 32px));margin:auto;padding:30px 28px 24px;border:1px solid var(--sa-line);border-radius:20px;background:var(--sa-card);color:var(--sa-fg);font-family:Inter,'Noto Sans SC',system-ui,sans-serif;box-shadow:0 30px 80px rgba(20,20,50,.35);animation:sa-in .18s ease-out}
+@keyframes sa-in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.sa-d{animation:none}}
+.sa-d::backdrop{background:rgba(16,16,32,.55);backdrop-filter:blur(3px)}
 .sa-d h2{margin:0;font:700 25px/1.15 'Space Grotesk',Inter,'Noto Sans SC',sans-serif;letter-spacing:-.02em}.sa-d>p{margin:7px 0 0;font-size:14px;color:var(--sa-mut)}
 .sa-d label{display:block;margin-top:15px;font-size:13.5px;font-weight:600}.sa-d input{display:block;width:100%;height:44px;margin-top:6px;padding:0 13px;border:1px solid var(--sa-line);border-radius:11px;background:transparent;color:inherit;font:400 15px Inter,sans-serif;box-sizing:border-box}
 .sa-d input:focus{outline:2px solid #5b4bff;outline-offset:0;border-color:transparent}.sa-d small{display:block;margin-top:5px;font-size:12.5px;color:var(--sa-mut)}
@@ -52,7 +56,7 @@
 .sa-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--sa-mut);font-size:18px;cursor:pointer}
 .sa-err{margin:12px 0 0;padding:9px 11px;border-radius:9px;background:rgba(198,40,40,.1);color:#b3261e;font-size:13.5px}.sa-d .sa-fine{font-size:12.5px;text-align:center}.sa-fine a{color:inherit}
 @media(max-width:560px){.sa-btn{width:34px;min-height:34px;padding:0;justify-content:center}.sa-btn span{display:none}.sa-btn svg{display:block}.sa-me{width:34px;height:34px}}
-@media(prefers-color-scheme:dark){}`;
+`;
   document.head.appendChild(css);
 
   const root = document.createElement('div');
@@ -106,7 +110,14 @@
       try { await call('logout'); } catch { /* the token is dropped locally either way */ }
       set(null, '');
     };
-    m.append(p, a, out);
+    m.append(p, a);
+    if (user.admin) {
+      const ad = document.createElement('a');
+      ad.href = '/repro-suite/hub/console';
+      ad.textContent = 'Admin';
+      m.append(ad);
+    }
+    m.append(out);
     root.appendChild(m);
   }
 
@@ -168,6 +179,7 @@
         try {
           const out = await call(mode, { username: em, password: pw });
           set(out.user, out.token);
+          sync();
           d.close();
         } catch (x) {
           draw(/fetch|network/i.test(String(x.message)) ? t('fail') : x.message, false, em);
@@ -188,7 +200,7 @@
       const res = await fetch(`${URL_}?me=1`, { headers: headers() });
       const out = await res.json();
       if (!res.ok) return;
-      user = out.user || null;
+      user = out.user ? { ...out.user, admin: !!out.admin } : null;
       put(USER, user ? JSON.stringify(user) : '');
       if (!user) put(TOKEN, '');
       paint();
