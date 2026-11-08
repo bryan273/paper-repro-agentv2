@@ -12,12 +12,12 @@ import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 99, price: 33, days: 31 }, plus_year: { credits: 1188, price: 330, days: 366 },
-  pro_month: { credits: 200, price: 59, days: 31 }, pro_year: { credits: 2400, price: 590, days: 366 },   // Plus: 99 videos a month. Pro: 200 a month, 10 minute videos, unlimited Deep answers
+  plus_month: { credits: 100, price: 33, days: 31 }, plus_year: { credits: 1200, price: 330, days: 366 },
+  pro_month: { credits: 200, price: 59, days: 31 }, pro_year: { credits: 2400, price: 590, days: 366 },   // Plus: 100 videos a month. Pro: 200 a month, 10 minute videos, unlimited Deep answers
 };
 // the same prices in the money of each market (kept in step with the front end, lib/currency.ts); the owner confirms the amount in this money, no exchange rate is involved
 const LOCAL: Record<string, { vnd: number; idr: number }> = {
-  plus_month: { vnd: 119000, idr: 79000 }, plus_year: { vnd: 1190000, idr: 790000 }, pro_month: { vnd: 209000, idr: 139000 }, pro_year: { vnd: 2090000, idr: 1390000 },
+  plus_month: { vnd: 89000, idr: 79000 }, plus_year: { vnd: 890000, idr: 790000 }, pro_month: { vnd: 159000, idr: 139000 }, pro_year: { vnd: 1590000, idr: 1390000 },
   pack_5: { vnd: 69000, idr: 45000 }, pack_20: { vnd: 209000, idr: 139000 }, pack_50: { vnd: 459000, idr: 299000 },
 };
 const planOf = async (userId: string | undefined): Promise<string | null> => {

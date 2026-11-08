@@ -34,6 +34,26 @@ def safe_url(url):
         if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved: raise RuntimeError("That link points to a private address.")
     return url
 
+def ensure_readable(text, what="document"):
+    """Stop at the very first step when the text is garbled (a scanned or protected PDF, a wrong encoding, a symbol font), instead of writing a script and rendering a video about noise."""
+    sample = text[:30000]
+    chars = [c for c in sample if not c.isspace()]
+    msg = ("We could not read the text of this %s: it looks garbled or protected (for example a scanned or locked PDF). "
+           "Try another link, a different PDF, or paste the text instead. Nothing was charged." % what)
+    if len(chars) < 200: raise RuntimeError(msg)
+    def common(c):
+        o = ord(c)
+        return (o < 0x250 and not (0x1BB < o < 0x250 and o not in (0x1A0, 0x1A1, 0x1AF, 0x1B0))) or 0x1EA0 <= o <= 0x1EF9 or 0x370 <= o <= 0x3FF or 0x400 <= o <= 0x4FF             or 0x3040 <= o <= 0x30FF or 0x3400 <= o <= 0x9FFF or 0xAC00 <= o <= 0xD7AF or 0xFF00 <= o <= 0xFFEF
+    letters = [c for c in chars if c.isalpha()]
+    pua = sum(1 for c in chars if 0xE000 <= ord(c) <= 0xF8FF or c in ("\ufffd", "\x00"))
+    odd = sum(1 for c in letters if not common(c))
+    if pua / len(chars) > 0.02 or (letters and odd / len(letters) > 0.12) or len(letters) / len(chars) < 0.45:
+        raise RuntimeError(msg)
+    latin_words = re.findall(r"[A-Za-z\u00C0-\u024F\u1EA0-\u1EF9]{3,}", sample)
+    cjk = sum(1 for c in chars if "\u3400" <= c <= "\u9fff" or "\u3040" <= c <= "\u30ff" or "\uac00" <= c <= "\ud7af")
+    if cjk < len(chars) * 0.2 and len(latin_words) < 80: raise RuntimeError(msg)
+    return text
+
 def paper_url(url):
     """Any paper that is not on arXiv: a direct PDF, a paper page, or a DOI. Returns (title, abstract, text)."""
     safe_url(url)
@@ -56,6 +76,7 @@ def paper_url(url):
             return paper_url(urljoin(r.geturl(), pm.group(1) or pm.group(2)))
     text = re.sub(r"[ \t]+", " ", text).strip()
     if len(text) < 1500: raise RuntimeError("Could not read enough text from that link. Try a direct PDF link.")
+    ensure_readable(text, "link")
     return title[:200], text[:1500], text[:60000]
 
 def page_texts(data):
@@ -111,6 +132,7 @@ def paper_file(path):
     if data[:5] != b"%PDF-":   # pasted text or a .txt / .md file: any subject, not only papers
         text = re.sub(r"[ \t]+", " ", data.decode("utf-8", "ignore").replace(chr(0), " ")).strip()
         if len(text) < 300: raise RuntimeError("That text is too short to explain. Paste at least a few paragraphs.")
+        ensure_readable(text, "text")
         title = next((l.strip().lstrip("#").strip() for l in text.splitlines() if len(l.strip()) > 6), "Text")
         return title[:200], text[:1500], text[:60000]
     try: doc = fitz.open(stream=data, filetype="pdf")
@@ -120,6 +142,7 @@ def paper_file(path):
     if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     text = re.sub(r"[ \t]+", " ", text).strip()
     if len(text) < 1500: raise RuntimeError("Could not read enough text from that PDF. Scanned pages without text are not supported.")
+    ensure_readable(text, "PDF")
     return title[:200], text[:1500], text[:60000]
 
 def paper(arxiv):
