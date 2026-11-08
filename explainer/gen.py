@@ -108,7 +108,11 @@ def paper_file(path):
     """A PDF the visitor uploaded (already saved on this machine). Returns (title, abstract, text)."""
     import fitz
     data = open(path, "rb").read(30_000_000)
-    if data[:5] != b"%PDF-": raise RuntimeError("That file is not a PDF.")
+    if data[:5] != b"%PDF-":   # pasted text or a .txt / .md file: any subject, not only papers
+        text = re.sub(r"[ \t]+", " ", data.decode("utf-8", "ignore").replace(chr(0), " ")).strip()
+        if len(text) < 300: raise RuntimeError("That text is too short to explain. Paste at least a few paragraphs.")
+        title = next((l.strip().lstrip("#").strip() for l in text.splitlines() if len(l.strip()) > 6), "Text")
+        return title[:200], text[:1500], text[:60000]
     try: doc = fitz.open(stream=data, filetype="pdf")
     except Exception: raise RuntimeError("That PDF could not be opened. It may be damaged or password protected.")
     text = "\n".join(p.get_text() for p in doc)
@@ -128,7 +132,7 @@ def paper(arxiv):
         except Exception: full = ""
     return title, abstract, (abstract + "\n" + full)[:60000]
 
-SYSTEM = """You turn one research paper into a short, accurate explainer video script. Return ONLY JSON.
+SYSTEM = """You turn one source text (a research paper, an article, a lesson, a report or notes) into a short, accurate explainer video script. Return ONLY JSON.
 Style: {TONE} Never invent facts or numbers: every number or claim must come from the PAPER TEXT given.
 Schema: {"title":str,"section":{"title":str(max 7 words, names what the section is about, never the paper title),"title_zh":str,"text":str(2 to 3 plain sentences that explain the content itself as a reader would want it, e.g. "Older models read a sentence one word at a time, which is slow..."; never write \"this part\" or \"this section\"),"text_zh":str,"takeaway":str(one sentence),"takeaway_zh":str},"scenes":[scene,...]}. Each scene has: "type", "en" (the spoken narration of this scene: 2 sentences, 18 to 32 words, that flow as continuous speech; title and end scenes use one short sentence), "zh" (the same narration in natural spoken Chinese, not a word-for-word translation),
 "evidence" (a verbatim quote of at most 25 words copied exactly from the paper text that supports the scene, or null for title/end), plus fields by type:
@@ -153,7 +157,7 @@ SECTIONS = ["the problem and why it matters", "what earlier approaches did and w
             "how it works and is trained, step by step", "the experimental setup", "the main results", "ablations and what drives the results",
             "limits and open questions", "what it means and the takeaway"]
 
-PLAN_SYSTEM = """You plan a short explainer video about one research paper that is told in {N} consecutive sections. Return ONLY JSON: {"sections":[{"title":str(max 7 words),"focus":str(one sentence),"points":[3 or 4 short concrete points from the paper this section explains, each a different fact, method step or number]}]} with exactly {N} sections.
+PLAN_SYSTEM = """You plan a short explainer video about one source text (a research paper, article, lesson, report or notes) that is told in {N} consecutive sections. Return ONLY JSON: {"sections":[{"title":str(max 7 words),"focus":str(one sentence),"points":[3 or 4 short concrete points from the paper this section explains, each a different fact, method step or number]}]} with exactly {N} sections.
 Rules: the sections follow the paper's own logic (problem, idea, method, evidence, meaning) and tell one story from first to last; no point appears in two sections; every point comes from the PAPER TEXT; the last section ends on what it means for the reader."""
 
 def plan_sections(title, text, n, model):

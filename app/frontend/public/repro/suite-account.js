@@ -14,11 +14,30 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
   const TXT = {
     en: { dashboard: 'Dashboard', settings: 'Settings', login: 'Log in', register: 'Sign up free', logout: 'Log out', account: 'My papers', titleL: 'Welcome back', titleR: 'Create your free account', one: 'One account for every Paperlit app.', email: 'Email', pw: 'Password', hint: '8 characters or more', toR: 'No account yet? Sign up free', toL: 'Already have an account? Log in', close: 'Close', wait: 'One moment...', credits: 'credits', unlimited: 'Unlimited (admin)', menu: 'Account menu', agree: 'By signing up you agree to the', terms: 'terms', fail: 'Could not reach the server. Try again.' },
     zh: { dashboard: '我的看板', settings: '设置', login: '登录', register: '免费注册', logout: '退出登录', account: '我的论文', titleL: '欢迎回来', titleR: '创建免费账户', one: '一个账户，通用于所有 Paperlit 应用。', email: '邮箱', pw: '密码', hint: '至少 8 个字符', toR: '还没有账户？免费注册', toL: '已有账户？去登录', close: '关闭', wait: '请稍候...', credits: '点额度', unlimited: '无限额度（管理员）', menu: '账户菜单', agree: '注册即表示同意', terms: '服务条款', fail: '无法连接服务器，请重试。' },
+    vi: { dashboard: 'Bảng điều khiển', settings: 'Cài đặt', login: 'Đăng nhập', register: 'Đăng ký miễn phí', logout: 'Đăng xuất', account: 'Bài báo của tôi', titleL: 'Chào mừng trở lại', titleR: 'Tạo tài khoản miễn phí', one: 'Một tài khoản cho mọi ứng dụng Paperlit.', email: 'Email', pw: 'Mật khẩu', hint: '8 ký tự trở lên', toR: 'Chưa có tài khoản? Đăng ký miễn phí', toL: 'Đã có tài khoản? Đăng nhập', close: 'Đóng', wait: 'Vui lòng chờ...', credits: 'tín dụng', unlimited: 'Không giới hạn (quản trị)', menu: 'Menu tài khoản', agree: 'Khi đăng ký, bạn đồng ý với', terms: 'điều khoản', fail: 'Không kết nối được máy chủ. Hãy thử lại.' },
+    id: { dashboard: 'Dasbor', settings: 'Pengaturan', login: 'Masuk', register: 'Daftar gratis', logout: 'Keluar', account: 'Makalah saya', titleL: 'Selamat datang kembali', titleR: 'Buat akun gratis Anda', one: 'Satu akun untuk semua aplikasi Paperlit.', email: 'Email', pw: 'Kata sandi', hint: '8 karakter atau lebih', toR: 'Belum punya akun? Daftar gratis', toL: 'Sudah punya akun? Masuk', close: 'Tutup', wait: 'Sebentar...', credits: 'kredit', unlimited: 'Tanpa batas (admin)', menu: 'Menu akun', agree: 'Dengan mendaftar Anda menyetujui', terms: 'ketentuan', fail: 'Tidak dapat terhubung ke server. Coba lagi.' },
   };
+  const X = {
+    en: { country: 'Country or region', pickC: 'Choose', plang: 'Preferred language', about: 'A little about you (optional)', source: 'Where did you hear about us?', role: 'I am a', pickO: 'Choose',
+      src: { friend: 'A friend or classmate', social: 'Social media', search: 'Search engine', class: 'My teacher or class', other: 'Other' },
+      rol: { student: 'Student', researcher: 'Researcher', teacher: 'Teacher', pro: 'Working professional', other: 'Other' }, needC: 'Choose your country or region.', needL: 'Choose your language.' },
+    zh: { country: '国家或地区', pickC: '请选择', plang: '常用语言', about: '再多介绍一下你（选填）', source: '你是从哪里知道我们的？', role: '我是', pickO: '请选择',
+      src: { friend: '朋友或同学', social: '社交媒体', search: '搜索引擎', class: '老师或课程', other: '其他' },
+      rol: { student: '学生', researcher: '研究者', teacher: '教师', pro: '在职人士', other: '其他' }, needC: '请选择国家或地区。', needL: '请选择语言。' },
+    vi: { country: 'Quốc gia hoặc khu vực', pickC: 'Chọn', plang: 'Ngôn ngữ ưa thích', about: 'Đôi điều về bạn (không bắt buộc)', source: 'Bạn biết đến chúng tôi từ đâu?', role: 'Tôi là', pickO: 'Chọn',
+      src: { friend: 'Bạn bè hoặc bạn học', social: 'Mạng xã hội', search: 'Công cụ tìm kiếm', class: 'Thầy cô hoặc lớp học', other: 'Khác' },
+      rol: { student: 'Sinh viên', researcher: 'Nhà nghiên cứu', teacher: 'Giảng viên', pro: 'Người đi làm', other: 'Khác' }, needC: 'Hãy chọn quốc gia hoặc khu vực.', needL: 'Hãy chọn ngôn ngữ.' },
+    id: { country: 'Negara atau wilayah', pickC: 'Pilih', plang: 'Bahasa pilihan', about: 'Sedikit tentang Anda (opsional)', source: 'Dari mana Anda mengenal kami?', role: 'Saya adalah', pickO: 'Pilih',
+      src: { friend: 'Teman atau teman kuliah', social: 'Media sosial', search: 'Mesin pencari', class: 'Dosen atau kelas saya', other: 'Lainnya' },
+      rol: { student: 'Mahasiswa', researcher: 'Peneliti', teacher: 'Pengajar', pro: 'Pekerja profesional', other: 'Lainnya' }, needC: 'Pilih negara atau wilayah.', needL: 'Pilih bahasa.' },
+  };
+  const LANGNAME = { en: 'English', zh: '中文', vi: 'Tiếng Việt', id: 'Bahasa Indonesia' };
+  const COUNTRIES = 'CN VN ID US SG MY TH PH JP KR IN HK TW MO GB AU CA DE FR ES IT NL SE CH BR MX AE SA TR RU PK BD LK NP EG NG ZA KE NZ IE PL UA IL AR CL CO'.split(' ');
   const get = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
   const put = (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch { /* private mode */ } };
-  const lang = () => (/^zh/i.test(document.documentElement.lang) ? 'zh' : 'en');
-  const t = (k) => TXT[lang()][k];
+  const lang = () => { const h = (document.documentElement.lang || '').slice(0, 2).toLowerCase(); return h === 'zh' || h === 'vi' || h === 'id' ? h : 'en'; };
+  const t = (k) => (TXT[lang()] || TXT.en)[k] ?? TXT.en[k];
+  const x = () => X[lang()] || X.en;
   const visitor = () => {
     let v = get(VISITOR);
     if (!v) { v = crypto.randomUUID ? crypto.randomUUID() : `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`; put(VISITOR, v); }
@@ -51,7 +70,8 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
 .sa-d::backdrop{background:rgba(16,16,32,.55);backdrop-filter:blur(3px)}
 .sa-d h2{margin:0;font:700 25px/1.15 'Space Grotesk',Inter,'Noto Sans SC',sans-serif;letter-spacing:-.02em}.sa-d>p{margin:7px 0 0;font-size:14px;color:var(--sa-mut)}
 .sa-d label{display:block;margin-top:15px;font-size:13.5px;font-weight:600}.sa-d input{display:block;width:100%;height:44px;margin-top:6px;padding:0 13px;border:1px solid var(--sa-line);border-radius:11px;background:transparent;color:inherit;font:400 15px Inter,sans-serif;box-sizing:border-box}
-.sa-d input:focus{outline:2px solid #5b4bff;outline-offset:0;border-color:transparent}.sa-d small{display:block;margin-top:5px;font-size:12.5px;color:var(--sa-mut)}
+.sa-d input:focus{outline:2px solid #5b4bff;outline-offset:0;border-color:transparent}.sa-d select{display:block;width:100%;height:44px;margin-top:6px;padding:0 10px;border:1px solid var(--sa-line);border-radius:11px;background:transparent;color:inherit;font:400 15px Inter,sans-serif;box-sizing:border-box}.sa-d select option{color:#111}
+.sa-d small{display:block;margin-top:5px;font-size:12.5px;color:var(--sa-mut)}
 .sa-go{width:100%;min-height:46px;margin-top:18px;border:0;border-radius:12px;background:#5b4bff;color:#fff;font:600 15px Inter,'Noto Sans SC',sans-serif;cursor:pointer}.sa-go:disabled{opacity:.6;cursor:wait}
 .sa-sw{display:block;margin:12px auto 0;padding:6px;border:0;background:none;color:var(--sa-fg);font:500 13.5px Inter,'Noto Sans SC',sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .sa-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--sa-mut);font-size:18px;cursor:pointer}
@@ -142,6 +162,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
     const d = document.createElement('dialog');
     d.className = 'sa-d';
     const draw = (err, busy, email = '') => {
+      const prev = (() => { const g = d.querySelector('form'); return g && g.country ? { c: g.country.value, l: g.plang.value, s: g.source.value, r: g.role.value } : {}; })();
       d.innerHTML = `<button type="button" class="sa-x"></button><h2></h2><p></p><form method="dialog" novalidate><label><span class="e"></span><input name="email" type="email" inputmode="email" autocomplete="email" required></label><label><span class="w"></span><input name="pw" type="password" minlength="8" maxlength="72" required></label><small></small><button class="sa-go" type="submit"></button></form><button type="button" class="sa-sw"></button>`;
       const f = d.querySelector('form');
       d.querySelector('.sa-x').textContent = '✕';
@@ -157,6 +178,34 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       const go = d.querySelector('.sa-go');
       go.textContent = busy ? t('wait') : t(mode === 'login' ? 'login' : 'register');
       go.disabled = !!busy;
+      if (mode === 'register') {
+        const mk = (label, name, opts, req, pre) => {
+          const l = document.createElement('label');
+          const sp = document.createElement('span'); sp.textContent = label + (req ? ' *' : '');
+          const sel = document.createElement('select'); sel.name = name;
+          const o0 = document.createElement('option'); o0.value = ''; o0.textContent = x().pickC; sel.appendChild(o0);
+          opts.forEach(([v, n]) => { const o = document.createElement('option'); o.value = v; o.textContent = n; sel.appendChild(o); });
+          sel.value = pre || '';
+          l.append(sp, sel);
+          return l;
+        };
+        const dn = (() => { try { return new Intl.DisplayNames([lang()], { type: 'region' }); } catch (e) { return null; } })();
+        const cs = COUNTRIES.map((c) => [c, (dn && dn.of(c)) || c]);
+        const guess = ((navigator.language || '').split('-')[1] || '').toUpperCase();
+        const keep = prev.c || (COUNTRIES.indexOf(guess) >= 0 ? guess : '');
+        const keepL = prev.l || lang();
+        const go0 = d.querySelector('.sa-go');
+        const wrap = document.createElement('div');
+        wrap.append(
+          mk(x().country, 'country', cs, true, keep),
+          mk(x().plang, 'plang', Object.keys(LANGNAME).map((k) => [k, LANGNAME[k]]), true, keepL),
+        );
+        const more = document.createElement('p'); more.className = 'sa-fine'; more.style.marginTop = '16px'; more.textContent = x().about;
+        wrap.append(more,
+          mk(x().source, 'source', Object.keys(x().src).map((k) => [k, x().src[k]]), false, prev.s || ''),
+          mk(x().role, 'role', Object.keys(x().rol).map((k) => [k, x().rol[k]]), false, prev.r || ''));
+        f.insertBefore(wrap, go0);
+      }
       if (err) {
         const box = document.createElement('p');
         box.className = 'sa-err';
@@ -185,7 +234,8 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
         d.querySelector('form').pw.value = pw;
         try {
           let ref; try { ref = localStorage.getItem('pe-ref') || undefined; } catch (_) {}
-          const out = await call(mode, mode === 'register' ? { username: em, password: pw, ref } : { username: em, password: pw });
+          if (mode === 'register' && !(f.country.value && f.plang.value)) throw new Error(!f.country.value ? x().needC : x().needL);
+          const out = await call(mode, mode === 'register' ? { username: em, password: pw, ref, country: f.country.value, lang: f.plang.value, source: f.source.value, role: f.role.value } : { username: em, password: pw });
           set(out.user, out.token);
           sync();
           d.close();
