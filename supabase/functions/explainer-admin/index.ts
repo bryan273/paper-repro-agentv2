@@ -71,6 +71,11 @@ Deno.serve(async (req) => {
         // a credit pack (notes "pack:10 user:<id> price:9") that becomes paid adds its credits exactly once
         const m = /pack:(\d+) user:([0-9a-f-]{36})/.exec(prev?.notes ?? "");
         if (m && body.status === "paid" && prev.status !== "paid") await grant(m[2], Number(m[1]), `bought pack x${m[1]}`);
+        const pl = /plan:(plus|pro)_(month|year)/.exec(prev?.notes ?? "");
+        if (m && pl && body.status === "paid" && prev.status !== "paid") {
+          const until = new Date(Date.now() + (pl[2] === "year" ? 366 : 31) * 86400_000).toISOString();
+          await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: m[2], meta: { plan: pl[1], until } }) });
+        }
         return json({ ok: true });
       }
       if (body.op === "grant") {

@@ -18,7 +18,7 @@ if not LADDER: print("no RKAPI key: template player instead"); sys.exit(2)
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 meta = next((m for m in json.load(open(os.path.join(d, "sections.json"), encoding="utf-8")) if m["i"] == k), {})
 idx = [i for i, s in enumerate(sc["scenes"]) if s.get("sec") == k]
-LANGS = [lg for lg in ("en", "zh") if os.path.exists(os.path.join(d, f"script_{lg}.json"))]   # a video made in one language has one script
+LANGS = [lg for lg in ("en", "zh", "vi", "id") if os.path.exists(os.path.join(d, f"script_{lg}.json"))]   # a video made in one language has one script
 dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="utf-8"))["scenes"] for lang in LANGS}
 # a beat lasts as long as the longer of its two narrations, so both languages fit the same picture
 beats = [round(max(dur[lg][i]["dur"] for lg in LANGS) / 1000, 2) for i in idx]
@@ -33,8 +33,8 @@ def words_of(lang, i):
 norm = lambda w: re.sub(r"[^0-9a-z]+", "", str(w).lower())
 # per beat: [seconds from the beat start, word] of the English narration, so a picture can appear on the word that names it
 CUES = {n: [[round(a + NARR_DELAY, 2), norm(w)] for a, _, w in words_of("en", i) if norm(w)] for n, i in enumerate(idx)}
-THEMES = {"classic": ("#04070c", "#3dff8f", "#4aa3ff", "#e9f3ff", "#8aa0b8"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
-          "sunset": ("#120a1f", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#050510", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#050505", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
+THEMES = {"classic": ("#0f1a2e", "#3dff8f", "#5fb0ff", "#f1f6ff", "#9db2c9"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
+          "sunset": ("#241338", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#10112a", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#1a1a1f", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
 theme = json.load(open(os.path.join(d, f"script_{LANGS[0]}.json"), encoding="utf-8")).get("theme") or "classic"
 BG, ACC, ACC2, TXT, MUT = THEMES.get(theme, THEMES["classic"])
 CINEMA = ("\nLook: cinematic documentary. Deep blue-black space, thin gold lines and gold highlights, slow smooth movement, a few faint drifting dots as background, generous empty space, labels in a serif font (font=\"Georgia\"). Each idea arrives like a title card: fade in, hold, fade out. Calm and elegant, never busy." if theme == "cinema" else "")
@@ -50,6 +50,7 @@ CUES = {CUES!r}
 PALETTE = [ACCENT, ACCENT2, "#ffb547", "#ff6b9a", "#a78bfa"]
 FONT = {('"Noto Sans CJK SC"' if LANGS == ["zh"] else '"Inter"') if os.name != "nt" else '""'}
 ICON_DIR = {os.path.join(ROOT, "icons")!r}
+FIG_DIR = {os.path.join(d, "figs")!r}
 '''
 HARNESS_BODY = open(os.path.join(ROOT, "kit.py"), encoding="utf-8").read() + r'''
 def _bb(m):
@@ -188,7 +189,8 @@ Return ONLY Python code in one ```python block: a single class `Section(Explaine
 HARD RULES (checked; the code is rejected otherwise)
 - For every beat i, in order, one block `with self.beat(i):`. Inside it, run_times plus waits total at most BEATS[i] seconds (the rest is waited out for you). Every beat visibly changes something.
 - NO LaTeX: never Tex, MathTex, DecimalNumber, Integer, Variable, Matrix, Brace, BraceLabel, BarChart, Title, Code, MathTable, add_coordinates, get_axis_labels, get_graph_label. All text is Text (unicode is fine: √ Σ × ≈ → ≤ ² ³).
-- No files, SVGs, images, sound, network, OS access, config, getattr/eval/exec, dunder names.
+- No files, SVGs, images (except the Figure kit piece), sound, network, OS access, config, getattr/eval/exec, dunder names.
+- Make it look rich, not like a text slide: every beat has a picture, a chart, a diagram or an icon, never only words; use colour and size contrast, and keep the background bright and clean.
 - Everything inside x [-6.6, 6.6], y [-2.4, 3.7] (the bottom is the caption strip). Never write narration sentences on screen: labels of at most 6 words. Text size 26 or more.
 - Every number on screen comes from the beat data; never invent results.
 
@@ -208,6 +210,7 @@ THE DESIGN KIT (use these: they are laid out, sized and spaced for you, so nothi
   Heatmap(matrix, row_labels, col_labels)          .cells ; attention maps, confusion matrices, similarity
   Stack([bottom .. top labels])                    .layers ; architectures, stacks of blocks
   Equation(["y", "=", "F(x)", "+", "x"], colors=[..])   build a formula piece by piece, Indicate the key part
+  Figure(fig_id)                                   the paper's OWN figure on a white card (a beat with "type":"figure" has its "fig" id): FadeIn it big and centred, then Circumscribe / Indicate the part the voice names; add a short Lbl title above it
   Quote(text, source)                              a short line quoted from the paper
   Venn(a, b, both)  /  Callout(target, text, UR)  /  Box(label, w, h, color)  /  Lbl(text, size, color, w)  /  fit(mob, w, h)  /  wrap(text, n)
   Icons: brain cpu database file-text image globe zap layers search lock users clock target trending-up trending-down eye message-square book-open graduation-cap lightbulb puzzle network git-branch shuffle repeat filter scale gauge rocket shield-check sparkles languages type cog box boxes grid-3x3 list-ordered check x alert-triangle sigma function-square scan-search workflow microscope flask-conical award timer coins server cloud camera music video bot user code chart-column chart-line chart-pie arrow-right split merge
@@ -227,7 +230,7 @@ DESIGN RULES
 def user_msg():
     b = []
     for n, i in enumerate(idx):
-        s = {kk: v for kk, v in sc["scenes"][i].items() if kk not in ("zh", "audio", "audio_ms", "dur", "sec", "evidence")}
+        s = {kk: v for kk, v in sc["scenes"][i].items() if kk not in ("zh", "vi", "id", "audio", "audio_ms", "dur", "sec", "evidence")}
         cue = " ".join(f"{w}@{t:.1f}" for t, w in CUES.get(n, []))
         b.append({"beat": n, "seconds": beats[n], **s, "spoken_words_at": cue})
     return (f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {meta.get('title', '')}\nWHAT IT EXPLAINS: {meta.get('text', '')}\n"
@@ -323,7 +326,7 @@ def caption_track(lang, starts, end):
     hi = ass_color(ACC)
     ass = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1280", "PlayResY: 720", "WrapStyle: 0", "", "[V4+ Styles]",
            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-           f"Style: S,{font},{40 if lang == 'en' else 42},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,3,0,2,90,90,42,1", "", "[Events]",
+           f"Style: S,{font},{42 if lang == 'zh' else 40},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,3,0,2,90,90,42,1", "", "[Events]",
            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
     PUNCT = ".,;:?!\u3002\uff0c\uff1b\uff1a\uff1f\uff01\u3001"
     for n, i in enumerate(idx):
@@ -342,16 +345,16 @@ def caption_track(lang, starts, end):
         for k, p in enumerate(pieces):
             if p[1] is not None: spans.append([p[0], p[1]]); continue
             nxt = next((q[2] for q in pieces[k + 1:] if q[1] is None), len(sent))
-            spans.append([p[0], sent[p[2]:nxt].strip() if lang == "en" else sent[p[2]:nxt].strip()])
+            spans.append([p[0], sent[p[2]:nxt].strip()])
         # phrases: up to 7 words (English) or 16 characters (Chinese), cut after punctuation
         chunks, cur_c = [], []
         for t, txt in spans:
             cur_c.append([t, txt])
-            size = len(cur_c) if lang == "en" else sum(len(x[1]) for x in cur_c)
-            if (lang == "en" and size >= 7) or (lang == "zh" and size >= 16) or (txt and txt[-1] in PUNCT and size >= (3 if lang == "en" else 6)):
+            size = sum(len(x[1]) for x in cur_c) if lang == "zh" else len(cur_c)
+            if (lang != "zh" and size >= 7) or (lang == "zh" and size >= 16) or (txt and txt[-1] in PUNCT and size >= (6 if lang == "zh" else 3)):
                 chunks.append(cur_c); cur_c = []
         if cur_c: chunks.append(cur_c)
-        sep = " " if lang == "en" else ""
+        sep = "" if lang == "zh" else " "
         for c, ch in enumerate(chunks):
             c_end = (a0 + NARR_DELAY + chunks[c + 1][0][0]) if c + 1 < len(chunks) else max(a0 + 0.6, b0 - 0.1)
             for k, (t, txt) in enumerate(ch):

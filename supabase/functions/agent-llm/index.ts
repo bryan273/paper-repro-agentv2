@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
   try {
     if (!KEY) return json({ error: "gateway not configured" }, 503);
-    const { app, messages, tools, max_tokens, json_mode, visitor, bypass_limits } = await req.json();
+    const { app, messages, tools, max_tokens, json_mode, visitor, bypass_limits, tier } = await req.json();
     // only another edge function (it holds the service key) may ask to skip the visitor and connection limits, for the QA admin account
     const skip = bypass_limits === true && req.headers.get("authorization") === `Bearer ${SB_SERVICE}`;
     if (!APPS.has(app)) return json({ error: "unknown app" }, 400);
@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       const t0 = Date.now();
       for (let attempt = 0; attempt < 2 && Date.now() - t0 < 50_000; attempt++) {
         try {
-          const rb: Record<string, unknown> = { model: Deno.env.get("RKAPI_APP_MODEL") ?? "claude-haiku-4-5-20251001", messages, max_tokens: body.max_tokens, temperature: 0.2, stream: true, stream_options: { include_usage: true } };
+          const rb: Record<string, unknown> = { model: (tier === "deep" && req.headers.get("authorization") === `Bearer ${SB_SERVICE}` ? (Deno.env.get("RKAPI_DEEP_MODEL") ?? "claude-sonnet-4-6") : Deno.env.get("RKAPI_APP_MODEL") ?? "claude-haiku-4-5-20251001"), messages, max_tokens: body.max_tokens, temperature: 0.2, stream: true, stream_options: { include_usage: true } };
           if (body.tools) rb.tools = body.tools;
           const rr = await fetch("https://rkapi.com/v1/chat/completions", { method: "POST", headers: { Authorization: `Bearer ${RK}`, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (repro-suite)" }, body: JSON.stringify(rb), signal: AbortSignal.timeout(45_000) });
           if (!rr.ok || !rr.body) { if ([429, 500, 502, 503, 504].includes(rr.status)) continue; return null; }

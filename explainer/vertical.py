@@ -31,11 +31,13 @@ big = ImageFont.truetype(F, 58)
 y = 220
 for ln in lines:
     g.text((60, y), ln, font=big, fill=(240, 244, 250)); y += 74
-hook = {"en": "The whole paper in under a minute", "zh": "一分钟看懂这篇论文"}[lang]
+hook = {"en": "The whole paper in under a minute", "zh": "一分钟看懂这篇论文", "vi": "Cả bài báo trong chưa đầy một phút", "id": "Seluruh makalah dalam kurang dari semenit"}.get(lang) or "The whole paper in under a minute"
 g.text((60, y + 18), hook, font=mid, fill=(148, 163, 184))
 by = VY + VH + 90
 foot = {"en": ["Every quote and number on screen", "is checked against the paper text.", "", LABEL, "bryan273.github.io/repro-suite/explainer"],
-        "zh": ["画面里的每句引文和每个数字", "都和论文原文核对过。", "", LABEL, "bryan273.github.io/repro-suite/explainer"]}[lang]
+        "zh": ["画面里的每句引文和每个数字", "都和论文原文核对过。", "", LABEL, "bryan273.github.io/repro-suite/explainer"],
+        "vi": ["Mọi trích dẫn và con số trên màn hình", "đều được đối chiếu với bài báo.", "", LABEL, "bryan273.github.io/repro-suite/explainer"],
+        "id": ["Setiap kutipan dan angka di layar", "dicek terhadap teks makalah.", "", LABEL, "bryan273.github.io/repro-suite/explainer"]}[lang if lang in ("zh", "vi", "id") else "en"]
 for i, ln in enumerate(foot):
     g.text((60, by), ln, font=small if i < 3 else mid, fill=(203, 213, 225) if i < 3 else (52, 211, 153)); by += 54 if i < 3 else 62
 bg = os.path.join(d, f"vbg_{lang}.png"); im.save(bg)
