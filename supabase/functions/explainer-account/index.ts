@@ -26,6 +26,26 @@ const planOf = async (userId: string | undefined): Promise<string | null> => {
   return e?.meta?.until && new Date(e.meta.until) > new Date() ? String(e.meta.plan) : null;
 };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// The country behind a request: the network's own header when there is one, otherwise a lookup of the address (cached, never slows a request by more than a moment).
+const geoCache = new Map<string, string>();
+const geoOf = async (req: Request): Promise<string> => {
+  const h = (req.headers.get("cf-ipcountry") ?? "").toUpperCase();
+  if (/^[A-Z]{2}$/.test(h) && h !== "XX") return h;
+  const ip = clientIp(req);
+  if (!ip || /^(10\.|127\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd)/i.test(ip)) return "";
+  if (geoCache.has(ip)) return geoCache.get(ip)!;
+  let c = "";
+  for (const u of [`https://get.geojs.io/v1/ip/country/${encodeURIComponent(ip)}`, `https://ipapi.co/${encodeURIComponent(ip)}/country/`]) {
+    try {
+      const r = await fetch(u, { signal: AbortSignal.timeout(1500) });
+      const x = (await r.text()).trim().toUpperCase();
+      if (r.ok && /^[A-Z]{2}$/.test(x)) { c = x; break; }
+    } catch { /* try the next one */ }
+  }
+  if (geoCache.size > 2000) geoCache.clear();
+  geoCache.set(ip, c);
+  return c;
+};
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
 const publicUser = (u: { id: string; username: string; credits: number; created_at: string }) => ({ id: u.id, username: u.username, credits: u.credits, created_at: u.created_at });
@@ -121,7 +141,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET") {
       const user = await userOf(req);
       const actor = await actorOf(req, req.headers.get("x-visitor-id"));
-      if (u.searchParams.get("whereami")) return json({ country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() || null });   // the caller's own country as the network reports it
+      if (u.searchParams.get("whereami")) return json({ country: (await geoOf(req)) || null });   // the caller's own country as the network reports it
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at,expired_at&order=created_at.desc&limit=50`));
@@ -146,7 +166,7 @@ Deno.serve(async (req) => {
       const type = String(body.type ?? "");
       if (!EVENTS.has(type)) return json({ error: "unknown event" }, 400);
       const user = await userOf(req);
-      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() }, user?.id ?? null);
+      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: (type === "visit" ? await geoOf(req) : "") }, user?.id ?? null);
       return json({ ok: true });
     }
 
@@ -236,7 +256,7 @@ Deno.serve(async (req) => {
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
       if (!handle) handle = await suggestHandle(username);
       await logEvent("", "handle", { handle }, user.id);
-      await logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() }, user.id);
+      await logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: await geoOf(req) }, user.id);
       const rc = String(body.ref ?? "").toLowerCase();
       if (/^[0-9a-f]{8}$/.test(rc)) {   // came through a friend's link: the friend gets free videos (a few per friend, never from the same browser)
         try {
