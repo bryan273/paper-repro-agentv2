@@ -46,6 +46,17 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       rT: 'Pilih kata sandi baru', rGo: 'Simpan kata sandi', verified: 'Email dikonfirmasi. Anda sudah masuk.', ok: 'OK', badLink: 'Tautan ini sudah tidak berlaku.' },
   };
   const m = (k) => (M[lang()] || M.en)[k] || M.en[k];
+  const Y = {
+    en: { emailOrUser: 'Email or username', userLabel: 'Username', userHint: '3 to 24 letters, numbers, dots or underscores. You can sign in with it.', needUser: 'Choose a username.', switchT: 'Accounts on this device', addAcct: 'Add another account', continueAs: 'Continue as', plan: 'plan' },
+    zh: { emailOrUser: '邮箱或用户名', userLabel: '用户名', userHint: '3 到 24 位字母、数字、点或下划线，可用它登录。', needUser: '请设置用户名。', switchT: '此设备上的账户', addAcct: '添加其他账户', continueAs: '继续使用', plan: '套餐' },
+    vi: { emailOrUser: 'Email hoặc tên người dùng', userLabel: 'Tên người dùng', userHint: '3 đến 24 chữ cái, số, dấu chấm hoặc gạch dưới. Bạn có thể dùng nó để đăng nhập.', needUser: 'Hãy chọn tên người dùng.', switchT: 'Tài khoản trên thiết bị này', addAcct: 'Thêm tài khoản khác', continueAs: 'Tiếp tục với', plan: 'gói' },
+    id: { emailOrUser: 'Email atau nama pengguna', userLabel: 'Nama pengguna', userHint: '3 sampai 24 huruf, angka, titik, atau garis bawah. Bisa dipakai untuk masuk.', needUser: 'Pilih nama pengguna.', switchT: 'Akun di perangkat ini', addAcct: 'Tambah akun lain', continueAs: 'Lanjutkan sebagai', plan: 'paket' },
+  };
+  const y = (k) => (Y[lang()] || Y.en)[k] || Y.en[k];
+  const ACC = 'pe-accounts';
+  const accts = () => { try { return JSON.parse(get(ACC) || '[]'); } catch (e) { return []; } };
+  const saveAccts = (a) => put(ACC, a.length ? JSON.stringify(a.slice(0, 8)) : '');
+  const shown = (u) => (u && (u.handle || (u.username || '').split('@')[0])) || '?';
   const LANGNAME = { en: 'English', zh: '中文', vi: 'Tiếng Việt', id: 'Bahasa Indonesia' };
   const COUNTRIES = 'CN VN ID US SG MY TH PH JP KR IN HK TW MO GB AU CA DE FR ES IT NL SE CH BR MX AE SA TR RU PK BD LK NP EG NG ZA KE NZ IE PL UA IL AR CL CO'.split(' ');
   const get = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
@@ -88,6 +99,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
 .sa-d input:focus{outline:2px solid #5b4bff;outline-offset:0;border-color:transparent}.sa-d select{display:block;width:100%;height:44px;margin-top:6px;padding:0 10px;border:1px solid var(--sa-line);border-radius:11px;background:transparent;color:inherit;font:400 15px Inter,sans-serif;box-sizing:border-box}.sa-d select option{color:#111}
 .sa-d small{display:block;margin-top:5px;font-size:12.5px;color:var(--sa-mut)}
 .sa-go{width:100%;min-height:46px;margin-top:18px;border:0;border-radius:12px;background:#5b4bff;color:#fff;font:600 15px Inter,'Noto Sans SC',sans-serif;cursor:pointer}.sa-go:disabled{opacity:.6;cursor:wait}
+.sa-ab{display:block;width:100%;padding:11px 14px;border:1px solid var(--sa-line);border-radius:11px;background:transparent;color:var(--sa-fg);font:600 14px Inter,'Noto Sans SC',sans-serif;cursor:pointer;text-align:left}.sa-ab:hover{border-color:#5b4bff}
 .sa-sw{display:block;margin:12px auto 0;padding:6px;border:0;background:none;color:var(--sa-fg);font:500 13.5px Inter,'Noto Sans SC',sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .sa-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--sa-mut);font-size:18px;cursor:pointer}
 .sa-err{margin:12px 0 0;padding:9px 11px;border-radius:9px;background:rgba(198,40,40,.1);color:#b3261e;font-size:13.5px}.sa-d .sa-fine{font-size:12.5px;text-align:center}.sa-fine a{color:inherit}
@@ -118,8 +130,8 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'sa-me';
-    b.textContent = (user.username || '?')[0];
-    b.title = user.username;
+    b.textContent = shown(user)[0].toUpperCase();
+    b.title = shown(user) + ' (' + user.username + ')';
     b.setAttribute('aria-label', t('menu'));
     b.setAttribute('aria-expanded', String(open));
     b.onclick = (e) => { e.stopPropagation(); open = !open; paint(); };
@@ -129,8 +141,12 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
     m.className = 'sa-m';
     const p = document.createElement('p');
     const name = document.createElement('b');
-    name.textContent = user.username;
+    name.textContent = shown(user);
     p.appendChild(name);
+    const mail = document.createElement('small');
+    mail.textContent = user.username;
+    mail.style.cssText = 'display:block;font-weight:400;opacity:.7;word-break:break-all';
+    p.appendChild(mail);
     if (typeof user.credits === 'number') {
       const c = document.createElement('span');
       c.textContent = user.admin ? t('unlimited') : `${user.credits} ${t('credits')}`;
@@ -159,14 +175,44 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       ad.textContent = 'Admin';
       m.append(ad);
     }
+    const others = accts().filter((a) => a.id !== user.id);
+    if (others.length) {
+      const hd = document.createElement('p'); hd.className = 'sa-fine'; hd.style.margin = '10px 0 4px'; hd.textContent = y('switchT');
+      m.append(hd);
+      others.forEach((a) => {
+        const sw = document.createElement('button');
+        sw.type = 'button'; sw.textContent = shown(a.user) + ' (' + a.user.username + ')';
+        sw.onclick = () => switchTo(a);
+        m.append(sw);
+      });
+    }
+    const add = document.createElement('button');
+    add.type = 'button'; add.textContent = '+ ' + y('addAcct');
+    add.onclick = () => { open = false; paint(); dialog('login'); };
+    m.append(add);
     m.append(out);
     root.appendChild(m);
   }
 
+  function switchTo(a) {
+    put(TOKEN, a.token);
+    user = { ...a.user };
+    open = false;
+    put(USER, JSON.stringify(user));
+    paint();
+    sync();   // loads the real profile of that account, or drops it when its session has ended
+    window.dispatchEvent(new Event('suite-auth'));
+  }
+
   function set(u, token) {
+    const oldToken = get(TOKEN);
     user = u;
     open = false;
     if (token !== undefined) put(TOKEN, token);
+    let list = accts();
+    if (u && token) list = [{ id: u.id, token, user: { id: u.id, username: u.username, handle: u.handle || null } }, ...list.filter((a) => a.id !== u.id)];
+    else if (!u && oldToken) list = list.filter((a) => a.token !== oldToken);
+    saveAccts(list);
     put(USER, u ? JSON.stringify(u) : '');
     paint();
     window.dispatchEvent(new Event('suite-auth'));
@@ -253,7 +299,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
     const d = document.createElement('dialog');
     d.className = 'sa-d';
     const draw = (err, busy, email = '') => {
-      const prev = (() => { const g = d.querySelector('form'); return g && g.country ? { c: g.country.value, l: g.plang.value, s: g.source.value, r: g.role.value } : {}; })();
+      const prev = (() => { const g = d.querySelector('form'); return g && g.country ? { c: g.country.value, l: g.plang.value, s: g.source.value, r: g.role.value, h: g.handle ? g.handle.value : '' } : {}; })();
       d.innerHTML = `<button type="button" class="sa-x"></button><h2></h2><p></p><form method="dialog" novalidate><label><span class="e"></span><input name="email" type="email" inputmode="email" autocomplete="email" required></label><label><span class="w"></span><input name="pw" type="password" minlength="8" maxlength="72" required></label><small></small><button class="sa-go" type="submit"></button></form><button type="button" class="sa-sw"></button>`;
       const f = d.querySelector('form');
       d.querySelector('.sa-x').textContent = '✕';
@@ -261,11 +307,31 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       d.querySelector('.sa-x').onclick = () => d.close();
       d.querySelector('h2').textContent = t(mode === 'login' ? 'titleL' : 'titleR');
       d.querySelector('p').textContent = t('one');
-      d.querySelector('.e').textContent = t('email');
+      d.querySelector('.e').textContent = mode === 'login' ? y('emailOrUser') : t('email');
       d.querySelector('.w').textContent = t('pw');
       f.pw.autocomplete = mode === 'login' ? 'current-password' : 'new-password';
       d.querySelector('small').textContent = mode === 'register' ? t('hint') : '';
       f.email.value = email;
+      if (mode === 'login') { f.email.type = 'text'; f.email.setAttribute('inputmode', 'email'); f.email.autocomplete = 'username'; }
+      if (mode === 'login' && accts().length && !d.querySelector('.sa-accts')) {
+        const box = document.createElement('div'); box.className = 'sa-accts'; box.style.cssText = 'display:grid;gap:6px;margin:12px 0 0';
+        accts().forEach((a) => {
+          const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'sa-ab';
+          bt.textContent = y('continueAs') + ' ' + shown(a.user);
+          bt.onclick = () => { d.close(); switchTo(a); };
+          box.append(bt);
+        });
+        d.querySelector('p').after(box);
+      }
+      if (mode === 'register') {
+        const wrapH = document.createElement('label');
+        const spH = document.createElement('span'); spH.textContent = y('userLabel') + ' *';
+        const inH = document.createElement('input'); inH.name = 'handle'; inH.type = 'text'; inH.autocomplete = 'username'; inH.maxLength = 24; inH.value = prev.h || '';
+        const smH = document.createElement('small'); smH.textContent = y('userHint');
+        wrapH.append(spH, inH, smH);
+        const labels = f.querySelectorAll(':scope > label');
+        labels[0].after(wrapH);
+      }
       const go = d.querySelector('.sa-go');
       go.textContent = busy ? t('wait') : t(mode === 'login' ? 'login' : 'register');
       go.disabled = !!busy;
@@ -329,8 +395,9 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
         d.querySelector('form').pw.value = pw;
         try {
           let ref; try { ref = localStorage.getItem('pe-ref') || undefined; } catch (_) {}
+          if (mode === 'register' && !f.handle.value.trim()) throw new Error(y('needUser'));
           if (mode === 'register' && !(f.country.value && f.plang.value)) throw new Error(!f.country.value ? x().needC : x().needL);
-          const out = await call(mode, mode === 'register' ? { username: em, password: pw, ref, country: f.country.value, lang: f.plang.value, source: f.source.value, role: f.role.value } : { username: em, password: pw });
+          const out = await call(mode, mode === 'register' ? { username: em, email: em, handle: f.handle.value.trim().toLowerCase(), password: pw, ref, country: f.country.value, lang: f.plang.value, source: f.source.value, role: f.role.value } : { username: em, password: pw });
           if (out.pending) { d.close(); checkEmailDialog(out.email || em); return; }
           set(out.user, out.token);
           sync();
@@ -338,6 +405,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
         } catch (x) {
           if (x.code === 'need_verify') { d.close(); checkEmailDialog(x.email || em); return; }
           draw(/fetch|network/i.test(String(x.message)) ? t('fail') : x.message, false, em);
+          d.querySelector('form').pw.value = pw;
         }
       };
     };
@@ -357,7 +425,8 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       if (!res.ok) return;
       user = out.user ? { ...out.user, admin: !!out.admin } : null;
       put(USER, user ? JSON.stringify(user) : '');
-      if (!user) put(TOKEN, '');
+      if (!user) { saveAccts(accts().filter((a) => a.token !== token)); put(TOKEN, ''); }
+      else if (token) saveAccts(accts().map((a) => (a.token === token ? { ...a, user: { id: user.id, username: user.username, handle: user.handle || null } } : a)));
       paint();
     } catch { /* offline: keep what we have */ }
   }
