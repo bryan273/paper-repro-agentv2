@@ -323,3 +323,16 @@ def IconRow(items, color=ACCENT, colors=None):
     g.arrange(RIGHT, buff=0.7, aligned_edge=UP)
     fit(g, 12.4, 4.6)
     return g.move_to([0, 0.4, 0])
+
+
+def Figure(fid, w=9.6, h=4.9):
+    """One of the paper's own figures on a white card (fid is the "fig" of a figure beat). Falls back to a short label when the picture is missing."""
+    p = os.path.join(FIG_DIR, f"{fid}.png")
+    if not os.path.exists(p):
+        return Lbl("figure not available", 28, MUTED)
+    img = ImageMobject(p)
+    img.scale_to_fit_width(w - 0.3)
+    if img.height > h - 0.3: img.scale_to_fit_height(h - 0.3)
+    card = RoundedRectangle(corner_radius=0.18, width=img.width + 0.3, height=img.height + 0.3, fill_color="#FFFFFF", fill_opacity=1, stroke_color=ACCENT, stroke_width=3)
+    card.move_to(img.get_center())
+    return Group(card, img)

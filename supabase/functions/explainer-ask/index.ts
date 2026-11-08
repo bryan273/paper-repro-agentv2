@@ -104,8 +104,11 @@ async function arxivText(id: string): Promise<string> {
   return `${abstract}\n${full}`.slice(0, MAX_TEXT);
 }
 
+const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietnamese", id: "Indonesian", en: "English" };
+const DEEP_TRIAL = 2;   // a member may try the deeper model this many times a day before it becomes a Plus feature
+const QUIZ_GUEST = 3, QUIZ_MEMBER = 12;
 const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
-Write every answer in ${lang === "zh" ? "Simplified Chinese" : "English"}.
+Write every answer in ${LANGNAME[lang] ?? "English"}.
 Return ONLY JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}
 Rules:
 - kind "paper": something the paper itself says. Put ONE short quote (at most 30 words) in "quote", copied WORD FOR WORD from the PAPER TEXT below, in the paper's own language. Never invent or paraphrase a quote. If you cannot quote it, use kind "general".
@@ -134,9 +137,10 @@ Deno.serve(async (req) => {
     const b = await req.json();
     const jobId = String(b.job ?? "");
     if (!/^[0-9a-f-]{36}$/.test(jobId)) return json({ error: "job required" }, 400);
-    const intent = b.intent === "simpler" ? "simpler" : "ask";
+    const intent = b.intent === "simpler" ? "simpler" : b.intent === "quiz" ? "quiz" : "ask";
+    const deep = b.model === "deep" && intent !== "quiz";
     const mode = b.mode === "paper" ? "paper" : "plus";
-    const lang = b.lang === "zh" ? "zh" : "en";
+    const lang = ["zh", "vi", "id"].includes(b.lang) ? b.lang : "en";
     const q = String(b.q ?? "").replace(/\s+/g, " ").trim().slice(0, 600);
     const secIdx = Number.isInteger(b.section) ? Number(b.section) : -1;
     if (intent === "ask" && q.length < 2) return json({ error: "Type a question first." }, 400);
@@ -153,6 +157,32 @@ Deno.serve(async (req) => {
       return json({ error: user ? "You reached today's question limit. Try again tomorrow." : `You used your ${limit} free questions today. Sign up free for more.`, code: user ? "ask_member" : "ask_guest" }, 429);
     }
 
+    let plan: string | null = null;
+    if (user) {
+      const [pe] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+      plan = pe?.meta?.until && new Date(pe.meta.until) > new Date() ? String(pe.meta.plan) : null;
+    }
+    if (deep && !isAdmin(user) && plan !== "pro") {
+      if (!user) return json({ error: "The deeper model is free to try once you sign up.", code: "deep_signup" }, 402);
+      const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.deep&created_at=gte.${since}&select=id`)).length;
+      if (tried >= DEEP_TRIAL) return json({ error: `You used your ${DEEP_TRIAL} free deep answers today. Deeper answers are part of Plus.`, code: "deep_premium" }, 402);
+    }
+    if (intent === "quiz" && !isAdmin(user) && !plan) {
+      const qs = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.quiz&created_at=gte.${since}&select=id`)).length;
+      if (qs >= (user ? QUIZ_MEMBER : QUIZ_GUEST)) return json({ error: user ? "You used today's free interactive checks. Unlimited checks are part of Plus." : "That was your free taste of interactive mode. Sign up free for more.", code: user ? "quiz_premium" : "quiz_signup" }, 402);
+    }
+
+    // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them
+    let who = "";
+    if (user) {
+      const [pr] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.profile&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+      const m = pr?.meta;
+      if (m && (m.level || m.field || m.goal || m.purpose)) {
+        const lv = ({ beginner: "a beginner", intermediate: "at an intermediate level", expert: "an expert" } as Record<string, string>)[m.level] ?? "";
+        who = `\nABOUT THE LEARNER (adapt depth, vocabulary and examples to them; never mention this note): ${[lv && `they are ${lv}`, m.field && `their field is ${m.field}`, m.goal && `their goal: ${m.goal}`, m.purpose && `they use this for ${({ study: "studying a course", research: "reading research", teach: "teaching others", share: "making content to share", curious: "curiosity" } as Record<string, string>)[m.purpose] ?? m.purpose}`].filter(Boolean).join("; ")}.`;
+      }
+    }
+
     let text: string = job.paper_text ?? "";
     if (text.length < 1500 && /^\d{4}\.\d{4,5}$/.test(job.arxiv)) {
       text = await arxivText(job.arxiv);
@@ -161,13 +191,31 @@ Deno.serve(async (req) => {
     if (text.length < 1500) return json({ error: "The paper text is not available for this video. Ask works for videos made after this update, and for arXiv papers.", code: "no_text" }, 409);
 
     const sec = secIdx >= 0 && Array.isArray(job.sections) ? job.sections[secIdx] : null;
-    const secTitle = sec ? String((lang === "zh" ? sec.title_zh : sec.title) || sec.title || "") : "";
-    const secText = sec ? String((lang === "zh" ? sec.text_zh : sec.text) || sec.text || "") : "";
+    const secTitle = sec ? String((sec[`title_${lang}`] ?? sec.title) || sec.title || "") : "";
+    const secText = sec ? String((sec[`text_${lang}`] ?? sec.text) || sec.text || "") : "";
+    if (intent === "quiz") {
+      const qsys = `You write ONE multiple-choice question that checks whether a viewer understood one part of a research-paper video. Use only the PAPER TEXT. Write in ${LANGNAME[lang]}. Return ONLY JSON: {"question":str,"options":[str,str,str],"answer":0|1|2,"why":str}. Options are short; exactly one is correct; the wrong ones are plausible, not silly; "why" is one or two sentences saying why the right option is right, using the paper's idea. Vary which position is correct.\n\nPAPER TEXT:\n${text.slice(0, 16000)}`;
+      const qr = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
+        body: JSON.stringify({ app: "companion", messages: [{ role: "system", content: qsys }, { role: "user", content: `The video part: "${secTitle}". ${secText}\nAsk one question about it.` }], max_tokens: 700, json_mode: true, visitor: actor, ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
+      });
+      const qo = await qr.json().catch(() => ({}));
+      if (!qr.ok) return json({ error: qo.error ?? "The tutor is busy. Please try again in a minute.", code: qo.code ?? "busy" }, qr.status === 429 ? 429 : 503);
+      let qz: { question?: string; options?: unknown; answer?: unknown; why?: string } = {};
+      try { qz = JSON.parse(String(qo.message?.content ?? "").replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); } catch { /* unreadable */ }
+      const opts = Array.isArray(qz.options) ? qz.options.map((o) => String(o).slice(0, 140)).slice(0, 3) : [];
+      const ans = Number(qz.answer);
+      if (!qz.question || opts.length !== 3 || !(ans >= 0 && ans <= 2)) return json({ error: "Could not write a question for this part. Try again.", code: "bad_quiz" }, 502);
+      const qu = qo.usage ?? {};
+      await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: "quiz", tokens: (qu.prompt_tokens ?? 0) + (qu.completion_tokens ?? 0) }) });
+      return json({ quiz: { question: String(qz.question).slice(0, 300), options: opts, answer: ans, why: String(qz.why ?? "").slice(0, 400) } });
+    }
     const ask = intent === "simpler"
       ? `I did not understand this part of the video${secTitle ? ` ("${secTitle}")` : ""}: ${secText || q}\nExplain it again for a complete beginner, with an everyday analogy, and say what I should know first.`
       : sec ? `${q}\n(I am asking about the video part "${secTitle}": ${secText})` : q;
     const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m: { role?: string; text?: string }) => ({ role: m.role === "ai" ? "assistant" : "user", content: String(m.text ?? "").slice(0, 700) })).filter((m: { content: string }) => m.content);
-    const messages = [{ role: "system", content: SYSTEM(text, mode, lang) }, ...history, { role: "user", content: ask }];
+    const messages = [{ role: "system", content: SYSTEM(text, mode, lang) + who }, ...history, { role: "user", content: ask }];
 
     let out: { message?: { content?: string }; usage?: Record<string, number>; finish_reason?: string; error?: string; code?: string } = {};
     let content = "";
@@ -176,7 +224,7 @@ Deno.serve(async (req) => {
       const r = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
-        body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 2600 : 1600, json_mode: true, visitor: actor, ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
+        body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 2600 : 1600, json_mode: true, visitor: actor, ...(deep ? { tier: "deep" } : {}), ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
       });
       out = await r.json().catch(() => ({}));
       if (!r.ok) return json({ error: out.error ?? "The tutor is busy. Please try again in a minute.", code: out.code ?? "busy" }, r.status === 429 ? 429 : 503);
@@ -203,7 +251,7 @@ Deno.serve(async (req) => {
     const messages2 = [...(prev?.messages ?? []), { role: "user", text: q || (lang === "zh" ? "再讲得简单一点" : "Explain it more simply"), section: secIdx >= 0 ? secIdx : null, t: now }, { role: "ai", blocks, followups, t: now }].slice(-40);
     await db("explainer_chats?on_conflict=job_id,owner", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ job_id: jobId, owner, messages: messages2, updated_at: now }]) });
     const u = out.usage ?? {};
-    await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) });
+    await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: deep ? "deep" : intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) });
     await logEvent(actor, "ask", { intent, mode }, user?.id ?? null).catch(() => undefined);
     return json({ blocks, followups, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
   } catch (e) {

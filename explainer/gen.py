@@ -67,6 +67,43 @@ def page_texts(data):
     except Exception as e:
         print("page texts skipped:", str(e)[:100]); return []
 
+def extract_figures(data, out, limit=10):
+    """Crop the figures of a PDF (the picture above each "Figure N" caption) to PNG files, so a scene can show the paper's own chart or diagram.
+    Best effort: returns [{"id","page","caption","file"}], [] when nothing usable is found."""
+    figs = []
+    try:
+        import fitz
+        doc = fitz.open(stream=data, filetype="pdf"); fd = os.path.join(out, "figs"); os.makedirs(fd, exist_ok=True)
+        seen = set()
+        for pno, page in enumerate(doc):
+            if len(figs) >= limit or pno > 40: break
+            pr = page.rect
+            blocks = [b for b in page.get_text("blocks") if b[6] == 0]
+            caps = [b for b in blocks if re.match(r"^\s*(Figure|Fig\.)\s*(\d+)", b[4] or "")]
+            if not caps: continue
+            art = [fitz.Rect(i["bbox"]) for i in page.get_image_info() if fitz.Rect(i["bbox"]).width > 60 and fitz.Rect(i["bbox"]).height > 40]
+            art += [fitz.Rect(d["rect"]) for d in page.get_drawings() if d["rect"].width > 6 and d["rect"].height > 6 and d["rect"].width < pr.width * 0.98]
+            for c in caps:
+                n = re.match(r"^\s*(?:Figure|Fig\.)\s*(\d+)", c[4]).group(1)
+                if n in seen: continue
+                cap = fitz.Rect(c[:4])
+                above = [r for r in art if r.y1 <= cap.y0 + 4 and r.y1 > cap.y0 - pr.height * 0.95 and r.y0 >= 0]
+                if len(above) < 1: continue
+                top = min(r.y0 for r in above); ys = cap.y0 - 3
+                # grow upward only through art that is connected to the picture (no body text in between)
+                texts = [fitz.Rect(b[:4]) for b in blocks if b is not c and len(b[4] or "") > 120]
+                clip = fitz.Rect(max(0, min(r.x0 for r in above) - 6), max(0, top - 6), min(pr.width, max(r.x1 for r in above) + 6), ys)
+                if any(t.intersects(clip) and t.height > 18 and t.width > clip.width * 0.6 for t in texts): continue
+                if clip.width < 120 or clip.height < 70: continue
+                f = os.path.join(fd, f"fig{n}.png"); page.get_pixmap(clip=clip, dpi=170).save(f)
+                if os.path.getsize(f) < 6000: os.remove(f); continue
+                seen.add(n); figs.append({"id": f"fig{n}", "page": pno + 1, "caption": re.sub(r"\s+", " ", c[4]).strip()[:200], "file": f"figs/fig{n}.png"})
+                if len(figs) >= limit: break
+    except Exception as e:
+        print("figures skipped:", str(e)[:120])
+    json.dump(figs, open(os.path.join(out, "figures.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    return figs
+
 def paper_file(path):
     """A PDF the visitor uploaded (already saved on this machine). Returns (title, abstract, text)."""
     import fitz
@@ -101,6 +138,7 @@ Schema: {"title":str,"section":{"title":str(max 7 words, names what the section 
 - "flow": {"nodes":[{"h":str,"t":str},3 to 5 items]}  (a pipeline or architecture)
 - "number": {"value":number,"unit":str,"label":str,"bars":[{"label":str,"value":number}...] optional}  (a headline result; value must appear in the paper)
 - "quote": {"text":str,"source":str}  (text must be a verbatim quote)
+- "figure": {"fig":str}  (shows one of the paper's own figures, by id from the FIGURES list below; use it for a scene whose narration explains what that figure shows, up to a third of the scenes; never invent an id)
 - "end": {"big":str,"sub":str,"note":str}  (last scene)
 {ORDER} Total spoken length about {SECONDS} seconds at normal speed (about {WORDS} words in all, counting English only). Write it as one person talking to a friend, not as a list of captions: join the scenes with natural transitions ("So", "Here is the catch", "That is why", "Now"), start the next scene from where the last one stopped, never repeat what an earlier scene already said, and make an abstract idea concrete with one short example or analogy when it helps. Use as many scenes as that length needs and vary the scene types.{CUSTOM}"""
 
@@ -250,18 +288,31 @@ def llm(system, user, model="deepseek"):
                 if patient: time.sleep(4)
     raise RuntimeError(f"all script models failed: {last}")
 
+OTHER = {"vi": ("Vietnamese", "vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural"), "id": ("Indonesian", "id-ID-GadisNeural", "id-ID-ArdiNeural")}   # languages made as one-language videos besides en and zh
+FIGS = []   # the figures cropped from the paper: scenes may show them
+SLOT = {"v": "zh"}   # the field that carries the second narration: "zh" normally, the language code for a Vietnamese or Indonesian video
+
+def localize(sysmsg, code):
+    """Ask for the narration and the section texts in another language, in the field named after its code."""
+    name = OTHER[code][0]
+    sysmsg = sysmsg.replace('"zh" (the same narration in natural spoken Chinese, not a word-for-word translation)', f'"{code}" (the same narration in natural spoken {name}, not a word-for-word translation)')
+    for f in ("title", "text", "takeaway"): sysmsg = sysmsg.replace(f'"{f}_zh"', f'"{f}_{code}"')
+    return sysmsg
+
 def norm(s): return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
 
 def normalize(sc):
     """A scene missing the fields its type needs becomes a plain card scene, so one sloppy scene cannot break the video."""
-    need = {"title": ("big",), "cards": ("cards",), "tokens": ("words",), "flow": ("nodes",), "number": ("value",), "quote": ("text",), "end": ("big",)}
+    need = {"figure": ("fig",), "title": ("big",), "cards": ("cards",), "tokens": ("words",), "flow": ("nodes",), "number": ("value",), "quote": ("text",), "end": ("big",)}
     keep = []
     for s in sc.get("scenes") or []:
-        if not isinstance(s, dict) or not s.get("en") or not s.get("zh"): continue
+        if not isinstance(s, dict) or not s.get("en") or not s.get(SLOT["v"]): continue
         t = s.get("type")
         for f in ("cards", "nodes", "words"):   # a model sometimes wraps the list as {"cards": [...]}, as the prompt example is written
             if isinstance(s.get(f), dict): s[f] = s[f].get(f) if isinstance(s[f].get(f), list) else None
         ok = t in need and all(s.get(f) not in (None, "", []) for f in need[t])
+        if ok and t == "figure" and s.get("fig") not in {f["id"] for f in FIGS}: ok = False
+        if ok and t == "figure": s["cards"] = [{"h": "Figure", "t": (next((f["caption"] for f in FIGS if f["id"] == s["fig"]), "") or s["en"])[:60]}]
         if ok and t == "number":
             try: float(str(s["value"]).replace(",", ""))
             except ValueError: ok = False
@@ -319,15 +370,18 @@ def dur_ms(path):
 
 async def main():
     ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--file", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
-    ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default=""); ap.add_argument("--langs", default="both")
+    ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default=""); ap.add_argument("--langs", default="both"); ap.add_argument("--voice-x", default="")
     a = ap.parse_args()
+    if a.langs in OTHER: SLOT["v"] = a.langs
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
     LABEL = 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     try:
         title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text)); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
         try:
             pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
-            if pdf[:5] == b"%PDF-": json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
+            if pdf[:5] == b"%PDF-":
+                json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
+                FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS])
         except Exception as e: print("pdf pages skipped:", str(e)[:100])
     except Exception as e:
         # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
@@ -339,13 +393,15 @@ async def main():
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
         n, secs = part_plan(a.seconds)
-        lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else ""
+        lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
         plan = plan_sections(title, text, n, a.model) if n > 1 else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         def one(i):
             sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note)
-            return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}", a.model)
+            if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
+            figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" for f in FIGS)) if FIGS else ""
+            return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
         if n == 1:
             sc, usage = one(0)
             for x in sc["scenes"]: x["sec"] = 0
@@ -364,7 +420,7 @@ async def main():
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file) else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     LANGS = ["en", "zh"] if a.langs == "both" else [a.langs]   # a viewer who needs one language does not wait for the other
-    VOICE = {"en": a.voice_en, "zh": a.voice_zh}
+    VOICE = {"en": a.voice_en, "zh": a.voice_zh, **({a.langs: a.voice_x or OTHER[a.langs][1]} if a.langs in OTHER else {})}
     gate = asyncio.Semaphore(8)   # narration is a few clips per section: fetch them side by side, in every language at once
     async def clip(lang, i, s):
         p = os.path.join(out, f"{lang}_{i}.mp3")
@@ -392,7 +448,8 @@ async def main():
         part = [s for s in sc["scenes"] if s.get("sec") == k]
         if not part: continue
         meta.append({"i": k, "title": sec.get("title") or f"Part {k + 1}", "title_zh": sec.get("title_zh") or sec.get("title") or f"第 {k + 1} 部分",
-                     "text": sec.get("text") or " ".join(s["en"] for s in part), "text_zh": sec.get("text_zh") or "".join(s["zh"] for s in part),
-                     "takeaway": sec.get("takeaway") or "", "takeaway_zh": sec.get("takeaway_zh") or ""})
+                     "text": sec.get("text") or " ".join(s["en"] for s in part), "text_zh": sec.get("text_zh") or "".join(s.get("zh") or "" for s in part),
+                     "takeaway": sec.get("takeaway") or "", "takeaway_zh": sec.get("takeaway_zh") or "",
+                     **({f"title_{a.langs}": sec.get(f"title_{a.langs}") or sec.get("title") or "", f"text_{a.langs}": sec.get(f"text_{a.langs}") or " ".join(s[a.langs] for s in part), f"takeaway_{a.langs}": sec.get(f"takeaway_{a.langs}") or ""} if a.langs in OTHER else {})})
     json.dump(meta, open(os.path.join(out, "sections.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 asyncio.run(main())

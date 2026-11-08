@@ -9,6 +9,16 @@ import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, has
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 30 } };
+// subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
+const PLANS: Record<string, { credits: number; price: number; days: number }> = {
+  plus_month: { credits: 30, price: 49, days: 31 }, plus_year: { credits: 360, price: 399, days: 366 },
+  pro_month: { credits: 100, price: 119, days: 31 }, pro_year: { credits: 1200, price: 999, days: 366 },
+};
+const planOf = async (userId: string | undefined): Promise<string | null> => {
+  if (!userId) return null;
+  const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+  return e?.meta?.until && new Date(e.meta.until) > new Date() ? String(e.meta.plan) : null;
+};
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
@@ -25,11 +35,16 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at,expired_at&order=created_at.desc&limit=50`));
       }
+      if (u.searchParams.get("profile")) {
+        if (!user) return json({ error: "Sign in first." }, 401);
+        const [row] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.profile&select=meta&order=created_at.desc&limit=1`);
+        return json({ profile: row?.meta ?? null });
+      }
       if (u.searchParams.get("ledger")) {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ plan: await planOf(user?.id), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -41,6 +56,21 @@ Deno.serve(async (req) => {
       if (!EVENTS.has(type)) return json({ error: "unknown event" }, 400);
       const user = await userOf(req);
       await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12) }, user?.id ?? null);
+      return json({ ok: true });
+    }
+
+    if (op === "profile_save") {
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const pick = (v: unknown, ok: string[]) => (ok.includes(String(v)) ? String(v) : "");
+      const profile = {
+        purpose: pick(body.purpose, ["study", "research", "teach", "share", "curious"]),
+        level: pick(body.level, ["beginner", "intermediate", "expert"]),
+        field: str(body.field, 60), goal: str(body.goal, 140),
+        size: pick(body.size, ["sm", "md", "lg"]), font: pick(body.font, ["sans", "serif", "plain"]),
+        interactive: body.interactive === true, askModel: pick(body.askModel, ["fast", "deep"]),
+      };
+      await logEvent("", "profile", profile, user.id);
       return json({ ok: true });
     }
 
@@ -111,9 +141,9 @@ Deno.serve(async (req) => {
 
     if (op === "buy") {   // a credit pack: the member pays by WeChat / Alipay, the owner confirms in the admin page and the credits are added
       if (!user) return json({ error: "Sign in to buy credits." }, 401);
-      const pack = PACKS[String(body.pack)];
+      const plan = body.plan ? String(body.plan) : ""; const pack = plan ? PLANS[plan] : PACKS[String(body.pack)];
       if (!pack) return json({ error: "Unknown pack." }, 400);
-      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}`, status: "new" }) });
+      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""}`, status: "new" }) });
       await logEvent(actor, "order_created", { pack: pack.credits, price: pack.price }, user.id);
       return json({ id: order.id, price: pack.price, credits: pack.credits });
     }

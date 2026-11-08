@@ -96,8 +96,10 @@ def best_still(mp4, jpg, tries=9):
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
 key = row["arxiv"]
 model, voice = row.get("model") or "deepseek", row.get("voice") or "female"
-LG = ("en", "zh") if (row.get("langs") or "both") not in ("en", "zh") else (row["langs"],)   # the languages this video is made in
+MONO = ("en", "zh", "vi", "id")
+LG = ("en", "zh") if (row.get("langs") or "both") not in MONO else (row["langs"],)   # the languages this video is made in
 VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-US-GuyNeural", "zh-CN-YunxiNeural")}
+VOICE_X = {"vi": {"female": "vi-VN-HoaiMyNeural", "male": "vi-VN-NamMinhNeural"}, "id": {"female": "id-ID-GadisNeural", "male": "id-ID-ArdiNeural"}}
 # files and uploads are named by this slug, so one paper can exist in several model / voice versions
 arxiv = f"{key}-{job[:8]}"
 d = os.path.join(ROOT, "out", arxiv)
@@ -128,7 +130,7 @@ try:
         os.makedirs(d, exist_ok=True); upfile = os.path.join(d, "upload.pdf")
         r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
-    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in ("en", "zh") else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
     try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))

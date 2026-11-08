@@ -6,7 +6,7 @@ export const json = (o: unknown, status = 200) => new Response(JSON.stringify(o)
 
 // free units per rolling 24 hours: a guest gets a taste, a signed-in member gets much more; paid credits come on top
 export const GUEST_DAY = Number(Deno.env.get("EXPLAINER_GUEST_DAY") ?? "1");
-export const MEMBER_DAY = Number(Deno.env.get("EXPLAINER_MEMBER_DAY") ?? "3");
+export const MEMBER_DAY = Number(Deno.env.get("EXPLAINER_MEMBER_DAY") ?? "1");
 export const WELCOME_CREDITS = Number(Deno.env.get("EXPLAINER_WELCOME_CREDITS") ?? "3");
 export const units = (sec: number) => Math.max(1, Math.ceil((sec || 36) / 180));
 

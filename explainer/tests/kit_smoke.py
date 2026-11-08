@@ -5,7 +5,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)); EXP = os.path.dirname(HERE)
 src = open(os.path.join(EXP, "manim_section.py"), encoding="utf-8").read()
 a = src.index("HARNESS_HEAD = f'''"); b = src.index('SYSTEM = f"""')
 beats = [3.0] * 16
-ns = {"BG": "#04070c", "ACC": "#3dff8f", "ACC2": "#4aa3ff", "TXT": "#e9f3ff", "MUT": "#8aa0b8", "beats": beats, "CUES": {0: [[1.0, "deep"]]}, "os": os, "ROOT": EXP, "LANGS": ["en"]}
+ns = {"BG": "#04070c", "ACC": "#3dff8f", "ACC2": "#4aa3ff", "TXT": "#e9f3ff", "MUT": "#8aa0b8", "beats": beats, "CUES": {0: [[1.0, "deep"]]}, "os": os, "ROOT": EXP, "d": EXP, "LANGS": ["en"]}
 exec(src[a:b], ns)
 code = '''
 class Section(ExplainerScene):
