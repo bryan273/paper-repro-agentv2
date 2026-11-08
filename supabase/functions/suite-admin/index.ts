@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     if (!isAdmin(user)) return json({ error: "This account is not an admin." }, 403);
 
     const since7 = iso(7 * DAY), since1 = iso(DAY), since14 = iso(14 * DAY);
-    const [users, jobs, usage, reproJobs, reproEvents, boards, docs, orders, feedback, asks, events, plans] = await Promise.all([
+    const [users, jobs, usage, reproJobs, reproEvents, boards, docs, orders, feedback, asks, events, plans, payOrders, costJobs, signups] = await Promise.all([
       safe(db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=500"), [] as any[]),
       safe(db("explainer_jobs?select=id,arxiv,title,status,stage,user_id,seconds,langs,cost_usd,error,created_at&order=created_at.desc&limit=500"), [] as any[]),
       safe(db(`agent_usage?select=app,visitor,prompt_tokens,completion_tokens,created_at&created_at=gte.${since14}&limit=20000`), [] as any[]),
@@ -31,7 +31,43 @@ Deno.serve(async (req) => {
       safe(count(`explainer_asks?created_at=gte.${since7}`), 0),
       safe(count(`explainer_events?created_at=gte.${since7}&type=eq.visit`), 0),
       safe(db("explainer_events?type=eq.plan&select=user_id,meta,created_at&order=created_at.desc&limit=500"), [] as any[]),
+      safe(db("explainer_orders?status=in.(paid,delivered)&select=id,notes,created_at&order=created_at.desc&limit=5000"), [] as any[]),
+      safe(db("explainer_jobs?status=neq.failed&select=created_at,cost_usd&order=created_at.desc&limit=10000"), [] as any[]),
+      safe(db("explainer_events?type=eq.signup&select=meta,created_at&order=created_at.desc&limit=10000"), [] as any[]),
     ]);
+
+    // money: income is what the owner confirmed as paid (yuan, the price the order was made at); the cost is the model and renderer estimate stored per video (USD, shown in yuan at 7.2)
+    const USD_CNY = 7.2;
+    const paid = payOrders.map((o: any) => {
+      const n = String(o.notes ?? "");
+      const price = Number(/price:(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0);
+      const kind = /plan:([a-z_]+)/.exec(n)?.[1] ?? (/pack:(\d+)/.exec(n) ? "pack " + /pack:(\d+)/.exec(n)![1] : "other");
+      return { price, kind, cur: /cur:([a-z]+)/.exec(n)?.[1] ?? "cny", amt: Number(/amt:(\d+)/.exec(n)?.[1] ?? 0), created_at: o.created_at as string };
+    });
+    const costOf = (j: any) => (Number(j.cost_usd) || 0) * USD_CNY;
+    const days30: { d: string; income: number; cost: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = day(iso(i * DAY));
+      days30.push({ d, income: paid.filter((o: any) => day(o.created_at) === d).reduce((n: number, o: any) => n + o.price, 0), cost: Math.round(costJobs.filter((j: any) => day(j.created_at) === d).reduce((n: number, j: any) => n + costOf(j), 0) * 100) / 100 });
+    }
+    const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0);
+    const sumIn = (f: (o: any) => boolean) => paid.filter(f).reduce((n: number, o: any) => n + o.price, 0);
+    const sumCost = (f: (j: any) => boolean) => Math.round(costJobs.filter(f).reduce((n: number, j: any) => n + costOf(j), 0) * 100) / 100;
+    const byKind: Record<string, { n: number; cny: number }> = {};
+    for (const o of paid) { const k = (byKind[o.kind] ??= { n: 0, cny: 0 }); k.n++; k.cny += o.price; }
+    const finance = {
+      usd_cny: USD_CNY,
+      income_total: sumIn(() => true), income_month: sumIn((o: any) => o.created_at >= monthStart.toISOString()), income_30d: sumIn((o: any) => o.created_at >= iso(30 * DAY)),
+      cost_total: sumCost(() => true), cost_month: sumCost((j: any) => j.created_at >= monthStart.toISOString()), cost_30d: sumCost((j: any) => j.created_at >= iso(30 * DAY)),
+      orders_paid: paid.length, by_kind: Object.entries(byKind).map(([k, v]) => ({ k, ...v })).sort((a, b) => b.cny - a.cny), days: days30,
+    };
+    // who the members are: where they come from and what they told us at sign-up
+    const tally = (pick: (m: any) => string) => {
+      const m: Record<string, number> = {};
+      for (const s of signups) { const k = pick(s.meta ?? {}) || "unknown"; m[k] = (m[k] || 0) + 1; }
+      return Object.entries(m).map(([k, n]) => ({ k, n })).sort((a, b) => b.n - a.n).slice(0, 12);
+    };
+    const audience = { total: signups.length, countries: tally((m) => m.country), ip_countries: tally((m) => m.ip_country), langs: tally((m) => m.lang), sources: tally((m) => m.source), roles: tally((m) => m.role) };
 
     // tokens and calls per gateway app (Lite, Companion, IndexBoard, and what Explainer asks through the same gateway)
     const llm: Record<string, { app: string; calls_24h: number; calls_7d: number; tokens_24h: number; tokens_7d: number; visitors_7d: number }> = {};
@@ -58,7 +94,7 @@ Deno.serve(async (req) => {
 
     // the last 14 days, one row per day, so the page can draw a small trend for each app
     const perDay: { d: string; signups: number; videos: number; checks: number; llm_tokens: number }[] = [];
-    for (let i = 13; i >= 0; i--) {
+    for (let i = 89; i >= 0; i--) {
       const d = day(iso(i * DAY));
       perDay.push({
         d,
@@ -95,20 +131,23 @@ Deno.serve(async (req) => {
 
     return json({
       me: user.username,
+      generated_at: new Date().toISOString(),
+      finance,
+      audience,
       totals: { users: users.length, banned: users.filter((u: any) => u.banned).length, credits: users.reduce((n: number, u: any) => n + (u.credits || 0), 0), signups_7d: users.filter((u: any) => u.created_at >= since7).length },
       apps,
-      users: users.slice(0, 100).map((u: any) => {
+      users: users.slice(0, 500).map((u: any) => {
         const pe = plans.find((x: any) => x.user_id === u.id);   // newest first
         const until = pe?.meta?.until ?? null;
         return { ...u, jobs: jobsPerUser[u.id] || 0, plan: pe?.meta?.plan ?? null, plan_until: until };
       }),
       active_plans: plans.filter((x: any, k: number) => plans.findIndex((y: any) => y.user_id === x.user_id) === k && x.meta?.until && new Date(x.meta.until) > new Date()).length,
-      jobs: jobs.slice(0, 15).map((j: any) => ({ id: j.id, arxiv: j.arxiv, title: j.title, status: j.status, stage: j.stage, seconds: j.seconds, langs: j.langs, cost_usd: j.cost_usd, error: j.error ? String(j.error).slice(0, 160) : null, created_at: j.created_at })),
-      repro: reproJobs.slice(0, 15),
+      jobs: jobs.slice(0, 200).map((j: any) => ({ id: j.id, arxiv: j.arxiv, title: j.title, status: j.status, stage: j.stage, seconds: j.seconds, langs: j.langs, cost_usd: j.cost_usd, error: j.error ? String(j.error).slice(0, 160) : null, created_at: j.created_at })),
+      repro: reproJobs.slice(0, 200),
       requests: requests.map((r: any) => ({ id: r.id, created_at: r.created_at, data: r.data })),
       boards,
-      orders: orders.slice(0, 15),
-      feedback: feedback.slice(0, 15),
+      orders: orders.slice(0, 50),
+      feedback: feedback.slice(0, 30),
       llm: Object.values(llm),
       perDay,
     });

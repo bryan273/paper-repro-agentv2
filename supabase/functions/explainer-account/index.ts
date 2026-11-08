@@ -11,8 +11,13 @@ import { ADMIN_EMAILS } from "../_shared/explainer.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 30, price: 33, days: 31 }, plus_year: { credits: 360, price: 330, days: 366 },
-  pro_month: { credits: 150, price: 59, days: 31 }, pro_year: { credits: 1800, price: 590, days: 366 },   // Plus: 30 videos a month. Pro: 150 a month, 10 minute videos, unlimited Deep answers
+  plus_month: { credits: 99, price: 33, days: 31 }, plus_year: { credits: 1188, price: 330, days: 366 },
+  pro_month: { credits: 200, price: 59, days: 31 }, pro_year: { credits: 2400, price: 590, days: 366 },   // Plus: 99 videos a month. Pro: 200 a month, 10 minute videos, unlimited Deep answers
+};
+// the same prices in the money of each market (kept in step with the front end, lib/currency.ts); the owner confirms the amount in this money, no exchange rate is involved
+const LOCAL: Record<string, { vnd: number; idr: number }> = {
+  plus_month: { vnd: 119000, idr: 79000 }, plus_year: { vnd: 1190000, idr: 790000 }, pro_month: { vnd: 209000, idr: 139000 }, pro_year: { vnd: 2090000, idr: 1390000 },
+  pack_5: { vnd: 69000, idr: 45000 }, pack_20: { vnd: 209000, idr: 139000 }, pack_50: { vnd: 459000, idr: 299000 },
 };
 const planOf = async (userId: string | undefined): Promise<string | null> => {
   if (!userId) return null;
@@ -128,7 +133,10 @@ Deno.serve(async (req) => {
     if (op === "register") {
       // the sign-in name is an e-mail address; nothing is sent to it and it is not verified (the stored column is still called username)
       const username = str(body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
-      if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
+if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
+      const country = str(body.country, 2).toUpperCase(), plang = str(body.lang, 2).toLowerCase();
+      if (!/^[A-Z]{2}$/.test(country)) return json({ error: "Choose your country.", code: "need_country" }, 400);
+      if (!["en", "zh", "vi", "id"].includes(plang)) return json({ error: "Choose your preferred language.", code: "need_lang" }, 400);
       if (password.length < 8 || password.length > 72) return json({ error: "Password: 8 to 72 characters." }, 400);
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.signup&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`) >= 3) return json({ error: "Too many sign-ups from here. Try again later." }, 429);
       // the visitor id comes from the browser, so sign-ups are also counted per network address (generous, for shared campus connections)
@@ -138,7 +146,7 @@ Deno.serve(async (req) => {
       const { salt, hash } = await hashPassword(password);
       const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
-      await logEvent(actor, "signup", { username }, user.id);
+      await logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() }, user.id);
       const rc = String(body.ref ?? "").toLowerCase();
       if (/^[0-9a-f]{8}$/.test(rc)) {   // came through a friend's link: the friend gets free videos (a few per friend, never from the same browser)
         try {
@@ -207,9 +215,12 @@ Deno.serve(async (req) => {
       if (!user) return json({ error: "Sign in to buy credits." }, 401);
       const plan = body.plan ? String(body.plan) : ""; const pack = plan ? PLANS[plan] : PACKS[String(body.pack)];
       if (!pack) return json({ error: "Unknown pack." }, 400);
-      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""}`, status: "new" }) });
+const cur = body.currency === "vnd" || body.currency === "idr" ? body.currency as "vnd" | "idr" : "cny";
+      const loc = LOCAL[plan || `pack_${String(body.pack)}`];
+      const amt = cur === "cny" || !loc ? pack.price : loc[cur];
+      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""} cur:${cur} amt:${amt}`, status: "new" }) });
       await logEvent(actor, "order_created", { pack: pack.credits, price: pack.price }, user.id);
-      return json({ id: order.id, price: pack.price, credits: pack.credits });
+      return json({ id: order.id, price: pack.price, credits: pack.credits, currency: cur, amount: amt });
     }
 
     return json({ error: "unknown op" }, 400);
