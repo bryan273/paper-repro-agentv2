@@ -38,18 +38,25 @@ const handleOf = async (userId: string): Promise<string | null> => {
   return e?.meta?.handle ? String(e.meta.handle) : null;
 };
 const handleTaken = async (h: string, exceptUser?: string): Promise<boolean> => {
-  const rows = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(h)}&select=user_id&limit=5`).catch(() => []);
-  return rows.some((r: { user_id: string }) => r.user_id !== exceptUser);
+  const rows = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(h)}&select=user_id&limit=8`).catch(() => []);
+  for (const r of rows as { user_id: string }[]) {
+    if (r.user_id === exceptUser) continue;
+    if ((await handleOf(r.user_id)) === h) return true;   // only the username a member has NOW counts; an old one they gave up is free again
+  }
+  return false;
 };
 const publicUserH = async (u: { id: string; username: string; credits: number; created_at: string }) => ({ ...publicUser(u), handle: await handleOf(u.id) });
 /** The e-mail behind what was typed in the sign-in box: an e-mail address as it is, a username looked up. */
 const resolveIdent = async (raw: string): Promise<string> => {
   const t = raw.trim().toLowerCase();
   if (t.includes("@")) return t;
-  const [h] = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(t)}&select=user_id&limit=1`).catch(() => []);
-  if (!h) return t;
-  const [u] = await db(`explainer_users?id=eq.${h.user_id}&select=username`).catch(() => []);
-  return u ? String(u.username) : t;
+  const hs = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(t)}&select=user_id&order=created_at.desc&limit=8`).catch(() => []);
+  for (const h of hs as { user_id: string }[]) {
+    if ((await handleOf(h.user_id)) !== t) continue;   // they changed it since
+    const [u] = await db(`explainer_users?id=eq.${h.user_id}&select=username`).catch(() => []);
+    if (u) return String(u.username);
+  }
+  return t;
 };
 const suggestHandle = async (email: string): Promise<string> => {
   let base = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 18);
