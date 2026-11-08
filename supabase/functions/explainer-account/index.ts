@@ -11,8 +11,8 @@ import { ADMIN_EMAILS } from "../_shared/explainer.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 100, price: 33, days: 31 }, plus_year: { credits: 1200, price: 330, days: 366 },
-  pro_month: { credits: 300, price: 129, days: 31 }, pro_year: { credits: 3600, price: 1290, days: 366 },   // Pro is "unlimited" under a fair-use ceiling of 300 videos a month
+  plus_month: { credits: 30, price: 33, days: 31 }, plus_year: { credits: 360, price: 330, days: 366 },
+  pro_month: { credits: 150, price: 59, days: 31 }, pro_year: { credits: 1800, price: 590, days: 366 },   // Plus: 30 videos a month. Pro: 150 a month, 10 minute videos, unlimited Deep answers
 };
 const planOf = async (userId: string | undefined): Promise<string | null> => {
   if (!userId) return null;
