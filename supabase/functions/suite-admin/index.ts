@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       safe(count(`repro_events?created_at=gte.${since7}`), 0),
       safe(db("suite_boards?select=slug,title,created_at,updated_at&order=updated_at.desc&limit=50"), [] as any[]),
       safe(db(`suite_docs?select=id,collection,key,data,created_at&order=created_at.desc&limit=500`), [] as any[]),
-      safe(db("explainer_orders?select=id,email,arxiv,status,pay_method,created_at&order=created_at.desc&limit=50"), [] as any[]),
+      safe(db("explainer_orders?select=id,email,arxiv,status,pay_method,notes,created_at&order=created_at.desc&limit=50"), [] as any[]),
       safe(db("explainer_feedback?select=id,rating,comment,kind,arxiv,created_at&order=created_at.desc&limit=30"), [] as any[]),
       safe(count(`explainer_asks?created_at=gte.${since7}`), 0),
       safe(count(`explainer_events?created_at=gte.${since7}&type=eq.visit`), 0),

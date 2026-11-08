@@ -8,6 +8,7 @@ import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, has
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
+import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
@@ -39,6 +40,28 @@ const planInfo = async (userId: string | undefined): Promise<{ plan: string | nu
 // Students and teachers: one free month of Plus after an admin has looked at a proof (student card, enrolment letter, staff card or school page).
 // A request is an event of type "verify" with meta {role, path, school, status: pending | approved | rejected}; the admin decides in explainer-admin.
 const UP_BUCKET = "explainer-uploads";
+// E-mail confirmation and password reset. Only active when a mail provider is set up (see _shared/mail.ts); members who joined before it was switched on count as confirmed.
+const VERIFY_SINCE = Date.parse(Deno.env.get("EMAIL_VERIFY_SINCE") ?? "2026-11-09T06:00:00Z");
+const APP_URL = Deno.env.get("APP_URL") ?? "https://bryan273.github.io/repro-suite";
+const isVerified = async (u: { id: string; created_at: string }): Promise<boolean> => {
+  if (Date.parse(u.created_at) < VERIFY_SINCE) return true;
+  return (await count(`explainer_events?user_id=eq.${u.id}&type=eq.emailverified`).catch(() => 0)) > 0;
+};
+// a link token is random, only its hash is stored, and it works once
+const sendLink = async (u: { id: string; username: string }, kind: "verify" | "reset", lang: string) => {
+  const token = [...crypto.getRandomValues(new Uint8Array(32))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const exp = new Date(Date.now() + (kind === "verify" ? 24 : 1) * 3600_000).toISOString();
+  await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: `mt:${await sha(token, 32)}`, type: "mailtoken", user_id: u.id, meta: { kind, exp, used: false } }) });
+  const m = linkMail(kind, lang, `${APP_URL}/explainer/?${kind === "verify" ? "verify" : "reset"}=${token}`);
+  await sendMail(u.username, m.subject, m.html, m.text);
+};
+const takeToken = async (token: string, kind: string): Promise<{ id: string; user_id: string; meta: Record<string, unknown> } | null> => {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  const [ev] = await db(`explainer_events?actor=eq.${encodeURIComponent(`mt:${await sha(token, 32)}`)}&type=eq.mailtoken&select=id,user_id,meta&order=created_at.desc&limit=1`).catch(() => []);
+  if (!ev || ev.meta?.kind !== kind || ev.meta?.used || new Date(String(ev.meta?.exp)) < new Date()) return null;
+  await db(`explainer_events?id=eq.${ev.id}`, { method: "PATCH", body: JSON.stringify({ meta: { ...ev.meta, used: true } }) });
+  return ev;
+};
 const verifyOf = async (user: { id: string } | null): Promise<{ role: string; status: string } | null> => {
   if (!user) return null;
   const [e] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.verify&select=meta&order=created_at.desc&limit=1`).catch(() => []);
@@ -161,8 +184,55 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
         } catch { /* a failed reward never blocks a sign-up */ }
       }
       await logEvent(ipActor, "signup_ip", {}, user.id);
+      if (mailReady()) {
+        try { await sendLink(user, "verify", plang); return json({ pending: true, email: username, user: publicUser(user) }); }
+        catch { await logEvent(actor, "mail_fail", { kind: "verify" }, user.id); /* never lock a new member out because the mail provider failed */ }
+      }
       const token = await newSession(user.id);
       return json({ token, user: publicUser(user), quota: await quotaFor(user, actor) });
+    }
+
+    if (op === "verify_email") {
+      const ev = await takeToken(String(body.token ?? ""), "verify");
+      if (!ev) return json({ error: "This confirmation link is not valid any more. Log in and ask for a new one.", code: "bad_token" }, 400);
+      await logEvent("", "emailverified", {}, ev.user_id);
+      const [row] = await db(`explainer_users?id=eq.${ev.user_id}&select=id,username,credits,created_at`);
+      return json({ token: await newSession(row.id), user: publicUser(row), quota: await quotaFor(row, actor) });
+    }
+
+    if (op === "resend_verify") {
+      const username = str(body.username, 80).trim().toLowerCase();
+      if (!mailReady()) return json({ error: "E-mail is not set up yet. Please contact us.", code: "mail_off" }, 503);
+      const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at`);
+      if (row && !(await isVerified(row))) {
+        if ((await count(`explainer_events?user_id=eq.${row.id}&type=eq.mailtoken&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`)) >= 3) return json({ error: "Too many e-mails. Try again in an hour.", code: "slow_down" }, 429);
+        await sendLink(row, "verify", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en").catch(() => undefined);
+      }
+      return json({ ok: true });   // the same answer whether the address has an account or not
+    }
+
+    if (op === "reset_request") {
+      const username = str(body.username, 80).trim().toLowerCase();
+      if (!mailReady()) return json({ error: "Resetting by e-mail is not set up yet. Please contact us and we will reset it for you.", code: "mail_off" }, 503);
+      const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at,banned`);
+      if (row && !row.banned) {
+        if ((await count(`explainer_events?user_id=eq.${row.id}&type=eq.mailtoken&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`)) >= 3) return json({ error: "Too many e-mails. Try again in an hour.", code: "slow_down" }, 429);
+        await sendLink(row, "reset", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en").catch(() => undefined);
+      }
+      return json({ ok: true });
+    }
+
+    if (op === "reset_confirm") {
+      const password = String(body.password ?? "");
+      if (password.length < 8 || password.length > 72) return json({ error: "Password: 8 to 72 characters.", code: "bad_password" }, 400);
+      const ev = await takeToken(String(body.token ?? ""), "reset");
+      if (!ev) return json({ error: "This reset link is not valid any more. Ask for a new one.", code: "bad_token" }, 400);
+      const { salt, hash } = await hashPassword(password);
+      await db(`explainer_users?id=eq.${ev.user_id}`, { method: "PATCH", body: JSON.stringify({ salt, pass_hash: hash }) });
+      await db(`explainer_sessions?user_id=eq.${ev.user_id}`, { method: "DELETE" }).catch(() => undefined);   // anyone who was signed in with the old password is signed out
+      if (!(await count(`explainer_events?user_id=eq.${ev.user_id}&type=eq.emailverified`).catch(() => 0))) await logEvent("", "emailverified", {}, ev.user_id);   // the link proves the address
+      const [row] = await db(`explainer_users?id=eq.${ev.user_id}&select=id,username,credits,created_at`);
+      return json({ token: await newSession(row.id), user: publicUser(row), quota: await quotaFor(row, actor) });
     }
 
     if (op === "login") {
@@ -174,6 +244,7 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       const ok = row && sameText((await hashPassword(password, row.salt)).hash, row.pass_hash);
       if (!ok) { await logEvent(actor, "login_fail", { username }); return json({ error: "Wrong email or password." }, 401); }
       if (row.banned) return json({ error: "This account is disabled. Please contact us." }, 403);
+      if (mailReady() && !(await isVerified(row))) return json({ error: "Please confirm your e-mail first. We sent you a link.", code: "need_verify", email: row.username }, 403);
       await db(`explainer_users?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ last_login: new Date().toISOString() }) });
       await logEvent(actor, "login", {}, row.id);
       const token = await newSession(row.id);
