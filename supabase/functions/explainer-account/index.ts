@@ -121,6 +121,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET") {
       const user = await userOf(req);
       const actor = await actorOf(req, req.headers.get("x-visitor-id"));
+      if (u.searchParams.get("whereami")) return json({ country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() || null });   // the caller's own country as the network reports it
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at,expired_at&order=created_at.desc&limit=50`));
@@ -145,7 +146,7 @@ Deno.serve(async (req) => {
       const type = String(body.type ?? "");
       if (!EVENTS.has(type)) return json({ error: "unknown event" }, 400);
       const user = await userOf(req);
-      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12) }, user?.id ?? null);
+      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() }, user?.id ?? null);
       return json({ ok: true });
     }
 
