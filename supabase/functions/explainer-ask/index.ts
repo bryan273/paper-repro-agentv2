@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
       text = await arxivText(job.arxiv);
       if (text.length > 1500) await db(`explainer_jobs?id=eq.${jobId}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ paper_text: text }) });
     }
-    if (text.length < 1500) return json({ error: "The paper text is not available for this video. Ask works for videos made after this update, and for arXiv papers.", code: "no_text" }, 409);
+    if (text.length < 300) return json({ error: "The text is not available for this video. Ask works for videos made after this update, and for arXiv papers.", code: "no_text" }, 409);
 
     const sec = secIdx >= 0 && Array.isArray(job.sections) ? job.sections[secIdx] : null;
     const secTitle = sec ? String((sec[`title_${lang}`] ?? sec.title) || sec.title || "") : "";
