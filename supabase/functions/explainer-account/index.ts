@@ -30,11 +30,42 @@ const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
 const publicUser = (u: { id: string; username: string; credits: number; created_at: string }) => ({ id: u.id, username: u.username, credits: u.credits, created_at: u.created_at });
 
-const planInfo = async (userId: string | undefined): Promise<{ plan: string | null; plan_until: string | null }> => {
+// A member signs in with the e-mail address or with a username of their own (the "handle"). The e-mail stays the contact and the account key; the handle is what people see and type.
+const RESERVED = new Set(["admin", "root", "support", "paperlit", "help", "staff", "system", "moderator", "owner", "null", "undefined"]);
+const HANDLE_RE = /^[a-z0-9_.]{3,24}$/;
+const handleOf = async (userId: string): Promise<string | null> => {
+  const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.handle&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+  return e?.meta?.handle ? String(e.meta.handle) : null;
+};
+const handleTaken = async (h: string, exceptUser?: string): Promise<boolean> => {
+  const rows = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(h)}&select=user_id&limit=5`).catch(() => []);
+  return rows.some((r: { user_id: string }) => r.user_id !== exceptUser);
+};
+const publicUserH = async (u: { id: string; username: string; credits: number; created_at: string }) => ({ ...publicUser(u), handle: await handleOf(u.id) });
+/** The e-mail behind what was typed in the sign-in box: an e-mail address as it is, a username looked up. */
+const resolveIdent = async (raw: string): Promise<string> => {
+  const t = raw.trim().toLowerCase();
+  if (t.includes("@")) return t;
+  const [h] = await db(`explainer_events?type=eq.handle&meta->>handle=eq.${encodeURIComponent(t)}&select=user_id&limit=1`).catch(() => []);
+  if (!h) return t;
+  const [u] = await db(`explainer_users?id=eq.${h.user_id}&select=username`).catch(() => []);
+  return u ? String(u.username) : t;
+};
+const suggestHandle = async (email: string): Promise<string> => {
+  let base = email.split("@")[0].toLowerCase().replace(/[^a-z0-9_.]/g, "").slice(0, 18);
+  if (base.length < 3) base = (base + "user").slice(0, 8);
+  for (let i = 0; i < 8; i++) {
+    const h = i === 0 ? base : `${base}${Math.floor(Math.random() * 9000 + 1000)}`;
+    if (!RESERVED.has(h) && !(await handleTaken(h))) return h;
+  }
+  return `${base}${Date.now() % 100000}`;
+};
+
+const planInfo = async (userId: string | undefined): Promise<{ plan: string | null; plan_until: string | null; plan_source?: string | null }> => {
   if (!userId) return { plan: null, plan_until: null };
   const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
   const until = e?.meta?.until ? String(e.meta.until) : null;
-  return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until } : { plan: null, plan_until: until };
+  return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until, plan_source: e.meta.source ? String(e.meta.source) : null } : { plan: null, plan_until: until };
 };
 
 // Students and teachers: one free month of Plus after an admin has looked at a proof (student card, enrolment letter, staff card or school page).
@@ -96,7 +127,7 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ ...(await planInfo(user?.id)), verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...(await planInfo(user?.id)), verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -125,6 +156,16 @@ Deno.serve(async (req) => {
       if (!sg.ok) throw new Error(`upload address ${sg.status}`);
       const { url: signed } = await sg.json();
       return json({ path, upload_url: `${Deno.env.get("SUPABASE_URL")}/storage/v1${signed}` });
+    }
+    if (op === "set_handle") {
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const h = str(body.handle, 24).trim().toLowerCase();
+      if (!HANDLE_RE.test(h) || RESERVED.has(h)) return json({ error: "Username: 3 to 24 letters, numbers, dots or underscores.", code: "bad_handle" }, 400);
+      if (await handleTaken(h, user.id)) return json({ error: "That username is taken. Choose another one.", code: "handle_taken" }, 409);
+      if ((await count(`explainer_events?user_id=eq.${user.id}&type=eq.handle&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`)) >= 3) return json({ error: "You changed it a lot today. Try again tomorrow.", code: "slow_down" }, 429);
+      await logEvent("", "handle", { handle: h }, user.id);
+      return json({ ok: true, handle: h });
     }
     if (op === "order_proof") {   // attach a payment screenshot to one of the member's own orders, so the owner can see it when confirming
       const user = await userOf(req);
@@ -166,8 +207,13 @@ Deno.serve(async (req) => {
 
     if (op === "register") {
       // the sign-in name is an e-mail address; nothing is sent to it and it is not verified (the stored column is still called username)
-      const username = str(body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
-if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
+      const username = str(body.email ?? body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
+      if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
+      let handle = str(body.handle, 24).trim().toLowerCase();
+      if (handle) {
+        if (!HANDLE_RE.test(handle) || RESERVED.has(handle)) return json({ error: "Username: 3 to 24 letters, numbers, dots or underscores.", code: "bad_handle" }, 400);
+        if (await handleTaken(handle)) return json({ error: "That username is taken. Choose another one.", code: "handle_taken" }, 409);
+      }
       const country = str(body.country, 2).toUpperCase(), plang = str(body.lang, 2).toLowerCase();
       if (!/^[A-Z]{2}$/.test(country)) return json({ error: "Choose your country.", code: "need_country" }, 400);
       if (!["en", "zh", "vi", "id"].includes(plang)) return json({ error: "Choose your preferred language.", code: "need_lang" }, 400);
@@ -180,6 +226,8 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       const { salt, hash } = await hashPassword(password);
       const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
+      if (!handle) handle = await suggestHandle(username);
+      await logEvent("", "handle", { handle }, user.id);
       await logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: str(req.headers.get("cf-ipcountry"), 2).toUpperCase() }, user.id);
       const rc = String(body.ref ?? "").toLowerCase();
       if (/^[0-9a-f]{8}$/.test(rc)) {   // came through a friend's link: the friend gets free videos (a few per friend, never from the same browser)
@@ -196,11 +244,11 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       }
       await logEvent(ipActor, "signup_ip", {}, user.id);
       if (mailReady()) {
-        try { await sendLink(user, "verify", plang); return json({ pending: true, email: username, user: publicUser(user) }); }
+        try { await sendLink(user, "verify", plang); return json({ pending: true, email: username, user: await publicUserH(user) }); }
         catch { await logEvent(actor, "mail_fail", { kind: "verify" }, user.id); /* never lock a new member out because the mail provider failed */ }
       }
       const token = await newSession(user.id);
-      return json({ token, user: publicUser(user), quota: await quotaFor(user, actor) });
+      return json({ token, user: await publicUserH(user), quota: await quotaFor(user, actor) });
     }
 
     if (op === "verify_email") {
@@ -208,11 +256,11 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       if (!ev) return json({ error: "This confirmation link is not valid any more. Log in and ask for a new one.", code: "bad_token" }, 400);
       await logEvent("", "emailverified", {}, ev.user_id);
       const [row] = await db(`explainer_users?id=eq.${ev.user_id}&select=id,username,credits,created_at`);
-      return json({ token: await newSession(row.id), user: publicUser(row), quota: await quotaFor(row, actor) });
+      return json({ token: await newSession(row.id), user: await publicUserH(row), quota: await quotaFor(row, actor) });
     }
 
     if (op === "resend_verify") {
-      const username = str(body.username, 80).trim().toLowerCase();
+      const username = await resolveIdent(str(body.username, 80));
       if (!mailReady()) return json({ error: "E-mail is not set up yet. Please contact us.", code: "mail_off" }, 503);
       const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at`);
       if (row && !(await isVerified(row))) {
@@ -223,7 +271,7 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
     }
 
     if (op === "reset_request") {
-      const username = str(body.username, 80).trim().toLowerCase();
+      const username = await resolveIdent(str(body.username, 80));
       if (!mailReady()) return json({ error: "Resetting by e-mail is not set up yet. Please contact us and we will reset it for you.", code: "mail_off" }, 503);
       const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at,banned`);
       if (row && !row.banned) {
@@ -243,11 +291,11 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       await db(`explainer_sessions?user_id=eq.${ev.user_id}`, { method: "DELETE" }).catch(() => undefined);   // anyone who was signed in with the old password is signed out
       if (!(await count(`explainer_events?user_id=eq.${ev.user_id}&type=eq.emailverified`).catch(() => 0))) await logEvent("", "emailverified", {}, ev.user_id);   // the link proves the address
       const [row] = await db(`explainer_users?id=eq.${ev.user_id}&select=id,username,credits,created_at`);
-      return json({ token: await newSession(row.id), user: publicUser(row), quota: await quotaFor(row, actor) });
+      return json({ token: await newSession(row.id), user: await publicUserH(row), quota: await quotaFor(row, actor) });
     }
 
     if (op === "login") {
-      const username = str(body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
+      const username = await resolveIdent(str(body.username, 80)), password = String(body.password ?? "");
       const since = new Date(Date.now() - 15 * 60_000).toISOString();
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.login_fail&created_at=gte.${since}`) >= 8) return json({ error: "Too many wrong attempts. Wait 15 minutes." }, 429);
       const rows = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,credits,created_at,salt,pass_hash,banned`);
@@ -259,7 +307,7 @@ if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a
       await db(`explainer_users?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ last_login: new Date().toISOString() }) });
       await logEvent(actor, "login", {}, row.id);
       const token = await newSession(row.id);
-      return json({ token, user: publicUser(row), quota: await quotaFor(row, actor) });
+      return json({ token, user: await publicUserH(row), quota: await quotaFor(row, actor) });
     }
 
     const user = await userOf(req);

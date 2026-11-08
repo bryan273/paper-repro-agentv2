@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     if (!isAdmin(user)) return json({ error: "This account is not an admin." }, 403);
 
     const since7 = iso(7 * DAY), since1 = iso(DAY), since14 = iso(14 * DAY);
-    const [users, jobs, usage, reproJobs, reproEvents, boards, docs, orders, feedback, asks, events, plans, payOrders, costJobs, signups] = await Promise.all([
+    const [users, jobs, usage, reproJobs, reproEvents, boards, docs, orders, feedback, asks, events, plans, payOrders, costJobs, signups, handleEvs] = await Promise.all([
       safe(db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=500"), [] as any[]),
       safe(db("explainer_jobs?select=id,arxiv,title,status,stage,user_id,seconds,langs,cost_usd,error,created_at&order=created_at.desc&limit=500"), [] as any[]),
       safe(db(`agent_usage?select=app,visitor,prompt_tokens,completion_tokens,created_at&created_at=gte.${since14}&limit=20000`), [] as any[]),
@@ -34,7 +34,10 @@ Deno.serve(async (req) => {
       safe(db("explainer_orders?status=in.(paid,delivered)&select=id,notes,created_at&order=created_at.desc&limit=5000"), [] as any[]),
       safe(db("explainer_jobs?status=neq.failed&select=created_at,cost_usd&order=created_at.desc&limit=10000"), [] as any[]),
       safe(db("explainer_events?type=eq.signup&select=meta,created_at&order=created_at.desc&limit=10000"), [] as any[]),
+      safe(db("explainer_events?type=eq.handle&select=user_id,meta&order=created_at.desc&limit=5000"), [] as any[]),
     ]);
+    const handleOf: Record<string, string> = {};
+    for (const h of handleEvs) if (!handleOf[h.user_id] && h.meta?.handle) handleOf[h.user_id] = String(h.meta.handle);
 
     // money: income is what the owner confirmed as paid (yuan, the price the order was made at); the cost is the model and renderer estimate stored per video (USD, shown in yuan at 7.2)
     const USD_CNY = 7.2;
@@ -139,7 +142,7 @@ Deno.serve(async (req) => {
       users: users.slice(0, 500).map((u: any) => {
         const pe = plans.find((x: any) => x.user_id === u.id);   // newest first
         const until = pe?.meta?.until ?? null;
-        return { ...u, jobs: jobsPerUser[u.id] || 0, plan: pe?.meta?.plan ?? null, plan_until: until };
+        return { ...u, handle: handleOf[u.id] ?? null, jobs: jobsPerUser[u.id] || 0, plan: pe?.meta?.plan ?? null, plan_until: until };
       }),
       active_plans: plans.filter((x: any, k: number) => plans.findIndex((y: any) => y.user_id === x.user_id) === k && x.meta?.until && new Date(x.meta.until) > new Date()).length,
       jobs: jobs.slice(0, 200).map((j: any) => ({ id: j.id, arxiv: j.arxiv, title: j.title, status: j.status, stage: j.stage, seconds: j.seconds, langs: j.langs, cost_usd: j.cost_usd, error: j.error ? String(j.error).slice(0, 160) : null, created_at: j.created_at })),
