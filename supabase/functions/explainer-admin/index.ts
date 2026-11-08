@@ -62,6 +62,41 @@ Deno.serve(async (req) => {
     if (!me) return json({ error: "Sign in with an admin account (Log in, top right)." }, 401);
     if (!viewer && me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
 
+    const q = new URL(req.url).searchParams;
+    if (req.method === "GET" && !viewer && (q.get("proof") || q.get("shot"))) {   // a proof or payment file, shown to the admin; a photo sent as a PDF is unwrapped so the browser can show it
+      let path = "";
+      if (q.get("proof")) {
+        if (!/^\d+$/.test(q.get("proof")!)) return json({ error: "bad id" }, 400);
+        const [ev] = await db(`explainer_events?id=eq.${q.get("proof")}&type=eq.verify&select=meta`);
+        path = String(ev?.meta?.path ?? "");
+      } else {
+        if (!/^[0-9a-f-]{36}$/.test(q.get("shot")!)) return json({ error: "bad id" }, 400);
+        const [o] = await db(`explainer_orders?id=eq.${q.get("shot")}&select=notes`);
+        path = /shot:(\S+)/.exec(String(o?.notes ?? ""))?.[1] ?? "";
+      }
+      if (!/^proof\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(pdf|jpg|jpeg|png|webp)$/.test(path)) return json({ error: "No file was sent." }, 404);
+      const fr = await fetch(`${SB_URL}/storage/v1/object/explainer-uploads/${path}`, { headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}` } });
+      if (!fr.ok) return json({ error: "The file could not be read from storage." }, 404);
+      const bytes = new Uint8Array(await fr.arrayBuffer());
+      let type = path.endsWith(".pdf") ? "application/pdf" : path.endsWith(".png") ? "image/png" : path.endsWith(".webp") ? "image/webp" : "image/jpeg";
+      let out = bytes;
+      if (type === "application/pdf") {   // the browser sends a photo as a one-page PDF around the picture: take the picture out again
+        let lat = ""; for (let i = 0; i < bytes.length; i += 8192) lat += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        const k = lat.indexOf("/DCTDecode");
+        if (k > 0) {
+          const s0 = lat.indexOf("stream", k);
+          const start = s0 + (lat.charAt(s0 + 6) === "\r" ? 8 : 7);
+          const end = lat.lastIndexOf("\nendstream");
+          if (s0 > 0 && end > start) {
+            const img = bytes.slice(start, end);
+            if (img[0] === 0xff && img[1] === 0xd8) { out = img; type = "image/jpeg"; }
+            else if (img[0] === 0x89 && img[1] === 0x50) { out = img; type = "image/png"; }
+          }
+        }
+      }
+      return new Response(out, { headers: { ...CORS, "Content-Type": type, "Cache-Control": "no-store" } });
+    }
+
     if (req.method === "POST") {
       const body = await req.json();
       if (body.op === "order_status") {
@@ -93,7 +128,7 @@ Deno.serve(async (req) => {
         return json({ items: out });
       }
       if (body.op === "verify_decide") {
-        if (!/^[0-9a-f-]{36}$/.test(String(body.id))) return json({ error: "bad request" }, 400);
+        if (!/^\d+$/.test(String(body.id))) return json({ error: "bad request" }, 400);   // the event id is a number
         const [ev] = await db(`explainer_events?id=eq.${body.id}&type=eq.verify&select=user_id,meta`);
         if (!ev || ev.meta.status !== "pending") return json({ error: "already decided" }, 409);
         const ok = !!body.approve;

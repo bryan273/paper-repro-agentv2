@@ -118,13 +118,24 @@ Deno.serve(async (req) => {
       const size = Math.round(Number(body.size) || 0);
       if (!["jpg", "jpeg", "png", "webp", "pdf"].includes(ext)) return json({ error: "Send a photo (JPG, PNG, WebP) or a PDF." }, 400);
       if (!(size >= 1000 && size <= 6 * 1024 * 1024)) return json({ error: size > 6 * 1024 * 1024 ? "That file is larger than 6 MB." : "That file looks empty." }, 400);
-      const st = await verifyOf(user);
+      const st = body.purpose === "payment" ? null : await verifyOf(user);   // a payment screenshot is not a student proof and may be sent any time
       if (st && (st.status === "pending" || st.status === "approved")) return json({ error: st.status === "pending" ? "Your proof is already being checked." : "You already used your free month." }, 409);
       const path = `proof/${user.id}/${crypto.randomUUID()}.${ext}`;
       const sg = await fetch(`${Deno.env.get("SUPABASE_URL")}/storage/v1/object/upload/sign/${UP_BUCKET}/${path}`, { method: "POST", headers: { apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`, "Content-Type": "application/json" }, body: "{}" });
       if (!sg.ok) throw new Error(`upload address ${sg.status}`);
       const { url: signed } = await sg.json();
       return json({ path, upload_url: `${Deno.env.get("SUPABASE_URL")}/storage/v1${signed}` });
+    }
+    if (op === "order_proof") {   // attach a payment screenshot to one of the member's own orders, so the owner can see it when confirming
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const orderId = String(body.order ?? "");
+      const path = String(body.path ?? "");
+      if (!/^[0-9a-f-]{36}$/.test(orderId) || !path.startsWith(`proof/${user.id}/`) || !/^proof\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp|pdf)$/.test(path)) return json({ error: "That file was not found. Please choose it again." }, 400);
+      const [o] = await db(`explainer_orders?id=eq.${orderId}&select=notes`);
+      if (!o || !String(o.notes ?? "").includes(`user:${user.id}`)) return json({ error: "Order not found." }, 404);
+      await db(`explainer_orders?id=eq.${orderId}`, { method: "PATCH", body: JSON.stringify({ notes: `${String(o.notes).replace(/ shot:\S+/g, "")} shot:${path}` }) });
+      return json({ ok: true });
     }
     if (op === "proof_submit") {
       const user = await userOf(req);
