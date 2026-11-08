@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
         // a credit pack (notes "pack:10 user:<id> price:9") that becomes paid adds its credits exactly once
         const m = /pack:(\d+) user:([0-9a-f-]{36})/.exec(prev?.notes ?? "");
         if (m && body.status === "paid" && prev.status !== "paid") await grant(m[2], Number(m[1]), `bought pack x${m[1]}`);
-        const pl = /plan:(plus|pro)_(month|year)/.exec(prev?.notes ?? "");
+        const pl = /plan:(plus|pro|premium)_(month|year)/.exec(prev?.notes ?? "");
         if (m && pl && body.status === "paid" && prev.status !== "paid") {
           const until = new Date(Date.now() + (pl[2] === "year" ? 366 : 31) * 86400_000).toISOString();
           await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: m[2], meta: { plan: pl[1], until } }) });
@@ -135,7 +135,10 @@ Deno.serve(async (req) => {
         const ok = !!body.approve;
         await db(`explainer_events?id=eq.${body.id}`, { method: "PATCH", body: JSON.stringify({ meta: { ...ev.meta, status: ok ? "approved" : "rejected" } }) });
         const until = new Date(Date.now() + 31 * 86400_000).toISOString();
-        if (ok) await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: ev.user_id, meta: { plan: "plus", until, source: ev.meta.role } }) });
+        if (ok) {   // a free month of Plus: the plan and its 50 videos
+          await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: ev.user_id, meta: { plan: "plus", until, source: ev.meta.role } }) });
+          await grant(ev.user_id, 50, `free Plus month (${ev.meta.role})`);
+        }
         if (mailReady()) {   // the member is told by e-mail; a failure here never undoes the decision
           try {
             const [usr] = await db(`explainer_users?id=eq.${ev.user_id}&select=username`);
@@ -143,10 +146,10 @@ Deno.serve(async (req) => {
             const lang = ["zh", "vi", "id"].includes(String(sg?.meta?.lang)) ? String(sg.meta.lang) : "en";
             const D = new Date(until).toLocaleDateString(lang === "zh" ? "zh-CN" : lang === "vi" ? "vi-VN" : lang === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
             const T: Record<string, { s1: string; b1: string; s0: string; b0: string }> = {
-              en: { s1: "Your free month of Plus is active", b1: `Thank you for sending your proof. Plus is on until ${D}: 100 videos, interactive video and in-depth answers.`, s0: "We could not verify your proof", b0: "We could not verify that proof. Please send a clearer photo or a school letter from your account page." },
-              zh: { s1: "你的 Plus 免费月已开通", b1: `感谢提交证明。Plus 已开通，有效期至 ${D}：100 个视频、互动视频和深入回答。`, s0: "未能验证你的证明", b0: "这份证明未能通过验证。请在账户页重新发送更清晰的照片或学校证明。" },
-              vi: { s1: "Tháng Plus miễn phí của bạn đã được kích hoạt", b1: `Cảm ơn bạn đã gửi giấy tờ. Plus có hiệu lực đến ${D}: 100 video, video tương tác và câu trả lời chuyên sâu.`, s0: "Chúng tôi chưa xác minh được giấy tờ của bạn", b0: "Chưa xác minh được giấy tờ đó. Hãy gửi lại ảnh rõ hơn hoặc giấy xác nhận của trường trong trang tài khoản." },
-              id: { s1: "Bulan Plus gratis Anda sudah aktif", b1: `Terima kasih sudah mengirim bukti. Plus aktif sampai ${D}: 100 video, video interaktif, dan jawaban mendalam.`, s0: "Kami belum bisa memverifikasi bukti Anda", b0: "Bukti itu belum bisa diverifikasi. Kirim foto yang lebih jelas atau surat dari sekolah di halaman akun Anda." },
+              en: { s1: "Your free month of Plus is active", b1: `Thank you for sending your proof. Plus is on until ${D}: 50 videos, 10 interactive videos and in-depth answers.`, s0: "We could not verify your proof", b0: "We could not verify that proof. Please send a clearer photo or a school letter from your account page." },
+              zh: { s1: "你的 Plus 免费月已开通", b1: `感谢提交证明。Plus 已开通，有效期至 ${D}：50 个视频、10 个互动视频和深入回答。`, s0: "未能验证你的证明", b0: "这份证明未能通过验证。请在账户页重新发送更清晰的照片或学校证明。" },
+              vi: { s1: "Tháng Plus miễn phí của bạn đã được kích hoạt", b1: `Cảm ơn bạn đã gửi giấy tờ. Plus có hiệu lực đến ${D}: 50 video, 10 video tương tác và câu trả lời chuyên sâu.`, s0: "Chúng tôi chưa xác minh được giấy tờ của bạn", b0: "Chưa xác minh được giấy tờ đó. Hãy gửi lại ảnh rõ hơn hoặc giấy xác nhận của trường trong trang tài khoản." },
+              id: { s1: "Bulan Plus gratis Anda sudah aktif", b1: `Terima kasih sudah mengirim bukti. Plus aktif sampai ${D}: 50 video, 10 video interaktif, dan jawaban mendalam.`, s0: "Kami belum bisa memverifikasi bukti Anda", b0: "Bukti itu belum bisa diverifikasi. Kirim foto yang lebih jelas atau surat dari sekolah di halaman akun Anda." },
             };
             const m = T[lang];
             await sendMail(String(usr.username), ok ? m.s1 : m.s0, `<div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px"><h2>${ok ? m.s1 : m.s0}</h2><p style="line-height:1.5">${ok ? m.b1 : m.b0}</p></div>`, ok ? m.b1 : m.b0);

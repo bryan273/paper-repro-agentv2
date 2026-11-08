@@ -43,6 +43,32 @@ export async function userOf(req: Request): Promise<User | null> {
   return us[0] && !us[0].banned ? us[0] : null;
 }
 
+// What each plan gives. Kept in step with explainer-account PLANS and the front end (PricingSection, MemberHome).
+//   interactive: videos a month on which interactive mode can be opened (the questions inside the video, the quiz tab and the final quiz).
+//   deep: in-depth answers per video.
+export const TIERS: Record<string, { interactive: number; deep: number }> = {
+  guest: { interactive: 1, deep: 0 }, free: { interactive: 2, deep: 3 },
+  plus: { interactive: 10, deep: 10 }, pro: { interactive: 30, deep: 20 }, premium: { interactive: 80, deep: 30 },
+};
+export const PLAN_NAMES = ["plus", "pro", "premium"];
+/** The plan running now for a member, or null. */
+export async function activePlan(userId: string | undefined | null): Promise<string | null> {
+  if (!userId) return null;
+  const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+  return e?.meta?.until && new Date(e.meta.until) > new Date() && PLAN_NAMES.includes(String(e.meta.plan)) ? String(e.meta.plan) : null;
+}
+const monthStart = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); };
+const nextMonth = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString(); };
+export type Interactive = { used: number; cap: number; left: number; resets: string; jobs: string[] };
+/** How many videos this person opened interactive mode on this calendar month (UTC). Opening it again on the same video is free. */
+export async function interactiveUse(user: User | null, actor: string, plan: string | null): Promise<Interactive> {
+  const who = user ? `user_id=eq.${user.id}` : `actor=eq.${encodeURIComponent(actor)}&user_id=is.null`;
+  const rows = await db(`explainer_events?${who}&type=eq.interactive&created_at=gte.${monthStart()}&select=meta&limit=2000`).catch(() => []);
+  const jobs = [...new Set((rows as { meta?: { job?: string } }[]).map((r) => String(r.meta?.job ?? "")).filter(Boolean))];
+  const cap = TIERS[plan ?? (user ? "free" : "guest")].interactive;
+  return { used: jobs.length, cap, left: Math.max(0, cap - jobs.length), resets: nextMonth(), jobs };
+}
+
 export async function logEvent(actor: string, type: string, meta: Record<string, unknown> = {}, userId: string | null = null) {
   try { await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor, user_id: userId, type, meta }) }); } catch { /* logging must never break a request */ }
 }
