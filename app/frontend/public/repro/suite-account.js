@@ -11,8 +11,8 @@
   const USER = 'pe-user';
   const VISITOR = 'pe-visitor';
   const TXT = {
-    en: { login: 'Log in', register: 'Sign up free', logout: 'Log out', account: 'My papers', titleL: 'Welcome back', titleR: 'Create your free account', one: 'One account for every Repro Suite app.', email: 'Email', pw: 'Password', hint: '8 characters or more', toR: 'No account yet? Sign up free', toL: 'Already have an account? Log in', close: 'Close', wait: 'One moment...', credits: 'credits', menu: 'Account menu', agree: 'By signing up you agree to the', terms: 'terms', fail: 'Could not reach the server. Try again.' },
-    zh: { login: '登录', register: '免费注册', logout: '退出登录', account: '我的论文', titleL: '欢迎回来', titleR: '创建免费账户', one: '一个账户，通用于所有 Repro Suite 应用。', email: '邮箱', pw: '密码', hint: '至少 8 个字符', toR: '还没有账户？免费注册', toL: '已有账户？去登录', close: '关闭', wait: '请稍候...', credits: '点额度', menu: '账户菜单', agree: '注册即表示同意', terms: '服务条款', fail: '无法连接服务器，请重试。' },
+    en: { login: 'Log in', register: 'Sign up free', logout: 'Log out', account: 'My papers', titleL: 'Welcome back', titleR: 'Create your free account', one: 'One account for every Repro Suite app.', email: 'Email', pw: 'Password', hint: '8 characters or more', toR: 'No account yet? Sign up free', toL: 'Already have an account? Log in', close: 'Close', wait: 'One moment...', credits: 'credits', unlimited: 'Unlimited (admin)', menu: 'Account menu', agree: 'By signing up you agree to the', terms: 'terms', fail: 'Could not reach the server. Try again.' },
+    zh: { login: '登录', register: '免费注册', logout: '退出登录', account: '我的论文', titleL: '欢迎回来', titleR: '创建免费账户', one: '一个账户，通用于所有 Repro Suite 应用。', email: '邮箱', pw: '密码', hint: '至少 8 个字符', toR: '还没有账户？免费注册', toL: '已有账户？去登录', close: '关闭', wait: '请稍候...', credits: '点额度', unlimited: '无限额度（管理员）', menu: '账户菜单', agree: '注册即表示同意', terms: '服务条款', fail: '无法连接服务器，请重试。' },
   };
   const get = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
   const put = (k, v) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch { /* private mode */ } };
@@ -97,7 +97,7 @@
     p.appendChild(name);
     if (typeof user.credits === 'number') {
       const c = document.createElement('span');
-      c.textContent = `${user.credits} ${t('credits')}`;
+      c.textContent = user.admin ? t('unlimited') : `${user.credits} ${t('credits')}`;
       p.appendChild(c);
     }
     const a = document.createElement('a');
