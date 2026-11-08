@@ -19,18 +19,12 @@ body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-appl
 <body>
 <header class="tb" id="tb">
  <div class="tbrow">
-  <a class="brand" href="https://bryan273.github.io/repro-suite/hub/" aria-label="Repro Suite home"><span class="logo" aria-hidden="true">R</span><b>Repro Suite</b></a>
-  <nav class="tbnav" aria-label="Repro Suite">
-    <a href="https://bryan273.github.io/repro-suite/explainer/">Explain</a>
-    <a href="https://bryan273.github.io/repro-suite/repro/index.html" class="on" aria-current="page">Check</a>
-    <a href="https://bryan273.github.io/repro-suite/lite/">Quick check</a>
-    <a href="https://bryan273.github.io/repro-suite/reading/">Read</a>
-    <a href="https://bryan273.github.io/repro-suite/indexboard/">Boards</a>
-    <div class="suite"><button class="suitebtn" id="suiteBtn" type="button" aria-expanded="false" aria-controls="suiteMenu">More <span aria-hidden="true">&#9662;</span></button>
-      <div class="suitemenu" id="suiteMenu" hidden>
-        <a href="https://bryan273.github.io/repro-suite/desk/"><b>Human check</b><span>Ask for a human-checked reproduction</span></a>
-        <a href="https://bryan273.github.io/repro-suite/hub/"><b>Overview</b><span>The Repro Suite home</span></a>
-      </div></div>
+  <a class="brand" href="https://bryan273.github.io/repro-suite/hub/" aria-label="Paperlit home"><span class="logo" aria-hidden="true">P</span><b>Paperlit</b></a>
+  <span class="here">Check the result</span>
+  <nav class="tbnav" aria-label="Paperlit">
+    <a href="https://bryan273.github.io/repro-suite/explainer/">Learn by video</a>
+    <a href="https://bryan273.github.io/repro-suite/reading/">Read and ask</a>
+    <a href="https://bryan273.github.io/repro-suite/repro/index.html" class="on" aria-current="page">Check the result</a>
   </nav>
   <div class="tbact" id="themeSlot"><button class="ghost" id="helpBtn" type="button" aria-haspopup="dialog">? <span class="hlab">How to use</span></button><button class="ghost" id="langBtn" type="button" aria-label="Language">中文</button><div class="status" id="status" title=""><span class="dot"></span><span id="statusText">connecting</span></div><button class="ghost icon" id="menuBtn" type="button" aria-label="Menu" aria-controls="tbsheet" aria-expanded="false">&#9776;</button></div>
  </div>
@@ -59,25 +53,22 @@ body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-appl
    <section>
     <h3>Learn a paper: watch a short video</h3>
     <ol>
-     <li><b>Open Paper Explainer.</b> Use the button below or the Paper Repro Suite menu in the top bar.</li>
+     <li><b>Make a video.</b> Use the button below or the top bar.</li>
      <li><b>Paste a paper link.</b> An arXiv link, a PDF link or a DOI works.</li>
      <li><b>Wait 3 to 5 minutes.</b> You get a narrated video in English and Chinese, with every quote and number checked.</li>
     </ol>
-    <a class="primary" href="https://bryan273.github.io/repro-suite/explainer/">Open Paper Explainer</a>
+    <a class="primary" href="https://bryan273.github.io/repro-suite/explainer/">Make a video</a>
    </section>
   </div>
-  <p class="small muted">Stuck? Open the Benchmark to see how the agent scored on real papers, or use the Paper Repro Suite menu for the other apps.</p>
+  <p class="small muted">Stuck? Open the Benchmark to see how the agent scored on real papers, or use the top bar for the other apps.</p>
  </div>
 </div>
 <div class="tbsheet" id="tbsheet">
-  <div class="navh">Repro Suite</div>
-  <a href="https://bryan273.github.io/repro-suite/explainer/">Explain</a>
-  <a href="https://bryan273.github.io/repro-suite/repro/index.html">Check</a>
-  <a href="https://bryan273.github.io/repro-suite/lite/">Quick check</a>
-  <a href="https://bryan273.github.io/repro-suite/reading/">Read</a>
-  <a href="https://bryan273.github.io/repro-suite/indexboard/">Boards</a>
-  <a href="https://bryan273.github.io/repro-suite/desk/">Human check</a>
-  <a href="https://bryan273.github.io/repro-suite/hub/">Overview</a>
+  <div class="navh">Paperlit</div>
+  <a href="https://bryan273.github.io/repro-suite/explainer/">Learn by video</a>
+  <a href="https://bryan273.github.io/repro-suite/reading/">Read and ask</a>
+  <a href="https://bryan273.github.io/repro-suite/repro/index.html">Check the result</a>
+  <a href="https://bryan273.github.io/repro-suite/hub/">Home</a>
   <div class="navh">Check a paper</div>
   <a href="index.html#start" data-pane="start">Reproduce a paper</a>
   <a href="index.html#papers" data-pane="papers">Browse papers</a>
@@ -113,7 +104,7 @@ body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-appl
       <li><span class="n">2</span><div><b>Read the verdict</b><p>Reproduced, Not reproduced or Inconclusive, with the paper's number next to what the agent measured.</p></div></li>
       <li><span class="n">3</span><div><b>Then try your own paper</b><p>Drop a PDF or paste an arXiv link. Live runs need a connected runner. If the dot in the top bar is orange, use the samples.</p><a class="ghost" data-scroll="#uploader">Try my paper</a></div></li>
      </ol>
-     <p class="small muted sgfoot">Want a short video of a paper instead? <a href="https://bryan273.github.io/repro-suite/explainer/">Open Paper Explainer</a></p>
+     <p class="small muted sgfoot">Want a short video of a paper instead? <a href="https://bryan273.github.io/repro-suite/explainer/">Make a video</a></p>
     </div>
 
     <div class="uploader card" id="uploader">
@@ -191,7 +182,7 @@ body{margin:0;background:#F8F7F4;color:#15151C;font-family:Inter,system-ui,-appl
     <div class="samples" id="samples"></div>
 
 
-    <a class="appcard feature" href="https://bryan273.github.io/repro-suite/explainer/"><span class="pill on">Sister product</span><b>Paper Explainer</b><span>Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.</span><span class="go">Watch an explainer &rarr;</span></a>
+    <a class="appcard feature" href="https://bryan273.github.io/repro-suite/explainer/"><span class="pill on">Sister product</span><b>Paperlit</b><span>Type an arXiv id and get a short explainer video of the paper, narrated in English and Chinese. Every quote and number in the video is checked against the paper text.</span><span class="go">Watch an explainer &rarr;</span></a>
    </div>
 
    <div class="pane" data-pane="papers" hidden>

@@ -31,6 +31,21 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       src: { friend: 'Teman atau teman kuliah', social: 'Media sosial', search: 'Mesin pencari', class: 'Dosen atau kelas saya', other: 'Lainnya' },
       rol: { student: 'Mahasiswa', researcher: 'Peneliti', teacher: 'Pengajar', pro: 'Pekerja profesional', other: 'Lainnya' }, needC: 'Pilih negara atau wilayah.', needL: 'Pilih bahasa.' },
   };
+  const M = {
+    en: { forgot: 'Forgot your password?', fT: 'Reset your password', fP: 'Enter your email and we will send you a link to choose a new password.', fGo: 'Send the link', fDone: 'If that email has an account, we sent a link. It works for 1 hour. Check your spam folder too.',
+      cT: 'Check your email', cP: 'We sent a confirmation link to {email}. Open it to finish creating your account. Check your spam folder too.', resend: 'Send the email again', resent: 'Sent again. Please check your inbox.',
+      rT: 'Choose a new password', rGo: 'Save password', verified: 'Email confirmed. You are signed in.', ok: 'OK', badLink: 'This link is not valid any more.' },
+    zh: { forgot: '忘记密码？', fT: '重置密码', fP: '输入你的邮箱，我们会发送一个设置新密码的链接。', fGo: '发送链接', fDone: '如果该邮箱已注册，我们已发送链接，1 小时内有效。也请查看垃圾邮件。',
+      cT: '请查收邮件', cP: '我们已向 {email} 发送了确认链接，点击即可完成账户创建。也请查看垃圾邮件。', resend: '重新发送邮件', resent: '已重新发送，请查收。',
+      rT: '设置新密码', rGo: '保存密码', verified: '邮箱已确认，你已登录。', ok: '好的', badLink: '该链接已失效。' },
+    vi: { forgot: 'Quên mật khẩu?', fT: 'Đặt lại mật khẩu', fP: 'Nhập email của bạn, chúng tôi sẽ gửi liên kết để chọn mật khẩu mới.', fGo: 'Gửi liên kết', fDone: 'Nếu email đó có tài khoản, chúng tôi đã gửi một liên kết, có hiệu lực 1 giờ. Hãy kiểm tra cả thư rác.',
+      cT: 'Hãy kiểm tra email', cP: 'Chúng tôi đã gửi liên kết xác nhận tới {email}. Mở liên kết để hoàn tất tạo tài khoản. Hãy kiểm tra cả thư rác.', resend: 'Gửi lại email', resent: 'Đã gửi lại. Hãy kiểm tra hộp thư.',
+      rT: 'Chọn mật khẩu mới', rGo: 'Lưu mật khẩu', verified: 'Đã xác nhận email. Bạn đã đăng nhập.', ok: 'OK', badLink: 'Liên kết này không còn hiệu lực.' },
+    id: { forgot: 'Lupa kata sandi?', fT: 'Atur ulang kata sandi', fP: 'Masukkan email Anda dan kami kirim tautan untuk memilih kata sandi baru.', fGo: 'Kirim tautan', fDone: 'Jika email itu punya akun, kami sudah mengirim tautan yang berlaku 1 jam. Periksa juga folder spam.',
+      cT: 'Periksa email Anda', cP: 'Kami mengirim tautan konfirmasi ke {email}. Buka tautan itu untuk menyelesaikan pembuatan akun. Periksa juga folder spam.', resend: 'Kirim email lagi', resent: 'Terkirim lagi. Silakan periksa kotak masuk.',
+      rT: 'Pilih kata sandi baru', rGo: 'Simpan kata sandi', verified: 'Email dikonfirmasi. Anda sudah masuk.', ok: 'OK', badLink: 'Tautan ini sudah tidak berlaku.' },
+  };
+  const m = (k) => (M[lang()] || M.en)[k] || M.en[k];
   const LANGNAME = { en: 'English', zh: '中文', vi: 'Tiếng Việt', id: 'Bahasa Indonesia' };
   const COUNTRIES = 'CN VN ID US SG MY TH PH JP KR IN HK TW MO GB AU CA DE FR ES IT NL SE CH BR MX AE SA TR RU PK BD LK NP EG NG ZA KE NZ IE PL UA IL AR CL CO'.split(' ');
   const get = (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
@@ -47,7 +62,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
   async function call(op, body = {}) {
     const res = await fetch(URL_, { method: 'POST', headers: headers(), body: JSON.stringify({ op, visitor: visitor(), ...body }) });
     const out = await res.json().catch(() => ({}));
-    if (!res.ok || out.error) throw new Error(out.error || `HTTP ${res.status}`);
+    if (!res.ok || out.error) { const er = new Error(out.error || `HTTP ${res.status}`); er.code = out.code; er.email = out.email; throw er; }
     return out;
   }
 
@@ -157,6 +172,82 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
     window.dispatchEvent(new Event('suite-auth'));
   }
 
+  // small dialogs for e-mail confirmation and password reset
+  function panel(title, build) {
+    const d = document.createElement('dialog');
+    d.className = 'sa-d';
+    const x0 = document.createElement('button'); x0.type = 'button'; x0.className = 'sa-x'; x0.textContent = '✕'; x0.setAttribute('aria-label', t('close')); x0.onclick = () => d.close();
+    const h = document.createElement('h2'); h.textContent = title;
+    d.append(x0, h);
+    build(d);
+    d.addEventListener('close', () => d.remove());
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    document.body.appendChild(d);
+    d.showModal();
+    return d;
+  }
+  const para = (text) => { const p = document.createElement('p'); p.textContent = text; return p; };
+  const msgBox = () => { const b = document.createElement('p'); b.className = 'sa-fine'; b.setAttribute('role', 'status'); b.style.marginTop = '12px'; return b; };
+  function labelled(text, input) { const l = document.createElement('label'); const sp = document.createElement('span'); sp.textContent = text; l.append(sp, input); return l; }
+  function button(text, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = 'sa-go'; b.textContent = text; b.onclick = fn; return b; }
+
+  function checkEmailDialog(email) {
+    panel(m('cT'), (d) => {
+      d.append(para(m('cP').replace('{email}', email)));
+      const note = msgBox();
+      const again = button(m('resend'), async () => { again.disabled = true; try { await call('resend_verify', { username: email, lang: lang() }); note.textContent = m('resent'); } catch (e) { note.textContent = e.message; } finally { setTimeout(() => { again.disabled = false; }, 15000); } });
+      d.append(again, note);
+    });
+  }
+  function forgotDialog(email0) {
+    panel(m('fT'), (d) => {
+      d.append(para(m('fP')));
+      const inp = document.createElement('input'); inp.type = 'email'; inp.autocomplete = 'email'; inp.inputMode = 'email'; inp.value = email0 || '';
+      const note = msgBox();
+      const go = button(m('fGo'), async () => {
+        const em = inp.value.trim();
+        if (!em) return;
+        go.disabled = true;
+        try { await call('reset_request', { username: em, lang: lang() }); note.textContent = m('fDone'); } catch (e) { note.textContent = e.message; go.disabled = false; }
+      });
+      d.append(labelled(t('email'), inp), go, note);
+    });
+  }
+  function resetDialog(token) {
+    panel(m('rT'), (d) => {
+      const inp = document.createElement('input'); inp.type = 'password'; inp.autocomplete = 'new-password';
+      const hint = document.createElement('small'); hint.textContent = t('hint');
+      const note = msgBox();
+      const go = button(m('rGo'), async () => {
+        go.disabled = true;
+        try {
+          const out = await call('reset_confirm', { token, password: inp.value });
+          set(out.user, out.token);
+          try { history.replaceState(null, '', location.pathname + location.hash); } catch (_) {}
+          d.close();
+          panel(m('rT'), (d2) => { d2.append(para(m('verified')), button(m('ok'), () => d2.close())); });
+        } catch (e) { note.textContent = e.message; go.disabled = false; }
+      });
+      d.append(labelled(t('pw'), inp), hint, go, note);
+    });
+  }
+  async function handleLinks() {
+    let q; try { q = new URLSearchParams(location.search); } catch (_) { return; }
+    const v = q.get('verify'), r = q.get('reset');
+    if (v) {
+      try {
+        const out = await call('verify_email', { token: v });
+        set(out.user, out.token);
+        panel(m('cT'), (d) => d.append(para(m('verified')), button(m('ok'), () => d.close())));
+      } catch (e) {
+        panel(m('cT'), (d) => d.append(para(e.message || m('badLink')), button(m('ok'), () => d.close())));
+      }
+      try { history.replaceState(null, '', location.pathname + location.hash); } catch (_) {}
+    } else if (r) {
+      resetDialog(r);
+    }
+  }
+
   function dialog(start) {
     let mode = start;
     const d = document.createElement('dialog');
@@ -216,6 +307,10 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
       const sw = d.querySelector('.sa-sw');
       sw.textContent = t(mode === 'login' ? 'toR' : 'toL');
       sw.onclick = () => { mode = mode === 'login' ? 'register' : 'login'; draw('', false, f.email.value); };
+      if (mode === 'login') {
+        const fg = document.createElement('button'); fg.type = 'button'; fg.className = 'sa-sw'; fg.textContent = m('forgot'); fg.onclick = () => { const em = f.email.value.trim(); d.close(); forgotDialog(em); };
+        sw.parentNode.insertBefore(fg, sw);
+      }
       if (mode === 'register') {
         const fine = document.createElement('p');
         fine.className = 'sa-fine';
@@ -236,10 +331,12 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
           let ref; try { ref = localStorage.getItem('pe-ref') || undefined; } catch (_) {}
           if (mode === 'register' && !(f.country.value && f.plang.value)) throw new Error(!f.country.value ? x().needC : x().needL);
           const out = await call(mode, mode === 'register' ? { username: em, password: pw, ref, country: f.country.value, lang: f.plang.value, source: f.source.value, role: f.role.value } : { username: em, password: pw });
+          if (out.pending) { d.close(); checkEmailDialog(out.email || em); return; }
           set(out.user, out.token);
           sync();
           d.close();
         } catch (x) {
+          if (x.code === 'need_verify') { d.close(); checkEmailDialog(x.email || em); return; }
           draw(/fetch|network/i.test(String(x.message)) ? t('fail') : x.message, false, em);
         }
       };
@@ -280,6 +377,7 @@ try { const r = new URLSearchParams(location.search).get('ref'); if (r && /^[0-9
   document.addEventListener('click', (e) => { if (open && !root.contains(e.target)) close(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) close(); });
   window.addEventListener('suite-auth', () => { if (get(TOKEN) && !user) sync(); else if (!get(TOKEN) && user) { user = null; put(USER, ''); paint(); } });
+  handleLinks();
   window.addEventListener('suite-open-auth', (e) => { if (!user) dialog(e.detail === 'login' ? 'login' : 'register'); });
   window.addEventListener('storage', (e) => { if (e.key === TOKEN) sync(); });
   sync();
