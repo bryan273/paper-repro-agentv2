@@ -13,25 +13,27 @@ import urllib.parse
 import urllib.request
 
 RETENTION_DAYS = 14
+PLAN_DAYS = {"plus": 90, "pro": 365}   # how long a member's videos are kept while their plan is active
 GB = 1024 ** 3
 HARD_LIMIT, TARGET = int(9 * GB), int(8.5 * GB)
 DRY = "--dry-run" in sys.argv
 
 
-def pick_expired(jobs, sizes, now, base):
-    """jobs: rows with id, created_at, videos. sizes: {prefix: bytes}. Returns the prefixes to remove, oldest first, with the reason."""
+def pick_expired(jobs, sizes, now, base, keep=None):
+    """jobs: rows with id, created_at, videos, user_id. sizes: {prefix: bytes}. keep: {user_id: days} for members on a plan (Plus 90, Pro 365; everyone else 14).
+    Returns the prefixes to remove, oldest first, with the reason."""
+    keep = keep or {}
     mine = []
     for j in jobs:
         url = (j.get("videos") or {}).get("en") or ""
         if not url.startswith(base.rstrip("/") + "/") or j.get("expired_at"):
             continue
         prefix = urllib.parse.urlparse(url).path.lstrip("/").rsplit("/", 1)[0] + "/"
-        mine.append((j["created_at"], j["id"], prefix))
+        mine.append((j["created_at"], j["id"], prefix, keep.get(j.get("user_id"), RETENTION_DAYS)))
     mine.sort()
-    cutoff = (now - datetime.timedelta(days=RETENTION_DAYS)).isoformat()
-    out = [(i, p, "older than %d days" % RETENTION_DAYS) for c, i, p in mine if c < cutoff]
+    out = [(i, p, "older than %d days" % d) for c, i, p, d in mine if c < (now - datetime.timedelta(days=d)).isoformat()]
     left = sum(sizes.values()) - sum(sizes.get(p, 0) for _, p, _ in out)
-    for c, i, p in mine:
+    for c, i, p, _d in mine:
         if left <= HARD_LIMIT:
             break
         if any(i == o[0] for o in out):
@@ -87,9 +89,19 @@ def main():
 
     sizes, n = scan()
     print("bucket: %.1f MB in %d files" % (sum(sizes.values()) / 1048576, n))
-    req = urllib.request.Request(sb + "/rest/v1/explainer_jobs?status=eq.done&expired_at=is.null&select=id,created_at,videos&order=created_at.asc&limit=2000", headers=hdr)
+    req = urllib.request.Request(sb + "/rest/v1/explainer_jobs?status=eq.done&expired_at=is.null&select=id,created_at,videos,user_id&order=created_at.asc&limit=2000", headers=hdr)
     jobs = json.load(urllib.request.urlopen(req, timeout=60))
-    todo = pick_expired(jobs, sizes, datetime.datetime.now(datetime.timezone.utc), base)
+    keep = {}
+    try:   # members with an active plan keep their videos longer (newest plan event per member, still running)
+        pe = json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_events?type=eq.plan&select=user_id,meta&order=created_at.desc&limit=2000", headers=hdr), timeout=60))
+        now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        for e in pe:
+            m = e.get("meta") or {}
+            if e["user_id"] not in keep and (m.get("until") or "") > now_iso:
+                keep[e["user_id"]] = PLAN_DAYS.get(m.get("plan"), RETENTION_DAYS)
+    except Exception as ex:
+        print("plan lookup skipped:", str(ex)[:100])
+    todo = pick_expired(jobs, sizes, datetime.datetime.now(datetime.timezone.utc), base, keep)
     print("to expire: %d" % len(todo))
     for jid, prefix, why in todo:
         print("  %s %s (%s, %.1f MB)%s" % (jid[:8], prefix, why, sizes.get(prefix, 0) / 1048576, " [dry run]" if DRY else ""))

@@ -105,7 +105,7 @@ async function arxivText(id: string): Promise<string> {
 }
 
 const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietnamese", id: "Indonesian", en: "English" };
-const DEEP_TRIAL = 2;   // a member may try the deeper model this many times a day before it becomes a Plus feature
+const DEEP_PER_VIDEO = 10;   // a free member gets this many Deep answers for each video; any plan makes it unlimited
 const QUIZ_GUEST = 3, QUIZ_MEMBER = 12;
 const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
 Write every answer in ${LANGNAME[lang] ?? "English"}.
@@ -162,10 +162,10 @@ Deno.serve(async (req) => {
       const [pe] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
       plan = pe?.meta?.until && new Date(pe.meta.until) > new Date() ? String(pe.meta.plan) : null;
     }
-    if (deep && !isAdmin(user) && plan !== "pro") {
+    if (deep && !isAdmin(user) && !plan) {
       if (!user) return json({ error: "The deeper model is free to try once you sign up.", code: "deep_signup" }, 402);
-      const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.deep&created_at=gte.${since}&select=id`)).length;
-      if (tried >= DEEP_TRIAL) return json({ error: `You used your ${DEEP_TRIAL} free deep answers today. Deeper answers are part of Plus.`, code: "deep_premium" }, 402);
+      const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep&select=id`)).length;
+      if (tried >= DEEP_PER_VIDEO) return json({ error: `You used your ${DEEP_PER_VIDEO} free Deep questions for this video. Plus makes them unlimited.`, code: "deep_premium" }, 402);
     }
     if (intent === "quiz" && !isAdmin(user) && !plan) {
       const qs = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&intent=eq.quiz&created_at=gte.${since}&select=id`)).length;

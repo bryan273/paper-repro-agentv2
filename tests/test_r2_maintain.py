@@ -47,3 +47,9 @@ def test_orphans_are_folders_without_a_job_and_old_enough():
     prefixes = {"1409.0473-eefcd171/": old, "1409.0473-aaaaaaaa/": old, "1409.0473-bbbbbbbb/": fresh, "_check/": old}
     got = pick_orphans(prefixes, ["aaaaaaaa-1111-2222-3333-444444444444"], NOW)
     assert got == ["1409.0473-eefcd171/"]   # aaaaaaaa has a job, bbbbbbbb is too new (maybe a running render), _check is not a job folder
+
+
+def test_plan_members_keep_videos_longer():
+    jobs = [{**job("free", 30), "user_id": "u1"}, {**job("plus", 30), "user_id": "u2"}, {**job("pro", 70), "user_id": "u3"}, {**job("pro2", 120), "user_id": "u3"}]
+    got = {i for i, _, _ in pick_expired(jobs, {}, NOW, BASE, {"u2": 60, "u3": 100})}
+    assert got == {"free", "pro2"}
