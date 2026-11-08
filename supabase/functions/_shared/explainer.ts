@@ -27,6 +27,10 @@ export const clientIp = (req: Request) => (req.headers.get("x-forwarded-for") ??
 /** One id for "this browser on this network", used for the guest quota and for the event log. */
 export const actorOf = async (req: Request, visitor: unknown) => sha(`${clientIp(req)}|${String(visitor ?? "").slice(0, 64)}|explainer`);
 
+/** Accounts listed in EXPLAINER_ADMIN_EMAILS (comma separated) are the owner and the QA account: no daily limit, no credit charge. */
+export const ADMIN_EMAILS = (Deno.env.get("EXPLAINER_ADMIN_EMAILS") ?? "bryantjandra273@gmail.com").toLowerCase().split(",").map((x) => x.trim()).filter(Boolean);
+export const isAdmin = (u: { username: string } | null) => !!u && ADMIN_EMAILS.includes(String(u.username).toLowerCase());
+
 export type User = { id: string; username: string; credits: number; banned: boolean; created_at: string };
 
 /** The signed-in member behind the x-session header, or null. */
@@ -63,7 +67,7 @@ export async function quotaFor(user: User | null, actor: string): Promise<Quota>
   const who = user ? `user_id=eq.${user.id}` : `visitor=eq.${actor}&user_id=is.null`;
   const rows = await db(`explainer_jobs?${who}&status=neq.failed&created_at=gte.${since}&select=seconds,credit_used,created_at&order=created_at.asc`);
   const used = rows.reduce((n: number, r: { seconds: number; credit_used: number }) => n + Math.max(0, units(r.seconds) - (r.credit_used || 0)), 0);
-  const limit = user ? MEMBER_DAY : GUEST_DAY;
+  const limit = user ? (isAdmin(user) ? 9999 : MEMBER_DAY) : GUEST_DAY;
   const left = Math.max(0, limit - used);
   const oldest = rows[0] ? Date.parse(rows[0].created_at) + 86400_000 - Date.now() : null;
   return { tier: user ? "member" : "guest", day_limit: limit, day_used: Math.min(used, limit), day_left: left, credits: user?.credits ?? 0, resets_in_min: oldest && left < limit ? Math.max(1, Math.round(oldest / 60000)) : null };

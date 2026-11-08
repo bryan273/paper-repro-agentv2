@@ -28,7 +28,9 @@ Deno.serve(async (req) => {
   const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
   try {
     if (!KEY) return json({ error: "gateway not configured" }, 503);
-    const { app, messages, tools, max_tokens, json_mode, visitor } = await req.json();
+    const { app, messages, tools, max_tokens, json_mode, visitor, bypass_limits } = await req.json();
+    // only another edge function (it holds the service key) may ask to skip the visitor and connection limits, for the QA admin account
+    const skip = bypass_limits === true && req.headers.get("authorization") === `Bearer ${SB_SERVICE}`;
     if (!APPS.has(app)) return json({ error: "unknown app" }, 400);
     if (!Array.isArray(messages) || !messages.length) return json({ error: "messages required" }, 400);
     if (JSON.stringify(messages).length > MAX_CHARS) return json({ error: "too much text in one call" }, 413);
@@ -38,11 +40,11 @@ Deno.serve(async (req) => {
     const vid = ipid + (await sha(`${String(visitor ?? "").slice(0, 64)}|${app}`));
     const since = new Date(Date.now() - 3600_000).toISOString();
     const mine = await db(`agent_usage?visitor=eq.${vid}&created_at=gte.${since}&select=id`, { headers: { Prefer: "count=none" } });
-    if (mine.length >= PER_VISITOR_HOUR) return json({ error: "hourly limit reached, try again later" }, 429);
+    if (!skip && mine.length >= PER_VISITOR_HOUR) return json({ error: "hourly limit reached, try again later" }, 429);
     const fromIp = await db(`agent_usage?visitor=like.${ipid}*&created_at=gte.${since}&select=id`, { headers: { Prefer: "count=none" } });
-    if (fromIp.length >= PER_IP_HOUR) return json({ error: "Too many requests from this connection, please try again later." }, 429);
+    if (!skip && fromIp.length >= PER_IP_HOUR) return json({ error: "Too many requests from this connection, please try again later." }, 429);
     const ipDay = await db(`agent_usage?visitor=like.${ipid}*&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}&select=prompt_tokens,completion_tokens`);
-    if (ipDay.reduce((a: number, r: { prompt_tokens: number; completion_tokens: number }) => a + r.prompt_tokens + r.completion_tokens, 0) > PER_IP_DAY_TOKENS) return json({ error: "Daily limit for this connection reached, please try again tomorrow." }, 429);
+    if (ipDay.reduce((a: number, r: { prompt_tokens: number; completion_tokens: number }) => a + r.prompt_tokens + r.completion_tokens, 0) > PER_IP_DAY_TOKENS && !skip) return json({ error: "Daily limit for this connection reached, please try again tomorrow." }, 429);
     const day = new Date(Date.now() - 86400_000).toISOString();
     const rows = await db(`agent_usage?created_at=gte.${day}&select=prompt_tokens,completion_tokens`);
     const used = rows.reduce((a: number, r: { prompt_tokens: number; completion_tokens: number }) => a + r.prompt_tokens + r.completion_tokens, 0);
