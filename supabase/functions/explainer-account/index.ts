@@ -8,11 +8,11 @@ import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, has
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
-const PACKS: Record<string, { credits: number; price: number }> = { "10": { credits: 10, price: 30 } };
+const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan switches on the unlimited interactive checks (and Deep answers for Pro)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 30, price: 49, days: 31 }, plus_year: { credits: 360, price: 399, days: 366 },
-  pro_month: { credits: 100, price: 119, days: 31 }, pro_year: { credits: 1200, price: 999, days: 366 },
+  plus_month: { credits: 100, price: 33, days: 31 }, plus_year: { credits: 1200, price: 330, days: 366 },
+  pro_month: { credits: 300, price: 129, days: 31 }, pro_year: { credits: 3600, price: 1290, days: 366 },   // Pro is "unlimited" under a fair-use ceiling of 300 videos a month
 };
 const planOf = async (userId: string | undefined): Promise<string | null> => {
   if (!userId) return null;
@@ -23,6 +23,13 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const str = (v: unknown, n: number) => String(v ?? "").slice(0, n);
 
 const publicUser = (u: { id: string; username: string; credits: number; created_at: string }) => ({ id: u.id, username: u.username, credits: u.credits, created_at: u.created_at });
+
+const planInfo = async (userId: string | undefined): Promise<{ plan: string | null; plan_until: string | null }> => {
+  if (!userId) return { plan: null, plan_until: null };
+  const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+  const until = e?.meta?.until ? String(e.meta.until) : null;
+  return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until } : { plan: null, plan_until: until };
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -44,7 +51,7 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      return json({ plan: await planOf(user?.id), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...(await planInfo(user?.id)), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? publicUser(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
