@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_DAY } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
       // the country given at sign-up: the pricing page shows that money first
       const [su] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).catch(() => []) : [];
-      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
