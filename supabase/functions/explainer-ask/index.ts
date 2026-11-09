@@ -288,7 +288,10 @@ Deno.serve(async (req) => {
       ? `I did not understand this part of the video${secTitle ? ` ("${secTitle}")` : ""}: ${secText || q}\nExplain it again for a complete beginner, with an everyday analogy, and say what I should know first.`
       : sec ? `${q}\n(I am asking about the video part "${secTitle}": ${secText})` : q;
     const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m: { role?: string; text?: string }) => ({ role: m.role === "ai" ? "assistant" : "user", content: String(m.text ?? "").slice(0, 700) })).filter((m: { content: string }) => m.content);
-    const messages = [{ role: "system", content: SYSTEM(deep ? text : focusText(text, `${q} ${secTitle} ${secText}`), mode, lang) + who }, ...history, { role: "user", content: ask }];
+    // a picture the person pasted (a figure, a slide, a photo of a page): sent to the model with the question, at most about 1.5 MB
+    const image = typeof b.image === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(b.image) && b.image.length < 2_000_000 ? b.image : "";
+    const userMsg = image ? { role: "user", content: [{ type: "text", text: ask }, { type: "image_url", image_url: { url: image } }] } : { role: "user", content: ask };
+    const messages = [{ role: "system", content: SYSTEM(deep ? text : focusText(text, `${q} ${secTitle} ${secText}`), mode, lang) + who }, ...history, userMsg];
 
     let out: { message?: { content?: string }; usage?: Record<string, number>; finish_reason?: string; error?: string; code?: string } = {};
     let content = "";
