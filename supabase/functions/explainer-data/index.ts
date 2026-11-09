@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     if (body.type === "order_paid") {
       // the customer says they paid; the owner checks the payment and confirms in the admin dashboard
       if (!/^[0-9a-f-]{36}$/.test(String(body.id))) return json({ error: "bad id" }, 400);
-      const method = ["wechat", "alipay", "techcombank", "bidv"].includes(String(body.method)) ? String(body.method) : "";
+      const method = ["wechat", "alipay", "techcombank", "bidv", "qris"].includes(String(body.method)) ? String(body.method) : "";
       await db(`explainer_orders?id=eq.${body.id}&status=eq.new`, { method: "PATCH", body: JSON.stringify({ status: "paid_claimed", pay_method: method, paid_at: new Date().toISOString() }) });
       return json({ ok: true });
     }
