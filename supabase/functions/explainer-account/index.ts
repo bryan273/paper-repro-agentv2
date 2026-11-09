@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
@@ -12,15 +12,15 @@ import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan sets the monthly interactive videos and the in-depth answers (TIERS in _shared)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 80, price: 33, days: 31 }, plus_year: { credits: 960, price: 330, days: 366 },   // Plus: 80 videos up to 5 min, interactive mode on 40, 20 in-depth answers per video
-  pro_month: { credits: 150, price: 59, days: 31 }, pro_year: { credits: 1800, price: 590, days: 366 },   // Pro: 150 videos up to 10 min, interactive 75, 35 in-depth
-  premium_month: { credits: 280, price: 109, days: 31 }, premium_year: { credits: 3360, price: 1090, days: 366 },   // Premium: 280 videos, interactive 140, 50 in-depth
+  // the video credits of a plan (1 credit = a video of up to 5 minutes); the other limits are in TIERS (_shared/explainer.ts)
+  plus_month: { credits: 20, price: 29, days: 31 }, plus_year: { credits: 240, price: 290, days: 366 },
+  pro_month: { credits: 40, price: 55, days: 31 }, pro_year: { credits: 480, price: 550, days: 366 },
+  premium_month: { credits: 80, price: 99, days: 31 }, premium_year: { credits: 960, price: 990, days: 366 },
 };
 // the same prices in the money of each market (kept in step with the front end, lib/currency.ts); the owner confirms the amount in this money, no exchange rate is involved
 const LOCAL: Record<string, { vnd: number; idr: number }> = {
-  plus_month: { vnd: 89000, idr: 79000 }, plus_year: { vnd: 890000, idr: 790000 }, pro_month: { vnd: 159000, idr: 139000 }, pro_year: { vnd: 1590000, idr: 1390000 },
-  premium_month: { vnd: 299000, idr: 259000 }, premium_year: { vnd: 2990000, idr: 2590000 },
-  pack_5: { vnd: 69000, idr: 45000 }, pack_20: { vnd: 209000, idr: 139000 }, pack_50: { vnd: 459000, idr: 299000 },
+  plus_month: { vnd: 79000, idr: 69000 }, plus_year: { vnd: 790000, idr: 690000 }, pro_month: { vnd: 149000, idr: 129000 }, pro_year: { vnd: 1490000, idr: 1290000 },
+  premium_month: { vnd: 269000, idr: 239000 }, premium_year: { vnd: 2690000, idr: 2390000 },
 };
 const planOf = async (userId: string | undefined): Promise<string | null> => {
   if (!userId) return null;
@@ -28,6 +28,22 @@ const planOf = async (userId: string | undefined): Promise<string | null> => {
   return e?.meta?.until && new Date(e.meta.until) > new Date() ? String(e.meta.plan) : null;
 };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** What a person has used of the counted features: quick answers, in-depth answers and research questions (Read).
+ *  A guest counts per day, a free member per rolling 7 days, a plan per calendar month (in-depth: always per month). */
+type Use = { used: number; cap: number; left: number; period: "day" | "week" | "month" };
+async function usageOf(user: { id: string } | null, actor: string, plan: string | null): Promise<{ quick: Use; deep: Use; research: Use }> {
+  const tier = plan ?? (user ? "free" : "guest");
+  const period: Use["period"] = !user ? "day" : plan ? "month" : "week";
+  const since = period === "day" ? new Date(Date.now() - 86400_000).toISOString() : period === "week" ? new Date(Date.now() - 7 * 86400_000).toISOString() : monthStart();
+  const who = user ? `user_id=eq.${user.id}` : `actor=eq.${encodeURIComponent(actor)}`;
+  const [quick, deep, research] = await Promise.all([
+    count(`explainer_asks?${who}&intent=in.(ask,simpler)&created_at=gte.${since}`).catch(() => 0),
+    user ? count(`explainer_asks?${who}&intent=eq.deep&created_at=gte.${monthStart()}`).catch(() => 0) : Promise.resolve(0),
+    count(`explainer_events?${who}&type=eq.research&created_at=gte.${since}`).catch(() => 0),
+  ]);
+  const mk = (used: number, cap: number, p: Use["period"]): Use => ({ used, cap, left: Math.max(0, cap - used), period: p });
+  return { quick: mk(quick, TIERS[tier].quick, period), deep: mk(deep, TIERS[tier].deep, "month"), research: mk(research, TIERS[tier].research, period) };
+}
 // The country behind a request: the network's own header when there is one, otherwise a lookup of the address (cached, never slows a request by more than a moment).
 const geoCache = new Map<string, string>();
 const geoOf = async (req: Request): Promise<string> => {
@@ -169,9 +185,10 @@ Deno.serve(async (req) => {
       }
       const pi = await planInfo(user?.id);
       const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
+      const usage = await usageOf(user, actor, user ? await activePlan(user.id) : null);
       // the country given at sign-up: the pricing page shows that money first
       const [su] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).catch(() => []) : [];
-      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -382,7 +399,28 @@ Deno.serve(async (req) => {
       if (await count(`explainer_events?actor=eq.${actor}&type=eq.contact&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`) >= 5) return json({ error: "Too many messages. Try again later." }, 429);
       await db("explainer_feedback", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ rating: 0, use_case: str(body.topic, 40) || "question", comment: message, email: email || (user ? `@${user.username}` : ""), arxiv: str(body.name, 80), kind: "contact" }) });
       await logEvent(actor, "contact", { topic: str(body.topic, 40) }, user?.id ?? null);
+      // the owner hears about it at once when e-mail is set up; otherwise the admin page shows it with a badge
+      const owner = Deno.env.get("SUPPORT_NOTIFY_EMAIL") ?? ADMIN_EMAILS[0];
+      if (owner && mailReady()) {
+        const who = email || (user ? user.username : "a visitor");
+        const plain = `${who} wrote (${str(body.topic, 40) || "question"}):
+
+${message}`;
+        sendMail(owner, `Paperlit: a person asked for help (${str(body.topic, 40) || "question"})`, `<pre style="font:14px/1.5 system-ui;white-space:pre-wrap">${plain.replace(/[<&]/g, (c) => (c === "<" ? "&lt;" : "&amp;"))}</pre>`, plain).catch(() => undefined);
+      }
       return json({ ok: true });
+    }
+
+    if (op === "research_start") {   // Read: one research question is counted when it starts (guest per day, free per week, plan per month)
+      const plan = user ? await activePlan(user.id) : null;
+      const u = (await usageOf(user, actor, plan)).research;
+      if (u.left <= 0 && !(user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()))) {
+        const next = ({ free: "Plus", plus: "Pro", pro: "Premium" } as Record<string, string>)[plan ?? (user ? "free" : "")];
+        const per = u.period === "day" ? "today" : u.period === "week" ? "this week" : "this month";
+        return json({ error: !user ? "Sign up free to ask more research questions." : next ? `You used the ${u.cap} research questions your plan gives ${per}. ${next} gives ${TIERS[next.toLowerCase()].research} a month.` : `You used the ${u.cap} research questions for ${per}. They come back on the 1st.`, code: user ? "research_quota" : "research_signup", usage: u }, 429);
+      }
+      await logEvent(actor, "research", { goal: str(body.goal, 200) }, user?.id ?? null);
+      return json({ ok: true, left: u.left - 1, cap: u.cap, period: u.period });
     }
 
     if (op === "buy") {   // a credit pack: the member pays by WeChat / Alipay, the owner confirms in the admin page and the credits are added

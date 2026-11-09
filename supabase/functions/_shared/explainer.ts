@@ -6,12 +6,15 @@ export const json = (o: unknown, status = 200) => new Response(JSON.stringify(o)
 
 // free videos: a guest gets 1 per rolling 24 hours, a signed-in member 5 per rolling 7 days; paid credits come on top
 export const GUEST_DAY = Number(Deno.env.get("EXPLAINER_GUEST_DAY") ?? "1");
-export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "5");
+export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "3");
 export const WELCOME_CREDITS = Number(Deno.env.get("EXPLAINER_WELCOME_CREDITS") ?? "3");
 /** What a video costs: 1 video up to 5 minutes, 2 for a longer one (7 or 10 minutes). */
-export const units = (sec: number) => ((sec || 36) <= 300 ? 1 : 2);
+/** Video credits a video uses: one for every started 5 minutes (a 3 minute video is 1, 10 minutes is 2, 20 minutes is 4). */
+export const units = (sec: number) => Math.max(1, Math.ceil((sec || 36) / 300));
 /** The longest video each plan may make: free 3 minutes, Plus 5, Pro and Premium 10 (pack videos are Pro videos). */
-export const maxSeconds = (plan: string | null, packBuyer: boolean) => (plan === "pro" || plan === "premium" || packBuyer ? 600 : plan === "plus" ? 300 : 180);
+export const maxSeconds = (plan: string | null, packBuyer: boolean) => (plan === "premium" ? 1200 : plan === "pro" || packBuyer ? 600 : plan === "plus" ? 300 : 180);
+/** The 9 languages a video can be narrated in (one language per video). */
+export const VIDEO_LANGS = ["en", "zh", "vi", "id", "ja", "ko", "es", "fr", "de"];
 
 export async function db(path: string, init: RequestInit = {}) {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, { ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) } });
@@ -46,13 +49,19 @@ export async function userOf(req: Request): Promise<User | null> {
   return us[0] && !us[0].banned ? us[0] : null;
 }
 
-// What each plan gives. Kept in step with explainer-account PLANS and the front end (PricingSection, MemberHome).
-//   interactive: videos on which interactive mode can be turned on (the questions inside the video, the quiz tab and the final quiz):
-//     a plan counts per calendar month, free and guest per rolling 7 days; a new free account gets 3 more in its first 7 days (the welcome videos)
-//   deep: in-depth answers per calendar month (one pool for all videos; the strong model costs about as much as a whole short video).
-export const TIERS: Record<string, { interactive: number; deep: number }> = {
-  guest: { interactive: 1, deep: 0 }, free: { interactive: 3, deep: 3 },
-  plus: { interactive: 40, deep: 30 }, pro: { interactive: 75, deep: 80 }, premium: { interactive: 140, deep: 160 },
+// What each plan gives. Kept in step with explainer-account PLANS and the front end (Pricing, AdminPricing).
+//   interactive: videos on which interactive mode can be turned on; a plan counts per calendar month, free and guest per rolling 7 days
+//     (a new free account gets 3 more in its first 7 days, the welcome videos)
+//   deep: in-depth answers per calendar month (the strong model, about half a yuan each)
+//   quick: quick answers per calendar month (free: per rolling 7 days)
+//   research: research questions (Read) per calendar month
+//   edits: edits per video (an edit re-makes one part of a finished video and does not use a video credit)
+export const TIERS: Record<string, { interactive: number; deep: number; quick: number; research: number; edits: number }> = {
+  guest: { interactive: 1, deep: 0, quick: 8, research: 1, edits: 0 },
+  free: { interactive: 2, deep: 2, quick: 20, research: 2, edits: 1 },
+  plus: { interactive: 20, deep: 10, quick: 100, research: 8, edits: 2 },
+  pro: { interactive: 40, deep: 20, quick: 200, research: 15, edits: 3 },
+  premium: { interactive: 80, deep: 30, quick: 300, research: 25, edits: 3 },
 };
 export const WELCOME_INTERACTIVE = 3;
 export const PLAN_NAMES = ["plus", "pro", "premium"];

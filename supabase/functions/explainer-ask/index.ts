@@ -104,7 +104,21 @@ async function arxivText(id: string): Promise<string> {
   return `${abstract}\n${full}`.slice(0, MAX_TEXT);
 }
 
-const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietnamese", id: "Indonesian", en: "English" };
+const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietnamese", id: "Indonesian", en: "English", ja: "Japanese", ko: "Korean", es: "Spanish", fr: "French", de: "German" };
+/** For a quick answer: the opening of the source and the stretch that shares the most words with the question, about 14,000 characters
+ *  in all instead of 48,000. In-depth answers still read the whole text. */
+function focusText(text: string, query: string): string {
+  if (text.length <= 15_000) return text;
+  const words = new Set((query.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) ?? []).slice(0, 40));
+  const head = text.slice(0, 2_500), W = 3_000, chunks: { i: number; score: number }[] = [];
+  for (let i = 2_500; i < Math.min(text.length, 48_000); i += W) {
+    const c = text.slice(i, i + W).toLowerCase(); let score = 0;
+    for (const w of words) if (c.includes(w)) score++;
+    chunks.push({ i, score });
+  }
+  const best = chunks.sort((a, b) => b.score - a.score || a.i - b.i).slice(0, 4).sort((a, b) => a.i - b.i);
+  return [head, ...best.map((c) => text.slice(c.i, c.i + W))].join("\n[...]\n");
+}
 const NEXT: Record<string, string> = { free: "Plus", plus: "Pro", pro: "Premium" };   // the plan to suggest when a limit is reached
 const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
 Write every answer in ${LANGNAME[lang] ?? "English"}.
@@ -160,7 +174,7 @@ Deno.serve(async (req) => {
       if (!iu.jobs.includes(jobId) && !isAdmin(user)) {
         if (iu.left <= 0) {
           const per = iu.period === "week" ? "this week" : "this month";
-          const msg = !user ? "That was your free try of interactive mode. Sign up free to use it on 3 videos a week."
+          const msg = !user ? "That was your free try of interactive mode. Sign up free to use it on 2 videos a week."
             : NEXT[tier] ? `You have used interactive mode on ${iu.cap} videos ${per}. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].interactive} a month.`
             : `You have used interactive mode on ${iu.cap} videos ${per}. It comes back on the 1st.`;
           return json({ error: msg, code: user ? "quiz_quota" : "quiz_signup", interactive: { used: iu.used, cap: iu.cap, left: 0, resets: iu.resets } }, 402);
@@ -176,12 +190,23 @@ Deno.serve(async (req) => {
       const [hit] = await db(`explainer_events?actor=eq.${encodeURIComponent(qsetKey)}&type=eq.quizset&select=meta&order=created_at.desc&limit=1`).catch(() => []);
       if (hit?.meta?.quizzes?.length) return json({ quizzes: hit.meta.quizzes, cached: true, interactive });
     }
-    const limit = user ? PER_DAY_MEMBER : PER_DAY_GUEST;
-    const since = new Date(Date.now() - 86400_000).toISOString();
-    const used = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&created_at=gte.${since}&select=id`)).length;
-    if (used >= limit && !isAdmin(user)) {
-      return json({ error: user ? "You reached today's question limit. Try again tomorrow." : `You used your ${limit} free questions today. Sign up free for more.`, code: user ? "ask_member" : "ask_guest" }, 429);
+    // quick answers (and the quiz questions) are counted: a guest per day, a free member per rolling 7 days, a plan per calendar month;
+    // a member never asks more than PER_DAY_MEMBER in one day either, so one script cannot empty the month in an hour
+    const quickPeriod = !user ? "day" : plan ? "month" : "week";
+    const qSince = quickPeriod === "day" ? new Date(Date.now() - 86400_000).toISOString() : quickPeriod === "week" ? new Date(Date.now() - 7 * 86400_000).toISOString() : monthStart();
+    const quickCap = TIERS[tier].quick;
+    const who_ = user ? `user_id=eq.${user.id}` : `actor=eq.${encodeURIComponent(actor)}`;
+    const used = !deep && intent !== "quiz" && intent !== "quizall" ? await count(`explainer_asks?${who_}&intent=in.(ask,simpler)&created_at=gte.${qSince}`) : 0;
+    const today = user && !deep ? await count(`explainer_asks?${who_}&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`) : 0;
+    if (!isAdmin(user) && !deep && intent !== "quiz" && intent !== "quizall" && (used >= quickCap || today >= PER_DAY_MEMBER)) {
+      const per = quickPeriod === "day" ? "today" : quickPeriod === "week" ? "this week" : "this month";
+      const msg = !user ? `You used your ${quickCap} free questions today. Sign up free for more.`
+        : today >= PER_DAY_MEMBER ? "You reached today's question limit. Try again tomorrow."
+        : NEXT[tier] ? `You used the ${quickCap} quick answers your plan gives ${per}. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].quick} a month.`
+        : `You used the ${quickCap} quick answers for ${per}. They come back on the 1st.`;
+      return json({ error: msg, code: user ? "ask_member" : "ask_guest" }, 429);
     }
+    const limit = quickCap;
 
     if (deep && !isAdmin(user)) {
       if (!user) return json({ error: "The stronger model is free to try once you sign up.", code: "deep_signup" }, 402);
@@ -263,7 +288,7 @@ Deno.serve(async (req) => {
       ? `I did not understand this part of the video${secTitle ? ` ("${secTitle}")` : ""}: ${secText || q}\nExplain it again for a complete beginner, with an everyday analogy, and say what I should know first.`
       : sec ? `${q}\n(I am asking about the video part "${secTitle}": ${secText})` : q;
     const history = (Array.isArray(b.history) ? b.history : []).slice(-6).map((m: { role?: string; text?: string }) => ({ role: m.role === "ai" ? "assistant" : "user", content: String(m.text ?? "").slice(0, 700) })).filter((m: { content: string }) => m.content);
-    const messages = [{ role: "system", content: SYSTEM(text, mode, lang) + who }, ...history, { role: "user", content: ask }];
+    const messages = [{ role: "system", content: SYSTEM(deep ? text : focusText(text, `${q} ${secTitle} ${secText}`), mode, lang) + who }, ...history, { role: "user", content: ask }];
 
     let out: { message?: { content?: string }; usage?: Record<string, number>; finish_reason?: string; error?: string; code?: string } = {};
     let content = "";

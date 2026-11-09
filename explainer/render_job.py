@@ -96,10 +96,13 @@ def best_still(mp4, jpg, tries=9):
 row = req("GET", f"/rest/v1/explainer_jobs?id=eq.{job}&select=*")[0]
 key = row["arxiv"]
 model, voice = row.get("model") or "deepseek", row.get("voice") or "female"
-MONO = ("en", "zh", "vi", "id")
+MONO = ("en", "zh", "vi", "id", "ja", "ko", "es", "fr", "de")
 LG = ("en", "zh") if (row.get("langs") or "both") not in MONO else (row["langs"],)   # the languages this video is made in
 VOICES = {"female": ("en-US-AriaNeural", "zh-CN-XiaoxiaoNeural"), "male": ("en-US-GuyNeural", "zh-CN-YunxiNeural")}
-VOICE_X = {"vi": {"female": "vi-VN-HoaiMyNeural", "male": "vi-VN-NamMinhNeural"}, "id": {"female": "id-ID-GadisNeural", "male": "id-ID-ArdiNeural"}}
+VOICE_X = {"vi": {"female": "vi-VN-HoaiMyNeural", "male": "vi-VN-NamMinhNeural"}, "id": {"female": "id-ID-GadisNeural", "male": "id-ID-ArdiNeural"},
+           "ja": {"female": "ja-JP-NanamiNeural", "male": "ja-JP-KeitaNeural"}, "ko": {"female": "ko-KR-SunHiNeural", "male": "ko-KR-InJoonNeural"},
+           "es": {"female": "es-ES-ElviraNeural", "male": "es-ES-AlvaroNeural"}, "fr": {"female": "fr-FR-DeniseNeural", "male": "fr-FR-HenriNeural"},
+           "de": {"female": "de-DE-KatjaNeural", "male": "de-DE-ConradNeural"}}
 # files and uploads are named by this slug, so one paper can exist in several model / voice versions
 arxiv = f"{key}-{job[:8]}"
 d = os.path.join(ROOT, "out", arxiv)
@@ -125,12 +128,35 @@ if not got:
 # a PDF the visitor uploaded: copy it from the private bucket next to the work files; it is deleted again when the job ends
 UP_PATH = (row.get("source_url") or "")[len("upload:"):] if (row.get("source_url") or "").startswith("upload:") else ""
 upfile = ""
+# an edit of a finished video (explainer-render op "edit"): the previous script is kept except the part the member asked to change
+EDIT, edit_args = None, []
+try:
+    ev = req("GET", f"/rest/v1/explainer_events?type=eq.edit&meta->>job=eq.{job}&select=meta&limit=1")
+    if ev: EDIT = ev[0]["meta"]
+except Exception as e: print("edit lookup skipped:", str(e)[:100])
+if EDIT:
+    os.makedirs(d, exist_ok=True)
+    par = req("GET", f"/rest/v1/explainer_jobs?id=eq.{EDIT['parent']}&select=arxiv,id")[0]
+    pslug, prevp = f"{par['arxiv']}-{par['id'][:8]}", os.path.join(d, "prev_scenes.json")
+    for base in [os.environ.get("R2_PUBLIC_BASE", "").rstrip("/"), f"{SB}/storage/v1/object/public/explainer-videos"]:
+        if not base: continue
+        try:
+            with urllib.request.urlopen(urllib.request.Request(f"{base}/{pslug}/scenes.json", headers={"User-Agent": "paperlit-render"}), timeout=60) as f_: open(prevp, "wb").write(f_.read())
+            break
+        except Exception as e: print("previous script not at", base[:30], str(e)[:80])
+    if os.path.exists(prevp): edit_args = ["--edit-from", prevp, "--edit-part", str(EDIT.get("part", 0)), "--edit-note", str(EDIT.get("note") or "")]
+    else: print("previous script not found: the edit is made as a fresh version with the note")
+    if UP_PATH and len(row.get("paper_text") or "") > 300:   # the uploaded file is gone; the text kept with the video stands in for it
+        upfile = os.path.join(d, "source.txt"); open(upfile, "w", encoding="utf-8").write(row["paper_text"]); UP_PATH = ""
+    update(stage="rewriting the part you asked to change")
 try:
     if UP_PATH:
         os.makedirs(d, exist_ok=True); upfile = os.path.join(d, "upload.pdf")
         r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
-    run("gen.py", key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    if EDIT and not edit_args and EDIT.get("note"):   # no previous script: a fresh version that follows the note
+        row["custom"] = ((row.get("custom") or "") + " Change requested by the viewer: " + str(EDIT["note"]))[:600]
+    run("gen.py", *edit_args, key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
     try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
@@ -169,7 +195,7 @@ try:
             ready = sum(1 for s in secs if s["status"] == "done")
             update(sections=secs, stage=f"sections ready: {ready} of {len(meta)}")   # the page shows each section as soon as it is ready
     update(stage=f"drawing {len(meta)} sections")
-    with ThreadPoolExecutor((3 if len(meta) >= 3 else 2) if animated else 1) as ex:   # up to three at a time: while one waits for the model the other renders
+    with ThreadPoolExecutor((4 if len(meta) >= 4 else max(2, len(meta))) if animated else 1) as ex:   # up to three at a time: while one waits for the model the other renders
         for f in [ex.submit(section, n, m) for n, m in enumerate(meta)]: f.result()
     videos = {}
     update(stage="putting the sections together")
