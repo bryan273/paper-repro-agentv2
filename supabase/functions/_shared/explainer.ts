@@ -49,10 +49,10 @@ export async function userOf(req: Request): Promise<User | null> {
 // What each plan gives. Kept in step with explainer-account PLANS and the front end (PricingSection, MemberHome).
 //   interactive: videos on which interactive mode can be turned on (the questions inside the video, the quiz tab and the final quiz):
 //     a plan counts per calendar month, free and guest per rolling 7 days; a new free account gets 3 more in its first 7 days (the welcome videos)
-//   deep: in-depth answers per video.
+//   deep: in-depth answers per calendar month (one pool for all videos; the strong model costs about as much as a whole short video).
 export const TIERS: Record<string, { interactive: number; deep: number }> = {
-  guest: { interactive: 1, deep: 0 }, free: { interactive: 3, deep: 5 },
-  plus: { interactive: 40, deep: 20 }, pro: { interactive: 75, deep: 35 }, premium: { interactive: 140, deep: 50 },
+  guest: { interactive: 1, deep: 0 }, free: { interactive: 3, deep: 3 },
+  plus: { interactive: 40, deep: 30 }, pro: { interactive: 75, deep: 80 }, premium: { interactive: 140, deep: 160 },
 };
 export const WELCOME_INTERACTIVE = 3;
 export const PLAN_NAMES = ["plus", "pro", "premium"];
@@ -62,7 +62,7 @@ export async function activePlan(userId: string | undefined | null): Promise<str
   const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
   return e?.meta?.until && new Date(e.meta.until) > new Date() && PLAN_NAMES.includes(String(e.meta.plan)) ? String(e.meta.plan) : null;
 }
-const monthStart = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); };
+export const monthStart = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); };
 const nextMonth = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString(); };
 export type Interactive = { used: number; cap: number; left: number; resets: string; jobs: string[]; period: "week" | "month" };
 /** How many videos this person opened interactive mode on this calendar month (UTC). Opening it again on the same video is free. */

@@ -5,7 +5,7 @@
 // cannot be found downgrades the block to "unverified", and a paper claim with no quote is shown as "general". "General" blocks are
 // background, analogies and prerequisites from the model's own knowledge and say so. Mode "paper" allows paper blocks only.
 // The model call goes through the shared agent-llm gateway (RKAPI Haiku first, Paratera after), so its budgets and fallbacks apply.
-import { TIERS, activePlan, interactiveUse, CORS, SB_URL, SB_SERVICE, actorOf, db, count, json, userOf, logEvent, isAdmin } from "../_shared/explainer.ts";
+import { TIERS, activePlan, interactiveUse, monthStart, CORS, SB_URL, SB_SERVICE, actorOf, db, count, json, userOf, logEvent, isAdmin } from "../_shared/explainer.ts";
 
 const PER_DAY_GUEST = Number(Deno.env.get("EXPLAINER_ASK_GUEST_DAY") ?? "8");
 const PER_DAY_MEMBER = Number(Deno.env.get("EXPLAINER_ASK_MEMBER_DAY") ?? "40");
@@ -186,8 +186,8 @@ Deno.serve(async (req) => {
     if (deep && !isAdmin(user)) {
       if (!user) return json({ error: "The stronger model is free to try once you sign up.", code: "deep_signup" }, 402);
       const cap = TIERS[tier].deep;
-      const tried = (await db(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep&select=id`)).length;
-      if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives for this video. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].deep}.` : `You used the ${cap} in-depth answers for this video. Quick answers stay open.`, code: "deep_premium" }, 402);
+      const tried = await count(`explainer_asks?user_id=eq.${user.id}&intent=eq.deep&created_at=gte.${monthStart()}`);
+      if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives this month. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].deep} a month.` : `You used the ${cap} in-depth answers for this month. They come back on the 1st, and quick answers stay open.`, code: "deep_premium" }, 402);
     }
 
     // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them; a paid plan feature
@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
     const u = out.usage ?? {};
     await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: deep ? "deep" : intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) });
     await logEvent(actor, "ask", { intent, mode }, user?.id ?? null).catch(() => undefined);
-    return json({ blocks, followups, deep_left: deep ? Math.max(0, TIERS[tier].deep - (await count(`explainer_asks?actor=eq.${encodeURIComponent(actor)}&job_id=eq.${jobId}&intent=eq.deep`).catch(() => 0))) : undefined, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
+    return json({ blocks, followups, deep_left: deep ? Math.max(0, TIERS[tier].deep - (user ? await count(`explainer_asks?user_id=eq.${user.id}&intent=eq.deep&created_at=gte.${monthStart()}`).catch(() => 0) : 0)) : undefined, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
