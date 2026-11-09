@@ -108,11 +108,13 @@ const isVerified = async (u: { id: string; created_at: string }): Promise<boolea
   return (await count(`explainer_events?user_id=eq.${u.id}&type=eq.emailverified`).catch(() => 0)) > 0;
 };
 // a link token is random, only its hash is stored, and it works once
-const sendLink = async (u: { id: string; username: string }, kind: "verify" | "reset", lang: string) => {
+// links open the new site (/paperlit/) when the request came from it, otherwise the older explainer page
+const V2_URL = Deno.env.get("V2_URL") ?? "https://bryan273.github.io/paperlit";
+const sendLink = async (u: { id: string; username: string }, kind: "verify" | "reset", lang: string, app = "") => {
   const token = [...crypto.getRandomValues(new Uint8Array(32))].map((b) => b.toString(16).padStart(2, "0")).join("");
   const exp = new Date(Date.now() + (kind === "verify" ? 24 : 1) * 3600_000).toISOString();
   await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: `mt:${await sha(token, 32)}`, type: "mailtoken", user_id: u.id, meta: { kind, exp, used: false } }) });
-  const m = linkMail(kind, lang, `${APP_URL}/explainer/?${kind === "verify" ? "verify" : "reset"}=${token}`);
+  const m = linkMail(kind, lang, `${app === "paperlit" ? `${V2_URL}/` : `${APP_URL}/explainer/`}?${kind === "verify" ? "verify" : "reset"}=${token}`);
   await sendMail(u.username, m.subject, m.html, m.text);
 };
 const takeToken = async (token: string, kind: string): Promise<{ id: string; user_id: string; meta: Record<string, unknown> } | null> => {
@@ -146,7 +148,15 @@ Deno.serve(async (req) => {
       if (u.searchParams.get("whereami")) return json({ country: (await geoOf(req)) || null });   // the caller's own country as the network reports it
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
-        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,videos,sections,created_at,expired_at&order=created_at.desc&limit=50`));
+        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,created_at,expired_at&order=created_at.desc&limit=100`));
+      }
+      if (u.searchParams.get("orders")) {   // the member's own orders, newest first, for the billing page
+        if (!user) return json({ error: "Sign in first." }, 401);
+        const rows = await db(`explainer_orders?email=eq.${encodeURIComponent("@" + user.username)}&select=id,arxiv,status,pay_method,notes,created_at&order=created_at.desc&limit=50`);
+        return json(rows.map((o: { id: string; arxiv: string; status: string; pay_method: string | null; notes: string | null; created_at: string }) => {
+          const n = String(o.notes ?? "");
+          return { id: o.id, what: o.arxiv, status: o.status, method: o.pay_method, created_at: o.created_at, cur: /cur:([a-z]+)/.exec(n)?.[1] ?? "cny", amount: Number(/amt:(\d+)/.exec(n)?.[1] ?? /price:(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0), shot: /shot:\S+/.test(n) };
+        }));
       }
       if (u.searchParams.get("profile")) {
         if (!user) return json({ error: "Sign in first." }, 401);
@@ -276,7 +286,7 @@ Deno.serve(async (req) => {
       }
       await logEvent(ipActor, "signup_ip", {}, user.id);
       if (mailReady()) {
-        try { await sendLink(user, "verify", plang); return json({ pending: true, email: username, user: await publicUserH(user) }); }
+        try { await sendLink(user, "verify", plang, str(body.app, 16)); return json({ pending: true, email: username, user: await publicUserH(user) }); }
         catch { await logEvent(actor, "mail_fail", { kind: "verify" }, user.id); /* never lock a new member out because the mail provider failed */ }
       }
       const token = await newSession(user.id);
@@ -297,7 +307,7 @@ Deno.serve(async (req) => {
       const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at`);
       if (row && !(await isVerified(row))) {
         if ((await count(`explainer_events?user_id=eq.${row.id}&type=eq.mailtoken&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`)) >= 3) return json({ error: "Too many e-mails. Try again in an hour.", code: "slow_down" }, 429);
-        await sendLink(row, "verify", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en").catch(() => undefined);
+        await sendLink(row, "verify", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en", str(body.app, 16)).catch(() => undefined);
       }
       return json({ ok: true });   // the same answer whether the address has an account or not
     }
@@ -308,7 +318,7 @@ Deno.serve(async (req) => {
       const [row] = await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id,username,created_at,banned`);
       if (row && !row.banned) {
         if ((await count(`explainer_events?user_id=eq.${row.id}&type=eq.mailtoken&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`)) >= 3) return json({ error: "Too many e-mails. Try again in an hour.", code: "slow_down" }, 429);
-        await sendLink(row, "reset", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en").catch(() => undefined);
+        await sendLink(row, "reset", ["zh", "vi", "id"].includes(str(body.lang, 2)) ? str(body.lang, 2) : "en", str(body.app, 16)).catch(() => undefined);
       }
       return json({ ok: true });
     }
