@@ -128,7 +128,8 @@ Deno.serve(async (req) => {
     const done30 = JA.filter((j: any) => j.status === "done" && j.created_at >= since30 && j.cost_usd !== null);
     const perMin = done30.reduce((n: number, j: any) => n + (Number(j.cost_usd) || 0), 0) / Math.max(1, done30.reduce((n: number, j: any) => n + (j.seconds || 0) / 60, 0)) * USD_CNY;
     const byIntent = (want: (i: string) => boolean) => { const l = A.filter((a: any) => want(String(a.intent))); const c = l.reduce((n: number, a: any) => n + askCny(a), 0); return { n: l.length, total: Math.round(c * 100) / 100, each: l.length ? Math.round((c / l.length) * 1000) / 1000 : null, tokens: l.length ? Math.round(l.reduce((n: number, a: any) => n + (Number(a.tokens) || 0), 0) / l.length) : null }; };
-    const researchTok = usage.filter((u: any) => u.app === "repro-lite" || u.app === "reader");
+    const firstResearch = R.reduce((m: string, r: any) => (r.created_at < m ? r.created_at : m), "9999");   // only model use since research questions are counted
+    const researchTok = usage.filter((u: any) => (u.app === "repro-lite" || u.app === "reader") && u.created_at >= firstResearch);
     const costs = {
       video_per_minute: done30.length ? Math.round(perMin * 1000) / 1000 : null, videos: done30.length,
       video_total: Math.round(done30.reduce((n: number, j: any) => n + (Number(j.cost_usd) || 0), 0) * USD_CNY * 100) / 100,

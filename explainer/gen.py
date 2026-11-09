@@ -51,7 +51,8 @@ def ensure_readable(text, what="document"):
         raise RuntimeError(msg)
     latin_words = re.findall(r"[A-Za-z\u00C0-\u024F\u1EA0-\u1EF9]{3,}", sample)
     cjk = sum(1 for c in chars if "\u3400" <= c <= "\u9fff" or "\u3040" <= c <= "\u30ff" or "\uac00" <= c <= "\ud7af")
-    if cjk < len(chars) * 0.2 and len(latin_words) < 80: raise RuntimeError(msg)
+    # enough real words for the length of the text: 80 for a document, fewer for a short pasted note (the page accepts 300 characters)
+    if cjk < len(chars) * 0.2 and len(latin_words) < min(80, max(25, len(chars) // 9)): raise RuntimeError(msg)
     return text
 
 def paper_url(url):
