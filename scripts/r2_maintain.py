@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 
 RETENTION_DAYS = 14
-PLAN_DAYS = {"plus": 90, "pro": 365}   # how long a member's videos are kept while their plan is active
+PLAN_DAYS = {"plus": 90, "pro": 365, "premium": 365}   # how long a member's videos are kept while their plan is active
 GB = 1024 ** 3
 HARD_LIMIT, TARGET = int(9 * GB), int(8.5 * GB)
 DRY = "--dry-run" in sys.argv
