@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
       }
       const pi = await planInfo(user?.id);
       const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
-      return json({ ...pi, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
