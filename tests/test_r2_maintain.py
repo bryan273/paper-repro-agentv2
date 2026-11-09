@@ -15,8 +15,8 @@ def job(i, days_old, host=BASE, expired=None):
     return {"id": i, "created_at": created, "expired_at": expired, "videos": {"en": f"{host}/1409.0473-{i}/1409.0473-{i}_en.mp4"}}
 
 
-def test_only_videos_older_than_14_days_go():
-    jobs = [job("old", 15), job("new", 13), job("edge", 14.5)]
+def test_only_videos_older_than_7_days_go():
+    jobs = [job("old", 8), job("new", 6), job("edge", 7.5)]
     got = {i for i, _, _ in pick_expired(jobs, {}, NOW, BASE)}
     assert got == {"old", "edge"}
 
@@ -31,7 +31,7 @@ def test_prefix_is_the_job_folder():
 
 
 def test_over_9gb_removes_oldest_first_until_8_5gb():
-    jobs = [job(str(n), 10 - n) for n in range(5)]   # all younger than 14 days; 0 is the oldest
+    jobs = [job(str(n), 6 - n) for n in range(5)]   # all younger than 7 days; 0 is the oldest
     sizes = {f"1409.0473-{n}/": 2 * GB for n in range(5)}   # 10 GB in total
     got = [i for i, _, _ in pick_expired(jobs, sizes, NOW, BASE)]
     assert got == ["0"] and sum(sizes.values()) - 2 * GB * len(got) <= HARD_LIMIT   # 10 GB -> 8 GB, which is under the 8.5 GB target
