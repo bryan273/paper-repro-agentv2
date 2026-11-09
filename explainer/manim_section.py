@@ -18,7 +18,7 @@ if not LADDER: print("no RKAPI key: template player instead"); sys.exit(2)
 sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
 meta = next((m for m in json.load(open(os.path.join(d, "sections.json"), encoding="utf-8")) if m["i"] == k), {})
 idx = [i for i, s in enumerate(sc["scenes"]) if s.get("sec") == k]
-LANGS = [lg for lg in ("en", "zh", "vi", "id") if os.path.exists(os.path.join(d, f"script_{lg}.json"))]   # a video made in one language has one script
+LANGS = [lg for lg in ("en", "zh", "vi", "id", "ja", "ko", "es", "fr", "de") if os.path.exists(os.path.join(d, f"script_{lg}.json"))]   # a video made in one language has one script
 dur = {lang: json.load(open(os.path.join(d, f"script_{lang}.json"), encoding="utf-8"))["scenes"] for lang in LANGS}
 # a beat lasts as long as the longer of its two narrations, so both languages fit the same picture
 beats = [round(max(dur[lg][i]["dur"] for lg in LANGS) / 1000, 2) for i in idx]
@@ -48,7 +48,7 @@ BG, ACCENT, ACCENT2, TEXT, MUTED = "{BG}", "{ACC}", "{ACC2}", "{TXT}", "{MUT}"
 BEATS = {beats!r}
 CUES = {CUES!r}
 PALETTE = [ACCENT, ACCENT2, "#ffb547", "#ff6b9a", "#a78bfa"]
-FONT = {('"Noto Sans CJK SC"' if LANGS == ["zh"] else '"Inter"') if os.name != "nt" else '""'}
+FONT = {({"zh": '"Noto Sans CJK SC"', "ja": '"Noto Sans CJK JP"', "ko": '"Noto Sans CJK KR"'}.get(LANGS[0] if len(LANGS) == 1 else "", '"Inter"')) if os.name != "nt" else '""'}
 ICON_DIR = {os.path.join(ROOT, "icons")!r}
 FIG_DIR = {os.path.join(d, "figs")!r}
 '''
@@ -230,7 +230,7 @@ DESIGN RULES
 def user_msg():
     b = []
     for n, i in enumerate(idx):
-        s = {kk: v for kk, v in sc["scenes"][i].items() if kk not in ("zh", "vi", "id", "audio", "audio_ms", "dur", "sec", "evidence")}
+        s = {kk: v for kk, v in sc["scenes"][i].items() if kk not in ("zh", "vi", "id", "ja", "ko", "es", "fr", "de", "audio", "audio_ms", "dur", "sec", "evidence")}
         cue = " ".join(f"{w}@{t:.1f}" for t, w in CUES.get(n, []))
         b.append({"beat": n, "seconds": beats[n], **s, "spoken_words_at": cue})
     return (f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {meta.get('title', '')}\nWHAT IT EXPLAINS: {meta.get('text', '')}\n"
@@ -320,13 +320,13 @@ def ass_color(h):
 def caption_track(lang, starts, end):
     """Captions in the video's own language, a short phrase at a time, the word being spoken lit in the accent colour (like a good tutorial).
     Falls back to whole sentences when the voice gave no word timings."""
-    font = ("Microsoft YaHei" if os.name == "nt" else ("Noto Sans CJK SC" if lang == "zh" else "Inter"))
+    font = ("Microsoft YaHei" if os.name == "nt" else {"zh": "Noto Sans CJK SC", "ja": "Noto Sans CJK JP", "ko": "Noto Sans CJK KR"}.get(lang, "Inter"))
     ts = lambda t: f"{int(t // 3600)}:{int(t % 3600 // 60):02d}:{t % 60:05.2f}"
     esc = lambda x: x.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
     hi = ass_color(ACC)
     ass = ["[Script Info]", "ScriptType: v4.00+", "PlayResX: 1280", "PlayResY: 720", "WrapStyle: 0", "", "[V4+ Styles]",
            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-           f"Style: S,{font},{42 if lang == 'zh' else 40},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,3,0,2,90,90,42,1", "", "[Events]",
+           f"Style: S,{font},{42 if lang in ('zh', 'ja', 'ko') else 40},&H00FFFFFF,&H00FFFFFF,&H00000000,&H96000000,1,0,0,0,100,100,0,0,1,3,0,2,90,90,42,1", "", "[Events]",
            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
     PUNCT = ".,;:?!\u3002\uff0c\uff1b\uff1a\uff1f\uff01\u3001"
     for n, i in enumerate(idx):
@@ -350,11 +350,11 @@ def caption_track(lang, starts, end):
         chunks, cur_c = [], []
         for t, txt in spans:
             cur_c.append([t, txt])
-            size = sum(len(x[1]) for x in cur_c) if lang == "zh" else len(cur_c)
-            if (lang != "zh" and size >= 7) or (lang == "zh" and size >= 16) or (txt and txt[-1] in PUNCT and size >= (6 if lang == "zh" else 3)):
+            size = sum(len(x[1]) for x in cur_c) if lang in ("zh", "ja") else len(cur_c)
+            if (lang not in ("zh", "ja") and size >= 7) or (lang in ("zh", "ja") and size >= 16) or (txt and txt[-1] in PUNCT and size >= (6 if lang in ("zh", "ja") else 3)):
                 chunks.append(cur_c); cur_c = []
         if cur_c: chunks.append(cur_c)
-        sep = "" if lang == "zh" else " "
+        sep = "" if lang in ("zh", "ja") else " "
         for c, ch in enumerate(chunks):
             c_end = (a0 + NARR_DELAY + chunks[c + 1][0][0]) if c + 1 < len(chunks) else max(a0 + 0.6, b0 - 0.1)
             for k, (t, txt) in enumerate(ch):
@@ -469,10 +469,10 @@ for attempt in range(4):
             except Exception: return []
         geo = issues(); n_geo = len(geo)
         # repair rounds: first what the numbers say (overlaps, spill), then, once those are clean, what the eyes of the reviewer say
-        for rnd in range(2):
+        for rnd in range(1):   # one repair round: the second one rarely helped (measured 9 Nov: +106 s, kept the previous version)
             found = "\n".join(geo)[:1400] if geo else review(vid, times)
             print(f"check {rnd + 1}:", (f"{n_geo} layout issues" if geo else found) or "no defects", flush=True)
-            if not found or time.time() - t0 > 600: break
+            if not found or time.time() - t0 > 300: break
             keep = os.path.join(work, f"keep_{rnd}.mp4"); shutil.copy(vid, keep); keep_times = dict(times); fixed = False
             try:
                 code2, raw2 = ask(messages + [{"role": "assistant", "content": raw}, {"role": "user", "content": f"The animation rendered, but the picture has these defects:\n{found}\nFix them (use the kit pieces, which are spaced for you; move things apart, shorten labels, FadeOut old things first) and return the whole corrected class in one ```python block, keeping every rule."}], model, key)

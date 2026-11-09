@@ -194,7 +194,7 @@ def plan_sections(title, text, n, model):
 
 def part_plan(seconds):
     """The video is written as sections of roughly 50 seconds, each its own short video, so no single model call has to write it all."""
-    n = max(1, min(10, round(seconds / 50)))
+    n = max(1, min(24, round(seconds / 50)))
     return n, [round(seconds / n)] * n
 
 def order_for(i, n, plan=None):
@@ -315,7 +315,10 @@ def llm(system, user, model="deepseek"):
                 if patient: time.sleep(4)
     raise RuntimeError(f"all script models failed: {last}")
 
-OTHER = {"vi": ("Vietnamese", "vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural"), "id": ("Indonesian", "id-ID-GadisNeural", "id-ID-ArdiNeural")}   # languages made as one-language videos besides en and zh
+OTHER = {"vi": ("Vietnamese", "vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural"), "id": ("Indonesian", "id-ID-GadisNeural", "id-ID-ArdiNeural"),
+         "ja": ("Japanese", "ja-JP-NanamiNeural", "ja-JP-KeitaNeural"), "ko": ("Korean", "ko-KR-SunHiNeural", "ko-KR-InJoonNeural"),
+         "es": ("Spanish", "es-ES-ElviraNeural", "es-ES-AlvaroNeural"), "fr": ("French", "fr-FR-DeniseNeural", "fr-FR-HenriNeural"),
+         "de": ("German", "de-DE-KatjaNeural", "de-DE-ConradNeural")}   # languages made as one-language videos besides en and zh
 FIGS = []   # the figures cropped from the paper: scenes may show them
 SLOT = {"v": "zh"}   # the field that carries the second narration: "zh" normally, the language code for a Vietnamese or Indonesian video
 
@@ -398,6 +401,7 @@ def dur_ms(path):
 async def main():
     ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--file", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
     ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default=""); ap.add_argument("--langs", default="both"); ap.add_argument("--voice-x", default="")
+    ap.add_argument("--edit-from", default=""); ap.add_argument("--edit-part", type=int, default=-1); ap.add_argument("--edit-note", default="")
     a = ap.parse_args()
     if a.langs in OTHER: SLOT["v"] = a.langs
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
@@ -422,14 +426,36 @@ async def main():
         n, secs = part_plan(a.seconds)
         lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
-        plan = plan_sections(title, text, n, a.model) if n > 1 else None
+        plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
-        def one(i):
-            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note)
+        # an edit of a finished video: every part except the chosen one is kept word for word, the chosen part is rewritten as asked
+        prev = json.load(open(a.edit_from, encoding="utf-8")) if a.edit_from and os.path.exists(a.edit_from) else None
+        if prev and len(prev.get("sections") or []) >= 1:
+            n = len(prev["sections"]); secs = [round(a.seconds / n)] * n
+            plan = [{"title": (x or {}).get("title") or f"Part {k + 1}"} for k, x in enumerate(prev["sections"])]
+        def one(i, extra=""):
+            sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note + extra)
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
             figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" for f in FIGS)) if FIGS else ""
             return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
-        if n == 1:
+        if prev:
+            part = max(0, min(n - 1, a.edit_part))
+            old = [x for x in prev["scenes"] if x.get("sec") == part]
+            extra = ("\nTHIS IS AN EDIT of one part of a finished video. The viewer asked: " + re.sub(r"\s+", " ", a.edit_note).strip()[:500]
+                     + "\nThe previous version of this part (keep what already works, change what they asked, keep about the same length and the same JSON format):\n"
+                     + json.dumps({"section": prev["sections"][part], "scenes": old}, ensure_ascii=False)[:6000])
+            r_new, usage = one(part, extra)
+            sc = {"title": prev.get("title") or title, "scenes": [], "sections": []}
+            for k in range(n):
+                if k == part:
+                    for x in (r_new.get("scenes") or []): x["sec"] = k; sc["scenes"].append(x)
+                    sc["sections"].append(r_new.get("section") or prev["sections"][k])
+                else:
+                    for x in prev["scenes"]:
+                        if x.get("sec") == k: sc["scenes"].append({kk: vv for kk, vv in x.items() if kk not in ("audio", "audio_ms", "dur")})
+                    sc["sections"].append(prev["sections"][k])
+            print("edit: rewrote part", part + 1, "of", n, flush=True)
+        elif n == 1:
             sc, usage = one(0)
             for x in sc["scenes"]: x["sec"] = 0
             sc["sections"] = [sc.pop("section", None) or {}]

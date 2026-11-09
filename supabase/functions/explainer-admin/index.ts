@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
         const until = new Date(Date.now() + 31 * 86400_000).toISOString();
         if (ok) {   // a free month of Plus: the plan and its 50 videos
           await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: ev.user_id, meta: { plan: "plus", until, source: ev.meta.role } }) });
-          await grant(ev.user_id, 80, `free Plus month (${ev.meta.role})`);
+          await grant(ev.user_id, 20, `free Plus month (${ev.meta.role})`);
         }
         if (mailReady()) {   // the member is told by e-mail; a failure here never undoes the decision
           try {

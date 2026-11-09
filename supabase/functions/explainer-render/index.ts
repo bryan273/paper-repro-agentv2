@@ -4,7 +4,7 @@
 // Limits: per visitor per day and a global daily cap, because each render spends model tokens and runner minutes.
 // PDF upload: POST {op:"upload_url", name, size} returns a one-time address into the private explainer-uploads bucket; the browser PUTs the file
 // there, then POST {upload: path, name} queues a video from it. The renderer reads the file and deletes it when the video is made.
-import { userOf, quotaFor, actorOf, logEvent, isAdmin, activePlan, maxSeconds } from "../_shared/explainer.ts";
+import { userOf, quotaFor, actorOf, logEvent, isAdmin, activePlan, maxSeconds, units, VIDEO_LANGS, TIERS, count } from "../_shared/explainer.ts";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GH_TOKEN = Deno.env.get("GH_DISPATCH_TOKEN");
@@ -15,7 +15,6 @@ const DAILY = Number(Deno.env.get("EXPLAINER_DAILY") ?? "40");
 const UP_BUCKET = "explainer-uploads", MAX_UPLOAD = 20 * 1024 * 1024;
 const PER_ACTOR_UPLOADS = Number(Deno.env.get("EXPLAINER_UPLOADS_PER_ACTOR") ?? "12"), DAILY_UPLOADS = Number(Deno.env.get("EXPLAINER_UPLOADS_DAILY") ?? "100");
 const cleanName = (s: unknown) => String(s ?? "").replace(/\.(pdf|txt|md)$/i, "").replace(/[\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
-const units = (sec: number) => Math.max(1, Math.ceil((sec || 36) / 180));
 const STYLES = ["animated", "cinema", "classic", "light", "sunset", "mono"], TONES = ["teacher", "casual", "academic", "eli5", "story"];
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-session, x-visitor-id", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const PUBLIC = "id,arxiv,source_url,model,voice,style,tone,seconds,custom,langs,status,stage,title,videos,sections,checks,error,created_at,updated_at,expired_at";
@@ -76,6 +75,51 @@ Deno.serve(async (req) => {
     }
     const body = await req.json();
     const { arxiv, visitor } = body;
+    if (body.op === "edit") {   // re-make one part of a finished video as a new version; it does not use a video credit
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in to edit a video.", code: "edit_signin" }, 401);
+      const jobId = String(body.job ?? "");
+      if (!/^[0-9a-f-]{36}$/.test(jobId)) return json({ error: "Unknown video." }, 400);
+      const [p] = await db(`explainer_jobs?id=eq.${jobId}&select=*`);
+      if (!p) return json({ error: "Unknown video." }, 404);
+      if (p.user_id !== user.id && !isAdmin(user)) return json({ error: "You can only edit your own videos.", code: "edit_owner" }, 403);
+      if (p.status !== "done" || p.expired_at) return json({ error: "Only a finished video can be edited.", code: "edit_state" }, 409);
+      const secs = Array.isArray(p.sections) ? p.sections : [];
+      const part = Math.round(Number(body.part));
+      if (!(part >= 0 && part < secs.length)) return json({ error: "Choose the part to change." }, 400);
+      const note = String(body.note ?? "").replace(/\s+/g, " ").trim().slice(0, 500);
+      if (note.length < 5) return json({ error: "Say what to change in a few words." }, 400);
+      const kind = ["fix", "add", "simpler", "deeper", "other"].includes(body.kind) ? body.kind : "other";
+      // edits are counted per original video, across all its versions
+      const [pe] = await db(`explainer_events?type=eq.edit&meta->>job=eq.${jobId}&select=meta&limit=1`).catch(() => []);
+      const root = String(pe?.meta?.root ?? jobId);
+      const done = await count(`explainer_events?type=eq.edit&meta->>root=eq.${root}`);
+      const plan = await activePlan(user.id);
+      const cap = TIERS[plan ?? "free"].edits;
+      if (done >= cap && !isAdmin(user)) return json({ error: cap ? `This video has used its ${cap} edit${cap > 1 ? "s" : ""}. Make a new video, or choose a plan with more edits.` : "Editing is part of the plans.", code: "edit_quota", used: done, cap }, 402);
+      const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: p.arxiv, title: p.title, source_url: p.source_url, model: p.model, voice: p.voice, style: p.style, tone: p.tone, langs: p.langs, seconds: p.seconds, custom: p.custom, visitor: p.visitor, user_id: p.user_id, credit_used: 0, paper_text: p.paper_text, stage: "editing" }) });
+      await logEvent(await actorOf(req, body.visitor), "edit", { job: row.id, parent: jobId, root, part, note, kind, n: done + 1 }, user.id);
+      if (!GH_TOKEN) return json({ ...row, edit: { used: done + 1, cap } });
+      const gh = await fetch(`https://api.github.com/repos/${GH_REPO}/actions/workflows/explainer-render.yml/dispatches`, {
+        method: "POST", headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: "application/vnd.github+json", "User-Agent": "paper-explainer" },
+        body: JSON.stringify({ ref: "main", inputs: { job_id: row.id } }),
+      });
+      if (!gh.ok) {
+        await db(`explainer_jobs?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ status: "failed", error: `could not start the renderer (${gh.status})` }) });
+        return json({ error: "Could not start the renderer. Please try again later." }, 502);
+      }
+      return json({ ...row, edit: { used: done + 1, cap } });
+    }
+    if (body.op === "edits") {   // how many edits a video has left
+      const user = await userOf(req);
+      const jobId = String(body.job ?? "");
+      if (!user || !/^[0-9a-f-]{36}$/.test(jobId)) return json({ used: 0, cap: 0 });
+      const [pe] = await db(`explainer_events?type=eq.edit&meta->>job=eq.${jobId}&select=meta&limit=1`).catch(() => []);
+      const root = String(pe?.meta?.root ?? jobId);
+      const versions = await db(`explainer_events?type=eq.edit&meta->>root=eq.${root}&select=meta,created_at&order=created_at.asc`).catch(() => []);
+      const plan = await activePlan(user.id);
+      return json({ used: versions.length, cap: isAdmin(user) ? 99 : TIERS[plan ?? "free"].edits, root, versions: versions.map((v: { meta: Record<string, unknown>; created_at: string }) => ({ job: v.meta.job, part: v.meta.part, note: v.meta.note, at: v.created_at })) });
+    }
     if (body.op === "upload_url") {   // step 1 of a PDF upload: a one-time upload address into the private bucket
       const asText = body.kind === "text";   // pasted text or a .txt/.md file: read as plain text by the renderer
       const size = Math.round(Number(body.size) || 0);
@@ -101,8 +145,8 @@ Deno.serve(async (req) => {
     const voice = ["female", "male"].includes(body.voice) ? body.voice : "female";
     const style = STYLES.includes(body.style) ? body.style : "animated";
     const tone = TONES.includes(body.tone) ? body.tone : "teacher";
-    const langs = ["en", "zh", "vi", "id"].includes(body.langs) ? body.langs : "both";   // the video is made in one language, or in both
-    const seconds = Math.min(600, Math.max(60, Math.round(Number(body.seconds) || 180)));
+    const langs = VIDEO_LANGS.includes(body.langs) ? body.langs : "en";   // one language per video; another language is another video
+    const seconds = Math.min(1200, Math.max(60, Math.round(Number(body.seconds) || 180)));
     const custom = String(body.custom ?? "").replace(/[ -]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
     const up = typeof body.upload === "string" && /^[0-9a-f]{16}\/[0-9a-f-]{36}\.(pdf|txt)$/.test(body.upload) ? body.upload : "";
     const url = up ? null : arxivId(arxiv) ? null : sourceUrl(arxiv);
@@ -130,7 +174,9 @@ Deno.serve(async (req) => {
       const plan = user ? await activePlan(user.id) : null;
       const pack = !!user && !plan && (await db(`explainer_credit_log?user_id=eq.${user.id}&reason=like.bought%20pack*&select=id&limit=1`).catch(() => [])).length > 0;
       if (seconds > maxSeconds(plan, pack)) {
-        return seconds > 300
+        return seconds > 600
+          ? json({ error: "Videos longer than 10 minutes are part of Premium. Choose 10 minutes or less.", code: "length_premium" }, 402)
+          : seconds > 300
           ? json({ error: "Videos longer than 5 minutes are part of Pro. Choose 5 minutes or less.", code: "length_pro" }, 402)
           : json({ error: "Videos longer than 3 minutes are part of Plus. Choose 3 minutes or less.", code: "length_plus" }, 402);
       }
