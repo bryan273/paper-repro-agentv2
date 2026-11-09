@@ -33,7 +33,9 @@ Deno.serve(async (req) => {
     const skip = bypass_limits === true && req.headers.get("authorization") === `Bearer ${SB_SERVICE}`;
     if (!APPS.has(app)) return json({ error: "unknown app" }, 400);
     if (!Array.isArray(messages) || !messages.length) return json({ error: "messages required" }, 400);
-    if (JSON.stringify(messages).length > MAX_CHARS) return json({ error: "too much text in one call" }, 413);
+    // pictures (a pasted figure or slide) are counted apart from the text: at most one call's worth of text, plus about 2.5 MB of pictures
+    const textChars = JSON.stringify(messages, (k, v) => (k === "image_url" ? "" : v)).length;
+    if (textChars > MAX_CHARS || JSON.stringify(messages).length > MAX_CHARS + 2_600_000) return json({ error: "too much text in one call" }, 413);
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim();
     // the visitor id comes from the browser and can be changed at will, so the connection itself is limited too
     const ipid = await sha(`${ip}|${app}`);
