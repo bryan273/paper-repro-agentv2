@@ -4,7 +4,7 @@
 // Limits: per visitor per day and a global daily cap, because each render spends model tokens and runner minutes.
 // PDF upload: POST {op:"upload_url", name, size} returns a one-time address into the private explainer-uploads bucket; the browser PUTs the file
 // there, then POST {upload: path, name} queues a video from it. The renderer reads the file and deletes it when the video is made.
-import { userOf, quotaFor, actorOf, logEvent, isAdmin } from "../_shared/explainer.ts";
+import { userOf, quotaFor, actorOf, logEvent, isAdmin, activePlan, maxSeconds } from "../_shared/explainer.ts";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GH_TOKEN = Deno.env.get("GH_DISPATCH_TOKEN");
@@ -126,10 +126,14 @@ Deno.serve(async (req) => {
       if (done.length) return json({ ...done[0], cached: true });
     }
     const user = await userOf(req);
-    if (seconds > 300 && !isAdmin(user)) {   // videos longer than 5 minutes are part of Pro
-      const [pe] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []) : [];
-      const pro = ["pro", "premium"].includes(pe?.meta?.plan) && pe?.meta?.until && new Date(pe.meta.until) > new Date();
-      if (!pro) return json({ error: "Videos longer than 5 minutes are part of Pro. Choose 5 minutes or less.", code: "length_pro" }, 402);
+    if (seconds > 180 && !isAdmin(user)) {   // free: up to 3 minutes; Plus: 5; Pro, Premium and pack videos: 10
+      const plan = user ? await activePlan(user.id) : null;
+      const pack = !!user && !plan && (await db(`explainer_credit_log?user_id=eq.${user.id}&reason=like.bought%20pack*&select=id&limit=1`).catch(() => [])).length > 0;
+      if (seconds > maxSeconds(plan, pack)) {
+        return seconds > 300
+          ? json({ error: "Videos longer than 5 minutes are part of Pro. Choose 5 minutes or less.", code: "length_pro" }, 402)
+          : json({ error: "Videos longer than 3 minutes are part of Plus. Choose 3 minutes or less.", code: "length_plus" }, 402);
+      }
     }
     const vid = await actorOf(req, visitor);
     const day = new Date(Date.now() - 86400_000).toISOString();
@@ -140,7 +144,7 @@ Deno.serve(async (req) => {
     if (fromCredits > q.credits) {
       await logEvent(vid, "quota_hit", { tier: q.tier, need }, user?.id ?? null);
       const error = user
-        ? `Your ${q.day_limit} free videos for today are used${q.resets_in_min ? ` (more in about ${Math.ceil(q.resets_in_min / 60)} h)` : ""}. Buy credits to keep going, or pick a shorter video.`
+        ? `Your ${q.day_limit} free videos for this week are used${q.resets_in_min ? ` (more in about ${Math.ceil(q.resets_in_min / 60)} h)` : ""}. Choose a plan or buy videos to keep going.`
         : `You have used your ${q.day_limit} free guest videos. Sign up free for more every day, plus welcome credits.`;
       return json({ error, code: user ? "quota_member" : "quota_guest", quota: q }, 429);
     }

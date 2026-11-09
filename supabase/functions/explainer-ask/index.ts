@@ -154,20 +154,21 @@ Deno.serve(async (req) => {
     const plan: string | null = user ? await activePlan(user.id) : null;
     const tier = plan ?? (user ? "free" : "guest");
     // interactive mode is counted per video and per month: the first time it opens on a video takes one, opening it again there is free
-    let interactive: { used: number; cap: number; left: number; resets: string } | undefined;
+    let interactive: { used: number; cap: number; left: number; resets: string; period: string } | undefined;
     if (intent === "quiz" || intent === "quizall") {
       const iu = await interactiveUse(user, actor, plan);
       if (!iu.jobs.includes(jobId) && !isAdmin(user)) {
         if (iu.left <= 0) {
-          const msg = !user ? "That was your free taste of interactive video. Sign up free for 2 a month."
-            : NEXT[tier] ? `You used the ${iu.cap} interactive videos of this month. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].interactive} a month.`
-            : `You used the ${iu.cap} interactive videos of this month. They come back on the 1st.`;
+          const per = iu.period === "week" ? "this week" : "this month";
+          const msg = !user ? "That was your free try of interactive mode. Sign up free to use it on 3 videos a week."
+            : NEXT[tier] ? `You have used interactive mode on ${iu.cap} videos ${per}. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].interactive} a month.`
+            : `You have used interactive mode on ${iu.cap} videos ${per}. It comes back on the 1st.`;
           return json({ error: msg, code: user ? "quiz_quota" : "quiz_signup", interactive: { used: iu.used, cap: iu.cap, left: 0, resets: iu.resets } }, 402);
         }
         await logEvent(actor, "interactive", { job: jobId }, user?.id ?? null);
         iu.used++; iu.left--;
       }
-      interactive = { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets };
+      interactive = { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, period: iu.period };
     }
 
     const qsetKey = `quizset:${jobId}:${lang}`;

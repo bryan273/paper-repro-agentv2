@@ -4,11 +4,14 @@ export const SB_SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 export const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-admin-token, x-session, x-visitor-id", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 export const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
-// free units per rolling 24 hours: a guest gets a taste, a signed-in member gets much more; paid credits come on top
+// free videos: a guest gets 1 per rolling 24 hours, a signed-in member 5 per rolling 7 days; paid credits come on top
 export const GUEST_DAY = Number(Deno.env.get("EXPLAINER_GUEST_DAY") ?? "1");
-export const MEMBER_DAY = Number(Deno.env.get("EXPLAINER_MEMBER_DAY") ?? "1");
+export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "5");
 export const WELCOME_CREDITS = Number(Deno.env.get("EXPLAINER_WELCOME_CREDITS") ?? "3");
-export const units = (sec: number) => Math.max(1, Math.ceil((sec || 36) / 180));
+/** What a video costs: 1 video up to 5 minutes, 2 for a longer one (7 or 10 minutes). */
+export const units = (sec: number) => ((sec || 36) <= 300 ? 1 : 2);
+/** The longest video each plan may make: free 3 minutes, Plus 5, Pro and Premium 10 (pack videos are Pro videos). */
+export const maxSeconds = (plan: string | null, packBuyer: boolean) => (plan === "pro" || plan === "premium" || packBuyer ? 600 : plan === "plus" ? 300 : 180);
 
 export async function db(path: string, init: RequestInit = {}) {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, { ...init, headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, "Content-Type": "application/json", ...(init.headers ?? {}) } });
@@ -44,12 +47,14 @@ export async function userOf(req: Request): Promise<User | null> {
 }
 
 // What each plan gives. Kept in step with explainer-account PLANS and the front end (PricingSection, MemberHome).
-//   interactive: videos a month on which interactive mode can be opened (the questions inside the video, the quiz tab and the final quiz).
+//   interactive: videos on which interactive mode can be turned on (the questions inside the video, the quiz tab and the final quiz):
+//     a plan counts per calendar month, free and guest per rolling 7 days; a new free account gets 3 more in its first 7 days (the welcome videos)
 //   deep: in-depth answers per video.
 export const TIERS: Record<string, { interactive: number; deep: number }> = {
-  guest: { interactive: 1, deep: 0 }, free: { interactive: 2, deep: 3 },
-  plus: { interactive: 10, deep: 10 }, pro: { interactive: 30, deep: 20 }, premium: { interactive: 80, deep: 30 },
+  guest: { interactive: 1, deep: 0 }, free: { interactive: 3, deep: 5 },
+  plus: { interactive: 40, deep: 20 }, pro: { interactive: 75, deep: 35 }, premium: { interactive: 140, deep: 50 },
 };
+export const WELCOME_INTERACTIVE = 3;
 export const PLAN_NAMES = ["plus", "pro", "premium"];
 /** The plan running now for a member, or null. */
 export async function activePlan(userId: string | undefined | null): Promise<string | null> {
@@ -59,14 +64,19 @@ export async function activePlan(userId: string | undefined | null): Promise<str
 }
 const monthStart = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString(); };
 const nextMonth = () => { const d = new Date(); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString(); };
-export type Interactive = { used: number; cap: number; left: number; resets: string; jobs: string[] };
+export type Interactive = { used: number; cap: number; left: number; resets: string; jobs: string[]; period: "week" | "month" };
 /** How many videos this person opened interactive mode on this calendar month (UTC). Opening it again on the same video is free. */
 export async function interactiveUse(user: User | null, actor: string, plan: string | null): Promise<Interactive> {
   const who = user ? `user_id=eq.${user.id}` : `actor=eq.${encodeURIComponent(actor)}&user_id=is.null`;
-  const rows = await db(`explainer_events?${who}&type=eq.interactive&created_at=gte.${monthStart()}&select=meta&limit=2000`).catch(() => []);
+  const weekly = !plan;
+  const since = weekly ? new Date(Date.now() - 7 * 86400_000).toISOString() : monthStart();
+  const rows = await db(`explainer_events?${who}&type=eq.interactive&created_at=gte.${since}&select=meta,created_at&order=created_at.asc&limit=2000`).catch(() => []);
   const jobs = [...new Set((rows as { meta?: { job?: string } }[]).map((r) => String(r.meta?.job ?? "")).filter(Boolean))];
-  const cap = TIERS[plan ?? (user ? "free" : "guest")].interactive;
-  return { used: jobs.length, cap, left: Math.max(0, cap - jobs.length), resets: nextMonth(), jobs };
+  const fresh = !!user && Date.now() - Date.parse(user.created_at) < 7 * 86400_000;
+  const cap = TIERS[plan ?? (user ? "free" : "guest")].interactive + (weekly && fresh ? WELCOME_INTERACTIVE : 0);
+  const first = (rows as { created_at?: string }[])[0]?.created_at;
+  const resets = weekly ? new Date((first ? Date.parse(first) : Date.now()) + 7 * 86400_000).toISOString() : nextMonth();
+  return { used: jobs.length, cap, left: Math.max(0, cap - jobs.length), resets, jobs, period: weekly ? "week" : "month" };
 }
 
 export async function logEvent(actor: string, type: string, meta: Record<string, unknown> = {}, userId: string | null = null) {
@@ -84,19 +94,21 @@ async function refundFailed(user: User) {
   }
 }
 
-export type Quota = { tier: "guest" | "member"; day_limit: number; day_used: number; day_left: number; credits: number; resets_in_min: number | null };
+// day_limit / day_used / day_left keep their names for the apps; period says whether they count a day (guest) or a week (member)
+export type Quota = { tier: "guest" | "member"; period: "day" | "week"; day_limit: number; day_used: number; day_left: number; credits: number; resets_in_min: number | null };
 
 /** What this person may still make: the free allowance of the last 24 hours (minus what credits already paid for) plus the credit balance. */
 export async function quotaFor(user: User | null, actor: string): Promise<Quota> {
   if (user) await refundFailed(user);
-  const since = new Date(Date.now() - 86400_000).toISOString();
+  const span = (user ? 7 : 1) * 86400_000;
+  const since = new Date(Date.now() - span).toISOString();
   const who = user ? `user_id=eq.${user.id}` : `visitor=eq.${actor}&user_id=is.null`;
   const rows = await db(`explainer_jobs?${who}&status=neq.failed&created_at=gte.${since}&select=seconds,credit_used,created_at&order=created_at.asc`);
   const used = rows.reduce((n: number, r: { seconds: number; credit_used: number }) => n + Math.max(0, units(r.seconds) - (r.credit_used || 0)), 0);
-  const limit = user ? (isAdmin(user) ? 9999 : MEMBER_DAY) : GUEST_DAY;
+  const limit = user ? (isAdmin(user) ? 9999 : MEMBER_WEEK) : GUEST_DAY;
   const left = Math.max(0, limit - used);
-  const oldest = rows[0] ? Date.parse(rows[0].created_at) + 86400_000 - Date.now() : null;
-  return { tier: user ? "member" : "guest", day_limit: limit, day_used: Math.min(used, limit), day_left: left, credits: user?.credits ?? 0, resets_in_min: oldest && left < limit ? Math.max(1, Math.round(oldest / 60000)) : null };
+  const oldest = rows[0] ? Date.parse(rows[0].created_at) + span - Date.now() : null;
+  return { tier: user ? "member" : "guest", period: user ? "week" : "day", day_limit: limit, day_used: Math.min(used, limit), day_left: left, credits: user?.credits ?? 0, resets_in_min: oldest && left < limit ? Math.max(1, Math.round(oldest / 60000)) : null };
 }
 
 // ---- passwords: PBKDF2-SHA256

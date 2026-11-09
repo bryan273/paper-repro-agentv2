@@ -1,4 +1,4 @@
-"""Keeps the Cloudflare R2 bucket inside its free 10 GB: removes the videos of jobs older than RETENTION_DAYS (14), and if the bucket
+"""Keeps the Cloudflare R2 bucket inside its free 10 GB: removes the videos of jobs older than RETENTION_DAYS (7), and if the bucket
 is still above HARD_LIMIT (9 GB) removes the oldest ones until it is under TARGET (8.5 GB). A removed video's job is kept (title, text,
 history) but marked expired_at, so the page says "expired, make it again" instead of showing a broken player. It also records the bucket
 size in ops_r2_usage for the admin panel.
@@ -12,15 +12,15 @@ import sys
 import urllib.parse
 import urllib.request
 
-RETENTION_DAYS = 14
-PLAN_DAYS = {"plus": 90, "pro": 365, "premium": 365}   # how long a member's videos are kept while their plan is active
+RETENTION_DAYS = 7
+PLAN_DAYS = {"plus": 30, "pro": 90, "premium": 270}   # how long a member's videos are kept while their plan is active
 GB = 1024 ** 3
 HARD_LIMIT, TARGET = int(9 * GB), int(8.5 * GB)
 DRY = "--dry-run" in sys.argv
 
 
 def pick_expired(jobs, sizes, now, base, keep=None):
-    """jobs: rows with id, created_at, videos, user_id. sizes: {prefix: bytes}. keep: {user_id: days} for members on a plan (Plus 90, Pro 365; everyone else 14).
+    """jobs: rows with id, created_at, videos, user_id. sizes: {prefix: bytes}. keep: {user_id: days} for members on a plan (Plus 30, Pro 90, Premium 270; everyone else 14).
     Returns the prefixes to remove, oldest first, with the reason."""
     keep = keep or {}
     mine = []

@@ -12,9 +12,9 @@ import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan sets the monthly interactive videos and the in-depth answers (TIERS in _shared)
 const PLANS: Record<string, { credits: number; price: number; days: number }> = {
-  plus_month: { credits: 50, price: 33, days: 31 }, plus_year: { credits: 600, price: 330, days: 366 },   // Plus: 50 videos, 10 interactive, 10 in-depth answers per video
-  pro_month: { credits: 120, price: 59, days: 31 }, pro_year: { credits: 1440, price: 590, days: 366 },   // Pro: 120 videos, 30 interactive, 20 in-depth, 10 minute videos
-  premium_month: { credits: 250, price: 109, days: 31 }, premium_year: { credits: 3000, price: 1090, days: 366 },   // Premium: 250 videos, 80 interactive, 30 in-depth
+  plus_month: { credits: 80, price: 33, days: 31 }, plus_year: { credits: 960, price: 330, days: 366 },   // Plus: 80 videos up to 5 min, interactive mode on 40, 20 in-depth answers per video
+  pro_month: { credits: 150, price: 59, days: 31 }, pro_year: { credits: 1800, price: 590, days: 366 },   // Pro: 150 videos up to 10 min, interactive 75, 35 in-depth
+  premium_month: { credits: 280, price: 109, days: 31 }, premium_year: { credits: 3360, price: 1090, days: 366 },   // Premium: 280 videos, interactive 140, 50 in-depth
 };
 // the same prices in the money of each market (kept in step with the front end, lib/currency.ts); the owner confirms the amount in this money, no exchange rate is involved
 const LOCAL: Record<string, { vnd: number; idr: number }> = {
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       }
       const pi = await planInfo(user?.id);
       const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
-      return json({ ...pi, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
