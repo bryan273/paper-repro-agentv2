@@ -169,7 +169,9 @@ Deno.serve(async (req) => {
       }
       const pi = await planInfo(user?.id);
       const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
-      return json({ ...pi, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
+      // the country given at sign-up: the pricing page shows that money first
+      const [su] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).catch(() => []) : [];
+      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_DAY, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
