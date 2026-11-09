@@ -190,9 +190,9 @@ Deno.serve(async (req) => {
       if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives for this video. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].deep}.` : `You used the ${cap} in-depth answers for this video. Quick answers stay open.`, code: "deep_premium" }, 402);
     }
 
-    // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them
+    // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them; a paid plan feature
     let who = "";
-    if (user) {
+    if (user && (plan || isAdmin(user))) {
       const [pr] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.profile&select=meta&order=created_at.desc&limit=1`).catch(() => []);
       const m = pr?.meta;
       if (m && (m.level || m.field || m.goal || m.purpose)) {
