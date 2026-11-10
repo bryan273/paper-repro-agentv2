@@ -34,9 +34,14 @@ norm = lambda w: re.sub(r"[^0-9a-z]+", "", str(w).lower())
 # per beat: [seconds from the beat start, word] of the English narration, so a picture can appear on the word that names it
 CUES = {n: [[round(a + NARR_DELAY, 2), norm(w)] for a, _, w in words_of("en", i) if norm(w)] for n, i in enumerate(idx)}
 THEMES = {"classic": ("#0f1a2e", "#3dff8f", "#5fb0ff", "#f1f6ff", "#9db2c9"), "light": ("#f4f1ea", "#4a3cf0", "#e0560f", "#17171c", "#6a6a75"),
+          "paper": ("#fbf8f1", "#2b59c3", "#d1495b", "#1f1d1a", "#7a746b"), "chalk": ("#1e3b32", "#ffe27a", "#8fd3ff", "#f3f1e8", "#a9bdb3"),
+          "fresh": ("#f2fbf7", "#0f9d76", "#ff8a3d", "#12322a", "#5f7d73"),
           "sunset": ("#241338", "#ff7a59", "#c86bff", "#fff1ea", "#b496b0"), "cinema": ("#10112a", "#c9a96a", "#6a8fd8", "#f2efe6", "#8a86a0"), "mono": ("#1a1a1f", "#ffffff", "#9aa0aa", "#f4f4f4", "#8a8a8a")}
-theme = json.load(open(os.path.join(d, f"script_{LANGS[0]}.json"), encoding="utf-8")).get("theme") or "classic"
+_sj = json.load(open(os.path.join(d, f"script_{LANGS[0]}.json"), encoding="utf-8"))
+theme = _sj.get("theme") or "classic"
+LOOK = ("\nThe viewer described the look they want (colours, mood, drawing style); follow it as long as text stays readable: " + str(_sj.get("look"))[:240]) if _sj.get("look") else ""
 BG, ACC, ACC2, TXT, MUT = THEMES.get(theme, THEMES["classic"])
+LIGHT_NOTE = ("\nThis video has a LIGHT background: use the given colours for text and lines, never white text, and keep shapes filled with soft tints of ACCENT and ACCENT2." if theme in ("light", "paper", "fresh") else "")
 CINEMA = ("\nLook: cinematic documentary. Deep blue-black space, thin gold lines and gold highlights, slow smooth movement, a few faint drifting dots as background, generous empty space, labels in a serif font (font=\"Georgia\"). Each idea arrives like a title card: fade in, hold, fade out. Calm and elegant, never busy." if theme == "cinema" else "")
 work = os.path.join(d, f"manim_s{k}")
 shutil.rmtree(work, ignore_errors=True); os.makedirs(work)
@@ -225,7 +230,7 @@ DESIGN RULES
 - Colour means something: ACCENT for the paper's idea or the winner, ACCENT2 for the other side, MUTED for context and baselines, PALETTE for categories.
 - Never leave dimmed leftovers behind a new picture (set_opacity(0.1) ghosts): FadeOut them completely.
 - Never put text on an arrow or a line, never two labels in the same place; the picture is measured after every beat and any overlap is sent back to you.
-{CINEMA}"""
+{CINEMA}{LOOK}{LIGHT_NOTE}"""
 
 def user_msg():
     b = []

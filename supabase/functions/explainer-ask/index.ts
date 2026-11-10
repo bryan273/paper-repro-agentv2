@@ -108,7 +108,11 @@ const LANGNAME: Record<string, string> = { zh: "Simplified Chinese", vi: "Vietna
 /** For a quick answer: the opening of the source and the stretch that shares the most words with the question, about 14,000 characters
  *  in all instead of 48,000. In-depth answers still read the whole text. */
 function focusText(text: string, query: string): string {
-  if (text.length <= 15_000) return text;
+  return focusParts(text, query).text;
+}
+/** The same, with what was picked: how many passages and characters, so the page can say what was read. */
+function focusParts(text: string, query: string): { text: string; parts: number } {
+  if (text.length <= 15_000) return { text, parts: 0 };
   const words = new Set((query.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) ?? []).slice(0, 40));
   const head = text.slice(0, 2_500), W = 3_000, chunks: { i: number; score: number }[] = [];
   for (let i = 2_500; i < Math.min(text.length, 48_000); i += W) {
@@ -117,17 +121,18 @@ function focusText(text: string, query: string): string {
     chunks.push({ i, score });
   }
   const best = chunks.sort((a, b) => b.score - a.score || a.i - b.i).slice(0, 4).sort((a, b) => a.i - b.i);
-  return [head, ...best.map((c) => text.slice(c.i, c.i + W))].join("\n[...]\n");
+  return { text: [head, ...best.map((c) => text.slice(c.i, c.i + W))].join("\n[...]\n"), parts: best.length };
 }
 const NEXT: Record<string, string> = { free: "Plus", plus: "Pro", pro: "Premium" };   // the plan to suggest when a limit is reached
-const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
+const SYSTEM = (text: string, mode: string, lang: string, think = false) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
 Write every answer in the language of the person's question, whatever language the paper, the video or their settings use: a question in English gets an English answer, a question in Vietnamese a Vietnamese one. Only when the message has no language of its own (an empty question or a button such as "explain more simply") use ${LANGNAME[lang] ?? "English"}.
-Return ONLY JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}
+${think ? `First write the line THINKING: and then your working notes in plain text, in the language of the question: what the person is really asking, which passages of the PAPER TEXT answer it (say what you found and where), what they may be missing, and how you will explain it. 3 to 8 short sentences, honest and specific; the person sees them while they wait.
+Then write a line with only ANSWER: and after it ONLY the JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}` : `Return ONLY JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}`}
 Rules:
 - kind "paper": something the paper itself says. Put ONE short quote (at most 30 words) in "quote", copied WORD FOR WORD from the PAPER TEXT below, in the paper's own language. Never invent or paraphrase a quote. If you cannot quote it, use kind "general".
 - kind "general": background, definitions, analogies, prerequisites or related work from your general knowledge. "quote" is null. Never present this paper's own numbers or results as general knowledge.
 - Start from what the person does not understand. Short sentences, define every technical term, and give one everyday example or analogy when it helps.
-- 2 to 5 blocks, each at most 3 sentences. "followups" are 3 short questions the person might ask next.
+- Give the answer the length it needs: 2 to 8 blocks, each up to 5 sentences. A short factual question gets a short answer; a "why", "how" or "explain in detail" question gets a full explanation, step by step, with an example. Never cut an explanation short to save space. "followups" are 3 short questions the person might ask next.
 ${mode === "paper" ? '- PAPER ONLY mode: use only kind "paper" blocks. If the paper does not say it, say that plainly in one block with kind "general" and quote null; do not add outside knowledge.' : "- Mix both kinds: ground the answer in the paper, then add background where it helps understanding."}
 - Plain text only: no markdown, no asterisks, no bullet symbols, no headings.
 PAPER TEXT (may be cut off):
@@ -291,45 +296,105 @@ Deno.serve(async (req) => {
     // a picture the person pasted (a figure, a slide, a photo of a page): sent to the model with the question, at most about 1.5 MB
     const image = typeof b.image === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(b.image) && b.image.length < 2_000_000 ? b.image : "";
     const userMsg = image ? { role: "user", content: [{ type: "text", text: ask }, { type: "image_url", image_url: { url: image } }] } : { role: "user", content: ask };
-    const messages = [{ role: "system", content: SYSTEM(deep ? text : focusText(text, `${q} ${secTitle} ${secText}`), mode, lang) + who }, ...history, userMsg];
-
-    let out: { message?: { content?: string }; usage?: Record<string, number>; finish_reason?: string; error?: string; code?: string } = {};
-    let content = "";
-    let parsed: { blocks?: unknown; followups?: unknown } | null = null;
-    for (let attempt = 0; attempt < 2 && !parsed; attempt++) {   // an answer that cannot be read is asked for once more
-      const r = await fetch(`${SB_URL}/functions/v1/agent-llm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
-        body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 2600 : 1600, json_mode: true, visitor: actor, ...(deep ? { tier: "deep" } : {}), ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
-      });
-      out = await r.json().catch(() => ({}));
-      if (!r.ok) return json({ error: out.error ?? "The tutor is busy. Please try again in a minute.", code: out.code ?? "busy" }, r.status === 429 ? 429 : 503);
-      content = String(out.message?.content ?? "").replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
-      parsed = lenientParse(content) ?? salvage(content);
+    const stream = b.stream === true;
+    const focus = deep ? { text, parts: 0 } : focusParts(text, `${q} ${secTitle} ${secText}`);
+    const messages = [{ role: "system", content: SYSTEM(focus.text, mode, lang, stream) + who }, ...history, userMsg];
+    const callLlm = (streamOut: boolean) => fetch(`${SB_URL}/functions/v1/agent-llm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${SB_SERVICE}`, apikey: SB_SERVICE, "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "" },
+      body: JSON.stringify({ app: "companion", messages, max_tokens: lang === "zh" ? 4000 : 3200, json_mode: !streamOut, visitor: actor, ...(streamOut ? { stream_out: true } : {}), ...(deep ? { tier: "deep" } : {}), ...(isAdmin(user) ? { bypass_limits: true } : {}) }),
+    });
+    type Emit = (o: Record<string, unknown>) => void;
+    /** Writes the answer: reads the source, lets the model think and answer, checks every quote against the source and saves the conversation. */
+    const answer = async (emit: Emit): Promise<Record<string, unknown>> => {
+      const t0 = Date.now();
+      emit({ type: "stage", key: "read", deep, chars: focus.text.length, total: text.length, parts: focus.parts });
+      let out: { usage?: Record<string, number>; finish_reason?: string } = {};
+      let content = "", thinking = "";
+      let parsed: { blocks?: unknown; followups?: unknown } | null = null;
+      const split = (all: string) => {   // THINKING: ... ANSWER: {json}
+        const k = all.search(/(^|\n)\s*ANSWER:\s*/);
+        const head = (k >= 0 ? all.slice(0, k) : all).replace(/^\s*THINKING:\s*/i, "");
+        const tail = k >= 0 ? all.slice(k).replace(/^\s*ANSWER:\s*/, "") : "";
+        return { head, tail, k };
+      };
+      for (let attempt = 0; attempt < 2 && !parsed; attempt++) {   // an answer that cannot be read is asked for once more
+        const r = await callLlm(stream);
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw Object.assign(new Error(e.error ?? "The tutor is busy. Please try again in a minute."), { code: e.code ?? "busy", status: r.status }); }
+        let all = "";
+        if ((r.headers.get("content-type") ?? "").includes("text/event-stream") && r.body) {
+          const dec = new TextDecoder(); let buf = "", sent = 0, wrote = false;
+          emit({ type: "stage", key: "think" });
+          for await (const chunk of r.body) {
+            buf += dec.decode(chunk, { stream: true });
+            const lines = buf.split("\n"); buf = lines.pop() ?? "";
+            for (const l of lines) {
+              if (!l.startsWith("data:")) continue;
+              let ev; try { ev = JSON.parse(l.slice(5)); } catch { continue; }
+              if (ev.done) { out = { usage: ev.usage, finish_reason: ev.finish }; continue; }
+              if (typeof ev.d !== "string") continue;
+              all += ev.d;
+              const sp = split(all);
+              // the thinking is passed on as it grows; the last few characters wait, in case they are the start of "ANSWER:"
+              const safe = sp.k >= 0 ? sp.head.length : Math.max(0, sp.head.length - 8);
+              if (safe > sent) { emit({ type: "think", d: sp.head.slice(sent, safe) }); sent = safe; }
+              if (sp.k >= 0 && !wrote) { wrote = true; emit({ type: "stage", key: "write" }); }
+            }
+          }
+        } else {
+          const o = await r.json().catch(() => ({}));
+          out = o; all = String(o.message?.content ?? "");
+          const sp = split(all);
+          if (stream && sp.k >= 0 && sp.head.trim()) { emit({ type: "stage", key: "think" }); emit({ type: "think", d: sp.head }); emit({ type: "stage", key: "write" }); }
+        }
+        const sp = split(all);
+        thinking = sp.k >= 0 ? sp.head.trim() : "";
+        content = (sp.k >= 0 ? sp.tail : all).replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+        parsed = lenientParse(content) ?? salvage(content);
+      }
+      emit({ type: "stage", key: "check" });
+      type Block = { kind: "paper" | "general" | "unverified"; text: string; quote?: string; page?: number; t?: number; sec?: number };
+      const beats = (job.timeline?.[lang] ?? job.timeline?.en ?? job.timeline?.zh) as Beat[] | undefined;
+      const blocks: Block[] = [];
+      for (const x of (Array.isArray(parsed?.blocks) ? parsed!.blocks as Record<string, unknown>[] : []).slice(0, 8)) {
+        const t = String(x?.text ?? "").trim().slice(0, 1600);
+        if (!t) continue;
+        const quote = String(x?.quote ?? "").trim().slice(0, 300);
+        if (x?.kind === "paper" && quote) blocks.push(quoteFound(quote, text) ? { kind: "paper", text: t, quote, ...(() => { const pg = pageOf(quote, job.paper_pages); const m = momentOf(quote, beats); return { ...(pg ? { page: pg } : {}), ...(m ? { t: m.t, sec: m.sec } : {}) }; })() } : { kind: "unverified", text: t, quote });
+        else blocks.push({ kind: "general", text: t });
+      }
+      if (!blocks.length) blocks.push({ kind: "general", text: (content && !parsed && !/"blocks"/.test(content) ? content : lang === "zh" ? "抱歉，这次没能整理出答案，请换个问法再试一次。" : "Sorry, I could not put an answer together this time. Please try asking it another way.").slice(0, 1600) });
+      const quotes = blocks.filter((x) => x.quote).length, found = blocks.filter((x) => x.kind === "paper").length;
+      emit({ type: "stage", key: "checked", quotes, found });
+      const followups = (Array.isArray(parsed?.followups) ? parsed!.followups as unknown[] : []).map((f) => String(f).trim().slice(0, 140)).filter(Boolean).slice(0, 3);
+      const ms = Date.now() - t0;
+      const owner = user?.id ?? actor;
+      const [prev] = await db(`explainer_chats?job_id=eq.${jobId}&owner=eq.${encodeURIComponent(owner)}&select=messages`);
+      const now = new Date().toISOString();
+      const messages2 = [...(prev?.messages ?? []), { role: "user", text: q || (lang === "zh" ? "再讲得简单一点" : "Explain it more simply"), section: secIdx >= 0 ? secIdx : null, t: now }, { role: "ai", blocks, followups, t: now, ...(thinking ? { thinking: thinking.slice(0, 4000), ms } : {}) }].slice(-40);
+      const u = out.usage ?? {};
+      await Promise.all([
+        db("explainer_chats?on_conflict=job_id,owner", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ job_id: jobId, owner, messages: messages2, updated_at: now }]) }),
+        db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: deep ? "deep" : intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) }),
+        logEvent(actor, "ask", { intent, mode }, user?.id ?? null).catch(() => undefined),
+      ]);
+      return { blocks, followups, ...(thinking ? { thinking, ms } : {}), deep_left: deep ? Math.max(0, TIERS[tier].deep - (user ? await count(`explainer_asks?user_id=eq.${user.id}&intent=eq.deep&created_at=gte.${monthStart()}`).catch(() => 0) : 0)) : undefined, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null };
+    };
+    if (!stream) {
+      try { return json(await answer(() => undefined)); }
+      catch (e) { const x = e as Error & { code?: string; status?: number }; return json({ error: x.message, code: x.code ?? "busy" }, x.status === 429 ? 429 : 503); }
     }
-    type Block = { kind: "paper" | "general" | "unverified"; text: string; quote?: string; page?: number; t?: number; sec?: number };
-    const beats = (job.timeline?.[lang] ?? job.timeline?.en ?? job.timeline?.zh) as Beat[] | undefined;
-    const blocks: Block[] = [];
-    for (const x of (Array.isArray(parsed?.blocks) ? parsed!.blocks as Record<string, unknown>[] : []).slice(0, 6)) {
-      const t = String(x?.text ?? "").trim().slice(0, 900);
-      if (!t) continue;
-      const quote = String(x?.quote ?? "").trim().slice(0, 300);
-      if (x?.kind === "paper" && quote) blocks.push(quoteFound(quote, text) ? { kind: "paper", text: t, quote, ...(() => { const pg = pageOf(quote, job.paper_pages); const m = momentOf(quote, beats); return { ...(pg ? { page: pg } : {}), ...(m ? { t: m.t, sec: m.sec } : {}) }; })() } : { kind: "unverified", text: t, quote });
-      else if (mode !== "paper") blocks.push({ kind: "general", text: t });
-      else blocks.push({ kind: "general", text: t });
-    }
-    if (!blocks.length) blocks.push({ kind: "general", text: (content && !parsed && !/"blocks"/.test(content) ? content : lang === "zh" ? "抱歉，这次没能整理出答案，请换个问法再试一次。" : "Sorry, I could not put an answer together this time. Please try asking it another way.").slice(0, 900) });
-    const followups = (Array.isArray(parsed?.followups) ? parsed!.followups as unknown[] : []).map((f) => String(f).trim().slice(0, 140)).filter(Boolean).slice(0, 3);
-
-    const owner = user?.id ?? actor;
-    const [prev] = await db(`explainer_chats?job_id=eq.${jobId}&owner=eq.${encodeURIComponent(owner)}&select=messages`);
-    const now = new Date().toISOString();
-    const messages2 = [...(prev?.messages ?? []), { role: "user", text: q || (lang === "zh" ? "再讲得简单一点" : "Explain it more simply"), section: secIdx >= 0 ? secIdx : null, t: now }, { role: "ai", blocks, followups, t: now }].slice(-40);
-    await db("explainer_chats?on_conflict=job_id,owner", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ job_id: jobId, owner, messages: messages2, updated_at: now }]) });
-    const u = out.usage ?? {};
-    await db("explainer_asks", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: jobId, actor, user_id: user?.id ?? null, intent: deep ? "deep" : intent, tokens: (u.prompt_tokens ?? 0) + (u.completion_tokens ?? 0) }) });
-    await logEvent(actor, "ask", { intent, mode }, user?.id ?? null).catch(() => undefined);
-    return json({ blocks, followups, deep_left: deep ? Math.max(0, TIERS[tier].deep - (user ? await count(`explainer_asks?user_id=eq.${user.id}&intent=eq.deep&created_at=gte.${monthStart()}`).catch(() => 0) : 0)) : undefined, left: Math.max(0, limit - used - 1), finish: out.finish_reason ?? null });
+    // streaming: one line per event (data: {...}), the last one is the answer or an error
+    const enc = new TextEncoder();
+    const body = new ReadableStream({
+      async start(ctl) {
+        const emit: Emit = (o) => { try { ctl.enqueue(enc.encode(`data: ${JSON.stringify(o)}\n\n`)); } catch { /* the reader left */ } };
+        try { emit({ type: "answer", ...(await answer(emit)) }); }
+        catch (e) { const x = e as Error & { code?: string }; emit({ type: "error", error: x.message, code: x.code ?? "busy" }); }
+        ctl.close();
+      },
+    });
+    return new Response(body, { headers: { ...CORS, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }

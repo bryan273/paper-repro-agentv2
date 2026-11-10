@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
         if (!a) return json([]);
         return json(await db(`explainer_jobs?arxiv=eq.${a}&status=in.(done,queued,running)&expired_at=is.null&select=${PUBLIC}&order=created_at.desc&limit=12`));
       }
-      if (u.searchParams.get("recent")) return json(await db(`explainer_jobs?status=eq.done&style=in.(animated,cinema)&select=${PUBLIC}&order=updated_at.desc&limit=24`));
+      if (u.searchParams.get("recent")) return json(await db(`explainer_jobs?status=eq.done&or=(style.like.animated*,style.eq.cinema)&select=${PUBLIC}&order=updated_at.desc&limit=24`));
       const id = u.searchParams.get("id") ?? "";
       if (!/^[0-9a-f-]{36}$/.test(id)) return json({ error: "id required" }, 400);
       const rows = await db(`explainer_jobs?id=eq.${id}&select=${PUBLIC},timeline`);
@@ -143,11 +143,12 @@ Deno.serve(async (req) => {
     }
     const model = ["deepseek", "stepfun"].includes(body.model) ? body.model : "deepseek";
     const voice = ["female", "male"].includes(body.voice) ? body.voice : "female";
-    const style = STYLES.includes(body.style) ? body.style : "animated";
+    // "animated" (the AI draws each part) with a look after the colon: auto (chosen from the topic), classic, light, paper, chalk, fresh, sunset, mono, cinema, or own (described in the note)
+    const style = STYLES.includes(body.style) || /^animated:(auto|own|classic|light|paper|chalk|fresh|sunset|mono|cinema)$/.test(String(body.style)) ? String(body.style) : "animated";
     const tone = TONES.includes(body.tone) ? body.tone : "teacher";
     const langs = VIDEO_LANGS.includes(body.langs) ? body.langs : "en";   // one language per video; another language is another video
     const seconds = Math.min(1200, Math.max(60, Math.round(Number(body.seconds) || 180)));
-    const custom = String(body.custom ?? "").replace(/[ -]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
+    const custom = String(body.custom ?? "").replace(/[ -]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 460);   // the note: focus, narration style, and the look ("Look: ...")
     const up = typeof body.upload === "string" && /^[0-9a-f]{16}\/[0-9a-f-]{36}\.(pdf|txt)$/.test(body.upload) ? body.upload : "";
     const url = up ? null : arxivId(arxiv) ? null : sourceUrl(arxiv);
     const a = up ? "f" + (await sha(up)) : (arxivId(arxiv) ?? (url ? "u" + (await sha(url)) : null));
