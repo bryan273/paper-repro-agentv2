@@ -121,7 +121,7 @@ function focusText(text: string, query: string): string {
 }
 const NEXT: Record<string, string> = { free: "Plus", plus: "Pro", pro: "Premium" };   // the plan to suggest when a limit is reached
 const SYSTEM = (text: string, mode: string, lang: string) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
-Write every answer in ${LANGNAME[lang] ?? "English"}.
+Write every answer in the language of the person's question, whatever language the paper, the video or their settings use: a question in English gets an English answer, a question in Vietnamese a Vietnamese one. Only when the message has no language of its own (an empty question or a button such as "explain more simply") use ${LANGNAME[lang] ?? "English"}.
 Return ONLY JSON: {"blocks":[{"kind":"paper"|"general","text":string,"quote":string|null}],"followups":[string,string,string]}
 Rules:
 - kind "paper": something the paper itself says. Put ONE short quote (at most 30 words) in "quote", copied WORD FOR WORD from the PAPER TEXT below, in the paper's own language. Never invent or paraphrase a quote. If you cannot quote it, use kind "general".
