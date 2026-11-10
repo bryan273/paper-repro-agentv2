@@ -146,7 +146,7 @@ const verifyOf = async (user: { id: string } | null): Promise<{ role: string; st
   return e?.meta ? { role: String(e.meta.role), status: String(e.meta.status) } : null;
 };
 // inviting a friend: 10 free videos for the member who shared the link, up to 5 friends
-const REFERRAL_VIDEOS = 3, REFERRAL_MAX = 5;
+const REFERRAL_VIDEOS = 2, REFERRAL_MAX = 5;
 const refCode = (id: string) => id.slice(0, 8);
 const referralOf = async (user: { id: string } | null) => {
   if (!user) return null;
