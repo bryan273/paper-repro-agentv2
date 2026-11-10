@@ -6,7 +6,7 @@
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
 import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart } from "../_shared/explainer.ts";
 
-const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download"]);
+const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download", "leave"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
 import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
@@ -171,6 +171,11 @@ Deno.serve(async (req) => {
       const user = await userOf(req);
       const actor = await actorOf(req, req.headers.get("x-visitor-id"));
       if (u.searchParams.get("whereami")) return json({ country: (await geoOf(req)) || null });   // the caller's own country as the network reports it
+      if (u.searchParams.get("inbox")) {   // replies from the team to this member
+        if (!user) return json({ error: "Sign in first." }, 401);
+        const rows = await db(`explainer_events?user_id=eq.${user.id}&type=eq.reply&select=id,meta,created_at&order=created_at.desc&limit=50`).catch(() => []) as { id: string; meta: { text: string; about?: string }; created_at: string }[];
+        return json(rows.map((r) => ({ id: r.id, text: r.meta.text, about: r.meta.about ?? "", at: r.created_at })));
+      }
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
         const rows = await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`);
@@ -211,7 +216,9 @@ Deno.serve(async (req) => {
       const type = String(body.type ?? "");
       if (!EVENTS.has(type)) return json({ error: "unknown event" }, 400);
       const user = await userOf(req);
-      await logEvent(actor, type, { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: (type === "visit" ? await geoOf(req) : "") }, user?.id ?? null);
+      await logEvent(actor, type, type === "leave"
+        ? { path: str(body.path, 80), sec: Math.max(0, Math.min(7200, Math.round(Number(body.sec) || 0))), sid: str(body.sid, 12), pages: Math.max(1, Math.min(200, Math.round(Number(body.pages) || 1))) }
+        : { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: (type === "visit" ? await geoOf(req) : "") }, user?.id ?? null);
       return json({ ok: true });
     }
 
