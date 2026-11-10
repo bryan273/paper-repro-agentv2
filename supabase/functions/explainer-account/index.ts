@@ -273,6 +273,9 @@ Deno.serve(async (req) => {
         field: str(body.field, 60), goal: str(body.goal, 140),
         size: pick(body.size, ["sm", "md", "lg"]), font: pick(body.font, ["sans", "serif", "plain"]),
         interactive: body.interactive === true, askModel: pick(body.askModel, ["fast", "deep"]),
+        // what the member is here to get done, and the day it is due (the exam, the lesson): the make page and the home page start from it
+        aim: pick(body.aim, ["exam", "homework", "understand", "teach", "skim"]),
+        deadline: /^\d{4}-\d{2}-\d{2}$/.test(String(body.deadline ?? "")) ? String(body.deadline) : "",
       };
       await logEvent("", "profile", profile, user.id);
       return json({ ok: true });
