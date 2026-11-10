@@ -12,6 +12,30 @@ if os.path.exists(_dotenv):
         if "=" in line and not line.startswith("#"):
             k, v = line.rstrip("\n").split("=", 1); ENV.setdefault(k, v.strip().strip('"'))
 
+# The look of a video. "auto" chooses one from the topic (words in the title and the narration); "own" uses the light colours and the
+# person's own description, written in the note as "Look: ...". Old jobs say "animated" or a theme name and keep their colours.
+THEME_NAMES = ("classic", "light", "paper", "chalk", "fresh", "sunset", "mono", "cinema")
+TOPIC_THEMES = [
+    ("fresh", r"biolog|cell|gene|protein|enzyme|plant|photosynth|ecolog|medic|clinic|patient|health|disease|virus|bacteri|brain|neuro|food|nutri|climate|environment"),
+    ("chalk", r"theorem|proof|lemma|equation|algebra|geometr|calculus|probabil|statistic|physic|quantum|particle|mechanic|thermodynam|matrix|integral"),
+    ("paper", r"history|philosoph|literat|poem|novel|language|linguist|law|legal|politic|econom|society|social|culture|art|music|religio|education|psycholog"),
+    ("classic", r"neural|network|learning|model|transformer|algorithm|comput|software|data|robot|ai\b|code|program"),
+]
+def resolve_theme(theme, sc, custom=""):
+    t = (theme or "classic").lower()
+    if t.startswith("animated:"): t = t.split(":", 1)[1]
+    if t == "animated": t = "classic"
+    look = ""
+    m = re.search(r"Look:\s*(.+)", custom or "")
+    if m: look = m.group(1).strip()[:240]
+    if t == "own": return "light", look
+    if t == "auto" or t not in THEME_NAMES:
+        hay = " ".join([str(sc.get("title") or "")] + [str(x.get("en") or x.get("zh") or "") for x in (sc.get("scenes") or [])[:12]]).lower()
+        for name, rx in TOPIC_THEMES:
+            if re.search(rx, hay): return name, look
+        return "light", look
+    return t, look
+
 def get_bytes(url, ms=40):
     return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (paper-explainer)"}), timeout=ms).read(30_000_000)
 
@@ -426,7 +450,8 @@ async def main():
     else:
         n, secs = part_plan(a.seconds)
         lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
-        custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", a.custom).strip()[:300]) if a.custom.strip() else ""
+        _note = re.sub(r"\.?\s*Look:.*$", "", a.custom or "").strip()   # the look is for the drawing, not for the script
+        custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", _note).strip()[:300]) if _note else ""
         plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         # an edit of a finished video: every part except the chosen one is kept word for word, the chosen part is rewritten as asked
@@ -482,6 +507,7 @@ async def main():
             async with gate: await tts(s[lang], VOICE[lang], p)
             trim_tail(p)
     await asyncio.gather(*(clip(lg, i, s) for lg in LANGS for i, s in enumerate(sc["scenes"])))
+    theme, look = resolve_theme(a.theme, sc, a.custom)
     for lang in LANGS:
         scenes = json.loads(json.dumps(sc["scenes"]))
         for i, s in enumerate(scenes):
@@ -490,12 +516,12 @@ async def main():
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 3600)
             if s.get("evidence") is not None: s["evidence"] = f"{LABEL} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else LABEL
             elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
-        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
+        json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": theme, "look": look, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))
         for k in range(len(sc.get("sections") or [])):
             part = [s for s in scenes if s.get("sec") == k]
-            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": a.theme, "scenes": part, "total": sum(s["dur"] for s in part)},
+            if part: json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": theme, "look": look, "scenes": part, "total": sum(s["dur"] for s in part)},
                                open(os.path.join(out, f"script_{lang}_s{k}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     meta = []
     for k, sec in enumerate(sc.get("sections") or []):

@@ -174,7 +174,7 @@ try:
             if os.path.exists("/tmp/heavy.failed"): raise RuntimeError("could not install the drawing tools")
             time.sleep(1)
     lock, rec_lock = threading.Lock(), threading.Lock()
-    animated = (row.get("style") or "") in ("animated", "cinema")
+    animated = (row.get("style") or "").startswith("animated") or (row.get("style") or "") == "cinema"   # "animated" or "animated:<look>"; the look itself is in the script
     def section(n, m):
         drawn = False
         if animated:   # the AI draws this section with Manim; on failure the template player records it
