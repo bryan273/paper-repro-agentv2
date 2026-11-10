@@ -32,6 +32,30 @@ async function rkapiBalance() {
   return { configured: true, token, subscription, usage };
 }
 
+/** The gateway cannot say how much is left, so the spend is written down instead: the total the key has used is saved at most once every 6 hours, and the difference between two saved totals is what was spent in between. */
+async function rkapiSpend(rk: { configured: boolean; token?: { json?: unknown } }) {
+  const t = (rk.token?.json as { data?: { total_used?: number } } | null | undefined)?.data;
+  if (!rk.configured || typeof t?.total_used !== "number") return null;
+  const now = t.total_used / 500000;   // 500,000 units per USD
+  const rows = await db(`explainer_events?type=eq.rkapi_spend&select=meta,created_at&order=created_at.asc&limit=400`).catch(() => []) as { meta: { usd: number }; created_at: string }[];
+  const last = rows[rows.length - 1];
+  if (!last || Date.now() - Date.parse(last.created_at) > 6 * HOUR) {
+    await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "system", type: "rkapi_spend", user_id: null, meta: { usd: now } }) }).catch(() => undefined);
+  }
+  // what was spent since the saved total that is nearest to (and not after) the start of each window
+  const since = (hours: number) => {
+    const at = Date.now() - hours * HOUR;
+    const base = [...rows].reverse().find((r) => Date.parse(r.created_at) <= at) ?? rows[0];
+    return base ? { usd: Math.max(0, now - base.meta.usd), from: base.created_at, full: Date.parse(base.created_at) <= at } : null;
+  };
+  const days: { d: string; usd: number }[] = [];
+  const byDay = new Map<string, number>();
+  for (const r of rows) byDay.set(r.created_at.slice(0, 10), r.meta.usd);   // the last total saved on each day
+  const keys = [...byDay.keys()].sort();
+  for (let i = 1; i < keys.length; i++) days.push({ d: keys[i], usd: Math.max(0, (byDay.get(keys[i]) as number) - (byDay.get(keys[i - 1]) as number)) });
+  return { total: now, h24: since(24), d7: since(24 * 7), d30: since(24 * 30), first: rows[0]?.created_at ?? null, days: days.slice(-30) };
+}
+
 /** Test accounts: the QA admin and the accounts it creates. The real admin never sees them; the QA admin sees everything. */
 const QA_ADMIN = (Deno.env.get("EXPLAINER_QA_ADMIN") ?? "qa-admin@repro-suite.dev").toLowerCase();
 const isTest = (email: string) => /^qa[-_.]|^qa\d|@example\.(com|org)$|@repro-suite\.dev$|^oldclient\d/i.test(email.replace(/^@/, ""));
@@ -69,6 +93,7 @@ Deno.serve(async (req) => {
       safe(db(`explainer_events?type=eq.edit&select=user_id,meta,created_at&created_at=gte.${since30}&limit=20000`), [] as any[]),
     ]);
     const rkapi = await rkapiBalance();
+    const spend = await safe(rkapiSpend(rkapi), null);
 
     // ---- which rows belong to test accounts; the real admin sees none of them
     const testIds = new Set<string>(users.filter((u: any) => isTest(String(u.username))).map((u: any) => u.id));
@@ -170,7 +195,7 @@ Deno.serve(async (req) => {
       costs,
       asks_7d: A.filter((a: any) => a.created_at >= since7).length,
       visits_7d: visits7,
-      rkapi,
+      rkapi: { ...rkapi, spend },
     });
   } catch (e) {
     return json({ error: String((e as Error).message ?? e) }, 500);
