@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
     if (up) {   // the file must be this visitor's own, unused, and really a PDF
       const [rec] = await db(`explainer_uploads?path=eq.${encodeURIComponent(up)}&select=actor,job_id,name`);
       if (!rec || rec.actor !== (await actorOf(req, visitor))) return json({ error: "That upload was not found. Please choose the file again." }, 404);
-      if (rec.job_id) return json({ error: "That file was already used. Please choose it again." }, 409);
+      if (rec.job_id && rec.job_id !== String(body.retry_of ?? "")) return json({ error: "That file was already used. Please choose it again." }, 409);   // a retry of the failed video may use its own file again
       const head = await fetch(`${SB_URL}/storage/v1/object/${UP_BUCKET}/${up}`, { headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, Range: "bytes=0-7" } });
       const magic = head.ok ? new TextDecoder().decode((await head.arrayBuffer()).slice(0, 5)) : "";
       if (!up.endsWith(".txt") && magic !== "%PDF-") {

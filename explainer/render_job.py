@@ -126,6 +126,7 @@ except Exception as e:
 if not got:
     print("job is not queued any more (another renderer has it), nothing to do"); sys.exit(0)
 # a PDF the visitor uploaded: copy it from the private bucket next to the work files; it is deleted again when the job ends
+KEEP_UPLOAD = False
 UP_PATH = (row.get("source_url") or "")[len("upload:"):] if (row.get("source_url") or "").startswith("upload:") else ""
 upfile = ""
 # an edit of a finished video (explainer-render op "edit"): the previous script is kept except the part the member asked to change
@@ -275,9 +276,10 @@ except Exception as e:
         step = {"record.py": "recording a section", "manim_section.py": "drawing a section", "vertical.py": "making the vertical cut", "ffmpeg": "putting the sections together"}
         what = next((v for k, v in step.items() if k in " ".join(map(str, e.cmd))), "rendering")
         msg = f"The video stopped while {what}. Please try again; no daily quota was used."
+    KEEP_UPLOAD = True   # a failed video keeps its file so "Try again" works; the daily sweep removes it after 36 hours
     update(status="failed", stage=None, error=msg[:400], **cost_fields())
     sys.exit(1)
 finally:
-    if UP_PATH:   # the visitor's file is private: gone as soon as the job is over, whatever the outcome
+    if UP_PATH and not KEEP_UPLOAD:   # the visitor's file is private: gone as soon as the video is made
         try: req("DELETE", "/storage/v1/object/explainer-uploads", {"prefixes": [UP_PATH]})
         except Exception as e_: print("upload cleanup skipped:", str(e_)[:120])
