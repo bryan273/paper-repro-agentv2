@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart, isAdmin, type Quota } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download", "leave"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
@@ -154,14 +154,55 @@ const verifyOf = async (user: { id: string } | null): Promise<{ role: string; st
   const [e] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.verify&select=meta&order=created_at.desc&limit=1`).catch(() => []);
   return e?.meta ? { role: String(e.meta.role), status: String(e.meta.status) } : null;
 };
-// inviting a friend: 10 free videos for the member who shared the link, up to 5 friends
+// inviting a friend: 2 free videos for the member who shared the link AND 2 for the friend who signs up with it, up to 5 friends; the two become friends
 const REFERRAL_VIDEOS = 2, REFERRAL_MAX = 5;
 const refCode = (id: string) => id.slice(0, 8);
 const referralOf = async (user: { id: string } | null) => {
   if (!user) return null;
-  const n = await count(`explainer_events?user_id=eq.${user.id}&type=eq.referral`).catch(() => 0);
-  return { code: refCode(user.id), invited: n, reward: REFERRAL_VIDEOS, max: REFERRAL_MAX };
+  const rows = await db(`explainer_events?user_id=eq.${user.id}&type=eq.referral&select=id,meta,created_at&order=created_at.desc&limit=20`).catch(() => []) as { id: string; meta: { friend?: string }; created_at: string }[];
+  const names = await handlesOf(rows.map((x) => String(x.meta?.friend ?? "")).filter(Boolean));
+  return { code: refCode(user.id), invited: rows.length, reward: REFERRAL_VIDEOS, max: REFERRAL_MAX, recent: rows.slice(0, 10).map((x) => ({ id: x.id, handle: names[String(x.meta?.friend ?? "")] ?? null, at: x.created_at })) };
 };
+/** The usernames of several members at once (the newest username of each). */
+const handlesOf = async (ids: string[]): Promise<Record<string, string>> => {
+  const u = [...new Set(ids)].filter((x) => /^[0-9a-f-]{36}$/.test(x));
+  if (!u.length) return {};
+  const rows = await db(`explainer_events?type=eq.handle&user_id=in.(${u.join(",")})&select=user_id,meta&order=created_at.desc&limit=${u.length * 6}`).catch(() => []) as { user_id: string; meta: { handle?: string } }[];
+  const out: Record<string, string> = {};
+  for (const x of rows) if (!out[x.user_id] && x.meta?.handle) out[x.user_id] = String(x.meta.handle);
+  return out;
+};
+
+// ---- friends: a pair is friends when both sides have a "friend" event pointing at the other and no later "unfriend"; a request is a "friend_req" event on the person asked
+type Ev = { id: string; user_id: string; type: string; meta: Record<string, unknown>; created_at: string };
+async function friendIds(userId: string): Promise<string[]> {
+  const rows = await db(`explainer_events?user_id=eq.${userId}&type=in.(friend,unfriend)&select=type,meta,created_at&order=created_at.asc&limit=2000`).catch(() => []) as Ev[];
+  const st = new Map<string, boolean>();
+  for (const e of rows) st.set(String(e.meta?.other ?? ""), e.type === "friend");
+  return [...st.entries()].filter(([k, v]) => v && k).map(([k]) => k);
+}
+const befriend = async (a: string, b: string, via: string) => {
+  await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify([{ actor: "", type: "friend", user_id: a, meta: { other: b, via } }, { actor: "", type: "friend", user_id: b, meta: { other: a, via } }]) });
+};
+// ---- who can see a video: "private" (only the owner, and anyone the owner sends the link to), "friends" (listed for friends), "public" (listed in Explore). The newest choice counts.
+const VIS = ["private", "friends", "public"];
+async function visibilityOf(jobIds: string[]): Promise<Record<string, string>> {
+  const ids = jobIds.filter((x) => /^[0-9a-f-]{36}$/.test(x));
+  if (!ids.length) return {};
+  const rows = await db(`explainer_events?type=eq.visibility&meta->>job=in.(${ids.join(",")})&select=meta,created_at&order=created_at.asc&limit=${ids.length * 8}`).catch(() => []) as Ev[];
+  const out: Record<string, string> = {};
+  for (const e of rows) out[String(e.meta.job)] = String(e.meta.v);
+  return out;
+}
+type Card = { id: string; title: string | null; arxiv: string | null; langs: string | null; seconds: number | null; created_at: string; owner: string | null; source_url?: string | null; sections?: unknown };
+/** Finished, not expired videos with these ids, with the owner's username, newest first. */
+async function cardsOf(jobIds: string[]): Promise<Card[]> {
+  const ids = jobIds.filter((x) => /^[0-9a-f-]{36}$/.test(x)).slice(0, 300);
+  if (!ids.length) return [];
+  const jobs = await db(`explainer_jobs?id=in.(${ids.join(",")})&status=eq.done&expired_at=is.null&select=id,title,arxiv,langs,seconds,created_at,user_id,source_url,sections&order=created_at.desc`).catch(() => []) as (Card & { user_id: string })[];
+  const names = await handlesOf(jobs.map((j) => j.user_id));
+  return jobs.map(({ user_id, ...j }) => ({ ...j, sections: Array.isArray(j.sections) ? (j.sections as { poster?: string }[]).filter((x) => x?.poster).slice(0, 1).map((x) => ({ poster: x.poster })) : null, owner: names[user_id] ?? null }));
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -178,10 +219,45 @@ Deno.serve(async (req) => {
       }
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
-        const rows = await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`);
-        const edits = await db(`explainer_events?user_id=eq.${user.id}&type=eq.edit&select=meta&limit=500`).catch(() => []);
+        const [rows, edits] = await Promise.all([
+          db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`),
+          db(`explainer_events?user_id=eq.${user.id}&type=eq.edit&select=meta&limit=500`).catch(() => []),
+        ]);
         const editJobs = new Set((edits as { meta: { job?: string } }[]).map((e) => String(e.meta?.job ?? "")));
-        return json((rows as { id: string }[]).map((r) => ({ ...r, is_edit: editJobs.has(r.id) })));
+        const vis = await visibilityOf((rows as { id: string }[]).map((r) => r.id));
+        return json((rows as { id: string }[]).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private" })));
+      }
+      if (u.searchParams.get("explore")) {   // public videos, newest first, for everyone (no sign-in needed); ?lang= narrows to one narration language
+        const lang = str(u.searchParams.get("lang"), 5);
+        const pub = await db(`explainer_events?type=eq.visibility&meta->>v=eq.public&select=meta&order=created_at.desc&limit=600`).catch(() => []) as Ev[];
+        const ids = [...new Set(pub.map((e) => String(e.meta.job)))];
+        const vis = await visibilityOf(ids);
+        let cards = await cardsOf(ids.filter((id) => vis[id] === "public"));
+        if (lang) cards = cards.filter((c) => (c.langs === "both" ? ["en", "zh"] : [c.langs || "en"]).includes(lang));
+        const langs = [...new Set(cards.flatMap((c) => (c.langs === "both" ? ["en", "zh"] : [c.langs || "en"])))];
+        return json({ videos: cards.slice(0, 120), langs });
+      }
+      if (u.searchParams.get("social")) {   // the member's friends with what each is learning, requests waiting for an answer, and friends who joined by the invite link
+        if (!user) return json({ error: "Sign in first." }, 401);
+        const [ids, reqs] = await Promise.all([
+          friendIds(user.id),
+          db(`explainer_events?user_id=eq.${user.id}&type=in.(friend_req,friend_req_done)&select=id,type,meta,created_at&order=created_at.asc&limit=500`).catch(() => []) as Promise<Ev[]>,
+        ]);
+        const open = new Map<string, string>();
+        for (const e of reqs) { const f = String(e.meta?.from ?? ""); if (e.type === "friend_req") open.set(f, e.created_at); else open.delete(f); }
+        for (const f of ids) open.delete(f);
+        const [names, vEvs] = await Promise.all([
+          handlesOf([...ids, ...open.keys()]),
+          ids.length ? db(`explainer_events?type=eq.visibility&user_id=in.(${ids.join(",")})&select=user_id,meta,created_at&order=created_at.asc&limit=2000`).catch(() => []) as Promise<Ev[]> : Promise.resolve([] as Ev[]),
+        ]);
+        const latest = new Map<string, { v: string; owner: string }>();
+        for (const e of vEvs) latest.set(String(e.meta.job), { v: String(e.meta.v), owner: e.user_id });
+        const shown = [...latest.entries()].filter(([, x]) => x.v === "public" || x.v === "friends").map(([id]) => id);
+        const cards = await cardsOf(shown);
+        return json({
+          friends: ids.map((id) => ({ id, handle: names[id] ?? null, videos: cards.filter((c) => latest.get(c.id)?.owner === id).slice(0, 6) })),
+          requests: [...open.entries()].map(([from, at]) => ({ from, handle: names[from] ?? null, at })),
+        });
       }
       if (u.searchParams.get("orders")) {   // the member's own orders, newest first, for the billing page
         if (!user) return json({ error: "Sign in first." }, 401);
@@ -200,12 +276,15 @@ Deno.serve(async (req) => {
         if (!user) return json({ error: "Sign in first." }, 401);
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
-      const pi = await planInfo(user?.id);
-      const iu = await interactiveUse(user, actor, user ? await activePlan(user.id) : null);
-      const usage = await usageOf(user, actor, user ? await activePlan(user.id) : null);
+      // everything the app needs about this person, asked of the database at the same time (one round trip instead of a dozen)
+      const [pi, plan] = await Promise.all([planInfo(user?.id), user ? activePlan(user.id) : Promise.resolve(null)]);
+      const [iu, usage, su, offer, verify, referral, pu, quota] = await Promise.all([
+        interactiveUse(user, actor, plan), usageOf(user, actor, plan),
+        user ? db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).then((x: unknown[]) => x[0] as { meta?: { country?: string } } | undefined).catch(() => undefined) : Promise.resolve(undefined),
+        welcomeOffer(user), verifyOf(user), referralOf(user), user ? publicUserH(user) : Promise.resolve(null), quotaFor(user, actor),
+      ]);
       // the country given at sign-up: the pricing page shows that money first
-      const [su] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).catch(() => []) : [];
-      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, offer: await welcomeOffer(user), verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, offer, verify, referral, admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: pu, quota, limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -218,7 +297,7 @@ Deno.serve(async (req) => {
       const user = await userOf(req);
       await logEvent(actor, type, type === "leave"
         ? { path: str(body.path, 80), sec: Math.max(0, Math.min(7200, Math.round(Number(body.sec) || 0))), sid: str(body.sid, 12), pages: Math.max(1, Math.min(200, Math.round(Number(body.pages) || 1))) }
-        : { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), country: (type === "visit" ? await geoOf(req) : "") }, user?.id ?? null);
+        : { path: str(body.path, 80), ref: str(body.ref, 80), arxiv: str(body.arxiv, 60), k: str(body.k, 12), ...(type === "visit" ? { country: await geoOf(req), iph: await sha(`${clientIp(req)}|explainer-ip`, 6) } : {}) }, user?.id ?? null);
       return json({ ok: true });
     }
 
@@ -270,6 +349,49 @@ Deno.serve(async (req) => {
       return json({ ok: true, verify: { role, status: "pending" } });
     }
 
+    if (op === "set_visibility") {   // who can find one of the member's own videos
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const job = String(body.job ?? ""), v = String(body.v ?? "");
+      if (!/^[0-9a-f-]{36}$/.test(job) || !VIS.includes(v)) return json({ error: "Choose private, friends or public." }, 400);
+      const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id`).catch(() => []);
+      if (!own) return json({ error: "Only the person who made a video can change who sees it." }, 403);
+      await logEvent("", "visibility", { job, v }, user.id);
+      return json({ ok: true, visibility: v });
+    }
+    if (op === "friend_add" || op === "friend_answer" || op === "friend_remove") {
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      if (op === "friend_remove") {
+        const other = String(body.id ?? "");
+        if (!/^[0-9a-f-]{36}$/.test(other)) return json({ error: "Unknown friend." }, 400);
+        await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify([{ actor: "", type: "unfriend", user_id: user.id, meta: { other } }, { actor: "", type: "unfriend", user_id: other, meta: { other: user.id } }]) });
+        return json({ ok: true });
+      }
+      if (op === "friend_answer") {
+        const from = String(body.from ?? "");
+        if (!/^[0-9a-f-]{36}$/.test(from)) return json({ error: "Unknown request." }, 400);
+        const asked = await count(`explainer_events?user_id=eq.${user.id}&type=eq.friend_req&meta->>from=eq.${from}`).catch(() => 0);
+        if (!asked) return json({ error: "That request was not found." }, 404);
+        await logEvent("", "friend_req_done", { from, accepted: body.accept === true }, user.id);
+        if (body.accept === true && !(await friendIds(user.id)).includes(from)) await befriend(user.id, from, "request");
+        return json({ ok: true });
+      }
+      const h = str(body.handle, 40).trim().toLowerCase().replace(/^@/, "");
+      if (!HANDLE_RE.test(h)) return json({ error: "Write their username (3 to 24 letters, numbers, dots or underscores)." }, 400);
+      const target = await resolveIdent(h);
+      const [t] = target.includes("@") ? await db(`explainer_users?username=eq.${encodeURIComponent(target)}&select=id,banned`).catch(() => []) : [];
+      if (!t || t.banned) return json({ error: "No member has that username.", code: "no_user" }, 404);
+      if (t.id === user.id) return json({ error: "That is your own username." }, 400);
+      if ((await friendIds(user.id)).includes(t.id)) return json({ ok: true, state: "friends" });
+      // they asked me already: this answers it
+      const theyAsked = await count(`explainer_events?user_id=eq.${user.id}&type=eq.friend_req&meta->>from=eq.${t.id}`).catch(() => 0);
+      if (theyAsked) { await logEvent("", "friend_req_done", { from: t.id, accepted: true }, user.id); await befriend(user.id, t.id, "request"); return json({ ok: true, state: "friends" }); }
+      if ((await count(`explainer_events?actor=eq.${user.id}&type=eq.friend_req&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`).catch(() => 0)) >= 30) return json({ error: "That is a lot of requests today. Try again tomorrow.", code: "slow_down" }, 429);
+      await logEvent(user.id, "friend_req", { from: user.id }, t.id);
+      return json({ ok: true, state: "sent" });
+    }
+
     if (op === "profile_save") {
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);
@@ -293,45 +415,60 @@ Deno.serve(async (req) => {
       const username = str(body.email ?? body.username, 80).trim().toLowerCase(), password = String(body.password ?? "");
       if (!EMAIL.test(username) || username.length > 80) return json({ error: "Enter a valid email address." }, 400);
       let handle = str(body.handle, 24).trim().toLowerCase();
-      if (handle) {
-        if (!HANDLE_RE.test(handle) || RESERVED.has(handle)) return json({ error: "Username: 3 to 24 letters, numbers, dots or underscores.", code: "bad_handle" }, 400);
-        if (await handleTaken(handle)) return json({ error: "That username is taken. Choose another one.", code: "handle_taken" }, 409);
-      }
+      if (handle && (!HANDLE_RE.test(handle) || RESERVED.has(handle))) return json({ error: "Username: 3 to 24 letters, numbers, dots or underscores.", code: "bad_handle" }, 400);
       const country = str(body.country, 2).toUpperCase(), plang = str(body.lang, 2).toLowerCase();
       if (!/^[A-Z]{2}$/.test(country)) return json({ error: "Choose your country.", code: "need_country" }, 400);
       if (!["en", "zh", "vi", "id"].includes(plang)) return json({ error: "Choose your preferred language.", code: "need_lang" }, 400);
       if (password.length < 8 || password.length > 72) return json({ error: "Password: 8 to 72 characters." }, 400);
-      if (await count(`explainer_events?actor=eq.${actor}&type=eq.signup&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`) >= 3) return json({ error: "Too many sign-ups from here. Try again later." }, 429);
       // the visitor id comes from the browser, so sign-ups are also counted per network address (generous, for shared campus connections)
       const ipActor = await sha(`${clientIp(req)}|explainer-ip`);
-      if (await count(`explainer_events?actor=eq.${ipActor}&type=eq.signup_ip&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`) >= 10) return json({ error: "Too many sign-ups from this network today. Try again tomorrow." }, 429);
-      if ((await db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id`)).length) return json({ error: "That email already has an account. Log in instead." }, 409);
-      const { salt, hash } = await hashPassword(password);
-      const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt, pass_hash: hash, credits: WELCOME_CREDITS, last_login: new Date().toISOString() }) });
-      await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }) });
-      if (!handle) handle = await suggestHandle(username);
-      await logEvent("", "handle", { handle }, user.id);
-      await logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: await geoOf(req) }, user.id);
       const rc = String(body.ref ?? "").toLowerCase();
-      if (/^[0-9a-f]{8}$/.test(rc)) {   // came through a friend's link: the friend gets free videos (a few per friend, never from the same browser)
-        try {
-          const [inv] = await db(`explainer_users?id=gte.${rc}-0000-0000-0000-000000000000&id=lte.${rc}-ffff-ffff-ffff-ffffffffffff&select=id,credits&limit=1`);
-          const same = inv ? await count(`explainer_events?actor=eq.${actor}&user_id=eq.${inv.id}&type=eq.signup`) : 1;
-          const done = inv ? await count(`explainer_events?user_id=eq.${inv.id}&type=eq.referral`) : REFERRAL_MAX;
-          if (inv && !same && done < REFERRAL_MAX && inv.id !== user.id) {
-            await db(`explainer_users?id=eq.${inv.id}`, { method: "PATCH", body: JSON.stringify({ credits: inv.credits + REFERRAL_VIDEOS }) });
-            await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: inv.id, delta: REFERRAL_VIDEOS, reason: "friend joined" }) });
-            await logEvent(actor, "referral", { friend: user.id }, inv.id);
-          }
-        } catch { /* a failed reward never blocks a sign-up */ }
+      // every check at once: the limits, the address, the username, the country of the connection, the friend's link, and the password hash
+      const [perBrowser, perNet, existing, taken, ipCountry, inviter, pw] = await Promise.all([
+        count(`explainer_events?actor=eq.${actor}&type=eq.signup&created_at=gte.${new Date(Date.now() - 3600_000).toISOString()}`),
+        count(`explainer_events?actor=eq.${ipActor}&type=eq.signup_ip&created_at=gte.${new Date(Date.now() - 86400_000).toISOString()}`),
+        db(`explainer_users?username=eq.${encodeURIComponent(username)}&select=id`),
+        handle ? handleTaken(handle) : Promise.resolve(false),
+        geoOf(req),
+        /^[0-9a-f]{8}$/.test(rc) ? (async () => {
+          const [inv] = await db(`explainer_users?id=gte.${rc}-0000-0000-0000-000000000000&id=lte.${rc}-ffff-ffff-ffff-ffffffffffff&select=id,credits&limit=1`).catch(() => []);
+          if (!inv) return null;
+          const [same, done] = await Promise.all([count(`explainer_events?actor=eq.${actor}&user_id=eq.${inv.id}&type=eq.signup`), count(`explainer_events?user_id=eq.${inv.id}&type=eq.referral`)]);
+          return !same && done < REFERRAL_MAX ? inv as { id: string; credits: number } : null;   // never from the inviter's own browser, at most 5 friends
+        })().catch(() => null) : Promise.resolve(null),
+        hashPassword(password),
+      ]);
+      if (perBrowser >= 3) return json({ error: "Too many sign-ups from here. Try again later." }, 429);
+      if (perNet >= 10) return json({ error: "Too many sign-ups from this network today. Try again tomorrow." }, 429);
+      if ((existing as unknown[]).length) return json({ error: "That email already has an account. Log in instead." }, 409);
+      if (taken) return json({ error: "That username is taken. Choose another one.", code: "handle_taken" }, 409);
+      const bonus = inviter ? REFERRAL_VIDEOS : 0;
+      const [user] = await db("explainer_users?select=id,username,credits,created_at", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ username, salt: pw.salt, pass_hash: pw.hash, credits: WELCOME_CREDITS + bonus, last_login: new Date().toISOString() }) });
+      if (!handle) handle = await suggestHandle(username);
+      const later: Promise<unknown>[] = [
+        db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify([{ user_id: user.id, delta: WELCOME_CREDITS, reason: "welcome gift" }, ...(bonus ? [{ user_id: user.id, delta: bonus, reason: "joined with a friend's link" }] : [])]) }),
+        logEvent("", "handle", { handle }, user.id),
+        logEvent(actor, "signup", { username, country, lang: plang, source: str(body.source, 24), role: str(body.role, 24), ip_country: ipCountry, ref: inviter ? inviter.id : "" }, user.id),
+        logEvent(ipActor, "signup_ip", {}, user.id),
+      ];
+      if (inviter && inviter.id !== user.id) {
+        later.push((async () => {
+          await db(`explainer_users?id=eq.${inviter.id}`, { method: "PATCH", body: JSON.stringify({ credits: inviter.credits + REFERRAL_VIDEOS }) });
+          await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: inviter.id, delta: REFERRAL_VIDEOS, reason: "friend joined" }) });
+          await logEvent(actor, "referral", { friend: user.id }, inviter.id);
+          await befriend(inviter.id, user.id, "invite");
+        })().catch(() => undefined));   // a failed reward never blocks a sign-up
       }
-      await logEvent(ipActor, "signup_ip", {}, user.id);
+      await Promise.all(later);
+      const pub = { ...publicUser(user), handle };
       if (mailReady()) {
-        try { await sendLink(user, "verify", plang, str(body.app, 16)); return json({ pending: true, email: username, user: await publicUserH(user) }); }
+        try { await sendLink(user, "verify", plang, str(body.app, 16)); return json({ pending: true, email: username, user: pub }); }
         catch { await logEvent(actor, "mail_fail", { kind: "verify" }, user.id); /* never lock a new member out because the mail provider failed */ }
       }
       const token = await newSession(user.id);
-      return json({ token, user: await publicUserH(user), quota: await quotaFor(user, actor) });
+      // a brand-new account has made nothing yet, so its allowance is known without asking the database
+      const quota: Quota = { tier: "member", period: "week", day_limit: isAdmin(user) ? 9999 : MEMBER_WEEK, day_used: 0, day_left: isAdmin(user) ? 9999 : MEMBER_WEEK, credits: user.credits, resets_in_min: null };
+      return json({ token, user: pub, quota, friend_bonus: bonus });
     }
 
     if (op === "verify_email") {
@@ -387,10 +524,12 @@ Deno.serve(async (req) => {
       if (!ok) { await logEvent(actor, "login_fail", { username }); return json({ error: "Wrong email or password." }, 401); }
       if (row.banned) return json({ error: "This account is disabled. Please contact us." }, 403);
       if (mailReady() && !(await isVerified(row))) return json({ error: "Please confirm your e-mail first. We sent you a link.", code: "need_verify", email: row.username }, 403);
-      await db(`explainer_users?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ last_login: new Date().toISOString() }) });
-      await logEvent(actor, "login", {}, row.id);
-      const token = await newSession(row.id);
-      return json({ token, user: await publicUserH(row), quota: await quotaFor(row, actor) });
+      const [token, pu, quota] = await Promise.all([
+        newSession(row.id), publicUserH(row), quotaFor(row, actor),
+        db(`explainer_users?id=eq.${row.id}`, { method: "PATCH", body: JSON.stringify({ last_login: new Date().toISOString() }) }),
+        logEvent(actor, "login", {}, row.id),
+      ]);
+      return json({ token, user: pu, quota });
     }
 
     const user = await userOf(req);
