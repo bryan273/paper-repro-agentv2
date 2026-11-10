@@ -3,6 +3,7 @@
 //          orders, feedback, LLM usage by app and day, and the balance left at the model gateway (RKAPI).
 // Changing things (credits, bans, order status, proofs) goes through explainer-admin; storage sizes come from its `ops` answer. This function only reads.
 import { CORS, json, db, count, userOf, isAdmin } from "../_shared/explainer.ts";
+import { mailReady, sendMail } from "../_shared/mail.ts";
 
 const DAY = 86400_000;
 const iso = (ms: number) => new Date(Date.now() - ms).toISOString();
@@ -64,17 +65,60 @@ const PRICE = { fast: { in: Number(Deno.env.get("PRICE_FAST_IN") ?? "1"), out: N
 const usdOf = (tokens: number, tier: "fast" | "deep") => (tokens * 0.9 * PRICE[tier].in + tokens * 0.1 * PRICE[tier].out) / 1e6;
 const HOUR = 3600_000;
 
+/** Where visitors go, per day: how many came, how many looked at something (pricing, an example), how many tried something (make, sign-up, buy), how many claimed a payment,
+ *  and how long they stayed (a visit saves its active seconds when the page is left; the longest figure of a visit counts). Only visits since this was added have a time. */
+function funnelOf(visits: any[], acts: any[], leaves: any[], _keep: (e: string) => boolean) {
+  const LOOK = new Set(["view_pricing", "view_example", "play_example"]), TRY = new Set(["click_make", "open_signup", "click_buy", "order_created", "video_play"]);
+  const day = (iso: string) => String(iso).slice(0, 10);
+  const days = new Map<string, { looked: Set<string>; tried: Set<string>; claimed: Set<string>; engaged: Set<string>; n: number; sec: number; b: number[] }>();
+  const at = (d: string) => { let x = days.get(d); if (!x) { x = { looked: new Set(), tried: new Set(), claimed: new Set(), engaged: new Set(), n: 0, sec: 0, b: [0, 0, 0, 0, 0] }; days.set(d, x); } return x; };
+  for (const e of acts) {
+    const x = at(day(e.created_at));
+    if (LOOK.has(e.type)) { x.looked.add(e.actor); x.engaged.add(e.actor); }
+    if (TRY.has(e.type)) { x.tried.add(e.actor); x.engaged.add(e.actor); }
+    if (e.type === "order_paid_claimed") x.claimed.add(e.actor);
+  }
+  const longest = new Map<string, { d: string; sec: number }>();
+  for (const e of leaves) { const k = `${e.actor}:${e.meta?.sid ?? day(e.created_at)}`; const sec = Math.min(Number(e.meta?.sec) || 0, 7200); const cur = longest.get(k); if (!cur || sec > cur.sec) longest.set(k, { d: day(e.created_at), sec }); }
+  for (const { d, sec } of longest.values()) { const x = at(d); x.n++; x.sec += sec; x.b[sec < 10 ? 0 : sec < 30 ? 1 : sec < 60 ? 2 : sec < 180 ? 3 : 4]++; }
+  return [...days.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([d, x]) => ({ d, looked: x.looked.size, tried: x.tried.size, claimed: x.claimed.size, engaged: x.engaged.size, n: x.n, sec: x.sec, b: x.b }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
-    if (req.method !== "GET") return json({ error: "GET only" }, 405);
+    if (req.method !== "GET" && req.method !== "POST") return json({ error: "GET or POST only" }, 405);
     const user = await userOf(req);
     if (!user) return json({ error: "Sign in with an admin account (Log in, top right)." }, 401);
     if (!isAdmin(user)) return json({ error: "This account is not an admin." }, 403);
+
+    // Reply to a message from the contact form or the support chat. A member finds it in their inbox in the app (and gets an e-mail when e-mail is set up);
+    // a visitor who left an e-mail address gets it by e-mail; if neither is possible the answer says so.
+    if (req.method === "POST") {
+      const b = await req.json().catch(() => ({}));
+      if (b.op !== "reply") return json({ error: "unknown op" }, 400);
+      const text = String(b.text ?? "").trim().slice(0, 2000);
+      if (text.length < 2 || !/^[0-9a-f-]{36}$/.test(String(b.id))) return json({ error: "Write a reply first." }, 400);
+      const [msg] = await db(`explainer_feedback?id=eq.${b.id}&select=id,email,comment`).catch(() => []) as { id: string; email: string; comment: string }[];
+      if (!msg) return json({ error: "That message was not found." }, 404);
+      const to = String(msg.email ?? "").trim();
+      let uid: string | null = null, mailTo = "";
+      if (to.startsWith("@")) {
+        const [u] = await db(`explainer_users?username=eq.${encodeURIComponent(to.slice(1))}&select=id,username`).catch(() => []) as { id: string; username: string }[];
+        if (u) { uid = u.id; mailTo = u.username; }
+      } else if (to.includes("@")) mailTo = to;
+      await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "admin", type: "reply", user_id: uid, meta: { fid: msg.id, text, to, about: String(msg.comment ?? "").slice(0, 160) } }) });
+      let mailed = false;
+      if (mailTo.includes("@") && mailReady()) {
+        const plain = `${text}\n\n---\nYou wrote: ${String(msg.comment ?? "").slice(0, 400)}`;
+        mailed = await sendMail(mailTo, "Paperlit: a reply to your message", `<pre style="font:14px/1.5 system-ui;white-space:pre-wrap">${plain.replace(/[<&]/g, (c) => (c === "<" ? "&lt;" : "&amp;"))}</pre>`, plain).then(() => true).catch(() => false);
+      }
+      return json({ ok: true, delivered: uid ? (mailed ? "inbox and e-mail" : "inbox") : mailed ? "e-mail" : "nowhere", note: uid || mailed ? "" : "This person left no e-mail address and has no account, so the reply could not be delivered." });
+    }
     const qaView = String(user.username).toLowerCase() === QA_ADMIN;
 
     const since30 = iso(30 * DAY), sinceN = iso(DAYS * DAY), since7 = iso(7 * DAY);
-    const [users, jobsRecent, jobsAll, usage, reproRecent, reproAll, orders, feedback, plans, signups, visits, handleEvs, asks30, visits7, research30, edits30] = await Promise.all([
+    const [users, jobsRecent, jobsAll, usage, reproRecent, reproAll, orders, feedback, plans, signups, visits, handleEvs, asks30, visits7, research30, edits30, actEvs, leaveEvs, replyEvs] = await Promise.all([
       safe(db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=3000"), [] as any[]),
       safe(db("explainer_jobs?select=id,arxiv,title,status,stage,user_id,seconds,langs,cost_usd,error,created_at&order=created_at.desc&limit=400"), [] as any[]),
       safe(db(`explainer_jobs?select=created_at,status,langs,seconds,cost_usd,user_id&created_at=gte.${sinceN}&order=created_at.desc&limit=20000`), [] as any[]),
@@ -91,6 +135,9 @@ Deno.serve(async (req) => {
       safe(count(`explainer_events?created_at=gte.${since7}&type=eq.visit`), 0),
       safe(db(`explainer_events?type=eq.research&select=user_id,created_at&created_at=gte.${since30}&limit=20000`), [] as any[]),
       safe(db(`explainer_events?type=eq.edit&select=user_id,meta,created_at&created_at=gte.${since30}&limit=20000`), [] as any[]),
+      safe(db(`explainer_events?type=in.(view_pricing,view_example,play_example,click_make,open_signup,click_buy,order_created,order_paid_claimed,video_play)&select=actor,type,created_at&created_at=gte.${sinceN}&limit=40000`), [] as any[]),
+      safe(db(`explainer_events?type=eq.leave&select=actor,meta,created_at&created_at=gte.${sinceN}&limit=40000`), [] as any[]),
+      safe(db("explainer_events?type=eq.reply&select=meta,created_at&order=created_at.desc&limit=1000"), [] as any[]),
     ]);
     const rkapi = await rkapiBalance();
     const spend = await safe(rkapiSpend(rkapi), null);
@@ -191,7 +238,8 @@ Deno.serve(async (req) => {
       signup_rows: signupRows,
       visit_country: visitCountry,
       llm: Object.values(llmRows),
-      feedback: F,
+      feedback: F.map((f: any) => { const rep = (replyEvs as any[]).find((e) => e.meta?.fid === f.id); return { ...f, reply: rep ? { text: rep.meta.text, at: rep.created_at } : null }; }),
+      funnel: funnelOf(visits, actEvs, leaveEvs, keepE),
       costs,
       asks_7d: A.filter((a: any) => a.created_at >= since7).length,
       visits_7d: visits7,
