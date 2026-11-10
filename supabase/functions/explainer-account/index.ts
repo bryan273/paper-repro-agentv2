@@ -22,6 +22,15 @@ const LOCAL: Record<string, { vnd: number; idr: number }> = {
   plus_month: { vnd: 79000, idr: 69000 }, plus_year: { vnd: 790000, idr: 690000 }, pro_month: { vnd: 149000, idr: 129000 }, pro_year: { vnd: 1490000, idr: 1290000 },
   premium_month: { vnd: 269000, idr: 239000 }, premium_year: { vnd: 2690000, idr: 2390000 },
 };
+// A real welcome offer: the first monthly plan a new member buys within 72 hours of signing up costs 40% less for that first month. The server applies it, so the price on the page is the price charged; the second month is the regular price.
+const WELCOME_PCT = 40, WELCOME_HOURS = 72;
+const welcomeOffer = async (u: { username: string; created_at: string } | null): Promise<{ pct: number; ends_at: string } | null> => {
+  if (!u) return null;
+  const ends = Date.parse(u.created_at) + WELCOME_HOURS * 3600_000;
+  if (!(Date.now() < ends)) return null;
+  const prior = await count(`explainer_orders?email=eq.${encodeURIComponent(`@${u.username}`)}&arxiv=like.plan*&status=in.(paid_claimed,paid,delivered)`).catch(() => 0);
+  return prior > 0 ? null : { pct: WELCOME_PCT, ends_at: new Date(ends).toISOString() };
+};
 const planOf = async (userId: string | undefined): Promise<string | null> => {
   if (!userId) return null;
   const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
@@ -191,7 +200,7 @@ Deno.serve(async (req) => {
       const usage = await usageOf(user, actor, user ? await activePlan(user.id) : null);
       // the country given at sign-up: the pricing page shows that money first
       const [su] = user ? await db(`explainer_events?user_id=eq.${user.id}&type=eq.signup&select=meta&limit=1`).catch(() => []) : [];
-      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
+      return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, offer: await welcomeOffer(user), verify: await verifyOf(user), referral: await referralOf(user), admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: user ? await publicUserH(user) : null, quota: await quotaFor(user, actor), limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 
     const body = await req.json();
@@ -432,8 +441,10 @@ ${message}`;
       if (!pack) return json({ error: "Unknown pack." }, 400);
 const cur = body.currency === "vnd" || body.currency === "idr" ? body.currency as "vnd" | "idr" : "cny";
       const loc = LOCAL[plan || `pack_${String(body.pack)}`];
-      const amt = cur === "cny" || !loc ? pack.price : loc[cur];
-      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""} cur:${cur} amt:${amt}`, status: "new" }) });
+      const regular = cur === "cny" || !loc ? pack.price : loc[cur];
+      const offer = plan.endsWith("_month") ? await welcomeOffer(user) : null;
+      const amt = offer ? (cur === "cny" ? Math.round(regular * (100 - offer.pct) / 100) : Math.round(regular * (100 - offer.pct) / 100 / 1000) * 1000) : regular;
+      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""} cur:${cur} amt:${amt}${offer ? " offer:welcome" : ""}`, status: "new" }) });
       await logEvent(actor, "order_created", { pack: pack.credits, price: pack.price }, user.id);
       return json({ id: order.id, price: pack.price, credits: pack.credits, currency: cur, amount: amt });
     }
