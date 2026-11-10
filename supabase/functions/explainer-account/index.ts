@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
       if (u.searchParams.get("whereami")) return json({ country: (await geoOf(req)) || null });   // the caller's own country as the network reports it
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
-        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,created_at,expired_at&order=created_at.desc&limit=100`));
+        return json(await db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`));
       }
       if (u.searchParams.get("orders")) {   // the member's own orders, newest first, for the billing page
         if (!user) return json({ error: "Sign in first." }, 401);
