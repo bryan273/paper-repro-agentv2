@@ -355,7 +355,8 @@ Deno.serve(async (req) => {
       const job = String(body.job ?? ""), v = String(body.v ?? "");
       if (!/^[0-9a-f-]{36}$/.test(job) || !VIS.includes(v)) return json({ error: "Choose private, friends or public." }, 400);
       const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id`).catch(() => []);
-      if (!own) return json({ error: "Only the person who made a video can change who sees it." }, 403);
+      // an admin may also list any finished video in Explore (the examples on the landing page belong to no account)
+      if (!own && !isAdmin(user)) return json({ error: "Only the person who made a video can change who sees it." }, 403);
       await logEvent("", "visibility", { job, v }, user.id);
       return json({ ok: true, visibility: v });
     }
