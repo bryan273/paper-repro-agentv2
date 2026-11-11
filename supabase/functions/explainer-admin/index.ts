@@ -3,6 +3,7 @@
 // answers for an address on the admin list, so no shared password or extra secret is involved.
 //   GET                                      -> { me, counts, perDay, jobs, orders, feedback }
 //   POST {op:"grant_plan", username, plan, days} -> { ok, until }   a plan given free by the owner
+//   POST {op:"revoke_plan", username} -> { ok }   ends the member's plan now
 //   POST {op:"order_status", id, status}     -> { ok }   status: new | paid_claimed | paid | delivered | cancelled
 import { mailReady, sendMail } from "../_shared/mail.ts";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
@@ -175,6 +176,12 @@ Deno.serve(async (req) => {
         const until = new Date(Date.now() + days * 86400_000).toISOString();
         await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: usr.id, meta: { plan, until, source: "admin" } }) });
         return json({ ok: true, until });
+      }
+      if (body.op === "revoke_plan") {   // ends a member's plan now (a gift or a mistake): a newer plan record that is already over
+        const [usr] = await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}&select=id`);
+        if (!usr) return json({ error: "no such user" }, 404);
+        await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: usr.id, meta: { plan: "plus", until: new Date(Date.now() - 1000).toISOString(), source: "admin" } }) });
+        return json({ ok: true });
       }
       if (body.op === "ban") {
         await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}`, { method: "PATCH", body: JSON.stringify({ banned: !!body.banned }) });
