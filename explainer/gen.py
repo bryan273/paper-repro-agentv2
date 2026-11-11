@@ -79,6 +79,87 @@ def ensure_readable(text, what="document"):
     if cjk < len(chars) * 0.2 and len(latin_words) < min(80, max(25, len(chars) // 9)): raise RuntimeError(msg)
     return text
 
+_OCR = {}   # PDF bytes hash -> text of each page, so a scanned PDF is read once for the script and the answers
+OCR_PAGES = 40   # a 40 page cut is far more than the script reads (60,000 characters) and keeps the cost of one scanned document to a few cents
+
+def ocr_pages(data, limit=OCR_PAGES):
+    """A scanned PDF has pictures of pages and no text. Read the pages with a small vision model (the same RKAPI key as the script), several at once.
+    Returns the text of each page ('' for one that could not be read). Cached by content, so asking twice costs nothing."""
+    import hashlib, base64, concurrent.futures
+    h = hashlib.sha1(data).hexdigest()
+    if h in _OCR: return _OCR[h]
+    key = ENV.get("RKAPI_API_KEY")
+    if not key: raise RuntimeError("no key for reading scanned pages")
+    import fitz
+    doc = fitz.open(stream=data, filetype="pdf")
+    n = min(len(doc), limit)
+    model = ENV.get("OCR_MODEL") or os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001")
+    base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
+    ask = ("Transcribe all the text on this scanned page exactly as printed, in its own language, keeping every diacritic, number, date and legal reference (for example Dieu, Khoan, Muc). "
+           "Keep headings and numbering on their own lines. Write a table as one row per line with ' | ' between the cells. Ignore stamps, signatures and page decoration. "
+           "Output only the transcription, nothing else. If the page has no text, output nothing.")
+    def one(i):
+        pix = doc[i].get_pixmap(dpi=130)
+        txt = vlm(ask, base64.b64encode(pix.tobytes("jpeg")).decode(), "image/jpeg", 2600, "ocr", i + 1)
+        return re.sub(r"[ \t]+", " ", txt)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex: pages = list(ex.map(one, range(n)))
+    print("ocr: read", sum(1 for p in pages if p), "of", n, "scanned pages with", model)
+    _OCR[h] = pages
+    return pages
+
+def vlm(ask, b64, mime, max_tokens, tag, label=""):
+    """One question about one picture to the small vision model (RKAPI, same key as the script). Returns '' when it could not be read; the call is logged for the cost page."""
+    key = ENV.get("RKAPI_API_KEY")
+    if not key: return ""
+    model = ENV.get("OCR_MODEL") or os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001")
+    base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
+    body = json.dumps({"model": model, "max_tokens": max_tokens, "temperature": 0,
+                       "messages": [{"role": "user", "content": [{"type": "text", "text": ask}, {"type": "image_url", "image_url": {"url": "data:" + mime + ";base64," + b64}}]}]}).encode()
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(base + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
+            out = json.load(urllib.request.urlopen(req, timeout=120))
+            txt = (out["choices"][0]["message"]["content"] or "").strip()
+            if not txt and attempt == 0: continue   # an empty answer is more often a hiccup than a blank picture: ask once more
+            try:
+                import usage as _u
+                u = out.get("usage") or {}
+                _u.rec(model, u.get("prompt_tokens"), u.get("completion_tokens"), "", txt, tag)
+            except Exception: pass
+            return txt
+        except Exception as e:
+            if attempt == 2: print(tag, label, "failed:", str(e)[:100]); return ""
+            time.sleep(2 + attempt * 3)
+    return ""
+
+def describe_figures(figs, out, limit=8):
+    """What each cropped figure shows, in a sentence or two with its key values, so the script can use what a chart says and not only its caption. A few cents at most; a figure that cannot be read keeps its caption."""
+    import base64, concurrent.futures
+    todo = [f for f in figs if f.get("file")][:limit]
+    if not todo or not ENV.get("RKAPI_API_KEY"): return
+    ask = ("This is a figure from a document. In at most two short sentences, say what it shows: the kind of chart or diagram, what is compared, and the main values or trend you can actually read. "
+           "Write in the language of the caption. Do not guess anything you cannot see. Output only those sentences.")
+    def one(f):
+        try: data = open(os.path.join(out, f["file"]), "rb").read()
+        except Exception: return
+        d = vlm(ask + " Caption: " + (f.get("caption") or ""), base64.b64encode(data).decode(), "image/png", 220, "figdesc", f["id"])
+        if d: f["desc"] = re.sub(r"\s+", " ", d)[:400]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex: list(ex.map(one, todo))
+    print("figure notes:", sum(1 for f in todo if f.get("desc")), "of", len(todo))
+
+def pdf_text_or_ocr(data, text):
+    """The text layer if it is enough; else (a scan, or a layer of noise) the pages read with the vision model. Returns the text, or the same text if nothing better could be had."""
+    try:
+        ensure_readable(text, "PDF")
+        if len(text) >= 1500: return text
+    except RuntimeError: pass
+    try:
+        pages = ocr_pages(data)
+    except Exception as e:
+        print("ocr skipped:", str(e)[:120]); return text
+    got = re.sub(r"[ \t]+", " ", "\n".join(pages)).strip()
+    return got if len(got) > len(text) else text
+
 def paper_url(url):
     """Any paper that is not on arXiv: a direct PDF, a paper page, or a DOI. Returns (title, abstract, text)."""
     safe_url(url)
@@ -88,6 +169,7 @@ def paper_url(url):
     if "pdf" in ctype or data[:5] == b"%PDF-" or url.lower().split("?")[0].endswith(".pdf"):
         import fitz
         doc = fitz.open(stream=data, filetype="pdf"); text = "\n".join(p.get_text() for p in doc)
+        text = pdf_text_or_ocr(data, text)
         title = (doc.metadata or {}).get("title") or ""
         if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     else:
@@ -108,8 +190,12 @@ def page_texts(data):
     """The text of each page of a PDF (so an answer or a scene can say which page its sentence is on). Best effort: [] if the PDF cannot be read."""
     try:
         import fitz
+        import hashlib
         doc = fitz.open(stream=data, filetype="pdf")
-        return [re.sub(r"\s+", " ", p.get_text().replace(chr(0), " ")).strip()[:7000] for p in doc][:60]
+        got = [re.sub(r"\s+", " ", p.get_text().replace(chr(0), " ")).strip()[:7000] for p in doc][:60]
+        scanned = _OCR.get(hashlib.sha1(data).hexdigest())   # a scanned PDF was read for the script: reuse those pages
+        if scanned and sum(len(x) for x in scanned) > sum(len(x) for x in got): return [re.sub(r"\s+", " ", x).strip()[:7000] for x in scanned]
+        return got
     except Exception as e:
         print("page texts skipped:", str(e)[:100]); return []
 
@@ -163,10 +249,11 @@ def paper_file(path):
     try: doc = fitz.open(stream=data, filetype="pdf")
     except Exception: raise RuntimeError("That PDF could not be opened. It may be damaged or password protected.")
     text = "\n".join(p.get_text() for p in doc)
+    text = pdf_text_or_ocr(data, text)
     title = (doc.metadata or {}).get("title") or ""
     if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     text = re.sub(r"[ \t]+", " ", text).strip()
-    if len(text) < 1500: raise RuntimeError("Could not read enough text from that PDF. Scanned pages without text are not supported.")
+    if len(text) < 1500: raise RuntimeError("Could not read enough text from that PDF, even after reading it as pictures. Try a clearer scan, or paste the text instead.")
     ensure_readable(text, "PDF")
     return title[:200], text[:1500], text[:60000]
 
@@ -437,7 +524,7 @@ async def main():
             pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
             if pdf[:5] == b"%PDF-":
                 json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
-                FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS])
+                FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS]); describe_figures(FIGS, out)
         except Exception as e: print("pdf pages skipped:", str(e)[:100])
     except Exception as e:
         # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
@@ -462,7 +549,7 @@ async def main():
         def one(i, extra=""):
             sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note + extra)
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
-            figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" for f in FIGS)) if FIGS else ""
+            figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
             return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
         if prev:
             part = max(0, min(n - 1, a.edit_part))
