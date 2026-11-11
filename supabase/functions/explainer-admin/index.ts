@@ -2,6 +2,7 @@
 // The caller signs in with an emailed code (Supabase Auth); this function asks Auth who the token belongs to and only
 // answers for an address on the admin list, so no shared password or extra secret is involved.
 //   GET                                      -> { me, counts, perDay, jobs, orders, feedback }
+//   POST {op:"grant_plan", username, plan, days} -> { ok, until }   a plan given free by the owner
 //   POST {op:"order_status", id, status}     -> { ok }   status: new | paid_claimed | paid | delivered | cancelled
 import { mailReady, sendMail } from "../_shared/mail.ts";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
@@ -164,6 +165,16 @@ Deno.serve(async (req) => {
         if (!usr) return json({ error: "no such user" }, 404);
         await grant(usr.id, amount, String(body.reason ?? "").slice(0, 80) || "admin grant");
         return json({ ok: true });
+      }
+      if (body.op === "grant_plan") {   // a plan given by the owner, no payment: Plus, Pro or Premium for a number of days
+        const plan = String(body.plan ?? "");
+        const days = Math.round(Number(body.days ?? 31));
+        if (!["plus", "pro", "premium"].includes(plan) || !Number.isFinite(days) || days < 1 || days > 400) return json({ error: "bad request" }, 400);
+        const [usr] = await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}&select=id`);
+        if (!usr) return json({ error: "no such user" }, 404);
+        const until = new Date(Date.now() + days * 86400_000).toISOString();
+        await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: usr.id, meta: { plan, until, source: "admin" } }) });
+        return json({ ok: true, until });
       }
       if (body.op === "ban") {
         await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}`, { method: "PATCH", body: JSON.stringify({ banned: !!body.banned }) });
