@@ -109,6 +109,23 @@ d = os.path.join(ROOT, "out", arxiv)
 USER_ERROR_FILE = os.path.join(tempfile.gettempdir(), "explainer_user_error_%s.txt" % os.getpid())
 os.environ["USER_ERROR_FILE"] = USER_ERROR_FILE
 def run(*a): subprocess.run([sys.executable, *a], cwd=ROOT, check=True)
+
+def run_watched(*a):
+    """Run the script writer and, while it works, show the viewer what it is doing: it writes one line per event to PROGRESS_FILE and the last line becomes the job's stage."""
+    import time
+    pf = os.path.join(tempfile.gettempdir(), "explainer_progress_%s.txt" % os.getpid())
+    open(pf, "w").close()
+    proc = subprocess.Popen([sys.executable, *a], cwd=ROOT, env=dict(os.environ, PROGRESS_FILE=pf))
+    last = ""
+    while proc.poll() is None:
+        time.sleep(2)
+        try: lines = [l.strip() for l in open(pf, encoding="utf-8").read().splitlines() if l.strip()]
+        except Exception: lines = []
+        if lines and lines[-1] != last:
+            last = lines[-1]
+            try: update(stage=last[:140])
+            except Exception: pass   # a missed detail never fails the video
+    if proc.returncode: raise subprocess.CalledProcessError(proc.returncode, a)
 def cost_fields():
     """What this render cost (estimated from token counts, see usage.py); empty if the ledger is unreadable."""
     try:
@@ -157,7 +174,7 @@ try:
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
     if EDIT and not edit_args and EDIT.get("note"):   # no previous script: a fresh version that follows the note
         row["custom"] = ((row.get("custom") or "") + " Change requested by the viewer: " + str(EDIT["note"]))[:600]
-    run("gen.py", *edit_args, key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    run_watched("gen.py", *edit_args, key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
     try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
