@@ -194,6 +194,29 @@ async function visibilityOf(jobIds: string[]): Promise<Record<string, string>> {
   for (const e of rows) out[String(e.meta.job)] = String(e.meta.v);
   return out;
 }
+/** A member's folders, rebuilt from their "folder" events (make, rename, drop, put, take), newest folder first. Trashed videos drop out. */
+type Folder = { id: string; title: string; created_at: string; updated_at: string; jobs: string[] };
+async function foldersOf(userId: string): Promise<Folder[]> {
+  const [evs, trash] = await Promise.all([
+    db(`explainer_events?user_id=eq.${userId}&type=eq.folder&select=meta,created_at&order=created_at.asc&limit=5000`).catch(() => []) as Promise<{ meta: { act: string; f: string; title?: string; job?: string }; created_at: string }[]>,
+    db(`explainer_events?user_id=eq.${userId}&type=eq.trash&select=meta&limit=3000`).catch(() => []) as Promise<{ meta: { job?: string } }[]>,
+  ]);
+  const gone = new Set(trash.map((t) => String(t.meta?.job ?? "")));
+  const by = new Map<string, Folder>();
+  for (const e of evs) {
+    const m = e.meta ?? ({} as typeof e.meta);
+    if (m.act === "make") { by.set(m.f, { id: m.f, title: m.title ?? "Folder", created_at: e.created_at, updated_at: e.created_at, jobs: [] }); continue; }
+    const f = by.get(m.f);
+    if (!f) continue;
+    f.updated_at = e.created_at;
+    if (m.act === "rename" && m.title) f.title = m.title;
+    else if (m.act === "drop") by.delete(m.f);
+    else if (m.act === "put" && m.job && !f.jobs.includes(m.job)) f.jobs.push(m.job);
+    else if (m.act === "take" && m.job) f.jobs = f.jobs.filter((j) => j !== m.job);
+  }
+  return [...by.values()].map((f) => ({ ...f, jobs: f.jobs.filter((j) => !gone.has(j)) })).sort((a, b) => b.updated_at.localeCompare(a.updated_at));
+}
+
 type Card = { id: string; title: string | null; arxiv: string | null; langs: string | null; seconds: number | null; created_at: string; owner: string | null; source_url?: string | null; sections?: unknown };
 /** Finished, not expired videos with these ids, with the owner's username, newest first. */
 async function cardsOf(jobIds: string[]): Promise<Card[]> {
@@ -235,6 +258,10 @@ Deno.serve(async (req) => {
         for (const r of rows as Row[]) if (r.status !== "failed") { const k = String(r.source_url || r.arxiv || r.title || ""); if (k) live.add(k); }
         const retried = (r: Row) => r.status === "failed" && live.has(String(r.source_url || r.arxiv || r.title || ""));
         return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id) })));
+      }
+      if (u.searchParams.get("folders")) {   // the member's folders (projects), each with its videos in the order they were put in
+        if (!user) return json({ error: "Sign in first." }, 401);
+        return json(await foldersOf(user.id));
       }
       if (u.searchParams.get("explore")) {   // public videos, newest first, for everyone (no sign-in needed); ?lang= narrows to one narration language
         const lang = str(u.searchParams.get("lang"), 5);
@@ -358,6 +385,42 @@ Deno.serve(async (req) => {
       return json({ ok: true, verify: { role, status: "pending" } });
     }
 
+    if (op === "folder") {   // make, rename or remove a folder; put a video in or take it out (a video may sit in several folders)
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const act = String(body.act ?? "");
+      const mine = await foldersOf(user.id);
+      if (act === "make") {
+        const title = str(body.title, 80).replace(/\s+/g, " ").trim();
+        if (!title) return json({ error: "Give the folder a name." }, 400);
+        if (mine.length >= 50) return json({ error: "You have 50 folders. Remove one first." }, 409);
+        const f = crypto.randomUUID();
+        await logEvent("", "folder", { act, f, title }, user.id);
+        return json({ ok: true, folder: { id: f, title, created_at: new Date().toISOString(), jobs: [] } });
+      }
+      const f = String(body.f ?? "");
+      const cur = mine.find((x) => x.id === f);
+      if (!cur) return json({ error: "That folder was not found." }, 404);
+      if (act === "rename") {
+        const title = str(body.title, 80).replace(/\s+/g, " ").trim();
+        if (!title) return json({ error: "Give the folder a name." }, 400);
+        await logEvent("", "folder", { act, f, title }, user.id);
+        return json({ ok: true });
+      }
+      if (act === "drop") { await logEvent("", "folder", { act, f }, user.id); return json({ ok: true }); }   // the videos themselves stay in the library
+      if (act === "put" || act === "take") {
+        const job = String(body.job ?? "");
+        if (!/^[0-9a-f-]{36}$/.test(job)) return json({ error: "Choose a video." }, 400);
+        if (act === "put") {
+          const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id`).catch(() => []);
+          if (!own) return json({ error: "Only your own videos can go in your folders." }, 403);
+          if (cur.jobs.length >= 100) return json({ error: "A folder holds up to 100 videos." }, 409);
+        }
+        await logEvent("", "folder", { act, f, job }, user.id);
+        return json({ ok: true });
+      }
+      return json({ error: "Unknown folder action." }, 400);
+    }
     if (op === "rename_job") {   // the maker gives one of their own videos another title
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);

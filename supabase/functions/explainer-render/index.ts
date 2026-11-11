@@ -149,9 +149,36 @@ Deno.serve(async (req) => {
     const langs = VIDEO_LANGS.includes(body.langs) ? body.langs : "en";   // one language per video; another language is another video
     const seconds = Math.min(1200, Math.max(60, Math.round(Number(body.seconds) || 180)));
     const custom = String(body.custom ?? "").replace(/[ -]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 460);   // the note: focus, narration style, and the look ("Look: ...")
-    const up = typeof body.upload === "string" && /^[0-9a-f]{16}\/[0-9a-f-]{36}\.(pdf|txt)$/.test(body.upload) ? body.upload : "";
-    const url = up ? null : arxivId(arxiv) ? null : sourceUrl(arxiv);
-    const a = up ? "f" + (await sha(up)) : (arxivId(arxiv) ?? (url ? "u" + (await sha(url)) : null));
+    // several sources in one video (2 to 5): uploaded files, links, or the saved text of the member's own earlier videos (a folder's final video)
+    let multi: { kind: "upload" | "url" | "arxiv" | "job"; v: string; name: string }[] | null = null;
+    if (Array.isArray(body.sources) && body.sources.length) {
+      if (body.sources.length < 2 || body.sources.length > 5) return json({ error: "Choose 2 to 5 sources for one video." }, 400);
+      const actor = await actorOf(req, visitor);
+      const owner = await userOf(req);
+      multi = [];
+      for (const s of body.sources as Record<string, unknown>[]) {
+        const nm = cleanName(s?.name);
+        if (typeof s?.upload === "string") {
+          if (!/^[0-9a-f]{16}\/[0-9a-f-]{36}\.(pdf|txt)$/.test(s.upload)) return json({ error: "That upload was not found. Please choose the file again." }, 404);
+          const [rec] = await db(`explainer_uploads?path=eq.${encodeURIComponent(s.upload)}&select=actor,job_id,name`);
+          if (!rec || rec.actor !== actor || (rec.job_id && rec.job_id !== String(body.retry_of ?? ""))) return json({ error: "That upload was not found. Please choose the file again." }, 404);
+          multi.push({ kind: "upload", v: s.upload, name: nm || cleanName(rec.name) });
+        } else if (typeof s?.job === "string") {
+          if (!owner) return json({ error: "Sign in to combine your videos." }, 401);
+          if (!/^[0-9a-f-]{36}$/.test(s.job)) return json({ error: "Choose a video." }, 400);
+          const [j] = await db(`explainer_jobs?id=eq.${s.job}&user_id=eq.${owner.id}&status=eq.done&select=id,title`).catch(() => []);
+          if (!j) return json({ error: "Only your own finished videos can be combined." }, 403);
+          multi.push({ kind: "job", v: j.id, name: nm || cleanName(j.title) });
+        } else if (typeof s?.url === "string") {
+          const id = arxivId(s.url), u = id ? null : sourceUrl(s.url);
+          if (!id && !u) return json({ error: `"${String(s.url).slice(0, 60)}" is not a link Paperlit can read.` }, 400);
+          multi.push(id ? { kind: "arxiv", v: id, name: nm || `arXiv ${id}` } : { kind: "url", v: u!, name: nm || new URL(u!).hostname.replace(/^www\./, "") });
+        } else return json({ error: "Each source is a file, a link or one of your videos." }, 400);
+      }
+    }
+    const up = !multi && typeof body.upload === "string" && /^[0-9a-f]{16}\/[0-9a-f-]{36}\.(pdf|txt)$/.test(body.upload) ? body.upload : "";
+    const url = multi || up ? null : arxivId(arxiv) ? null : sourceUrl(arxiv);
+    const a = multi ? "m" + (await sha(JSON.stringify(multi))) : up ? "f" + (await sha(up)) : (arxivId(arxiv) ?? (url ? "u" + (await sha(url)) : null));
     if (!a) return json({ error: "Paste a paper link (an arXiv link or id, a link to a PDF, or a DOI) or upload a PDF." }, 400);
     let upName = "";
     if (up) {   // the file must be this visitor's own, unused, and really a PDF
@@ -198,7 +225,9 @@ Deno.serve(async (req) => {
     const all = await db(`explainer_jobs?status=neq.failed&created_at=gte.${day}&select=seconds`);
     if (sum(all) + need > DAILY) return json({ error: "Today's video budget is used up. Try again tomorrow." }, 429);
     let title = "";
-    if (up) {
+    if (multi) {
+      title = cleanName(body.name) || `${multi[0].name} + ${multi.length - 1} more`;   // the renderer replaces this with the real title
+    } else if (up) {
       title = upName || "Uploaded paper";   // the renderer replaces this with the real title
     } else if (url) {
       title = new URL(url).hostname.replace(/^www\./, "");   // the renderer replaces this with the real title
@@ -208,12 +237,12 @@ Deno.serve(async (req) => {
       title = (entry.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "").replace(/\s+/g, " ").trim();
       if (!title || /Error/.test(title)) return json({ error: "That arXiv id was not found." }, 404);
     }
-    const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: a, title, source_url: up ? "upload:" + up : url, model, voice, style, tone, langs, seconds, custom, visitor: vid, user_id: user?.id ?? null, credit_used: fromCredits, stage: "waiting for a renderer" }) });
+    const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: a, title, source_url: multi ? "multi:" + JSON.stringify(multi) : up ? "upload:" + up : url, model, voice, style, tone, langs, seconds, custom, visitor: vid, user_id: user?.id ?? null, credit_used: fromCredits, stage: "waiting for a renderer" }) });
     if (user && fromCredits > 0) {
       await db(`explainer_users?id=eq.${user.id}`, { method: "PATCH", body: JSON.stringify({ credits: user.credits - fromCredits }) });
       await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: -fromCredits, reason: `video ${a}` }) });
     }
-    if (up) await db(`explainer_uploads?path=eq.${encodeURIComponent(up)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: row.id }) });
+    for (const p_ of [up, ...(multi ?? []).filter((m) => m.kind === "upload").map((m) => m.v)].filter(Boolean)) await db(`explainer_uploads?path=eq.${encodeURIComponent(p_)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: row.id }) });
     await logEvent(vid, "job_created", { arxiv: a, seconds, tier: q.tier, credits: fromCredits }, user?.id ?? null);
     if (!GH_TOKEN) return json({ ...row, note: "queued; the renderer is started by hand until GH_DISPATCH_TOKEN is set" });
     const gh = await fetch(`https://api.github.com/repos/${GH_REPO}/actions/workflows/explainer-render.yml/dispatches`, {

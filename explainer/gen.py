@@ -521,18 +521,39 @@ def trim_tail(path):
 def dur_ms(path):
     return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path]).decode().strip()) * 1000
 
+def paper_sources(path):
+    """Several sources for one video (2 to 5). Each is read like a single source and marked "=== SOURCE k: name ===", sharing the usual text budget, so the script can say which source every scene comes from."""
+    items = json.load(open(path, encoding="utf-8"))[:5]
+    n = len(items); cap = 60000 // max(1, n)
+    parts, names, outlines = [], {}, []
+    for k, it in enumerate(items, 1):
+        progress(f"reading the source: source {k} of {n}")
+        try:
+            t_, _ab, tx_ = paper_file(it["path"]) if it["kind"] == "file" else paper_url(it["url"]) if it["kind"] == "url" else paper(it["id"])
+        except Exception as e:
+            raise RuntimeError(f"Source {k} ({(it.get('name') or 'untitled')[:60]}) could not be read. Remove it or try another copy of it.") from e
+        name = re.sub(r"\s+", " ", it.get("name") or t_ or f"Source {k}").strip()[:90]
+        names[k] = name
+        parts.append(f"=== SOURCE {k}: {name} ===" + chr(10) + tx_[:cap])
+        if it.get("outline"): outlines.append(f"Source {k} ({name}) already has its own video with these parts: " + "; ".join(str(x) for x in it["outline"][:8]))
+    return names, (chr(10) * 2).join(parts), outlines
+
 async def main():
     ap = argparse.ArgumentParser(); ap.add_argument("arxiv"); ap.add_argument("--url", default=""); ap.add_argument("--file", default=""); ap.add_argument("--model", default="deepseek"); ap.add_argument("--slug", default=""); ap.add_argument("--seconds", type=int, default=24)
     ap.add_argument("--voice-en", default="en-US-AriaNeural"); ap.add_argument("--voice-zh", default="zh-CN-XiaoxiaoNeural"); ap.add_argument("--reuse", action="store_true"); ap.add_argument("--tone", default="teacher"); ap.add_argument("--theme", default="classic"); ap.add_argument("--custom", default=""); ap.add_argument("--langs", default="both"); ap.add_argument("--voice-x", default="")
-    ap.add_argument("--edit-from", default=""); ap.add_argument("--edit-part", type=int, default=-1); ap.add_argument("--edit-note", default="")
+    ap.add_argument("--edit-from", default=""); ap.add_argument("--sources", default=""); ap.add_argument("--edit-part", type=int, default=-1); ap.add_argument("--edit-note", default="")
     a = ap.parse_args()
     if a.langs in OTHER: SLOT["v"] = a.langs
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
-    LABEL = 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
+    SRC, OUTL = {}, []
+    LABEL = 'several sources' if a.sources else 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     try:
-        title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text)); progress(f"reading the source: found {len(text):,} characters of text"); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
+        if a.sources:
+            SRC, text, OUTL = paper_sources(a.sources); title = " + ".join(SRC.values())[:200]; abstract = text[:1500]
+        else: title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv)
+        print("paper:", title, "| text chars", len(text)); progress(f"reading the source: found {len(text):,} characters of text"); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
         try:
-            pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
+            pdf = b"" if a.sources else open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
             if pdf[:5] == b"%PDF-":
                 json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
                 FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS]); describe_figures(FIGS, out)
@@ -550,6 +571,9 @@ async def main():
         lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
         _note = re.sub(r"\.?\s*Look:.*$", "", a.custom or "").strip()   # the look is for the drawing, not for the script
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", _note).strip()[:300]) if _note else ""
+        if SRC:
+            custom += (f"\nTHIS VIDEO COMBINES {len(SRC)} SOURCES on one topic. In the PAPER TEXT each source starts with a line '=== SOURCE k: name ==='. Teach them as ONE coherent lesson: connect them and compare them where they differ; do not summarise one source after the other. In EVERY scene add \"src\": k, the number of the source the scene mainly draws on (an integer). \"evidence\" and quotes stay a verbatim copy from that one source, never from the header lines."
+                       + (("\n" + "\n".join(OUTL) + "\nThis is the final video that brings those videos together: keep their strongest ideas, follow a fresh order that builds one story, and do not retell each earlier video part by part.") if OUTL else ""))
         if n > 1 and not a.edit_from: progress("writing the script: planning the parts")
         plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
@@ -599,7 +623,7 @@ async def main():
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
         progress("checking quotes and numbers against the source"); normalize(sc); bad = verify(sc, text); print("unverified:", bad)
-        sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file) else title; sc["unverified"] = [str(b) for b in bad]
+        sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file or a.sources) else title; sc["sources"] = [{"k": k, "name": v} for k, v in SRC.items()]; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     LANGS = ["en", "zh"] if a.langs == "both" else [a.langs]   # a viewer who needs one language does not wait for the other
     VOICE = {"en": a.voice_en, "zh": a.voice_zh, **({a.langs: a.voice_x or OTHER[a.langs][1]} if a.langs in OTHER else {})}
@@ -619,8 +643,9 @@ async def main():
             p = os.path.join(out, f"{lang}_{i}.mp3")
             s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 350, 2600))   # a small breath after each scene, not a pause
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 3600)
-            if s.get("evidence") is not None: s["evidence"] = f"{LABEL} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else LABEL
-            elif s["type"] not in ("title", "end"): s["evidence"] = LABEL
+            lab = SRC.get(s.get("src") if isinstance(s.get("src"), int) else -1, LABEL) if SRC else LABEL
+            if s.get("evidence") is not None: s["evidence"] = f"{lab} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else lab
+            elif s["type"] not in ("title", "end"): s["evidence"] = lab
         json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": theme, "look": look, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(lang, "total seconds", round(sum(s["dur"] for s in scenes) / 1000, 1))
@@ -635,6 +660,7 @@ async def main():
         meta.append({"i": k, "title": sec.get("title") or f"Part {k + 1}", "title_zh": sec.get("title_zh") or sec.get("title") or f"第 {k + 1} 部分",
                      "text": sec.get("text") or " ".join(s["en"] for s in part), "text_zh": sec.get("text_zh") or "".join(s.get("zh") or "" for s in part),
                      "takeaway": sec.get("takeaway") or "", "takeaway_zh": sec.get("takeaway_zh") or "",
+                     **({"sources": [SRC[k_] for k_ in sorted({x.get("src") for x in part if isinstance(x.get("src"), int) and x.get("src") in SRC})]} if SRC else {}),
                      **({f"title_{a.langs}": sec.get(f"title_{a.langs}") or sec.get("title") or "", f"text_{a.langs}": sec.get(f"text_{a.langs}") or " ".join(s[a.langs] for s in part), f"takeaway_{a.langs}": sec.get(f"takeaway_{a.langs}") or ""} if a.langs in OTHER else {})})
     json.dump(meta, open(os.path.join(out, "sections.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 asyncio.run(main())
