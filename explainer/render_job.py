@@ -146,6 +146,9 @@ if not got:
 KEEP_UPLOAD = False
 UP_PATH = (row.get("source_url") or "")[len("upload:"):] if (row.get("source_url") or "").startswith("upload:") else ""
 upfile = ""
+# several sources in one video: "multi:[{kind, v, name}]" (uploads, links, arXiv ids, or the saved text of the member's own earlier videos)
+MULTI = json.loads(row["source_url"][6:]) if (row.get("source_url") or "").startswith("multi:") else None
+src_args, MULTI_UPLOADS = [], [m["v"] for m in (MULTI or []) if m.get("kind") == "upload"]
 # an edit of a finished video (explainer-render op "edit"): the previous script is kept except the part the member asked to change
 EDIT, edit_args = None, []
 try:
@@ -164,17 +167,35 @@ if EDIT:
         except Exception as e: print("previous script not at", base[:30], str(e)[:80])
     if os.path.exists(prevp): edit_args = ["--edit-from", prevp, "--edit-part", str(EDIT.get("part", 0)), "--edit-note", str(EDIT.get("note") or "")]
     else: print("previous script not found: the edit is made as a fresh version with the note")
-    if UP_PATH and len(row.get("paper_text") or "") > 300:   # the uploaded file is gone; the text kept with the video stands in for it
-        upfile = os.path.join(d, "source.txt"); open(upfile, "w", encoding="utf-8").write(row["paper_text"]); UP_PATH = ""
+    if (UP_PATH or MULTI) and len(row.get("paper_text") or "") > 300:   # the uploaded file is gone; the text kept with the video stands in for it
+        upfile = os.path.join(d, "source.txt"); open(upfile, "w", encoding="utf-8").write(row["paper_text"]); UP_PATH = ""; MULTI = None
     update(stage="rewriting the part you asked to change")
 try:
     if UP_PATH:
         os.makedirs(d, exist_ok=True); upfile = os.path.join(d, "upload.pdf")
         r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{UP_PATH}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
         with urllib.request.urlopen(r_, timeout=120) as f_, open(upfile, "wb") as o_: o_.write(f_.read(25_000_000))
+    if MULTI:
+        os.makedirs(d, exist_ok=True); items = []
+        for k, m in enumerate(MULTI, 1):
+            kind, v, name = m.get("kind"), str(m.get("v") or ""), m.get("name") or ""
+            if kind == "upload":
+                fp = os.path.join(d, f"src_{k}." + ("txt" if v.endswith(".txt") else "pdf"))
+                r_ = urllib.request.Request(f"{SB}/storage/v1/object/explainer-uploads/{v}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
+                with urllib.request.urlopen(r_, timeout=120) as f_, open(fp, "wb") as o_: o_.write(f_.read(25_000_000))
+                items.append({"kind": "file", "path": fp, "name": name})
+            elif kind == "job":   # an earlier video of this member: its saved text, and its parts as a guide for the final video
+                prow = (req("GET", f"/rest/v1/explainer_jobs?id=eq.{v}&select=title,paper_text,sections") or [{}])[0]
+                if len(prow.get("paper_text") or "") < 300: raise RuntimeError(f"The text of \"{(prow.get('title') or name)[:60]}\" is no longer stored. Make that video again, then try once more.")
+                fp = os.path.join(d, f"src_{k}.txt"); open(fp, "w", encoding="utf-8").write(prow["paper_text"])
+                items.append({"kind": "file", "path": fp, "name": prow.get("title") or name, "outline": [x.get("title") for x in (prow.get("sections") or []) if isinstance(x, dict) and x.get("title")]})
+            elif kind == "arxiv": items.append({"kind": "arxiv", "id": v, "name": name})
+            else: items.append({"kind": "url", "url": v, "name": name})
+        sp_ = os.path.join(d, "sources.json"); json.dump(items, open(sp_, "w", encoding="utf-8"), ensure_ascii=False)
+        src_args = ["--sources", sp_]
     if EDIT and not edit_args and EDIT.get("note"):   # no previous script: a fresh version that follows the note
         row["custom"] = ((row.get("custom") or "") + " Change requested by the viewer: " + str(EDIT["note"]))[:600]
-    run_watched("gen.py", *edit_args, key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") else []))
+    run_watched("gen.py", *edit_args, key, "--slug", arxiv, "--model", model, "--voice-en", VOICES[voice][0], "--voice-zh", VOICES[voice][1], "--voice-x", VOICE_X.get(row.get("langs"), {}).get(voice, ""), "--seconds", str(row.get("seconds") or 36), "--tone", row.get("tone") or "teacher", "--langs", row.get("langs") if row.get("langs") in MONO else "both", "--theme", row.get("style") or "classic", "--custom", row.get("custom") or "", *(src_args if src_args else ["--file", upfile] if upfile else ["--url", row["source_url"]] if row.get("source_url") and not row["source_url"].startswith("multi:") else []))
     try: update(paper_text=open(os.path.join(d, "paper.txt"), encoding="utf-8").read()[:60000])   # kept for the Ask tab until the video expires
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
@@ -297,6 +318,6 @@ except Exception as e:
     update(status="failed", stage=None, error=msg[:400], **cost_fields())
     sys.exit(1)
 finally:
-    if UP_PATH and not KEEP_UPLOAD:   # the visitor's file is private: gone as soon as the video is made
-        try: req("DELETE", "/storage/v1/object/explainer-uploads", {"prefixes": [UP_PATH]})
+    if (UP_PATH or MULTI_UPLOADS) and not KEEP_UPLOAD:   # the visitor's files are private: gone as soon as the video is made
+        try: req("DELETE", "/storage/v1/object/explainer-uploads", {"prefixes": [x for x in [UP_PATH, *MULTI_UPLOADS] if x]})
         except Exception as e_: print("upload cleanup skipped:", str(e_)[:120])
