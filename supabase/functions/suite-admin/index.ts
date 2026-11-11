@@ -67,7 +67,7 @@ const isTest = (email: string) => /^qa[-_.]|^qa\d|@example\.(com|org)$|@repro-su
 const PRICE = { fast: { in: Number(Deno.env.get("PRICE_FAST_IN") ?? "1"), out: Number(Deno.env.get("PRICE_FAST_OUT") ?? "5") }, deep: { in: Number(Deno.env.get("PRICE_DEEP_IN") ?? "3"), out: Number(Deno.env.get("PRICE_DEEP_OUT") ?? "15") } };
 const CREDIT_USD = Number(Deno.env.get("RKAPI_CREDIT_USD") ?? String(0.196 / 6.75));   // the same rate the renderer uses (explainer/usage.py): one credit costs 0.196 yuan at top-up
 const creditsOf = (tokens: number, tier: "fast" | "deep") => (tokens * 0.9 * PRICE[tier].in + tokens * 0.1 * PRICE[tier].out) / 1e6;
-const usdOf = (tokens: number, tier: "fast" | "deep") => creditsOf(tokens, tier) * CREDIT_USD;
+const usdOf = (tokens: number, tier: "fast" | "deep") => creditsOf(tokens, tier) * creditUsdNow;
 const HOUR = 3600_000;
 
 /** Where visitors go, per day: how many came, how many looked at something (pricing, an example), how many tried something (make, sign-up, buy), how many claimed a payment,
@@ -94,6 +94,38 @@ function funnelOf(visits: any[], acts: any[], leaves: any[], _keep: (e: string) 
 }
 
 const REPOS = ["repro-suite-hub", "bryan273.github.io", "paper-explainer", "reading-companion", "paper-repro-agentv2", "repro-lite", "repro-desk", "indexboard"];
+// ---- exchange rates: costs come in dollars and members pay in yuan, dong or rupiah, so the admin needs real rates.
+// Google has no rate service one may call; open.er-api.com gives the daily market rate for free without a key. The rate of each day is saved
+// (one record a day), so an order is counted at the rate of the day it was made. Before the first saved day, the oldest saved rate is used.
+type Rates = { date: string; CNY: number; VND: number; IDR: number };
+const FX_FALLBACK: Rates = { date: "", CNY: 7.2, VND: 26000, IDR: 16500 };
+let creditUsdNow = Number(Deno.env.get("RKAPI_CREDIT_USD") ?? String(0.196 / 6.75));
+async function fxRates() {
+  const rows = await db(`explainer_events?type=eq.fx_rate&select=meta&order=created_at.asc&limit=800`).catch(() => []) as { meta: Rates }[];
+  const byDate = new Map<string, Rates>(rows.filter((r) => r.meta?.date && r.meta.CNY > 0).map((r) => [r.meta.date, r.meta]));
+  const today = new Date().toISOString().slice(0, 10);
+  let source = "saved";
+  if (!byDate.has(today)) {
+    try {
+      const r = await fetch("https://open.er-api.com/v6/latest/USD", { signal: AbortSignal.timeout(8000) });
+      const j = await r.json() as { result?: string; rates?: Record<string, number> };
+      const rt = j.rates ?? {};
+      if (j.result === "success" && rt.CNY > 0 && rt.VND > 0 && rt.IDR > 0) {
+        const rec: Rates = { date: today, CNY: rt.CNY, VND: rt.VND, IDR: rt.IDR };
+        byDate.set(today, rec); source = "live";
+        await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "system", type: "fx_rate", user_id: null, meta: rec }) }).catch(() => undefined);
+      }
+    } catch { /* the last saved rate is used */ }
+  }
+  const dates = [...byDate.keys()].sort();
+  const latest = dates.length ? byDate.get(dates[dates.length - 1])! : FX_FALLBACK;
+  const on = (d: string): Rates => { let best = dates.length ? byDate.get(dates[0])! : FX_FALLBACK; for (const k of dates) { if (k <= d) best = byDate.get(k)!; else break; } return best; };
+  creditUsdNow = 0.196 / latest.CNY;   // one credit costs 0.196 yuan at top-up
+  return { today: latest, on, source: dates.length ? source : "default", days: dates.length };
+}
+/** What was paid, in yuan, at the rate of the day it was paid. */
+const toCny = (amt: number, cur: string, r: Rates) => (cur === "vnd" ? (amt / r.VND) * r.CNY : cur === "idr" ? (amt / r.IDR) * r.CNY : amt);
+
 /** Merged pull requests of every app, newest first. Saved in the database, so GitHub is asked at most once every 30 minutes (60 requests an hour are allowed without a key,
  *  GITHUB_TOKEN raises that); when GitHub refuses, the last saved list is returned with its age. */
 async function releases(fresh: boolean) {
@@ -210,15 +242,18 @@ Deno.serve(async (req) => {
     }));
 
     // ---- money
+    const fx = await fxRates();
     const orderRows = O.map((o: any) => {
       const n = String(o.notes ?? "");
       return {
         id: o.id, email: o.email, what: o.arxiv, status: o.status, method: o.pay_method, created_at: o.created_at,
-        cny: Number(/price:(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0), cur: /cur:([a-z]+)/.exec(n)?.[1] ?? "cny", amt: Number(/amt:(\d+)/.exec(n)?.[1] ?? 0),
+        price_cny: Number(/price:(\d+(?:\.\d+)?)/.exec(n)?.[1] ?? 0), cur: /cur:([a-z]+)/.exec(n)?.[1] ?? "cny", amt: Number(/amt:(\d+)/.exec(n)?.[1] ?? 0),
         kind: /plan:([a-z_]+)/.exec(n)?.[1] ?? (/pack:(\d+)/.exec(n) ? "pack_" + /pack:(\d+)/.exec(n)![1] : "other"), shot: /shot:\S+/.test(n),
       };
     });
-    const USD_CNY = 7.2;
+    // what each order really brought in, in yuan at the rate of its day (a yuan order is its price; a dong or rupiah order is its amount converted)
+    for (const o of orderRows as any[]) o.cny = o.cur !== "cny" && o.amt ? Math.round(toCny(o.amt, o.cur, fx.on(day(o.created_at))) * 100) / 100 : o.price_cny;
+    const USD_CNY = fx.today.CNY;
     const askCny = (a: any) => usdOf(Number(a.tokens) || 0, a.intent === "deep" ? "deep" : "fast") * USD_CNY;
 
     // ---- one row per day (180 days) and one per hour (the last 7 days) for every number the charts need
@@ -233,7 +268,7 @@ Deno.serve(async (req) => {
     for (const v of V) { (seenD[day(v.created_at)] ??= new Set()).add(who(v)); (seenH[String(v.created_at).slice(0, 13)] ??= new Set()).add(who(v)); }
     for (const [k, set] of Object.entries(seenD)) if (days[k]) days[k].visitors = set.size;
     for (const [k, set] of Object.entries(seenH)) if (hours[k]) hours[k].visitors = set.size;
-    for (const j of JA) { bump(j.created_at, j.status === "failed" ? "failed" : "videos"); bump(j.created_at, "cost", (Number(j.cost_usd) || 0) * USD_CNY); }
+    for (const j of JA) { bump(j.created_at, j.status === "failed" ? "failed" : "videos"); bump(j.created_at, "cost", (Number(j.cost_usd) || 0) * fx.on(day(j.created_at)).CNY); }
     for (const r of reproAll) bump(r.created_at, "checks");
     for (const o of orderRows) if (o.status === "paid" || o.status === "delivered") bump(o.created_at, "income", o.cny);
     for (const a of A) { bump(a.created_at, "cost", askCny(a)); bump(a.created_at, "asks"); }
@@ -269,7 +304,7 @@ Deno.serve(async (req) => {
     // ---- usage of the model gateways by app and day (30 days)
     const llmRows: Record<string, { d: string; app: string; calls: number; tokens: number; usd: number }> = {};
     for (const u of usage) { const k = `${day(u.created_at)}|${u.app}`; const r = (llmRows[k] ??= { d: day(u.created_at), app: u.app, calls: 0, tokens: 0, usd: 0 }); r.calls++; r.tokens += (u.prompt_tokens || 0) + (u.completion_tokens || 0);
-      r.usd += ((u.prompt_tokens || 0) * PRICE.fast.in + (u.completion_tokens || 0) * PRICE.fast.out) / 1e6 * CREDIT_USD; }   // the ledger does not keep the model: priced as the fast model, which is most of the calls
+      r.usd += ((u.prompt_tokens || 0) * PRICE.fast.in + (u.completion_tokens || 0) * PRICE.fast.out) / 1e6 * creditUsdNow; }   // the ledger does not keep the model: priced as the fast model, which is most of the calls
 
     return json({
       me: user.username,
@@ -277,6 +312,7 @@ Deno.serve(async (req) => {
       hidden_test_accounts: qaView ? 0 : testIds.size,
       generated_at: new Date().toISOString(),
       usd_cny: USD_CNY,
+      fx: { date: fx.today.date, CNY: fx.today.CNY, VND: fx.today.VND, IDR: fx.today.IDR, source: fx.source, days: fx.days },
       days: Object.values(days),
       hours: Object.values(hours),
       members,
