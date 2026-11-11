@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
         } else if (typeof s?.url === "string") {
           const id = arxivId(s.url), u = id ? null : sourceUrl(s.url);
           if (!id && !u) return json({ error: `"${String(s.url).slice(0, 60)}" is not a link Paperlit can read.` }, 400);
-          multi.push(id ? { kind: "arxiv", v: id, name: nm || `arXiv ${id}` } : { kind: "url", v: u!, name: nm || new URL(u!).hostname.replace(/^www\./, "") });
+          multi.push(id ? { kind: "arxiv", v: id, name: nm } : { kind: "url", v: u!, name: nm });   // no name given: the renderer uses the title it reads
         } else return json({ error: "Each source is a file, a link or one of your videos." }, 400);
       }
     }
@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
     if (sum(all) + need > DAILY) return json({ error: "Today's video budget is used up. Try again tomorrow." }, 429);
     let title = "";
     if (multi) {
-      title = cleanName(body.name) || `${multi[0].name} + ${multi.length - 1} more`;   // the renderer replaces this with the real title
+      title = cleanName(body.name) || `${multi[0].name || (multi[0].kind === "url" ? new URL(multi[0].v).hostname.replace(/^www\./, "") : `arXiv ${multi[0].v}`)} + ${multi.length - 1} more`;   // the renderer replaces this with the real title
     } else if (up) {
       title = upName || "Uploaded paper";   // the renderer replaces this with the real title
     } else if (url) {
