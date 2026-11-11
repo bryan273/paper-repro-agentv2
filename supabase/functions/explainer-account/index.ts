@@ -229,7 +229,12 @@ Deno.serve(async (req) => {
         const flags = await db(`explainer_events?user_id=eq.${user.id}&type=in.(archive,trash)&select=type,meta&order=created_at.asc&limit=3000`).catch(() => []) as { type: string; meta: { job?: string; on?: boolean } }[];
         const trashed = new Set<string>(), archived = new Set<string>();
         for (const e of flags) { const j = String(e.meta?.job ?? ""); if (e.type === "trash") trashed.add(j); else if (e.meta?.on) archived.add(j); else archived.delete(j); }
-        return json((rows as { id: string }[]).filter((r) => !trashed.has(r.id)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id) })));
+        // a failed try that was started again and worked (or is still being made) is only noise: keep the newest try of each source
+        type Row = { id: string; status: string; source_url?: string | null; arxiv?: string | null; title?: string | null };
+        const live = new Set<string>();
+        for (const r of rows as Row[]) if (r.status !== "failed") { const k = String(r.source_url || r.arxiv || r.title || ""); if (k) live.add(k); }
+        const retried = (r: Row) => r.status === "failed" && live.has(String(r.source_url || r.arxiv || r.title || ""));
+        return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id) })));
       }
       if (u.searchParams.get("explore")) {   // public videos, newest first, for everyone (no sign-in needed); ?lang= narrows to one narration language
         const lang = str(u.searchParams.get("lang"), 5);
@@ -353,6 +358,18 @@ Deno.serve(async (req) => {
       return json({ ok: true, verify: { role, status: "pending" } });
     }
 
+    if (op === "rename_job") {   // the maker gives one of their own videos another title
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const job = String(body.job ?? "");
+      const title = str(body.title, 140).replace(/\s+/g, " ").trim();
+      if (!/^[0-9a-f-]{36}$/.test(job)) return json({ error: "Choose a video." }, 400);
+      if (title.length < 1) return json({ error: "Write a title." }, 400);
+      const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id`).catch(() => []);
+      if (!own) return json({ error: "Only the person who made a video can do this." }, 403);
+      await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title }) });
+      return json({ ok: true, title });
+    }
     if (op === "archive_job" || op === "delete_job") {   // the maker tidies their own library: archive can be undone, delete cannot
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);
