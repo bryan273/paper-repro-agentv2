@@ -4,6 +4,7 @@
 //   GET                                      -> { me, counts, perDay, jobs, orders, feedback }
 //   POST {op:"grant_plan", username, plan, days} -> { ok, until }   a plan given free by the owner
 //   POST {op:"revoke_plan", username} -> { ok }   ends the member's plan now
+//   POST {op:"notify", user_id | username, text, about?} -> { ok, to }   a message into the member's inbox
 //   POST {op:"order_status", id, status}     -> { ok }   status: new | paid_claimed | paid | delivered | cancelled
 import { mailReady, sendMail } from "../_shared/mail.ts";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
@@ -182,6 +183,15 @@ Deno.serve(async (req) => {
         if (!usr) return json({ error: "no such user" }, 404);
         await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: usr.id, meta: { plan: "plus", until: new Date(Date.now() - 1000).toISOString(), source: "admin" } }) });
         return json({ ok: true });
+      }
+      if (body.op === "notify") {   // a note from the team to one member: it lands in their inbox in the app (the bell at the top)
+        const text = String(body.text ?? "").trim().slice(0, 700);
+        if (text.length < 3) return json({ error: "Write the message first." }, 400);
+        const id = String(body.user_id ?? "");
+        const [usr] = /^[0-9a-f-]{36}$/.test(id) ? await db(`explainer_users?id=eq.${id}&select=id,username`) : await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}&select=id,username`);
+        if (!usr) return json({ error: "no such user" }, 404);
+        await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "admin", type: "reply", user_id: usr.id, meta: { text, about: String(body.about ?? "").slice(0, 120) } }) });
+        return json({ ok: true, to: usr.username });
       }
       if (body.op === "ban") {
         await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}`, { method: "PATCH", body: JSON.stringify({ banned: !!body.banned }) });

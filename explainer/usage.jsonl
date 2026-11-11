@@ -88,3 +88,8 @@
 {"model": "gemini-2.5-flash-lite", "in": 1183, "out": 583, "est": false, "part": "ocr"}
 {"model": "gemini-2.5-flash-lite", "in": 1183, "out": 0, "est": false, "part": "ocr"}
 {"model": "gemini-2.5-flash-lite", "in": 1183, "out": 630, "est": false, "part": "ocr"}
+{"model": "gemini-2.5-flash-lite", "in": 1204, "out": 72, "est": false, "part": "figdesc"}
+{"model": "gemini-2.5-flash-lite", "in": 1225, "out": 121, "est": false, "part": "figdesc"}
+{"model": "gemini-2.5-flash-lite", "in": 1201, "out": 61, "est": false, "part": "figdesc"}
+{"model": "gemini-2.5-flash-lite", "in": 1176, "out": 64, "est": false, "part": "figdesc"}
+{"model": "gemini-2.5-flash-lite", "in": 1222, "out": 88, "est": false, "part": "figdesc"}

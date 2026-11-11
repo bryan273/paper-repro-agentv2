@@ -100,28 +100,52 @@ def ocr_pages(data, limit=OCR_PAGES):
            "Output only the transcription, nothing else. If the page has no text, output nothing.")
     def one(i):
         pix = doc[i].get_pixmap(dpi=130)
-        img = base64.b64encode(pix.tobytes("jpeg")).decode()
-        body = json.dumps({"model": model, "max_tokens": 2600, "temperature": 0,
-                           "messages": [{"role": "user", "content": [{"type": "text", "text": ask}, {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + img}}]}]}).encode()
-        for attempt in range(3):
-            try:
-                req = urllib.request.Request(base + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
-                out = json.load(urllib.request.urlopen(req, timeout=120))
-                txt = (out["choices"][0]["message"]["content"] or "").strip()
-                if not txt and attempt == 0: continue   # an empty answer is more often a hiccup than a blank page: ask once more
-                try:
-                    import usage as _u
-                    u = out.get("usage") or {}
-                    _u.rec(model, u.get("prompt_tokens"), u.get("completion_tokens"), "", txt, "ocr")
-                except Exception: pass
-                return re.sub(r"[ \t]+", " ", txt)
-            except Exception as e:
-                if attempt == 2: print("ocr page", i + 1, "failed:", str(e)[:100]); return ""
-                time.sleep(2 + attempt * 3)
+        txt = vlm(ask, base64.b64encode(pix.tobytes("jpeg")).decode(), "image/jpeg", 2600, "ocr", i + 1)
+        return re.sub(r"[ \t]+", " ", txt)
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex: pages = list(ex.map(one, range(n)))
     print("ocr: read", sum(1 for p in pages if p), "of", n, "scanned pages with", model)
     _OCR[h] = pages
     return pages
+
+def vlm(ask, b64, mime, max_tokens, tag, label=""):
+    """One question about one picture to the small vision model (RKAPI, same key as the script). Returns '' when it could not be read; the call is logged for the cost page."""
+    key = ENV.get("RKAPI_API_KEY")
+    if not key: return ""
+    model = ENV.get("OCR_MODEL") or os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001")
+    base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
+    body = json.dumps({"model": model, "max_tokens": max_tokens, "temperature": 0,
+                       "messages": [{"role": "user", "content": [{"type": "text", "text": ask}, {"type": "image_url", "image_url": {"url": "data:" + mime + ";base64," + b64}}]}]}).encode()
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(base + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
+            out = json.load(urllib.request.urlopen(req, timeout=120))
+            txt = (out["choices"][0]["message"]["content"] or "").strip()
+            if not txt and attempt == 0: continue   # an empty answer is more often a hiccup than a blank picture: ask once more
+            try:
+                import usage as _u
+                u = out.get("usage") or {}
+                _u.rec(model, u.get("prompt_tokens"), u.get("completion_tokens"), "", txt, tag)
+            except Exception: pass
+            return txt
+        except Exception as e:
+            if attempt == 2: print(tag, label, "failed:", str(e)[:100]); return ""
+            time.sleep(2 + attempt * 3)
+    return ""
+
+def describe_figures(figs, out, limit=8):
+    """What each cropped figure shows, in a sentence or two with its key values, so the script can use what a chart says and not only its caption. A few cents at most; a figure that cannot be read keeps its caption."""
+    import base64, concurrent.futures
+    todo = [f for f in figs if f.get("file")][:limit]
+    if not todo or not ENV.get("RKAPI_API_KEY"): return
+    ask = ("This is a figure from a document. In at most two short sentences, say what it shows: the kind of chart or diagram, what is compared, and the main values or trend you can actually read. "
+           "Write in the language of the caption. Do not guess anything you cannot see. Output only those sentences.")
+    def one(f):
+        try: data = open(os.path.join(out, f["file"]), "rb").read()
+        except Exception: return
+        d = vlm(ask + " Caption: " + (f.get("caption") or ""), base64.b64encode(data).decode(), "image/png", 220, "figdesc", f["id"])
+        if d: f["desc"] = re.sub(r"\s+", " ", d)[:400]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex: list(ex.map(one, todo))
+    print("figure notes:", sum(1 for f in todo if f.get("desc")), "of", len(todo))
 
 def pdf_text_or_ocr(data, text):
     """The text layer if it is enough; else (a scan, or a layer of noise) the pages read with the vision model. Returns the text, or the same text if nothing better could be had."""
@@ -500,7 +524,7 @@ async def main():
             pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
             if pdf[:5] == b"%PDF-":
                 json.dump(page_texts(pdf), open(os.path.join(out, "pages.json"), "w", encoding="utf-8"), ensure_ascii=False)
-                FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS])
+                FIGS.extend(extract_figures(pdf, out)); print("figures:", [f["id"] for f in FIGS]); describe_figures(FIGS, out)
         except Exception as e: print("pdf pages skipped:", str(e)[:100])
     except Exception as e:
         # the reader of the page sees this text, so say what is wrong with the link instead of a generic failure
@@ -525,7 +549,7 @@ async def main():
         def one(i, extra=""):
             sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note + extra)
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
-            figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" for f in FIGS)) if FIGS else ""
+            figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
             return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
         if prev:
             part = max(0, min(n - 1, a.edit_part))

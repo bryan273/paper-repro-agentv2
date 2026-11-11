@@ -267,8 +267,9 @@ Deno.serve(async (req) => {
     const signupRows = S.slice(0, 10000).map((s: any) => ({ d: s.created_at, c: String(s.meta?.country ?? ""), ip: String(s.meta?.ip_country ?? ""), l: String(s.meta?.lang ?? ""), s: String(s.meta?.source ?? ""), r: String(s.meta?.role ?? "") }));
 
     // ---- usage of the model gateways by app and day (30 days)
-    const llmRows: Record<string, { d: string; app: string; calls: number; tokens: number }> = {};
-    for (const u of usage) { const k = `${day(u.created_at)}|${u.app}`; const r = (llmRows[k] ??= { d: day(u.created_at), app: u.app, calls: 0, tokens: 0 }); r.calls++; r.tokens += (u.prompt_tokens || 0) + (u.completion_tokens || 0); }
+    const llmRows: Record<string, { d: string; app: string; calls: number; tokens: number; usd: number }> = {};
+    for (const u of usage) { const k = `${day(u.created_at)}|${u.app}`; const r = (llmRows[k] ??= { d: day(u.created_at), app: u.app, calls: 0, tokens: 0, usd: 0 }); r.calls++; r.tokens += (u.prompt_tokens || 0) + (u.completion_tokens || 0);
+      r.usd += ((u.prompt_tokens || 0) * PRICE.fast.in + (u.completion_tokens || 0) * PRICE.fast.out) / 1e6 * CREDIT_USD; }   // the ledger does not keep the model: priced as the fast model, which is most of the calls
 
     return json({
       me: user.username,
@@ -281,7 +282,7 @@ Deno.serve(async (req) => {
       members,
       active_plans: members.filter((m: any) => m.plan_until && new Date(m.plan_until) > new Date()).length,
       orders: orderRows,
-      jobs: JR.map((j: any) => ({ id: j.id, user_id: j.user_id ?? null, who: j.user_id ? (handleOf[j.user_id] ?? users.find((u: any) => u.id === j.user_id)?.username ?? null) : null, arxiv: j.arxiv, title: j.title, status: j.status, stage: j.stage, seconds: j.seconds, langs: j.langs, cost_usd: j.cost_usd, error: j.error ? String(j.error).slice(0, 300) : null, created_at: j.created_at })),
+      jobs: JR.map((j: any) => ({ id: j.id, user_id: j.user_id ?? null, who: j.user_id ? (handleOf[j.user_id] ?? users.find((u: any) => u.id === j.user_id)?.username ?? null) : null, who_email: j.user_id ? (users.find((u: any) => u.id === j.user_id)?.username ?? null) : null, arxiv: j.arxiv, title: j.title, status: j.status, stage: j.stage, seconds: j.seconds, langs: j.langs, cost_usd: j.cost_usd, error: j.error ? String(j.error).slice(0, 300) : null, created_at: j.created_at })),
       job_langs: JA.map((j: any) => ({ d: day(j.created_at), l: j.langs, s: j.status })),
       repro: reproRecent,
       signup_rows: signupRows,
