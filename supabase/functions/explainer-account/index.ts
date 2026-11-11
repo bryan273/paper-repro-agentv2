@@ -225,7 +225,11 @@ Deno.serve(async (req) => {
         ]);
         const editJobs = new Set((edits as { meta: { job?: string } }[]).map((e) => String(e.meta?.job ?? "")));
         const vis = await visibilityOf((rows as { id: string }[]).map((r) => r.id));
-        return json((rows as { id: string }[]).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private" })));
+        // a member's own tidying: "trash" hides a video from their list for good, "archive" parks it out of the main list (the newest choice counts)
+        const flags = await db(`explainer_events?user_id=eq.${user.id}&type=in.(archive,trash)&select=type,meta&order=created_at.asc&limit=3000`).catch(() => []) as { type: string; meta: { job?: string; on?: boolean } }[];
+        const trashed = new Set<string>(), archived = new Set<string>();
+        for (const e of flags) { const j = String(e.meta?.job ?? ""); if (e.type === "trash") trashed.add(j); else if (e.meta?.on) archived.add(j); else archived.delete(j); }
+        return json((rows as { id: string }[]).filter((r) => !trashed.has(r.id)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id) })));
       }
       if (u.searchParams.get("explore")) {   // public videos, newest first, for everyone (no sign-in needed); ?lang= narrows to one narration language
         const lang = str(u.searchParams.get("lang"), 5);
@@ -349,6 +353,23 @@ Deno.serve(async (req) => {
       return json({ ok: true, verify: { role, status: "pending" } });
     }
 
+    if (op === "archive_job" || op === "delete_job") {   // the maker tidies their own library: archive can be undone, delete cannot
+      const user = await userOf(req);
+      if (!user) return json({ error: "Sign in first." }, 401);
+      const job = String(body.job ?? "");
+      if (!/^[0-9a-f-]{36}$/.test(job)) return json({ error: "Choose a video." }, 400);
+      const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id,status`).catch(() => []);
+      if (!own) return json({ error: "Only the person who made a video can do this." }, 403);
+      if (op === "delete_job") {
+        if (own.status === "queued" || own.status === "running") return json({ error: "This video is still being made. Delete it when it is ready or has failed." }, 409);
+        await logEvent("", "trash", { job }, user.id);
+        await logEvent("", "visibility", { job, v: "private" }, user.id);   // and it leaves Explore and friends' lists at once
+        return json({ ok: true, deleted: true });
+      }
+      const on = body.on !== false;
+      await logEvent("", "archive", { job, on }, user.id);
+      return json({ ok: true, archived: on });
+    }
     if (op === "set_visibility") {   // who can find one of the member's own videos
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);
