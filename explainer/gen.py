@@ -6,6 +6,12 @@ import edge_tts
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 ENV = dict(os.environ)   # on the server renderer the key comes from the environment
+_PF = os.environ.get("PROGRESS_FILE")
+def progress(msg):
+    """One line about what is happening now. render_job.py reads the last line and shows it to the viewer as the step detail. The words decide which step lights up (see stepOf in the web app): reading / writing the script / checking / recording."""
+    if not _PF: return
+    try: open(_PF, "a", encoding="utf-8").write(str(msg)[:120].replace(chr(10), " ") + chr(10))
+    except Exception: pass
 _dotenv = os.path.join(ROOT, "..", ".env") if os.path.exists(os.path.join(ROOT, "..", ".env")) else "C:/Users/bryan/Documents/Github/paper-repro-agent/.env"
 if os.path.exists(_dotenv):
     for line in open(_dotenv, encoding="utf-8"):
@@ -93,14 +99,17 @@ def ocr_pages(data, limit=OCR_PAGES):
     import fitz
     doc = fitz.open(stream=data, filetype="pdf")
     n = min(len(doc), limit)
+    progress(f"reading the source: this PDF is a scan, reading {n} pages one by one")
     model = ENV.get("OCR_MODEL") or os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001")
     base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
     ask = ("Transcribe all the text on this scanned page exactly as printed, in its own language, keeping every diacritic, number, date and legal reference (for example Dieu, Khoan, Muc). "
            "Keep headings and numbering on their own lines. Write a table as one row per line with ' | ' between the cells. Ignore stamps, signatures and page decoration. "
            "Output only the transcription, nothing else. If the page has no text, output nothing.")
+    got_pages = [0]
     def one(i):
         pix = doc[i].get_pixmap(dpi=130)
         txt = vlm(ask, base64.b64encode(pix.tobytes("jpeg")).decode(), "image/jpeg", 2600, "ocr", i + 1)
+        got_pages[0] += 1; progress(f"reading the source: scanned page {got_pages[0]} of {n}")
         return re.sub(r"[ \t]+", " ", txt)
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex: pages = list(ex.map(one, range(n)))
     print("ocr: read", sum(1 for p in pages if p), "of", n, "scanned pages with", model)
@@ -139,11 +148,13 @@ def describe_figures(figs, out, limit=8):
     if not todo or not ENV.get("RKAPI_API_KEY"): return
     ask = ("This is a figure from a document. In at most two short sentences, say what it shows: the kind of chart or diagram, what is compared, and the main values or trend you can actually read. "
            "Write in the language of the caption. Do not guess anything you cannot see. Output only those sentences.")
+    seen_f = [0]
     def one(f):
         try: data = open(os.path.join(out, f["file"]), "rb").read()
         except Exception: return
         d = vlm(ask + " Caption: " + (f.get("caption") or ""), base64.b64encode(data).decode(), "image/png", 220, "figdesc", f["id"])
         if d: f["desc"] = re.sub(r"\s+", " ", d)[:400]
+        seen_f[0] += 1; progress(f"reading the figures: {seen_f[0]} of {len(todo)}")
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex: list(ex.map(one, todo))
     print("figure notes:", sum(1 for f in todo if f.get("desc")), "of", len(todo))
 
@@ -519,7 +530,7 @@ async def main():
     out = os.path.join(ROOT, "out", (a.slug or a.arxiv).replace("/", "_")); os.makedirs(out, exist_ok=True)
     LABEL = 'uploaded PDF' if a.file else (__import__('urllib.parse').parse.urlparse(a.url).hostname or 'paper').replace('www.', '') if a.url else f'arXiv:{a.arxiv}'
     try:
-        title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text)); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
+        title, abstract, text = paper_file(a.file) if a.file else paper_url(a.url) if a.url else paper(a.arxiv); print("paper:", title, "| text chars", len(text)); progress(f"reading the source: found {len(text):,} characters of text"); open(os.path.join(out, "paper.txt"), "w", encoding="utf-8").write(text)
         try:
             pdf = open(a.file, "rb").read(30_000_000) if a.file else (get_bytes(f"https://arxiv.org/pdf/{a.arxiv}") if (a.arxiv and not a.url) else b"")
             if pdf[:5] == b"%PDF-":
@@ -539,6 +550,7 @@ async def main():
         lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
         _note = re.sub(r"\.?\s*Look:.*$", "", a.custom or "").strip()   # the look is for the drawing, not for the script
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", _note).strip()[:300]) if _note else ""
+        if n > 1 and not a.edit_from: progress("writing the script: planning the parts")
         plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         # an edit of a finished video: every part except the chosen one is kept word for word, the chosen part is rewritten as asked
@@ -546,11 +558,15 @@ async def main():
         if prev and len(prev.get("sections") or []) >= 1:
             n = len(prev["sections"]); secs = [round(a.seconds / n)] * n
             plan = [{"title": (x or {}).get("title") or f"Part {k + 1}"} for k, x in enumerate(prev["sections"])]
+        done_parts = [0]
+        progress(f"writing the script: {n} parts, written side by side")
         def one(i, extra=""):
             sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note + extra)
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
             figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
-            return llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
+            res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
+            done_parts[0] += 1; progress(f"writing the script: part {done_parts[0]} of {n}")
+            return res_
         if prev:
             part = max(0, min(n - 1, a.edit_part))
             old = [x for x in prev["scenes"] if x.get("sec") == part]
@@ -582,17 +598,19 @@ async def main():
             usage = dict(results[0][1] or {})
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
-        normalize(sc); bad = verify(sc, text); print("unverified:", bad)
+        progress("checking quotes and numbers against the source"); normalize(sc); bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file) else title; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     LANGS = ["en", "zh"] if a.langs == "both" else [a.langs]   # a viewer who needs one language does not wait for the other
     VOICE = {"en": a.voice_en, "zh": a.voice_zh, **({a.langs: a.voice_x or OTHER[a.langs][1]} if a.langs in OTHER else {})}
     gate = asyncio.Semaphore(8)   # narration is a few clips per section: fetch them side by side, in every language at once
+    clips_done = [0]; clips_all = len(LANGS) * len(sc["scenes"])
     async def clip(lang, i, s):
         p = os.path.join(out, f"{lang}_{i}.mp3")
         if not (os.path.exists(p) and os.path.getsize(p) > 2000):
             async with gate: await tts(s[lang], VOICE[lang], p)
             trim_tail(p)
+        clips_done[0] += 1; progress(f"recording the narration: clip {clips_done[0]} of {clips_all}")
     await asyncio.gather(*(clip(lg, i, s) for lg in LANGS for i, s in enumerate(sc["scenes"])))
     theme, look = resolve_theme(a.theme, sc, a.custom)
     for lang in LANGS:
