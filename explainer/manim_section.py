@@ -280,17 +280,19 @@ def check(code):
     return None
 
 def ask(messages, model, key):
-    body = json.dumps({"model": model, "max_tokens": 16000, "temperature": 0.4, "stream": True, "messages": messages}).encode()
+    body = json.dumps({"model": model, "max_tokens": 16000, "temperature": 0.4, "stream": True, "stream_options": {"include_usage": True}, "messages": messages}).encode()
     req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"})
-    txt = ""
+    txt, used = "", {}
     for raw in urllib.request.urlopen(req, timeout=240):   # streamed: RKAPI stalls non-streamed answers
         line = raw.decode("utf-8", "ignore").strip()
         if not line.startswith("data:") or line.endswith("[DONE]"): continue
-        try: txt += (json.loads(line[5:])["choices"][0].get("delta") or {}).get("content") or ""
+        try:
+            ch = json.loads(line[5:]); used = ch.get("usage") or used
+            if ch.get("choices"): txt += (ch["choices"][0].get("delta") or {}).get("content") or ""
         except Exception: pass
-    try:
+    try:   # the real token counts when the gateway sends them (they include the model's hidden reasoning), else an estimate from the text
         import usage as _u
-        _u.rec(model, None, None, json.dumps(messages, ensure_ascii=False), txt, "draw")
+        _u.rec(model, used.get("prompt_tokens"), used.get("completion_tokens"), json.dumps(messages, ensure_ascii=False), txt, "draw")
     except Exception: pass
     m = re.search(r"```(?:python)?\s*(.*?)```", txt, re.S)
     if m: return m.group(1).strip(), txt

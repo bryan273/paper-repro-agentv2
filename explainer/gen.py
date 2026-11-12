@@ -378,12 +378,15 @@ def lenient_json(txt):
         p = body.rfind("}", 0, p); tries += 1
     return None
 
+class EmptyAnswer(Exception):
+    """The model answered, but with no text: asking the same model again rarely helps, so the next model is tried at once."""
+
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
     stream = mid == "rkapi"   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
     payload = {"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.3, "max_tokens": 8000, **extra}
-    if stream: payload["stream"] = True
+    if stream: payload["stream"] = True; payload["stream_options"] = {"include_usage": True}
     elif mid not in ("relay", "paratera"): payload["response_format"] = {"type": "json_object"}   # the DeepSeek gateway answers empty in JSON mode under load; the reply is parsed leniently instead
     hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"}
     if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": ("ap-northeast-2", "ap-southeast-1")[attempt % 2], "x-timeout-ms": "90000"})
@@ -391,20 +394,23 @@ def llm_one(mid, system, user, attempt=0):
     r = urllib.request.Request(url, json.dumps(payload).encode(), hdr)
     resp = urllib.request.urlopen(r, timeout=100)
     if stream:
-        txt, usage = "", {}
+        txt, usage, head = "", {}, []
         for raw in resp:
             line = raw.decode("utf-8", "ignore").strip()
+            if len(head) < 3 and line: head.append(line[:160])
             if not line.startswith("data:") or line.endswith("[DONE]"): continue
             try: ch = json.loads(line[5:])
             except Exception: continue
             for c in ch.get("choices") or []: txt += (c.get("delta") or {}).get("content") or ""
             usage = ch.get("usage") or usage
+        if not txt.strip(): print("llm", mid, "empty answer; the stream began with:", head, flush=True)
     else:
         out = json.load(resp); txt = out["choices"][0]["message"]["content"] or ""; usage = out.get("usage", {})
     try:
         import usage as _u
-        _u.rec(name, usage.get("prompt_tokens"), usage.get("completion_tokens"), system + user, txt, "script")
+        _u.rec(name, usage.get("prompt_tokens"), usage.get("completion_tokens"), system + user, txt, "script" if txt.strip() else "script-empty")
     except Exception: pass
+    if not txt.strip(): raise EmptyAnswer(f"{mid} answered nothing")
     m = re.search(r"\{.*\}", txt, re.S)
     try: return json.loads(m.group(0) if m else txt), usage
     except json.JSONDecodeError:
@@ -439,6 +445,10 @@ def llm(system, user, model="deepseek"):
                 if e.code in (401, 402, 403, 429, 502, 503):   # out of credit, no access or busy: try the next model
                     if mid == "rkapi": RK_DEAD_UNTIL[0] = time.time() + 600
                     break
+            except EmptyAnswer as e:
+                last = e; print(f"llm {mid} attempt {attempt}: empty answer", flush=True)
+                if patient: time.sleep(4); continue   # the relayed gateway sometimes answers empty under load: it is worth one more ask
+                break
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
                 if patient: time.sleep(4)
