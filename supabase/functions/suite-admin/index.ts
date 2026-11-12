@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
     const [users, jobsRecent, jobsAll, usage, reproRecent, reproAll, orders, feedback, plans, signups, visits, handleEvs, asks30, visits7, research30, edits30, actEvs, leaveEvs, replyEvs] = await Promise.all([
       safe(db("explainer_users?select=id,username,credits,banned,created_at,last_login&order=created_at.desc&limit=3000"), [] as any[]),
       safe(db("explainer_jobs?select=id,arxiv,title,status,stage,user_id,seconds,langs,cost_usd,error,created_at&order=created_at.desc&limit=400"), [] as any[]),
-      safe(db(`explainer_jobs?select=created_at,status,langs,seconds,cost_usd,user_id&created_at=gte.${sinceN}&order=created_at.desc&limit=20000`), [] as any[]),
+      safe(db(`explainer_jobs?select=created_at,status,langs,seconds,cost_usd,usage,user_id&created_at=gte.${sinceN}&order=created_at.desc&limit=20000`), [] as any[]),
       safe(db(`agent_usage?select=app,prompt_tokens,completion_tokens,created_at&created_at=gte.${since30}&limit=50000`), [] as any[]),
       safe(db("repro_jobs?select=id,arxiv_id,title,lang,status,verdict,agent,model,created_at&order=created_at.desc&limit=300"), [] as any[]),
       safe(db(`repro_jobs?select=created_at,status&created_at=gte.${sinceN}&limit=10000`), [] as any[]),
@@ -293,6 +293,23 @@ Deno.serve(async (req) => {
       edits: E.length,
       prices: PRICE, credit_usd: CREDIT_USD,
       by_lang: byLang,
+      // where the video money goes (30 days, CNY): every model call of every render, finished or failed, by step and by model
+      steps: (() => {
+        const all30 = JA.filter((j: any) => j.created_at >= since30 && j.usage);
+        const add = (m: Map<string, { calls: number; cny: number }>, k: string, calls: number, usd: number) => { const x = m.get(k) ?? { calls: 0, cny: 0 }; x.calls += calls; x.cny += usd * USD_CNY; m.set(k, x); };
+        const part = new Map<string, { calls: number; cny: number }>(), model = new Map<string, { calls: number; cny: number }>();
+        for (const j of all30) {
+          for (const [k, v] of Object.entries(j.usage?.by_part ?? {}) as [string, any][]) add(part, k, v.calls || 0, Number(v.usd) || 0);
+          for (const [k, v] of Object.entries(j.usage?.by_model ?? {}) as [string, any][]) add(model, k, v.calls || 0, Number(v.usd) || 0);
+        }
+        const out = (m: Map<string, { calls: number; cny: number }>) => [...m.entries()].map(([k, x]) => ({ k, calls: x.calls, cny: Math.round(x.cny * 1000) / 1000 })).sort((a, b) => b.cny - a.cny);
+        return { by_step: out(part), by_model: out(model), measured: all30.length, older: JA.filter((j: any) => j.created_at >= since30 && !j.usage).length };
+      })(),
+      failed: (() => {
+        const f = JA.filter((j: any) => j.status === "failed" && j.created_at >= since30);
+        const cny = f.reduce((n: number, j: any) => n + (Number(j.cost_usd) || 0), 0) * USD_CNY;
+        return { n: f.length, total: Math.round(cny * 1000) / 1000, each: f.length ? Math.round((cny / f.length) * 1000) / 1000 : null };
+      })(),
     };
 
     // ---- where people are: chosen country, country of the connection, visitors by country and day

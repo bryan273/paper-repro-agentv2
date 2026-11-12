@@ -37,7 +37,7 @@ def price(model):
 
 def summary(path=None):
     path = path or _path()
-    out = {"usd": 0.0, "credits": 0.0, "calls": 0, "tokens_in": 0, "tokens_out": 0, "estimated_calls": 0, "by_model": {}}
+    out = {"usd": 0.0, "credits": 0.0, "calls": 0, "tokens_in": 0, "tokens_out": 0, "estimated_calls": 0, "by_model": {}, "by_part": {}}
     try: lines = open(path, encoding="utf-8").read().splitlines()
     except Exception: return out
     for ln in lines:
@@ -46,6 +46,8 @@ def summary(path=None):
         pi, po = price(r["model"]); credits = (r["in"] * pi + r["out"] * po) / 1e6; usd = credits * CREDIT_TO_USD
         b = out["by_model"].setdefault(r["model"], {"calls": 0, "in": 0, "out": 0, "usd": 0.0})
         b["calls"] += 1; b["in"] += r["in"]; b["out"] += r["out"]; b["usd"] = round(b["usd"] + usd, 5)
+        bp = out["by_part"].setdefault(r.get("part") or "other", {"calls": 0, "usd": 0.0})   # which step spent it: script, ocr, figdesc, draw, review
+        bp["calls"] += 1; bp["usd"] = round(bp["usd"] + usd, 5)
         out["usd"] += usd; out["credits"] += credits; out["calls"] += 1; out["tokens_in"] += r["in"]; out["tokens_out"] += r["out"]; out["estimated_calls"] += 1 if r.get("est") else 0
     out["usd"] = round(out["usd"], 4); out["credits"] = round(out["credits"], 4)
     return out
