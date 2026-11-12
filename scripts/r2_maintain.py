@@ -1,4 +1,4 @@
-"""Keeps the Cloudflare R2 bucket inside its free 10 GB: removes the videos of jobs older than RETENTION_DAYS (7), and if the bucket
+"""Keeps the Cloudflare R2 bucket inside its free 10 GB: removes the videos of members without a paid plan 30 days after they were made or after the plan ended (RETENTION_DAYS), and if the bucket
 is still above HARD_LIMIT (9 GB) removes the oldest ones until it is under TARGET (8.5 GB). A removed video's job is kept (title, text,
 history) but marked expired_at, so the page says "expired, make it again" instead of showing a broken player. It also records the bucket
 size in ops_r2_usage for the admin panel.
@@ -12,29 +12,36 @@ import sys
 import urllib.parse
 import urllib.request
 
-RETENTION_DAYS = 7
+RETENTION_DAYS = 30   # without a paid plan a video is kept this long: from when it was made, or from when the last plan ended, whichever is later
 TRASH_DAYS = 7   # a video the member deleted waits this long in "Recently deleted", then it is removed for good
-PLAN_DAYS = {"plus": 30, "pro": 90, "premium": 270}   # how long a member's videos are kept while their plan is active
+FOREVER = "forever"   # a member with a paid plan running (and an admin): their videos are not removed for age
 GB = 1024 ** 3
 HARD_LIMIT, TARGET = int(9 * GB), int(8.5 * GB)
 DRY = "--dry-run" in sys.argv
 
 
 def pick_expired(jobs, sizes, now, base, keep=None):
-    """jobs: rows with id, created_at, videos, user_id. sizes: {prefix: bytes}. keep: {user_id: days} for members on a plan (Plus 30, Pro 90, Premium 270; everyone else 14).
-    Returns the prefixes to remove, oldest first, with the reason."""
+    """jobs: rows with id, created_at, videos, user_id. sizes: {prefix: bytes}.
+    keep: {user_id: FOREVER or the ISO time the member's last plan ended}. A member with a plan running keeps every video; everyone else's video goes
+    RETENTION_DAYS after the later of "made" and "plan ended". If the bucket is still above the hard limit the oldest of the rest go first.
+    Returns [(job_id, prefix, reason)], oldest first."""
     keep = keep or {}
     mine = []
     for j in jobs:
         url = (j.get("videos") or {}).get("en") or ""
         if not url.startswith(base.rstrip("/") + "/") or j.get("expired_at"):
             continue
+        k = keep.get(j.get("user_id"))
+        if k == FOREVER:
+            continue
         prefix = urllib.parse.urlparse(url).path.lstrip("/").rsplit("/", 1)[0] + "/"
-        mine.append((j["created_at"], j["id"], prefix, keep.get(j.get("user_id"), RETENTION_DAYS)))
+        start = max(j["created_at"], k or "")
+        mine.append((j["created_at"], j["id"], prefix, start))
     mine.sort()
-    out = [(i, p, "older than %d days" % d) for c, i, p, d in mine if c < (now - datetime.timedelta(days=d)).isoformat()]
+    cutoff = (now - datetime.timedelta(days=RETENTION_DAYS)).isoformat()
+    out = [(i, p, "older than %d days without a plan" % RETENTION_DAYS) for c, i, p, start in mine if start < cutoff]
     left = sum(sizes.values()) - sum(sizes.get(p, 0) for _, p, _ in out)
-    for c, i, p, _d in mine:
+    for c, i, p, _start in mine:
         if left <= HARD_LIMIT:
             break
         if any(i == o[0] for o in out):
@@ -112,13 +119,17 @@ def main():
     req = urllib.request.Request(sb + "/rest/v1/explainer_jobs?status=eq.done&expired_at=is.null&select=id,created_at,videos,user_id&order=created_at.asc&limit=2000", headers=hdr)
     jobs = json.load(urllib.request.urlopen(req, timeout=60))
     keep = {}
-    try:   # members with an active plan keep their videos longer (newest plan event per member, still running)
-        pe = json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_events?type=eq.plan&select=user_id,meta&order=created_at.desc&limit=2000", headers=hdr), timeout=60))
+    try:   # members with a plan running keep every video; for the others the later of "made" and "last plan ended" starts the clock
+        pe = json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_events?type=eq.plan&select=user_id,meta&order=created_at.desc&limit=5000", headers=hdr), timeout=60))
         now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
         for e in pe:
-            m = e.get("meta") or {}
-            if e["user_id"] not in keep and (m.get("until") or "") > now_iso:
-                keep[e["user_id"]] = PLAN_DAYS.get(m.get("plan"), RETENTION_DAYS)
+            if e["user_id"] in keep:
+                continue   # newest plan event per member only
+            until = ((e.get("meta") or {}).get("until") or "")
+            keep[e["user_id"]] = FOREVER if until > now_iso else until
+        admins = [x.strip().lower() for x in os.environ.get("ADMIN_EMAILS", "bryantjandra273@gmail.com").split(",") if x.strip()]
+        for u in json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_users?select=id&username=in.(" + ",".join(urllib.parse.quote(a) for a in admins) + ")", headers=hdr), timeout=60)):
+            keep[u["id"]] = FOREVER
     except Exception as ex:
         print("plan lookup skipped:", str(ex)[:100])
     todo = pick_expired(jobs, sizes, datetime.datetime.now(datetime.timezone.utc), base, keep)

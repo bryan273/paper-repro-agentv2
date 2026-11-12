@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart, isAdmin, KEEP_DAYS, TRASH_DAYS, units, type Quota } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart, isAdmin, FREE_KEEP_DAYS, TRASH_DAYS, units, type Quota } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download", "leave"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
@@ -247,7 +247,9 @@ Deno.serve(async (req) => {
           db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,custom,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`),
           db(`explainer_events?user_id=eq.${user.id}&type=eq.edit&select=meta&limit=500`).catch(() => []),
         ]);
-        const keep = KEEP_DAYS[(await activePlan(user.id)) ?? "free"];   // the days a finished video is kept for this member's plan
+        const pinfo = await planInfo(user.id);
+        const forever = isAdmin(user) || !!pinfo.plan;   // a paid plan (or an admin) keeps videos; without one they go FREE_KEEP_DAYS after the later of "made" and "plan ended"
+        const planEnd = pinfo.plan_until && !pinfo.plan ? Date.parse(pinfo.plan_until) : 0;
         const editJobs = new Set((edits as { meta: { job?: string } }[]).map((e) => String(e.meta?.job ?? "")));
         const vis = await visibilityOf((rows as { id: string }[]).map((r) => r.id));
         // a member's own tidying: "trash" hides a video from their list for good, "archive" parks it out of the main list (the newest choice counts)
@@ -259,8 +261,8 @@ Deno.serve(async (req) => {
         const live = new Set<string>();
         for (const r of rows as Row[]) if (r.status !== "failed") { const k = String(r.source_url || r.arxiv || r.title || ""); if (k) live.add(k); }
         const retried = (r: Row) => r.status === "failed" && live.has(String(r.source_url || r.arxiv || r.title || ""));
-        const expiry = (r: { status: string; created_at?: string; expired_at?: string | null }) => r.status === "done" && !r.expired_at && r.created_at ? new Date(Date.parse(r.created_at) + keep * 86400_000).toISOString() : null;
-        return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id), expires_at: expiry(r as never), keep_days: keep })));
+        const expiry = (r: { status: string; created_at?: string; expired_at?: string | null }) => r.status === "done" && !r.expired_at && r.created_at && !forever ? new Date(Math.max(Date.parse(r.created_at), planEnd) + FREE_KEEP_DAYS * 86400_000).toISOString() : null;
+        return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id), expires_at: expiry(r as never), kept_while_plan: forever })));
       }
       if (u.searchParams.get("trash")) {   // "Recently deleted": videos the member deleted in the last TRASH_DAYS days, each with the date it goes for good
         if (!user) return json({ error: "Sign in first." }, 401);
@@ -345,6 +347,7 @@ Deno.serve(async (req) => {
         welcomeOffer(user), verifyOf(user), referralOf(user), user ? publicUserH(user) : Promise.resolve(null), quotaFor(user, actor),
       ]);
       // the country given at sign-up: the pricing page shows that money first
+      if (isAdmin(user) && !pi.plan) { pi.plan = "premium"; pi.plan_until = new Date(Date.now() + 3650 * 86400_000).toISOString(); pi.plan_source = "admin"; }   // an admin account is never shown as Free
       return json({ ...pi, country: su?.meta?.country ?? null, interactive: { used: iu.used, cap: iu.cap, left: iu.left, resets: iu.resets, jobs: iu.jobs, period: iu.period }, usage, tiers: TIERS, offer, verify, referral, admin: !!user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()), user: pu, quota, limits: { guest: GUEST_DAY, member: MEMBER_WEEK, welcome: WELCOME_CREDITS }, packs: PACKS });
     }
 

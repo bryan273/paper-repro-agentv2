@@ -6,7 +6,7 @@ export const json = (o: unknown, status = 200) => new Response(JSON.stringify(o)
 
 // free videos: a guest gets 1 per rolling 24 hours, a signed-in member 5 per rolling 7 days; paid credits come on top
 export const GUEST_DAY = Number(Deno.env.get("EXPLAINER_GUEST_DAY") ?? "1");
-export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "3");
+export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "2");   // free videos a week, for every member (plans too)
 export const WELCOME_CREDITS = Number(Deno.env.get("EXPLAINER_WELCOME_CREDITS") ?? "3");
 /** What a video costs: 1 video up to 5 minutes, 2 for a longer one (7 or 10 minutes). */
 /** Video credits a video uses: one for every started 5 minutes (a 3 minute video is 1, 10 minutes is 2, 20 minutes is 4). */
@@ -67,8 +67,8 @@ export const TIERS: Record<string, { interactive: number; deep: number; quick: n
 };
 export const WELCOME_INTERACTIVE = 3;
 export const PLAN_NAMES = ["plus", "pro", "premium"];
-/** Days a finished video is kept: free 7, Plus 30, Pro 90, Premium 270 (scripts/r2_maintain.py uses the same numbers). */
-export const KEEP_DAYS: Record<string, number> = { free: 7, plus: 30, pro: 90, premium: 270 };
+/** A finished video is kept while its owner has a paid plan (and for admins). Without one it is kept this many days: from the day it was made, or from the day the last plan ended, whichever is later. scripts/r2_maintain.py uses the same rule. */
+export const FREE_KEEP_DAYS = 30;
 /** A deleted video waits this many days in "Recently deleted" before it is removed for good. */
 export const TRASH_DAYS = 7;
 /** The video credits a plan gives per month (a gift of N days gives the same share of it). */
