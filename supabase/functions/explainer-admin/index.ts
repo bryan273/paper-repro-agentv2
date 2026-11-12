@@ -18,6 +18,7 @@ const db = async (path: string, init: RequestInit = {}) => {
   if (!r.ok) throw new Error(`db ${r.status}`);
   return r.headers.get("content-type")?.includes("json") ? r.json() : null;
 };
+let OPS_CACHE: { at: number; ops: unknown } | null = null;   // the last storage count of this function instance
 const count = async (q: string) => {
   const r = await fetch(`${SB_URL}/rest/v1/${q}&select=id`, { headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}`, Prefer: "count=exact", Range: "0-0" } });
   return Number((r.headers.get("content-range") ?? "").split("/")[1]) || 0;
@@ -67,9 +68,11 @@ Deno.serve(async (req) => {
     if (!viewer && me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
 
     const q = new URL(req.url).searchParams;
-    if (req.method === "GET" && q.get("ops")) {   // only the storage numbers: the full dashboard below runs 17 queries and takes seconds
+    if (req.method === "GET" && q.get("ops")) {   // only the storage numbers; counting them scans several tables (3 to 4 s), so the answer is kept for an hour. ?fresh=1 counts again.
+      if (!q.get("fresh") && OPS_CACHE && Date.now() - OPS_CACHE.at < 3600_000) return json({ ops: OPS_CACHE.ops, counted_at: new Date(OPS_CACHE.at).toISOString(), cached: true });
       const ops = await db("rpc/ops_stats", { method: "POST", body: "{}" }).catch(() => null);
-      return json({ ops });
+      if (ops) OPS_CACHE = { at: Date.now(), ops };
+      return json({ ops: ops ?? OPS_CACHE?.ops ?? null, counted_at: new Date(ops ? Date.now() : OPS_CACHE?.at ?? 0).toISOString(), cached: !ops });
     }
     if (req.method === "GET" && !viewer && q.get("member")) {   // one member's credits: balance, plan, and what every credit was used for
       const id = String(q.get("member"));
