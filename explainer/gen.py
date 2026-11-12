@@ -104,6 +104,7 @@ def ocr_pages(data, limit=OCR_PAGES):
     base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
     ask = ("Transcribe all the text on this scanned page exactly as printed, in its own language, keeping every diacritic, number, date and legal reference (for example Dieu, Khoan, Muc). "
            "Keep headings and numbering on their own lines. Write a table as one row per line with ' | ' between the cells. Ignore stamps, signatures and page decoration. "
+           "If the page is a slide with a chart, diagram, map or photo that carries meaning, add one line after the text: [Picture: what it shows, in a few words]. "
            "Output only the transcription, nothing else. If the page has no text, output nothing.")
     got_pages = [0]
     def one(i):
@@ -160,15 +161,17 @@ def describe_figures(figs, out, limit=8):
 
 def pdf_text_or_ocr(data, text):
     """The text layer if it is enough; else (a scan, or a layer of noise) the pages read with the vision model. Returns the text, or the same text if nothing better could be had."""
+    garbled = False
     try:
         ensure_readable(text, "PDF")
         if len(text) >= 1500: return text
-    except RuntimeError: pass
+    except RuntimeError: garbled = True   # e.g. a slide deck saved as PDF whose fonts map letters to other codes: long, but unreadable
     try:
         pages = ocr_pages(data)
     except Exception as e:
         print("ocr skipped:", str(e)[:120]); return text
     got = re.sub(r"[ \t]+", " ", "\n".join(pages)).strip()
+    if garbled: return got if len(got) >= 200 else text   # a garbled layer is never better than what the pictures say, however long it is
     return got if len(got) > len(text) else text
 
 def paper_url(url):
@@ -264,7 +267,7 @@ def paper_file(path):
     title = (doc.metadata or {}).get("title") or ""
     if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     text = re.sub(r"[ \t]+", " ", text).strip()
-    if len(text) < 1500: raise RuntimeError("Could not read enough text from that PDF, even after reading it as pictures. Try a clearer scan, or paste the text instead.")
+    if len(text) < 400: raise RuntimeError("Could not read enough text from that PDF, even after reading it as pictures. Try a clearer scan, or paste the text instead.")
     ensure_readable(text, "PDF")
     return title[:200], text[:1500], text[:60000]
 
@@ -564,6 +567,8 @@ async def main():
         if os.environ.get("USER_ERROR_FILE"):
             open(os.environ["USER_ERROR_FILE"], "w", encoding="utf-8").write(note)
         raise
+    if len(text) < 2500 and 90 < a.seconds <= 300:   # a short source cannot fill minutes without padding: keep it to about 1.5 minutes (the credit is the same)
+        print("short source:", len(text), "chars, video kept to 90 s"); progress("reading the source: the source is short, so the video is kept short"); a.seconds = 90
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
