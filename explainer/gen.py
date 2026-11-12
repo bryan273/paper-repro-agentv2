@@ -312,6 +312,13 @@ SECTIONS = ["the problem and why it matters", "what earlier approaches did and w
 PLAN_SYSTEM = """You plan a short explainer video about one source text (a research paper, article, lesson, report or notes) that is told in {N} consecutive sections. Return ONLY JSON: {"sections":[{"title":str(max 7 words),"focus":str(one sentence),"points":[3 or 4 short concrete points from the paper this section explains, each a different fact, method step or number]}]} with exactly {N} sections.
 Rules: the sections follow the paper's own logic (problem, idea, method, evidence, meaning) and tell one story from first to last; no point appears in two sections; every point comes from the PAPER TEXT; the last section ends on what it means for the reader."""
 
+DEEP_RULE = """
+
+IN-DEPTH MODE (the viewer switched it on; for the scenes marked "bg" it replaces the rule that everything comes from the paper):
+The viewer wants more than the source. Before writing, decide what the source assumes or skips: a term it uses without defining, the background a newcomer lacks, why it matters, a concrete worked example.
+Write AT LEAST TWO scenes in this part that teach such background, and mark each of them "bg": true. A background scene has "evidence": null, states only well-established textbook knowledge, invents no numbers, names, dates or quotes, and never says the source said it.
+Every other scene keeps "bg": false, comes from the source and keeps its verbatim evidence. Put background where it helps (before the idea that needs it), and keep the source at the centre."""
+
 def plan_sections(title, text, n, model):
     """One cheap call that decides what each section covers, so the sections written in parallel do not repeat each other."""
     try:
@@ -594,10 +601,6 @@ async def main():
         if SRC:
             custom += (f"\nTHIS VIDEO COMBINES {len(SRC)} SOURCES on one topic. In the PAPER TEXT each source starts with a line '=== SOURCE k: name ==='. Teach them as ONE coherent lesson: connect them and compare them where they differ; do not summarise one source after the other. In EVERY scene add \"src\": k, the number of the source the scene mainly draws on (an integer). \"evidence\" and quotes stay a verbatim copy from that one source, never from the header lines."
                        + (("\n" + "\n".join(OUTL) + "\nThis is the final video that brings those videos together: keep their strongest ideas, follow a fresh order that builds one story, and do not retell each earlier video part by part.") if OUTL else ""))
-        if DEEP:
-            custom += ("\nIN-DEPTH MODE: the viewer wants more than the source. First find what the source assumes or skips (terms it does not define, background, why it matters, a worked example), then explain those too. "
-                       "Every scene that uses knowledge from outside the source MUST set \"bg\": true; such a scene has \"evidence\": null, states only well-established general knowledge, never invents numbers, names, dates or quotes, and never attributes anything to the source. "
-                       "Scenes about what the source itself says keep \"bg\": false and their verbatim evidence. Keep the source at the centre: background serves it, it does not replace it.")
         if n > 1 and not a.edit_from: progress("writing the script: planning the parts")
         plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
@@ -610,6 +613,7 @@ async def main():
         progress(f"writing the script: {n} parts, written side by side")
         def one(i, extra=""):
             sysmsg = SYSTEM.replace("{TONE}", TONES.get(a.tone, TONES["teacher"])).replace("{ORDER}", order_for(i, n, plan)).replace("{SECONDS}", str(secs[i])).replace("{WORDS}", str(int(secs[i] * 2.4))).replace("{CUSTOM}", custom + lang_note + extra)
+            if DEEP: sysmsg += DEEP_RULE
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
             figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
             res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
