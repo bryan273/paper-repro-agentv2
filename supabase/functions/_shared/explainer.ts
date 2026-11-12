@@ -10,7 +10,9 @@ export const MEMBER_WEEK = Number(Deno.env.get("EXPLAINER_MEMBER_WEEK") ?? "3");
 export const WELCOME_CREDITS = Number(Deno.env.get("EXPLAINER_WELCOME_CREDITS") ?? "3");
 /** What a video costs: 1 video up to 5 minutes, 2 for a longer one (7 or 10 minutes). */
 /** Video credits a video uses: one for every started 5 minutes (a 3 minute video is 1, 10 minutes is 2, 20 minutes is 4). */
-export const units = (sec: number) => Math.max(1, Math.ceil((sec || 36) / 300));
+export const isDeep = (custom?: string | null) => /In-depth: yes/.test(custom || "");
+/** Video credits: one per started 5 minutes; an in-depth video uses two, because a stronger model writes it. */
+export const units = (sec: number, custom?: string | null) => Math.max(1, Math.ceil((sec || 36) / 300)) * (isDeep(custom) ? 2 : 1);
 /** The longest video each plan may make: free 3 minutes, Plus 5, Pro and Premium 10 (pack videos are Pro videos). */
 export const maxSeconds = (plan: string | null, packBuyer: boolean) => (plan === "premium" ? 1200 : plan === "pro" || packBuyer ? 600 : plan === "plus" ? 300 : 180);
 /** The 9 languages a video can be narrated in (one language per video). */
@@ -112,8 +114,8 @@ export async function quotaFor(user: User | null, actor: string): Promise<Quota>
   const span = (user ? 7 : 1) * 86400_000;
   const since = new Date(Date.now() - span).toISOString();
   const who = user ? `user_id=eq.${user.id}` : `visitor=eq.${actor}&user_id=is.null`;
-  const rows = await db(`explainer_jobs?${who}&status=neq.failed&created_at=gte.${since}&select=seconds,credit_used,created_at&order=created_at.asc`);
-  const used = rows.reduce((n: number, r: { seconds: number; credit_used: number }) => n + Math.max(0, units(r.seconds) - (r.credit_used || 0)), 0);
+  const rows = await db(`explainer_jobs?${who}&status=neq.failed&created_at=gte.${since}&select=seconds,custom,credit_used,created_at&order=created_at.asc`);
+  const used = rows.reduce((n: number, r: { seconds: number; custom: string | null; credit_used: number }) => n + Math.max(0, units(r.seconds, r.custom) - (r.credit_used || 0)), 0);
   const limit = user ? (isAdmin(user) ? 9999 : MEMBER_WEEK) : GUEST_DAY;
   const left = Math.max(0, limit - used);
   const oldest = rows[0] ? Date.parse(rows[0].created_at) + span - Date.now() : null;
