@@ -491,6 +491,7 @@ def verify(sc, text):
         if s["type"] == "number":
             v = str(s["value"]).rstrip("0").rstrip(".") if "." in str(s["value"]) else str(s["value"])
             if v not in text: bad.append((i, f"number {s['value']} not in paper"))
+            if v not in text and s.get("bg") is True: s["type"] = "cards"; s["cards"] = [{"h": "Background", "t": s["en"][:50]}]   # a figure from outside the source is not shown as a fact
             for b in s.get("bars") or []:
                 bv = str(b["value"]).rstrip("0").rstrip(".") if "." in str(b["value"]) else str(b["value"])
                 if bv not in text: bad.append((i, f"bar {b['value']} not in paper")); s["bars"] = [x for x in s["bars"] if x is not b]
@@ -570,18 +571,23 @@ async def main():
         if os.environ.get("USER_ERROR_FILE"):
             open(os.environ["USER_ERROR_FILE"], "w", encoding="utf-8").write(note)
         raise
-    if len(text) < 2500 and 90 < a.seconds <= 300:   # a short source cannot fill minutes without padding: keep it to about 1.5 minutes (the credit is the same)
+    if len(text) < 2500 and 90 < a.seconds <= 300 and not re.search(r"In-depth: yes", a.custom or ""):   # a short source cannot fill minutes without padding: keep it to about 1.5 minutes (the credit is the same)
         print("short source:", len(text), "chars, video kept to 90 s"); progress("reading the source: the source is short, so the video is kept short"); a.seconds = 90
+    DEEP = bool(re.search(r"In-depth: yes", a.custom or ""))
     sp = os.path.join(out, "scenes.json")
     if a.reuse and os.path.exists(sp): sc = json.load(open(sp, encoding="utf-8"))
     else:
         n, secs = part_plan(a.seconds)
         lang_note = "\nThis video is made in Chinese only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in simplified Chinese; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs == "zh" else (f"\nThis video is made in {OTHER[a.langs][0]} only: write ALL on-screen text (big, sub, h, t, label, unit, words, node and bar labels, note) in {OTHER[a.langs][0]}; \"evidence\" and the text of a \"quote\" scene stay a verbatim copy of the English paper." if a.langs in OTHER else "")
-        _note = re.sub(r"\.?\s*Look:.*$", "", a.custom or "").strip()   # the look is for the drawing, not for the script
+        _note = re.sub(r"\.?\s*In-depth: yes", "", re.sub(r"\.?\s*Look:.*$", "", a.custom or "")).strip()   # the look is for the drawing and the depth is a switch, neither is part of the note
         custom = ("\nThe viewer also asked for this (follow it only if it does not break the rules above, never invent facts): " + re.sub(r"\s+", " ", _note).strip()[:300]) if _note else ""
         if SRC:
             custom += (f"\nTHIS VIDEO COMBINES {len(SRC)} SOURCES on one topic. In the PAPER TEXT each source starts with a line '=== SOURCE k: name ==='. Teach them as ONE coherent lesson: connect them and compare them where they differ; do not summarise one source after the other. In EVERY scene add \"src\": k, the number of the source the scene mainly draws on (an integer). \"evidence\" and quotes stay a verbatim copy from that one source, never from the header lines."
                        + (("\n" + "\n".join(OUTL) + "\nThis is the final video that brings those videos together: keep their strongest ideas, follow a fresh order that builds one story, and do not retell each earlier video part by part.") if OUTL else ""))
+        if DEEP:
+            custom += ("\nIN-DEPTH MODE: the viewer wants more than the source. First find what the source assumes or skips (terms it does not define, background, why it matters, a worked example), then explain those too. "
+                       "Every scene that uses knowledge from outside the source MUST set \"bg\": true; such a scene has \"evidence\": null, states only well-established general knowledge, never invents numbers, names, dates or quotes, and never attributes anything to the source. "
+                       "Scenes about what the source itself says keep \"bg\": false and their verbatim evidence. Keep the source at the centre: background serves it, it does not replace it.")
         if n > 1 and not a.edit_from: progress("writing the script: planning the parts")
         plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
@@ -652,7 +658,8 @@ async def main():
             s["audio"] = f"{lang}_{i}.mp3"; s["audio_ms"] = dur_ms(p); s["dur"] = int(max(s["audio_ms"] + 350, 2600))   # a small breath after each scene, not a pause
             if s["type"] in ("cards", "flow", "tokens") : s["dur"] = max(s["dur"], 3600)
             lab = SRC.get(s.get("src") if isinstance(s.get("src"), int) else -1, LABEL) if SRC else LABEL
-            if s.get("evidence") is not None: s["evidence"] = f"{lab} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else lab
+            if s.get("bg") is True and not s.get("evidence"): s["evidence"] = "Background · not from the source"
+            elif s.get("evidence") is not None: s["evidence"] = f"{lab} · \u201c{s['evidence']}\u201d" if len(s["evidence"]) < 90 else lab
             elif s["type"] not in ("title", "end"): s["evidence"] = lab
         json.dump({"title": sc["title"], "arxiv": a.arxiv, "lang": lang, "mono": a.langs != "both", "theme": theme, "look": look, "scenes": scenes, "total": sum(s["dur"] for s in scenes)},
                   open(os.path.join(out, f"script_{lang}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -668,6 +675,7 @@ async def main():
         meta.append({"i": k, "title": sec.get("title") or f"Part {k + 1}", "title_zh": sec.get("title_zh") or sec.get("title") or f"第 {k + 1} 部分",
                      "text": sec.get("text") or " ".join(s["en"] for s in part), "text_zh": sec.get("text_zh") or "".join(s.get("zh") or "" for s in part),
                      "takeaway": sec.get("takeaway") or "", "takeaway_zh": sec.get("takeaway_zh") or "",
+                     **({"bg": True} if any(x.get("bg") is True for x in part) else {}),
                      **({"sources": [SRC[k_] for k_ in sorted({x.get("src") for x in part if isinstance(x.get("src"), int) and x.get("src") in SRC})]} if SRC else {}),
                      **({f"title_{a.langs}": sec.get(f"title_{a.langs}") or sec.get("title") or "", f"text_{a.langs}": sec.get(f"text_{a.langs}") or " ".join(s[a.langs] for s in part), f"takeaway_{a.langs}": sec.get(f"takeaway_{a.langs}") or ""} if a.langs in OTHER else {})})
     json.dump(meta, open(os.path.join(out, "sections.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
