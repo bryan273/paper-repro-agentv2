@@ -159,6 +159,9 @@ def describe_figures(figs, out, limit=8):
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex: list(ex.map(one, todo))
     print("figure notes:", sum(1 for f in todo if f.get("desc")), "of", len(todo))
 
+# a title an office program writes by itself says nothing about the document: use its first real line instead
+GENERIC_TITLE = re.compile(r"^(presentation|powerpoint presentation|untitled|document|slide ?\d*|microsoft (word|powerpoint) ?-.*|.*\.(pptx?|docx?|pdf))$", re.I)
+
 def pdf_text_or_ocr(data, text):
     """The text layer if it is enough; else (a scan, or a layer of noise) the pages read with the vision model. Returns the text, or the same text if nothing better could be had."""
     garbled = False
@@ -185,7 +188,7 @@ def paper_url(url):
         doc = fitz.open(stream=data, filetype="pdf"); text = "\n".join(p.get_text() for p in doc)
         text = pdf_text_or_ocr(data, text)
         title = (doc.metadata or {}).get("title") or ""
-        if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
+        if len(title.strip()) < 6 or GENERIC_TITLE.match(title.strip()): title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     else:
         h = data.decode("utf-8", "ignore")
         m = re.search(r"<meta[^>]+name=[\"']citation_title[\"'][^>]+content=[\"']([^\"']+)", h, re.I) or re.search(r"<title>(.*?)</title>", h, re.S | re.I)
@@ -265,7 +268,7 @@ def paper_file(path):
     text = "\n".join(p.get_text() for p in doc)
     text = pdf_text_or_ocr(data, text)
     title = (doc.metadata or {}).get("title") or ""
-    if len(title.strip()) < 6: title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
+    if len(title.strip()) < 6 or GENERIC_TITLE.match(title.strip()): title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     text = re.sub(r"[ \t]+", " ", text).strip()
     if len(text) < 400: raise RuntimeError("Could not read enough text from that PDF, even after reading it as pictures. Try a clearer scan, or paste the text instead.")
     ensure_readable(text, "PDF")
