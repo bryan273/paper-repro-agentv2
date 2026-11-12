@@ -1,6 +1,6 @@
 name: retention
 
-# Daily: videos on Cloudflare R2 are kept 14 days, then removed and their job marked expired ("make it again"); if the bucket still passes 9 GB
+# Daily: videos on Cloudflare R2 are kept while the owner has a paid plan, and 30 days after it ends (free: 30 days from making); then removed and their job marked expired ("make it again"); if the bucket still passes 9 GB
 # (free plan: 10 GB) the oldest go first. Also records the bucket size for the admin panel. Run by hand with dry_run=true to see what would go.
 on:
   schedule:
