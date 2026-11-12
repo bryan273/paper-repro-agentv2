@@ -195,7 +195,11 @@ Deno.serve(async (req) => {
     }
     if (!body.force_new) {   // the same paper with the same settings is not rendered twice; "make a new one" sends force_new
       const done = await db(`explainer_jobs?arxiv=eq.${a}&model=eq.${model}&voice=eq.${voice}&style=eq.${style}&tone=eq.${tone}&langs=eq.${langs}&seconds=eq.${seconds}&custom=eq.${encodeURIComponent(custom)}&status=in.(done,queued,running)&expired_at=is.null&select=${PUBLIC}&order=created_at.desc&limit=1`);
-      if (done.length) return json({ ...done[0], cached: true });
+      if (done.length) {
+        const u0 = await userOf(req);
+        const [tr] = u0 ? await db(`explainer_events?user_id=eq.${u0.id}&type=eq.trash&meta->>job=eq.${done[0].id}&select=meta&order=created_at.desc&limit=1`).catch(() => []) : [];
+        if (!(tr && tr.meta?.on !== false)) return json({ ...done[0], cached: true });   // the maker deleted it: make a new one instead
+      }
     }
     const user = await userOf(req);
     if (seconds > 180 && !isAdmin(user)) {   // free: up to 3 minutes; Plus: 5; Pro, Premium and pack videos: 10
@@ -240,7 +244,7 @@ Deno.serve(async (req) => {
     const [row] = await db(`explainer_jobs?select=${PUBLIC}`, { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ arxiv: a, title, source_url: multi ? "multi:" + JSON.stringify(multi) : up ? "upload:" + up : url, model, voice, style, tone, langs, seconds, custom, visitor: vid, user_id: user?.id ?? null, credit_used: fromCredits, stage: "waiting for a renderer" }) });
     if (user && fromCredits > 0) {
       await db(`explainer_users?id=eq.${user.id}`, { method: "PATCH", body: JSON.stringify({ credits: user.credits - fromCredits }) });
-      await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: -fromCredits, reason: `video ${a}` }) });
+      await db("explainer_credit_log", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ user_id: user.id, delta: -fromCredits, reason: `video: ${title.slice(0, 70)} (${Math.round(seconds / 60)} min${custom.includes("In-depth: yes") ? ", in-depth" : ""})` }) });
     }
     for (const p_ of [up, ...(multi ?? []).filter((m) => m.kind === "upload").map((m) => m.v)].filter(Boolean)) await db(`explainer_uploads?path=eq.${encodeURIComponent(p_)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ job_id: row.id }) });
     await logEvent(vid, "job_created", { arxiv: a, seconds, tier: q.tier, credits: fromCredits }, user?.id ?? null);

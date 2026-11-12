@@ -67,6 +67,12 @@ export const TIERS: Record<string, { interactive: number; deep: number; quick: n
 };
 export const WELCOME_INTERACTIVE = 3;
 export const PLAN_NAMES = ["plus", "pro", "premium"];
+/** Days a finished video is kept: free 7, Plus 30, Pro 90, Premium 270 (scripts/r2_maintain.py uses the same numbers). */
+export const KEEP_DAYS: Record<string, number> = { free: 7, plus: 30, pro: 90, premium: 270 };
+/** A deleted video waits this many days in "Recently deleted" before it is removed for good. */
+export const TRASH_DAYS = 7;
+/** The video credits a plan gives per month (a gift of N days gives the same share of it). */
+export const PLAN_CREDITS: Record<string, number> = { plus: 20, pro: 40, premium: 80 };
 /** The plan running now for a member, or null. */
 export async function activePlan(userId: string | undefined | null): Promise<string | null> {
   if (!userId) return null;

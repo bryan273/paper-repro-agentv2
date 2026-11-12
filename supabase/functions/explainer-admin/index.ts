@@ -67,6 +67,22 @@ Deno.serve(async (req) => {
     if (!viewer && me !== "admin" && !ADMINS.includes(me)) return json({ error: "This account is not an admin.", me }, 403);
 
     const q = new URL(req.url).searchParams;
+    if (req.method === "GET" && q.get("ops")) {   // only the storage numbers: the full dashboard below runs 17 queries and takes seconds
+      const ops = await db("rpc/ops_stats", { method: "POST", body: "{}" }).catch(() => null);
+      return json({ ops });
+    }
+    if (req.method === "GET" && !viewer && q.get("member")) {   // one member's credits: balance, plan, and what every credit was used for
+      const id = String(q.get("member"));
+      if (!/^[0-9a-f-]{36}$/.test(id)) return json({ error: "bad id" }, 400);
+      const [usr, ledger, jobs, plan] = await Promise.all([
+        db(`explainer_users?id=eq.${id}&select=id,username,credits,created_at`),
+        db(`explainer_credit_log?user_id=eq.${id}&select=id,created_at,delta,reason&order=id.desc&limit=200`),
+        db(`explainer_jobs?user_id=eq.${id}&select=id,title,arxiv,status,seconds,custom,credit_used,refunded,created_at,cost_usd&order=created_at.desc&limit=200`),
+        db(`explainer_events?user_id=eq.${id}&type=eq.plan&select=meta,created_at&order=created_at.desc&limit=1`),
+      ]);
+      if (!usr[0]) return json({ error: "no such member" }, 404);
+      return json({ user: usr[0], plan: plan[0]?.meta ?? null, ledger, jobs });
+    }
     if (req.method === "GET" && !viewer && (q.get("proof") || q.get("shot"))) {   // a proof or payment file, shown to the admin; a photo sent as a PDF is unwrapped so the browser can show it
       let path = "";
       if (q.get("proof")) {
@@ -176,7 +192,11 @@ Deno.serve(async (req) => {
         if (!usr) return json({ error: "no such user" }, 404);
         const until = new Date(Date.now() + days * 86400_000).toISOString();
         await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: usr.id, meta: { plan, until, source: "admin" } }) });
-        return json({ ok: true, until });
+        // a plan is its video credits: a paid plan adds them when the payment is confirmed, so a gift must add them too (without them the member fell back to the 3 free videos a week)
+        const perMonth = ({ plus: 20, pro: 40, premium: 80 } as Record<string, number>)[plan];
+        const credits = body.credits === false ? 0 : Math.max(1, Math.round((perMonth * days) / 31));
+        if (credits > 0) await grant(usr.id, credits, `plan gift: ${plan}, ${days} days`);
+        return json({ ok: true, until, credits });
       }
       if (body.op === "revoke_plan") {   // ends a member's plan now (a gift or a mistake): a newer plan record that is already over
         const [usr] = await db(`explainer_users?username=eq.${encodeURIComponent(String(body.username ?? "").toLowerCase())}&select=id`);

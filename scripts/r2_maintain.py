@@ -13,6 +13,7 @@ import urllib.parse
 import urllib.request
 
 RETENTION_DAYS = 7
+TRASH_DAYS = 7   # a video the member deleted waits this long in "Recently deleted", then it is removed for good
 PLAN_DAYS = {"plus": 30, "pro": 90, "premium": 270}   # how long a member's videos are kept while their plan is active
 GB = 1024 ** 3
 HARD_LIMIT, TARGET = int(9 * GB), int(8.5 * GB)
@@ -43,6 +44,25 @@ def pick_expired(jobs, sizes, now, base, keep=None):
         if left <= TARGET:
             break
     return out
+
+
+def pick_trash(events, now, days=TRASH_DAYS):
+    """events: the members' trash and purged events, oldest first, each {type, user_id, created_at, meta:{job, on}}. A video is deleted when its newest
+    trash event is on (not on: false, a restore) and no purged event exists. Returns [(job_id, user_id)] deleted `days` or more days ago."""
+    since, purged, owner = {}, set(), {}
+    for e in events:
+        j = str((e.get("meta") or {}).get("job") or "")
+        if not j:
+            continue
+        if e.get("type") == "purged":
+            purged.add(j)
+        elif (e.get("meta") or {}).get("on") is False:
+            since.pop(j, None)
+        else:
+            since[j] = e["created_at"]
+            owner[j] = e.get("user_id")
+    cutoff = (now - datetime.timedelta(days=days)).isoformat()
+    return sorted((j, owner[j]) for j, c in since.items() if j not in purged and c <= cutoff)
 
 
 def pick_orphans(prefixes, job_ids, now, min_age_days=2):
@@ -109,6 +129,25 @@ def main():
             continue
         remove_prefix(prefix)
         sbcall("PATCH", "/rest/v1/explainer_jobs?id=eq.%s" % jid, {"expired_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "videos": {}, "paper_text": None})
+    # videos the member deleted more than TRASH_DAYS ago: files, source text and script go; the row stays (its cost still counts in the admin figures)
+    try:
+        evs = json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_events?type=in.(trash,purged)&select=type,user_id,created_at,meta&order=created_at.asc&limit=10000", headers=hdr), timeout=60))
+        gone = pick_trash(evs, datetime.datetime.now(datetime.timezone.utc))
+    except Exception as ex:
+        print("trash lookup skipped:", str(ex)[:100])
+        gone = []
+    print("deleted videos to remove for good: %d" % len(gone))
+    for jid, uid in gone:
+        row = json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_jobs?id=eq.%s&select=id,videos" % jid, headers=hdr), timeout=60))
+        url = ((row[0].get("videos") or {}).get("en") or "") if row else ""
+        prefix = urllib.parse.urlparse(url).path.lstrip("/").rsplit("/", 1)[0] + "/" if url.startswith(base.rstrip("/") + "/") else ""
+        print("  %s%s%s" % (jid[:8], " " + prefix if prefix else "", " [dry run]" if DRY else ""))
+        if DRY:
+            continue
+        if prefix:
+            remove_prefix(prefix)
+        sbcall("PATCH", "/rest/v1/explainer_jobs?id=eq.%s" % jid, {"expired_at": datetime.datetime.now(datetime.timezone.utc).isoformat(), "videos": {}, "paper_text": None, "sections": [], "title": "Deleted video"})
+        sbcall("POST", "/rest/v1/explainer_events", {"actor": "", "user_id": uid, "type": "purged", "meta": {"job": jid}})
     # leftovers of deleted jobs
     ids = [j["id"] for j in json.load(urllib.request.urlopen(urllib.request.Request(sb + "/rest/v1/explainer_jobs?select=id&limit=5000", headers=hdr), timeout=60))]
     orphans = pick_orphans(dict(newest), ids, datetime.datetime.now(datetime.timezone.utc))
