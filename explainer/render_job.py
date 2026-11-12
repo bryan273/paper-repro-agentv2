@@ -200,6 +200,11 @@ try:
     except Exception as e: print("paper text not saved:", str(e)[:100])
     sc = json.load(open(os.path.join(d, "scenes.json"), encoding="utf-8"))
     checked = sum(1 for s in sc["scenes"] if s.get("evidence") or s["type"] in ("quote", "number")) + sum(len(s.get("bars") or []) for s in sc["scenes"])
+    if (row.get("source_url") or "").startswith("multi:") and sc.get("sources"):   # keep the names the renderer read (page titles), so the viewer sees which source is which
+        try:
+            orig, got = json.loads(row["source_url"][6:]), {x["k"]: x["name"] for x in sc["sources"]}
+            update(source_url="multi:" + json.dumps([{**m, "name": got.get(k + 1) or m.get("name") or ""} for k, m in enumerate(orig)], ensure_ascii=False))
+        except Exception as e: print("source names not saved:", str(e)[:100])
     update(title=sc.get("paper_title"), checks={"checked": checked, "removed": sc.get("unverified", [])}, stage="recording the sections")
     meta = json.load(open(os.path.join(d, "sections.json"), encoding="utf-8"))
     secs = [{**m, "status": "waiting", "videos": {}} for m in meta]
