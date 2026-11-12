@@ -4,7 +4,7 @@
 //   GET  ?jobs=1            (x-session)          -> the member's own videos
 //   GET  ?ledger=1          (x-session)          -> credit history
 //   POST {op:"register"|"login"|"logout"|"password"|"event"|"contact"|"buy", ...}
-import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart, isAdmin, type Quota } from "../_shared/explainer.ts";
+import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIERS, interactiveUse, activePlan, hashPassword, sameText, newSession, count, WELCOME_CREDITS, GUEST_DAY, MEMBER_WEEK, monthStart, isAdmin, KEEP_DAYS, TRASH_DAYS, units, type Quota } from "../_shared/explainer.ts";
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download", "leave"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
@@ -199,9 +199,10 @@ type Folder = { id: string; title: string; created_at: string; updated_at: strin
 async function foldersOf(userId: string): Promise<Folder[]> {
   const [evs, trash] = await Promise.all([
     db(`explainer_events?user_id=eq.${userId}&type=eq.folder&select=meta,created_at&order=created_at.asc&limit=5000`).catch(() => []) as Promise<{ meta: { act: string; f: string; title?: string; job?: string }; created_at: string }[]>,
-    db(`explainer_events?user_id=eq.${userId}&type=eq.trash&select=meta&limit=3000`).catch(() => []) as Promise<{ meta: { job?: string } }[]>,
+    db(`explainer_events?user_id=eq.${userId}&type=eq.trash&select=meta&order=created_at.asc&limit=3000`).catch(() => []) as Promise<{ meta: { job?: string; on?: boolean } }[]>,
   ]);
-  const gone = new Set(trash.map((t) => String(t.meta?.job ?? "")));
+  const gone = new Set<string>();   // the newest trash event of a video counts: deleted, or restored (on: false)
+  for (const t of trash) { const j = String(t.meta?.job ?? ""); if (t.meta?.on === false) gone.delete(j); else gone.add(j); }
   const by = new Map<string, Folder>();
   for (const e of evs) {
     const m = e.meta ?? ({} as typeof e.meta);
@@ -243,21 +244,33 @@ Deno.serve(async (req) => {
       if (u.searchParams.get("jobs")) {
         if (!user) return json({ error: "Sign in first." }, 401);
         const [rows, edits] = await Promise.all([
-          db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`),
+          db(`explainer_jobs?user_id=eq.${user.id}&select=id,arxiv,title,status,stage,style,tone,seconds,custom,langs,source_url,videos,sections,credit_used,refunded,created_at,expired_at&order=created_at.desc&limit=100`),
           db(`explainer_events?user_id=eq.${user.id}&type=eq.edit&select=meta&limit=500`).catch(() => []),
         ]);
+        const keep = KEEP_DAYS[(await activePlan(user.id)) ?? "free"];   // the days a finished video is kept for this member's plan
         const editJobs = new Set((edits as { meta: { job?: string } }[]).map((e) => String(e.meta?.job ?? "")));
         const vis = await visibilityOf((rows as { id: string }[]).map((r) => r.id));
         // a member's own tidying: "trash" hides a video from their list for good, "archive" parks it out of the main list (the newest choice counts)
         const flags = await db(`explainer_events?user_id=eq.${user.id}&type=in.(archive,trash)&select=type,meta&order=created_at.asc&limit=3000`).catch(() => []) as { type: string; meta: { job?: string; on?: boolean } }[];
         const trashed = new Set<string>(), archived = new Set<string>();
-        for (const e of flags) { const j = String(e.meta?.job ?? ""); if (e.type === "trash") trashed.add(j); else if (e.meta?.on) archived.add(j); else archived.delete(j); }
+        for (const e of flags) { const j = String(e.meta?.job ?? ""); if (e.type === "trash") { if (e.meta?.on === false) trashed.delete(j); else trashed.add(j); } else if (e.meta?.on) archived.add(j); else archived.delete(j); }
         // a failed try that was started again and worked (or is still being made) is only noise: keep the newest try of each source
         type Row = { id: string; status: string; source_url?: string | null; arxiv?: string | null; title?: string | null };
         const live = new Set<string>();
         for (const r of rows as Row[]) if (r.status !== "failed") { const k = String(r.source_url || r.arxiv || r.title || ""); if (k) live.add(k); }
         const retried = (r: Row) => r.status === "failed" && live.has(String(r.source_url || r.arxiv || r.title || ""));
-        return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id) })));
+        const expiry = (r: { status: string; created_at?: string; expired_at?: string | null }) => r.status === "done" && !r.expired_at && r.created_at ? new Date(Date.parse(r.created_at) + keep * 86400_000).toISOString() : null;
+        return json((rows as Row[]).filter((r) => !trashed.has(r.id) && !retried(r)).map((r) => ({ ...r, is_edit: editJobs.has(r.id), visibility: vis[r.id] ?? "private", archived: archived.has(r.id), expires_at: expiry(r as never), keep_days: keep })));
+      }
+      if (u.searchParams.get("trash")) {   // "Recently deleted": videos the member deleted in the last TRASH_DAYS days, each with the date it goes for good
+        if (!user) return json({ error: "Sign in first." }, 401);
+        const evs = await db(`explainer_events?user_id=eq.${user.id}&type=in.(trash,purged)&select=type,meta,created_at&order=created_at.asc&limit=3000`).catch(() => []) as { type: string; meta: { job?: string; on?: boolean }; created_at: string }[];
+        const at = new Map<string, string>(), purged = new Set<string>();
+        for (const e of evs) { const j = String(e.meta?.job ?? ""); if (e.type === "purged") purged.add(j); else if (e.meta?.on === false) at.delete(j); else at.set(j, e.created_at); }
+        const ids = [...at.keys()].filter((j) => !purged.has(j) && /^[0-9a-f-]{36}$/.test(j)).slice(-100);
+        if (!ids.length) return json([]);
+        const rows = await db(`explainer_jobs?user_id=eq.${user.id}&id=in.(${ids.join(",")})&select=id,arxiv,title,status,seconds,langs,source_url,videos,sections,created_at,expired_at`).catch(() => []) as { id: string }[];
+        return json(rows.map((r) => ({ ...r, trashed_at: at.get(r.id), purge_at: new Date(Date.parse(at.get(r.id)!) + TRASH_DAYS * 86400_000).toISOString() })).sort((a, b) => b.trashed_at!.localeCompare(a.trashed_at!)));
       }
       if (u.searchParams.get("folders")) {   // the member's folders (projects), each with its videos in the order they were put in
         if (!user) return json({ error: "Sign in first." }, 401);
@@ -310,6 +323,18 @@ Deno.serve(async (req) => {
       }
       if (u.searchParams.get("ledger")) {
         if (!user) return json({ error: "Sign in first." }, 401);
+        if (u.searchParams.get("ledger") === "2") {   // balance, plan, the credit log and every video with what it used (free allowance or credits)
+          const [log, jobs, pe] = await Promise.all([
+            db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=200`),
+            db(`explainer_jobs?user_id=eq.${user.id}&select=id,title,arxiv,status,seconds,custom,credit_used,refunded,created_at&order=created_at.desc&limit=100`),
+            planInfo(user.id),
+          ]);
+          const q = await quotaFor(user, "");
+          const month = new Date(monthStart());
+          const vids = (jobs as { id: string; title: string | null; arxiv: string | null; status: string; seconds: number; custom: string | null; credit_used: number; refunded: boolean; created_at: string }[]).map((j) => ({ id: j.id, title: j.title || j.arxiv || "Video", status: j.status, minutes: Math.round((j.seconds || 0) / 60), deep: /In-depth: yes/.test(j.custom ?? ""), credits: j.credit_used || 0, units: units(j.seconds, j.custom), refunded: !!j.refunded, created_at: j.created_at }));
+          const made = vids.filter((v) => v.status !== "failed" && new Date(v.created_at) >= month);
+          return json({ balance: user.credits, plan: pe.plan, plan_until: pe.plan_until, free: { limit: q.day_limit, left: q.day_left, resets_in_min: q.resets_in_min }, month: { videos: made.length, credits: made.reduce((n, v) => n + v.credits, 0), free: made.reduce((n, v) => n + Math.max(0, v.units - v.credits), 0) }, log, videos: vids });
+        }
         return json(await db(`explainer_credit_log?user_id=eq.${user.id}&select=created_at,delta,reason&order=created_at.desc&limit=50`));
       }
       // everything the app needs about this person, asked of the database at the same time (one round trip instead of a dozen)
@@ -433,16 +458,20 @@ Deno.serve(async (req) => {
       await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ title }) });
       return json({ ok: true, title });
     }
-    if (op === "archive_job" || op === "delete_job") {   // the maker tidies their own library: archive can be undone, delete cannot
+    if (op === "archive_job" || op === "delete_job" || op === "restore_job") {   // the maker tidies their own library: archive and delete can be undone (a deleted video is removed for good after 7 days)
       const user = await userOf(req);
       if (!user) return json({ error: "Sign in first." }, 401);
       const job = String(body.job ?? "");
       if (!/^[0-9a-f-]{36}$/.test(job)) return json({ error: "Choose a video." }, 400);
       const [own] = await db(`explainer_jobs?id=eq.${job}&user_id=eq.${user.id}&select=id,status`).catch(() => []);
       if (!own) return json({ error: "Only the person who made a video can do this." }, 403);
+      if (op === "restore_job") {
+        await logEvent("", "trash", { job, on: false }, user.id);
+        return json({ ok: true, restored: true });
+      }
       if (op === "delete_job") {
         if (own.status === "queued" || own.status === "running") return json({ error: "This video is still being made. Delete it when it is ready or has failed." }, 409);
-        await logEvent("", "trash", { job }, user.id);
+        await logEvent("", "trash", { job, on: true }, user.id);
         await logEvent("", "visibility", { job, v: "private" }, user.id);   // and it leaves Explore and friends' lists at once
         return json({ ok: true, deleted: true });
       }
