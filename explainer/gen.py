@@ -317,12 +317,16 @@ DEEP_RULE = """
 IN-DEPTH MODE (the viewer switched it on; for the scenes marked "bg" it replaces the rule that everything comes from the paper):
 The viewer wants more than the source. Before writing, decide what the source assumes or skips: a term it uses without defining, the background a newcomer lacks, why it matters, a concrete worked example.
 Write AT LEAST TWO scenes in this part that teach such background, and mark each of them "bg": true. A background scene has "evidence": null, states only well-established textbook knowledge, invents no numbers, names, dates or quotes, and never says the source said it.
-Every other scene keeps "bg": false, comes from the source and keeps its verbatim evidence. Put background where it helps (before the idea that needs it), and keep the source at the centre."""
+Every other scene keeps "bg": false, comes from the source and keeps its verbatim evidence. Put background where it helps (before the idea that needs it), and keep the source at the centre.
+Teach, do not only tell: when the part explains a method or a mechanism, walk through one small concrete example step by step; say why each step is needed; name one common misunderstanding and correct it."""
 
-def plan_sections(title, text, n, model):
+DEEP_PLAN = """
+IN-DEPTH VIDEO: the viewer wants to really learn this, not only hear the source retold. Plan it like a good lesson: the first section starts from what a newcomer needs (the problem in plain words and the terms the source assumes); one section works through a concrete example step by step; the last section ties the ideas together and names the one thing to remember. Points may include such background, but every fact from the source stays true to the PAPER TEXT."""
+
+def plan_sections(title, text, n, model, deep=False):
     """One cheap call that decides what each section covers, so the sections written in parallel do not repeat each other."""
     try:
-        r, _ = llm(PLAN_SYSTEM.replace("{N}", str(n)), f"TITLE: {title}\n\nPAPER TEXT:\n{text[:30000]}", model)
+        r, _ = llm(PLAN_SYSTEM.replace("{N}", str(n)) + (DEEP_PLAN if deep else ""), f"TITLE: {title}\n\nPAPER TEXT:\n{text[:30000]}", model)
         sec = r.get("sections") or []
         if len(sec) == n and all(isinstance(x, dict) and x.get("title") for x in sec): return sec
     except Exception as e: print("plan skipped:", str(e)[:120], flush=True)
@@ -357,6 +361,7 @@ MODELS = {   # selectable script writers: id -> (base url, model name, env key, 
     "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
 }
 MODELS["rkapi"] = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1", os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001"), "RKAPI_API_KEY", {})
+MODELS["rkapi-deep"] = (MODELS["rkapi"][0], os.environ.get("RKAPI_DEEP_MODEL", "claude-sonnet-4-6"), "RKAPI_API_KEY", {})   # in-depth videos: a stronger writer (2 credits pay for it)
 MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
 MODEL_ORDER = ["rkapi", "relay", "deepseek", "paratera", "stepfun"]
 
@@ -391,7 +396,7 @@ class EmptyAnswer(Exception):
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
-    stream = mid == "rkapi"   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
+    stream = mid.startswith("rkapi")   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
     payload = {"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.3, "max_tokens": 8000, **extra}
     if stream: payload["stream"] = True; payload["stream_options"] = {"include_usage": True}
     elif mid not in ("relay", "paratera"): payload["response_format"] = {"type": "json_object"}   # the DeepSeek gateway answers empty in JSON mode under load; the reply is parsed leniently instead
@@ -434,11 +439,11 @@ def llm(system, user, model="deepseek"):
     elif model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
     elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"
     order = [model] + [m for m in MODEL_ORDER if m != model]
-    if time.time() < RK_DEAD_UNTIL[0]: order = [m for m in order if m != "rkapi"] or order   # the gateway just failed every call: do not spend a minute on it for each section
+    if time.time() < RK_DEAD_UNTIL[0]: order = [m for m in order if not m.startswith("rkapi")] or order   # the gateway just failed every call: do not spend a minute on it for each section
     last = None; t_end = time.time() + 300
     for mid in order:
         patient = mid in ("relay", "paratera")
-        if mid == "rkapi" and not ENV.get("RKAPI_API_KEY"): continue
+        if mid.startswith("rkapi") and not ENV.get("RKAPI_API_KEY"): continue
         for attempt in range(6 if patient else 3):
             if time.time() > t_end and last is not None: break
             try:
@@ -602,7 +607,7 @@ async def main():
             custom += (f"\nTHIS VIDEO COMBINES {len(SRC)} SOURCES on one topic. In the PAPER TEXT each source starts with a line '=== SOURCE k: name ==='. Teach them as ONE coherent lesson: connect them and compare them where they differ; do not summarise one source after the other. In EVERY scene add \"src\": k, the number of the source the scene mainly draws on (an integer). \"evidence\" and quotes stay a verbatim copy from that one source, never from the header lines."
                        + (("\n" + "\n".join(OUTL) + "\nThis is the final video that brings those videos together: keep their strongest ideas, follow a fresh order that builds one story, and do not retell each earlier video part by part.") if OUTL else ""))
         if n > 1 and not a.edit_from: progress("writing the script: planning the parts")
-        plan = plan_sections(title, text, n, a.model) if n > 1 and not a.edit_from else None
+        plan = plan_sections(title, text, n, a.model, DEEP) if n > 1 and not a.edit_from else None
         print("plan", [p["title"] for p in plan] if plan else None, flush=True)
         # an edit of a finished video: every part except the chosen one is kept word for word, the chosen part is rewritten as asked
         prev = json.load(open(a.edit_from, encoding="utf-8")) if a.edit_from and os.path.exists(a.edit_from) else None
@@ -616,7 +621,7 @@ async def main():
             if DEEP: sysmsg += DEEP_RULE
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
             figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
-            res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", a.model)
+            res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", "rkapi-deep" if DEEP and ENV.get("RKAPI_API_KEY") else a.model)
             done_parts[0] += 1; progress(f"writing the script: part {done_parts[0]} of {n}")
             return res_
         if prev:

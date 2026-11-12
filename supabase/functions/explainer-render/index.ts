@@ -211,10 +211,10 @@ Deno.serve(async (req) => {
     }
     const vid = await actorOf(req, visitor);
     const day = new Date(Date.now() - 86400_000).toISOString();
-    const sum = (rows: { seconds: number }[]) => rows.reduce((n, r) => n + units(r.seconds), 0);
+    const sum = (rows: { seconds: number; custom?: string | null }[]) => rows.reduce((n, r) => n + units(r.seconds, r.custom), 0);
     // free allowance of the last 24 hours first (guest: little, member: more), then the member's credits
     const q = await quotaFor(user, vid);
-    const need = units(seconds), fromCredits = Math.max(0, need - q.day_left);
+    const need = units(seconds, custom), fromCredits = Math.max(0, need - q.day_left);
     if (fromCredits > q.credits) {
       await logEvent(vid, "quota_hit", { tier: q.tier, need }, user?.id ?? null);
       const error = user
@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
         : `You have used your ${q.day_limit} free guest videos. Sign up free for more every day, plus welcome credits.`;
       return json({ error, code: user ? "quota_member" : "quota_guest", quota: q }, 429);
     }
-    const all = await db(`explainer_jobs?status=neq.failed&created_at=gte.${day}&select=seconds`);
+    const all = await db(`explainer_jobs?status=neq.failed&created_at=gte.${day}&select=seconds,custom`);
     if (sum(all) + need > DAILY) return json({ error: "Today's video budget is used up. Try again tomorrow." }, 429);
     let title = "";
     if (multi) {
