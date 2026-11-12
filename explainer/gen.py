@@ -648,6 +648,32 @@ async def main():
                 for x in (r.get("scenes") or []): x["sec"] = k; sc["scenes"].append(x)
                 sc["sections"].append(r.get("section") or {})
             usage = dict(results[0][1] or {})
+        if not prev:
+            # a part the model cut short (a broken answer kept only its first scenes) is written once more
+            for k in range(n):
+                part = [x for x in sc["scenes"] if x.get("sec") == k]
+                if len(part) >= 3: continue
+                try:
+                    r2, _ = one(k)
+                    if len(r2.get("scenes") or []) > len(part):
+                        for x in r2["scenes"]: x["sec"] = k
+                        sc["scenes"] = sorted([x for x in sc["scenes"] if x.get("sec") != k] + r2["scenes"], key=lambda x: x.get("sec", 0))
+                        if r2.get("section"): sc["sections"][k] = r2["section"]
+                        print("part", k + 1, "was cut short; written again", flush=True)
+                except Exception as e: print("rewrite of a short part skipped:", str(e)[:100], flush=True)
+            if DEEP:   # in-depth: every part teaches some background; a part the model wrote from the source only gets two background scenes
+                for x in sc["scenes"]:
+                    if x.get("bg") in ("true", "True", 1): x["bg"] = True
+                for k in range(n):
+                    if any(x.get("bg") is True for x in sc["scenes"] if x.get("sec") == k): continue
+                    try:
+                        r3, _ = one(k, '\nWRITE ONLY BACKGROUND NOW. Return {"scenes": [...]} with exactly 2 scenes of type "cards" that teach what this part assumes the viewer knows (a term it does not define, a basic mechanism, or why it matters), in the same JSON scene format. Each has "bg": true and "evidence": null. Only well-established textbook knowledge; no numbers, names or quotes from outside the source. No title or end scene.')
+                        add = [x for x in (r3.get("scenes") or []) if isinstance(x, dict) and x.get("type") not in ("title", "end") and x.get("en")][:2]
+                        for x in add: x["bg"] = True; x["evidence"] = None; x["sec"] = k
+                        at = next((i for i, x in enumerate(sc["scenes"]) if x.get("sec") == k), len(sc["scenes"]))
+                        sc["scenes"][at + 1:at + 1] = add
+                        print("part", k + 1, "background scenes added:", len(add), flush=True)
+                    except Exception as e: print("background skipped:", str(e)[:100], flush=True)
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
         sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
         progress("checking quotes and numbers against the source"); normalize(sc); bad = verify(sc, text); print("unverified:", bad)
