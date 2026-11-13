@@ -40,3 +40,16 @@ def test_expired_and_foreign_videos_are_skipped():
     j = job("a", "u", 1, 1); j["expired_at"] = "2026-02-01T00:00:00+00:00"
     other = job("b", "u", 1, 1); other["videos"] = {"en": "https://elsewhere/x/main.mp4"}
     assert m.pick_expired([j, other], {}, NOW, BASE, {}) == []
+
+
+def test_subscribe_just_before_the_limit_then_stop_starts_a_fresh_30_days():
+    day = lambda y, mo, d: datetime.datetime(y, mo, d, tzinfo=datetime.timezone.utc)
+    made = [dict(job("a", "u", 1, 11), created_at=day(2026, 11, 1).isoformat())]
+    # day 29 on the free plan: still there, one day left
+    assert m.pick_expired(made, {}, day(2026, 11, 30), BASE, {}) == []
+    # subscribed on day 29: nothing is removed however long the plan runs
+    assert m.pick_expired(made, {}, day(2027, 3, 1), BASE, {"u": m.FOREVER}) == []
+    # the plan ends on 1 March: 29 days later the video is still there, 31 days later it goes
+    ended = day(2027, 3, 1).isoformat()
+    assert m.pick_expired(made, {}, day(2027, 3, 30), BASE, {"u": ended}) == []
+    assert ids(m.pick_expired(made, {}, day(2027, 4, 1), BASE, {"u": ended})) == ["a"]

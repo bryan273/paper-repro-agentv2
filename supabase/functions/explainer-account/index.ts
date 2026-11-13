@@ -8,6 +8,7 @@ import { CORS, json, db, sha, clientIp, actorOf, userOf, quotaFor, logEvent, TIE
 
 const EVENTS = new Set(["visit", "open_signup", "view_pricing", "view_example", "play_example", "click_make", "click_buy", "order_created", "order_paid_claimed", "share", "download", "video_play", "video_download", "leave"]);
 import { ADMIN_EMAILS } from "../_shared/explainer.ts";
+import { quote, type Quote } from "../_shared/proration.ts";
 import { mailReady, sendMail, linkMail } from "../_shared/mail.ts";
 const PACKS: Record<string, { credits: number; price: number }> = { "5": { credits: 5, price: 19 }, "20": { credits: 20, price: 59 }, "50": { credits: 50, price: 129 } };   // single videos: about CNY 2.6 to 3.8 each, credits never expire
 // subscriptions: the videos of the period are added as credits when the payment is confirmed; the plan sets the monthly interactive videos and the in-depth answers (TIERS in _shared)
@@ -725,11 +726,21 @@ ${message}`;
 const cur = body.currency === "vnd" || body.currency === "idr" ? body.currency as "vnd" | "idr" : "cny";
       const loc = LOCAL[plan || `pack_${String(body.pack)}`];
       const regular = cur === "cny" || !loc ? pack.price : loc[cur];
-      const offer = plan.endsWith("_month") ? await welcomeOffer(user) : null;
-      const amt = offer ? (cur === "cny" ? Math.round(regular * (100 - offer.pct) / 100) : Math.round(regular * (100 - offer.pct) / 100 / 1000) * 1000) : regular;
-      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${pack.credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""} cur:${cur} amt:${amt}${offer ? " offer:welcome" : ""}`, status: "new" }) });
-      await logEvent(actor, "order_created", { pack: pack.credits, price: pack.price }, user.id);
-      return json({ id: order.id, price: pack.price, credits: pack.credits, currency: cur, amount: amt });
+      // a plan bought while another is running: pay only for what is new (see _shared/proration.ts)
+      let q: Quote | null = null;
+      if (plan) {
+        const [ev] = await db(`explainer_events?user_id=eq.${user.id}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+        q = quote(Date.now(), ev?.meta?.plan && ev.meta.until ? { plan: String(ev.meta.plan), until: String(ev.meta.until) } : null, plan, PLANS, LOCAL, cur, regular);
+        if (q.kind === "refused") return json({ error: `You already have a higher plan until ${q.until.slice(0, 10)}. You can choose this one after it ends.`, code: "plan_lower" }, 409);
+      }
+      const prorated = q && (q.kind === "upgrade_same_end" || q.kind === "upgrade_new_period") ? q : null;
+      const offer = plan.endsWith("_month") && !prorated && q?.kind !== "renew" ? await welcomeOffer(user) : null;
+      const amt = prorated ? prorated.amount : offer ? (cur === "cny" ? Math.round(regular * (100 - offer.pct) / 100) : Math.round(regular * (100 - offer.pct) / 100 / 1000) * 1000) : regular;
+      const credits = prorated ? prorated.credits : pack.credits;
+      const upg = prorated ? ` upg:${prorated.kind === "upgrade_same_end" ? "A" : "B"}:${prorated.until}` : q?.kind === "renew" ? " renew:1" : "";
+      const [order] = await db("explainer_orders?select=id", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ email: `@${user.username}`, arxiv: plan ? `plan ${plan}` : `credits x${pack.credits}`, language: "en", notes: `pack:${credits} user:${user.id} price:${pack.price}${plan ? ` plan:${plan}` : ""} cur:${cur} amt:${amt}${offer ? " offer:welcome" : ""}${upg}`, status: "new" }) });
+      await logEvent(actor, "order_created", { pack: credits, price: pack.price, ...(prorated ? { upgrade: prorated.kind } : {}) }, user.id);
+      return json({ id: order.id, price: pack.price, credits, currency: cur, amount: amt, ...(prorated ? { prorated: { days_left: prorated.daysLeft, off: prorated.off, regular, same_end: prorated.kind === "upgrade_same_end", until: prorated.until } } : {}), ...(q?.kind === "renew" ? { renew_until: q.until } : {}) });
     }
 
     return json({ error: "unknown op" }, 400);

@@ -131,7 +131,14 @@ Deno.serve(async (req) => {
         if (m && body.status === "paid" && prev.status !== "paid") await grant(m[2], Number(m[1]), `bought pack x${m[1]}`);
         const pl = /plan:(plus|pro|premium)_(month|year)/.exec(prev?.notes ?? "");
         if (m && pl && body.status === "paid" && prev.status !== "paid") {
-          const until = new Date(Date.now() + (pl[2] === "year" ? 366 : 31) * 86400_000).toISOString();
+          const days = (pl[2] === "year" ? 366 : 31) * 86400_000, now = Date.now();
+          const up = /upg:(A|B):(\S+)/.exec(prev?.notes ?? "");
+          let until = new Date(now + days).toISOString();
+          if (up && up[1] === "A" && Date.parse(up[2]) > now) until = up[2];   // an upgrade keeps the end date of the period already running
+          else if (!up && /renew:1/.test(prev?.notes ?? "")) {   // an early renewal starts when the running period ends, so no paid day is lost
+            const [cur] = await db(`explainer_events?user_id=eq.${m[2]}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
+            if (cur?.meta?.until && Date.parse(cur.meta.until) > now) until = new Date(Date.parse(cur.meta.until) + days).toISOString();
+          }
           await db("explainer_events", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ actor: "", type: "plan", user_id: m[2], meta: { plan: pl[1], until } }) });
         }
         return json({ ok: true });
