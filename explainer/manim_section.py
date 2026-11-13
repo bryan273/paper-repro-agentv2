@@ -242,8 +242,7 @@ def user_msg():
         if ONE_LANG != "en" and sc["scenes"][i].get(ONE_LANG): s["en"] = sc["scenes"][i][ONE_LANG]   # a one-language video: the narration the writer sees is in that language, so the labels it draws are too
         cue = " ".join(f"{w}@{t:.1f}" for t, w in CUES.get(n, []))
         b.append({"beat": n, "seconds": beats[n], **s, "spoken_words_at": cue})
-    langnote = (f"ON-SCREEN LANGUAGE: this video is in {LANG_NAME[ONE_LANG]}. Write EVERY label, heading, caption, axis name, legend and button text in {LANG_NAME[ONE_LANG]} (the field \"en\" of each beat already holds the narration in {LANG_NAME[ONE_LANG]}). Never write English words on the picture, except proper names, numbers and units.
-") if ONE_LANG != "en" else ""
+    langnote = (f"ON-SCREEN LANGUAGE: this video is in {LANG_NAME[ONE_LANG]}. Write EVERY label, heading, caption, axis name, legend and button text in {LANG_NAME[ONE_LANG]} (the field \"en\" of each beat already holds the narration in {LANG_NAME[ONE_LANG]}). Never write English words on the picture, except proper names, numbers and units.\n") if ONE_LANG != "en" else ""
     return (langnote + f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {meta.get('title', '')}\nWHAT IT EXPLAINS: {meta.get('text', '')}\n"
             f"KEY TAKEAWAY: {meta.get('takeaway', '')}\nBEATS (the narration said during each beat, with the visual hint and data):\n{json.dumps(b, ensure_ascii=False, indent=1)}")
 
