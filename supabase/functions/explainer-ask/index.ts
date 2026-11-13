@@ -123,7 +123,8 @@ function focusParts(text: string, query: string): { text: string; parts: number 
   const best = chunks.sort((a, b) => b.score - a.score || a.i - b.i).slice(0, 4).sort((a, b) => a.i - b.i);
   return { text: [head, ...best.map((c) => text.slice(c.i, c.i + W))].join("\n[...]\n"), parts: best.length };
 }
-const NEXT: Record<string, string> = { free: "Plus", plus: "Pro", pro: "Premium" };   // the plan to suggest when a limit is reached
+const KEY_OF: Record<string, string> = { Silver: "plus", Gold: "pro", Diamond: "premium" };   // plan name shown to people -> the plan key
+const NEXT: Record<string, string> = { free: "Silver", plus: "Gold", pro: "Diamond" };   // the plan to suggest when a limit is reached
 const SYSTEM = (text: string, mode: string, lang: string, think = false) => `You are a patient tutor helping one person understand ONE research paper. They just watched a short video about it and want to understand more. Be warm, plain and concrete.
 Write every answer in the language of the person's question, whatever language the paper, the video or their settings use: a question in English gets an English answer, a question in Vietnamese a Vietnamese one. Only when the message has no language of its own (an empty question or a button such as "explain more simply") use ${LANGNAME[lang] ?? "English"}.
 ${think ? `First write the line THINKING: and then your working notes in plain text, in the language of the question: what the person is really asking, which passages of the PAPER TEXT answer it (say what you found and where), what they may be missing, and how you will explain it. 3 to 8 short sentences, honest and specific; the person sees them while they wait.
@@ -180,7 +181,7 @@ Deno.serve(async (req) => {
         if (iu.left <= 0) {
           const per = iu.period === "week" ? "this week" : "this month";
           const msg = !user ? "That was your free try of interactive mode. Sign up free to use it on 2 videos a week."
-            : NEXT[tier] ? `You have used interactive mode on ${iu.cap} videos ${per}. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].interactive} a month.`
+            : NEXT[tier] ? `You have used interactive mode on ${iu.cap} videos ${per}. ${NEXT[tier]} gives ${TIERS[KEY_OF[NEXT[tier]]].interactive} a month.`
             : `You have used interactive mode on ${iu.cap} videos ${per}. It comes back on the 1st.`;
           return json({ error: msg, code: user ? "quiz_quota" : "quiz_signup", interactive: { used: iu.used, cap: iu.cap, left: 0, resets: iu.resets } }, 402);
         }
@@ -207,7 +208,7 @@ Deno.serve(async (req) => {
       const per = quickPeriod === "day" ? "today" : quickPeriod === "week" ? "this week" : "this month";
       const msg = !user ? `You used your ${quickCap} free questions today. Sign up free for more.`
         : today >= PER_DAY_MEMBER ? "You reached today's question limit. Try again tomorrow."
-        : NEXT[tier] ? `You used the ${quickCap} quick answers your plan gives ${per}. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].quick} a month.`
+        : NEXT[tier] ? `You used the ${quickCap} quick answers your plan gives ${per}. ${NEXT[tier]} gives ${TIERS[KEY_OF[NEXT[tier]]].quick} a month.`
         : `You used the ${quickCap} quick answers for ${per}. They come back on the 1st.`;
       return json({ error: msg, code: user ? "ask_member" : "ask_guest" }, 429);
     }
@@ -217,7 +218,7 @@ Deno.serve(async (req) => {
       if (!user) return json({ error: "The stronger model is free to try once you sign up.", code: "deep_signup" }, 402);
       const cap = TIERS[tier].deep;
       const tried = await count(`explainer_asks?user_id=eq.${user.id}&intent=eq.deep&created_at=gte.${monthStart()}`);
-      if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives this month. ${NEXT[tier]} gives ${TIERS[NEXT[tier].toLowerCase()].deep} a month.` : `You used the ${cap} in-depth answers for this month. They come back on the 1st, and quick answers stay open.`, code: "deep_premium" }, 402);
+      if (tried >= cap) return json({ error: NEXT[tier] ? `You used the ${cap} in-depth answers your plan gives this month. ${NEXT[tier]} gives ${TIERS[KEY_OF[NEXT[tier]]].deep} a month.` : `You used the ${cap} in-depth answers for this month. They come back on the 1st, and quick answers stay open.`, code: "deep_premium" }, 402);
     }
 
     // what this member told us about themselves (Settings > Personalize): the tutor pitches the answer to them; a paid plan feature
