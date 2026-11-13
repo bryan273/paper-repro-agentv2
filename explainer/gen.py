@@ -403,15 +403,12 @@ def order_for(i, n, plan=None):
             + ("Start with a title scene. " if first else "Do NOT use a title scene; open straight into the point. ")
             + ("End with an end scene." if last else "Do NOT use an end scene; stop after the last point of this section."))
 
-MODELS = {   # selectable script writers: id -> (base url, model name, env key, extra body)
-    "deepseek": ("https://api.deepseek.com/v1", "deepseek-flash", "DEEPSEEK_API_KEY", {"thinking": {"type": "disabled"}}),
-    "stepfun": ("https://api.stepfun.com/v1", "step-3.5-flash", "STEPFUN_API_KEY", {}),
-    "paratera": ("https://llmapi.paratera.com/v1", "DeepSeek-V4.1-Flash", "PARATERA_API_KEY", {}),   # DeepSeek served by the Tsinghua Paratera gateway
+# The script is written through one gateway (RKAPI) by two models: a quick writer and a stronger one. Each is the fallback of the other.
+_RK = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1", "RKAPI_API_KEY", {})
+MODELS = {
+    "rkapi": (_RK[0], os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001"), _RK[1], _RK[2]),
+    "rkapi-deep": (_RK[0], os.environ.get("RKAPI_DEEP_MODEL", "claude-sonnet-4-6"), _RK[1], _RK[2]),   # in-depth videos: a stronger writer (2 credits pay for it)
 }
-MODELS["rkapi"] = (os.environ.get("RKAPI_BASE_URL", "https://rkapi.com") + "/v1", os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001"), "RKAPI_API_KEY", {})
-MODELS["rkapi-deep"] = (MODELS["rkapi"][0], os.environ.get("RKAPI_DEEP_MODEL", "claude-sonnet-4-6"), "RKAPI_API_KEY", {})   # in-depth videos: a stronger writer (2 credits pay for it)
-MODELS["relay"] = ((ENV.get("SUPABASE_URL") or "") + "/functions/v1", "DeepSeek-V4.1-Flash", "SUPABASE_SECRET", {})   # Paratera through the Asian-region relay: the US renderer reaches the gateway badly
-MODEL_ORDER = ["rkapi", "relay", "deepseek", "paratera", "stepfun"]
 
 def lenient_json(txt):
     """A model that stops mid-answer or leaves one bad quote: keep everything up to the last complete value instead of losing the whole call."""
@@ -444,13 +441,11 @@ class EmptyAnswer(Exception):
 def llm_one(mid, system, user, attempt=0):
     base, name, keyname, extra = MODELS[mid]
     if not ENV.get(keyname): raise RuntimeError(f"{mid}: no key configured")
-    stream = mid.startswith("rkapi")   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
+    stream = True   # RKAPI holds a non-streamed answer for a minute or more; streamed it answers at once
     payload = {"model": name, "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}], "temperature": 0.3, "max_tokens": 8000, **extra}
     if stream: payload["stream"] = True; payload["stream_options"] = {"include_usage": True}
-    elif mid not in ("relay", "paratera"): payload["response_format"] = {"type": "json_object"}   # the DeepSeek gateway answers empty in JSON mode under load; the reply is parsed leniently instead
     hdr = {"Authorization": "Bearer " + ENV[keyname], "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (paper-explainer)"}
-    if mid == "relay": url = base + "/llm-relay"; hdr.update({"x-region": ("ap-northeast-2", "ap-southeast-1")[attempt % 2], "x-timeout-ms": "90000"})
-    else: url = base + "/chat/completions"
+    url = base + "/chat/completions"
     r = urllib.request.Request(url, json.dumps(payload).encode(), hdr)
     resp = urllib.request.urlopen(r, timeout=100)
     if stream:
@@ -487,40 +482,29 @@ def user_error(msg):
         try: open(f, "w", encoding="utf-8").write(msg)
         except Exception: pass
 
-RK_DEAD_UNTIL = [0.0]
-
-def llm(system, user, model="deepseek"):
-    """The chosen model first; if its account is out of credit or down, the other one, so a video is not lost to a billing problem.
-    The gateway's model list sometimes goes empty for a minute or two ("Invalid model name"), so a model that answers like that is waited out, not dropped."""
-    if model == "deepseek" and ENV.get("RKAPI_API_KEY"): model = "rkapi"
-    elif model == "deepseek" and ENV.get("SUPABASE_SECRET") and ENV.get("SUPABASE_URL"): model = "relay"
-    elif model == "deepseek" and ENV.get("PARATERA_API_KEY"): model = "paratera"
-    order = [model] + [m for m in MODEL_ORDER if m != model]
-    if time.time() < RK_DEAD_UNTIL[0]: order = [m for m in order if not m.startswith("rkapi")] or order   # the gateway just failed every call: do not spend a minute on it for each section
-    last = None; t_end = time.time() + 300
+def llm(system, user, model="rkapi"):
+    """The script writer. `model` says which of the two RKAPI writers goes first (rkapi-deep for in-depth); the other one is the fallback.
+    A busy gateway (429, 5xx) is waited out; an empty answer or an answer that is not JSON gets one more ask with a reminder to return only the JSON object;
+    a model that keeps failing is replaced by the other one."""
+    if not ENV.get("RKAPI_API_KEY"): raise RuntimeError("no key for the script writer")
+    first = "rkapi-deep" if model == "rkapi-deep" else "rkapi"
+    order = [first] + [m for m in ("rkapi", "rkapi-deep") if m != first]
+    if MODELS["rkapi"][1] == MODELS["rkapi-deep"][1]: order = order[:1]   # both ids name the same model: nothing to fall back to
+    last = None; t_end = time.time() + 420
     for mid in order:
-        patient = mid in ("relay", "paratera")
-        if mid.startswith("rkapi") and not ENV.get("RKAPI_API_KEY"): continue
-        for attempt in range(6 if patient else 3):
+        for attempt in range(4):
             if time.time() > t_end and last is not None: break
+            u = user if attempt == 0 else user + "\n\nReturn ONLY the one JSON object described above: no explanation before or after it, no code fence."
             try:
-                sc, usage = llm_one(mid, system, user, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
+                sc, usage = llm_one(mid, system, u, attempt); usage = dict(usage or {}); usage["model_used"] = mid; return sc, usage
             except urllib.error.HTTPError as e:
                 last = e; body = e.read()[:200]; print(f"llm {mid} attempt {attempt}: HTTP {e.code} {body!r}", flush=True)
-                if patient and (e.code in (429, 500, 502, 503, 504) or (e.code == 400 and b"Invalid model name" in body)):
-                    time.sleep(min(6 + attempt * 2, 16)); continue   # no deployments for a moment: wait and ask again
-                if mid == "rkapi" and e.code in (429, 500, 502, 503, 504) and attempt < 2:
-                    time.sleep(4 * (attempt + 1)); continue   # a busy moment on the gateway (several sections ask at once): ask again before giving up on it
-                if e.code in (401, 402, 403, 429, 502, 503):   # out of credit, no access or busy: try the next model
-                    if mid == "rkapi": RK_DEAD_UNTIL[0] = time.time() + 600
-                    break
+                if e.code in (401, 402, 403): break   # this key or model is refused: the other model may still be allowed
+                time.sleep(min(4 * (attempt + 1), 15))   # busy gateway (429, 5xx): wait and ask again
             except EmptyAnswer as e:
-                last = e; print(f"llm {mid} attempt {attempt}: empty answer", flush=True)
-                if patient: time.sleep(4); continue   # the relayed gateway sometimes answers empty under load: it is worth one more ask
-                break
+                last = e; print(f"llm {mid} attempt {attempt}: empty answer", flush=True); time.sleep(2)
             except Exception as e:
-                last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
-                if patient: time.sleep(4)
+                last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True); time.sleep(2)
     user_error("The AI writer could not turn this source into a script (it answered, but not in a usable form). Try again, or make the video from a smaller part of it.")
     raise RuntimeError(f"all script models failed: {last}")
 
@@ -680,7 +664,7 @@ async def main():
             if DEEP: sysmsg += DEEP_RULE
             if a.langs in OTHER: sysmsg = localize(sysmsg, a.langs)
             figs_note = ("\n\nFIGURES you may show with a \"figure\" scene (id: caption):\n" + "\n".join(f"{f['id']}: {f['caption']}" + (f" | shows: {f['desc']}" if f.get("desc") else "") for f in FIGS)) if FIGS else ""
-            res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", "rkapi-deep" if DEEP and ENV.get("RKAPI_API_KEY") else a.model)
+            res_ = llm(sysmsg, f"TITLE: {title}\n\nPAPER TEXT:\n{text}{figs_note}", "rkapi-deep" if DEEP else "rkapi")
             done_parts[0] += 1; progress(f"writing the script: part {done_parts[0]} of {n}")
             return res_
         if prev:
@@ -739,7 +723,7 @@ async def main():
                         print("part", k + 1, "background scenes added:", len(add), flush=True)
                     except Exception as e: print("background skipped:", str(e)[:100], flush=True)
         print("llm usage", usage, "sections", n, "scenes", len(sc["scenes"]))
-        sc["model_used"] = usage.get("model_used", a.model); sc["label"] = LABEL
+        sc["model_used"] = usage.get("model_used", "rkapi"); sc["label"] = LABEL
         progress("checking quotes and numbers against the source"); normalize(sc); bad = verify(sc, text); print("unverified:", bad)
         sc["arxiv"] = a.arxiv; sc["paper_title"] = (sc.get("title") or title) if (a.url or a.file or a.sources) else title; sc["sources"] = [{"k": k, "name": v} for k, v in SRC.items()]; sc["unverified"] = [str(b) for b in bad]
         json.dump(sc, open(sp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
