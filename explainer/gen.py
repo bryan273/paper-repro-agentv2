@@ -220,7 +220,8 @@ def paper_url(url):
         data, ctype, final = fetch_page(url)
         safe_url(final)
     except urllib.error.HTTPError as e:
-        if e.code in (401, 403, 429, 451, 503): data, ctype, final = b"", "text/html", url   # the site turns a plain request away: try it like a browser below
+        if e.code in (401, 403, 429, 451): raise RuntimeError(f"That site does not let other programs open its page (error {e.code}). Copy the article text and paste it as text, or save the page as PDF and upload it.") from e   # a site that refuses is respected, not worked around
+        elif e.code == 503: raise RuntimeError("That site is busy right now (error 503). Try again later or paste the text instead.") from e
         elif e.code in (404, 410): raise RuntimeError("That link does not open (page not found). Check the link and try again.") from e
         else: raise RuntimeError(f"That site answered with an error ({e.code}). Try again later or paste the text instead.") from e
     except (urllib.error.URLError, TimeoutError, OSError) as e:
