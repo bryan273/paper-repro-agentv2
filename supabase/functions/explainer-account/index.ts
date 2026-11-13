@@ -37,6 +37,7 @@ const planOf = async (userId: string | undefined): Promise<string | null> => {
   const [e] = await db(`explainer_events?user_id=eq.${userId}&type=eq.plan&select=meta&order=created_at.desc&limit=1`).catch(() => []);
   return e?.meta?.until && new Date(e.meta.until) > new Date() ? String(e.meta.plan) : null;
 };
+const KEY_OF: Record<string, string> = { Silver: "plus", Gold: "pro", Diamond: "premium" };   // plan name shown to people -> the plan key
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** What a person has used of the counted features: quick answers, in-depth answers and research questions (Read).
  *  A guest counts per day, a free member per rolling 7 days, a plan per calendar month (in-depth: always per month). */
@@ -123,7 +124,7 @@ const planInfo = async (userId: string | undefined): Promise<{ plan: string | nu
   return until && new Date(until) > new Date() ? { plan: String(e.meta.plan), plan_until: until, plan_source: e.meta.source ? String(e.meta.source) : null } : { plan: null, plan_until: until };
 };
 
-// Students and teachers: one free month of Plus after an admin has looked at a proof (student card, enrolment letter, staff card or school page).
+// Students and teachers: two free weeks of Silver after an admin has looked at a proof (student card, enrolment letter, staff card or school page).
 // A request is an event of type "verify" with meta {role, path, school, status: pending | approved | rejected}; the admin decides in explainer-admin.
 const UP_BUCKET = "explainer-uploads";
 // E-mail confirmation and password reset. Only active when a mail provider is set up (see _shared/mail.ts); members who joined before it was switched on count as confirmed.
@@ -711,9 +712,9 @@ ${message}`;
       const plan = user ? await activePlan(user.id) : null;
       const u = (await usageOf(user, actor, plan)).research;
       if (u.left <= 0 && !(user && ADMIN_EMAILS.includes(String(user.username).toLowerCase()))) {
-        const next = ({ free: "Plus", plus: "Pro", pro: "Premium" } as Record<string, string>)[plan ?? (user ? "free" : "")];
+        const next = ({ free: "Silver", plus: "Gold", pro: "Diamond" } as Record<string, string>)[plan ?? (user ? "free" : "")];
         const per = u.period === "day" ? "today" : u.period === "week" ? "this week" : "this month";
-        return json({ error: !user ? "Sign up free to ask more research questions." : next ? `You used the ${u.cap} research questions your plan gives ${per}. ${next} gives ${TIERS[next.toLowerCase()].research} a month.` : `You used the ${u.cap} research questions for ${per}. They come back on the 1st.`, code: user ? "research_quota" : "research_signup", usage: u }, 429);
+        return json({ error: !user ? "Sign up free to ask more research questions." : next ? `You used the ${u.cap} research questions your plan gives ${per}. ${next} gives ${TIERS[KEY_OF[next]].research} a month.` : `You used the ${u.cap} research questions for ${per}. They come back on the 1st.`, code: user ? "research_quota" : "research_signup", usage: u }, 429);
       }
       await logEvent(actor, "research", { goal: str(body.goal, 200) }, user?.id ?? null);
       return json({ ok: true, left: u.left - 1, cap: u.cap, period: u.period });

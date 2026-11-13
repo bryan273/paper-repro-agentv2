@@ -207,10 +207,10 @@ Deno.serve(async (req) => {
       const pack = !!user && !plan && (await db(`explainer_credit_log?user_id=eq.${user.id}&reason=like.bought%20pack*&select=id&limit=1`).catch(() => [])).length > 0;
       if (seconds > maxSeconds(plan, pack)) {
         return seconds > 600
-          ? json({ error: "Videos longer than 10 minutes are part of Premium. Choose 10 minutes or less.", code: "length_premium" }, 402)
+          ? json({ error: "Videos longer than 10 minutes are part of Diamond. Choose 10 minutes or less.", code: "length_premium" }, 402)
           : seconds > 300
-          ? json({ error: "Videos longer than 5 minutes are part of Pro. Choose 5 minutes or less.", code: "length_pro" }, 402)
-          : json({ error: "Videos longer than 3 minutes are part of Plus. Choose 3 minutes or less.", code: "length_plus" }, 402);
+          ? json({ error: "Videos longer than 5 minutes are part of Gold. Choose 5 minutes or less.", code: "length_pro" }, 402)
+          : json({ error: "Videos longer than 3 minutes are part of Silver. Choose 3 minutes or less.", code: "length_plus" }, 402);
       }
     }
     const vid = await actorOf(req, visitor);
