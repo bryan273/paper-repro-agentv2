@@ -48,16 +48,6 @@ def get_bytes(url, ms=40):
 def get(url, ms=40):
     return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "paper-explainer/0.1"}), timeout=ms).read().decode("utf-8", "ignore")
 
-def article_html(h):
-    """A news or blog page: the article body without the menus, footers, ads and comment forms around it. Whole page if no article tag is found."""
-    h = re.sub(r"<(nav|header|footer|aside|form|noscript|svg|figure|iframe|button)\b.*?</\1>", " ", h, flags=re.S | re.I)
-    for tag in ("article", "main"):
-        parts = re.findall(rf"<{tag}\b[^>]*>(.*?)</{tag}>", h, flags=re.S | re.I)
-        if parts:
-            best = max(parts, key=len)
-            if len(re.sub(r"<[^>]+>", "", best)) > 1500: return best
-    return h
-
 def clean(h):
     h = re.sub(r"<script.*?</script>|<style.*?</style>|<annotation.*?</annotation>", " ", h, flags=re.S)
     h = re.sub(r"</(p|div|h\d|li|tr)>", "\n", h); h = re.sub(r"<[^>]+>", " ", h)
@@ -186,8 +176,6 @@ def pdf_text_or_ocr(data, text):
     got = re.sub(r"[ \t]+", " ", "\n".join(pages)).strip()
     if garbled: return got if len(got) >= 200 else text   # a garbled layer is never better than what the pictures say, however long it is
     return got if len(got) > len(text) else text
-
-UA_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
