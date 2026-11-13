@@ -235,6 +235,10 @@ DESIGN RULES
 ONE_LANG = LANGS[0] if len(LANGS) == 1 else "en"   # the language of a one-language video; a two-language video draws in English
 LANG_NAME = {"en": "English", "zh": "Chinese", "vi": "Vietnamese", "id": "Indonesian", "ja": "Japanese", "ko": "Korean", "es": "Spanish", "fr": "French", "de": "German"}
 
+def mloc(f):
+    """The section title, text or takeaway in the video's own language: the English one would be copied onto the picture of a Vietnamese or Chinese video."""
+    return (meta.get(f"{f}_{ONE_LANG}") if ONE_LANG != "en" else None) or meta.get(f, "")
+
 def user_msg():
     b = []
     for n, i in enumerate(idx):
@@ -243,8 +247,8 @@ def user_msg():
         cue = " ".join(f"{w}@{t:.1f}" for t, w in CUES.get(n, []))
         b.append({"beat": n, "seconds": beats[n], **s, "spoken_words_at": cue})
     langnote = (f"ON-SCREEN LANGUAGE: this video is in {LANG_NAME[ONE_LANG]}. Write EVERY label, heading, caption, axis name, legend and button text in {LANG_NAME[ONE_LANG]} (the field \"en\" of each beat already holds the narration in {LANG_NAME[ONE_LANG]}). Never write English words on the picture, except proper names, numbers and units.\n") if ONE_LANG != "en" else ""
-    return (langnote + f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {meta.get('title', '')}\nWHAT IT EXPLAINS: {meta.get('text', '')}\n"
-            f"KEY TAKEAWAY: {meta.get('takeaway', '')}\nBEATS (the narration said during each beat, with the visual hint and data):\n{json.dumps(b, ensure_ascii=False, indent=1)}")
+    return (langnote + f"PAPER: {sc.get('paper_title') or sc.get('title')}\nSECTION {k + 1}: {mloc('title')}\nWHAT IT EXPLAINS: {mloc('text')}\n"
+            f"KEY TAKEAWAY: {mloc('takeaway')}\nBEATS (the narration said during each beat, with the visual hint and data):\n{json.dumps(b, ensure_ascii=False, indent=1)}")
 
 BANNED = {"Tex", "MathTex", "SingleStringMathTex", "DecimalNumber", "Integer", "Variable", "Matrix", "Brace", "BraceLabel", "BraceBetweenPoints", "BarChart", "Title",
           "Code", "MathTable", "IntegerTable", "DecimalTable", "ImageMobject", "SVGMobject", "config", "open", "exec", "eval", "compile", "__import__", "globals", "locals",
