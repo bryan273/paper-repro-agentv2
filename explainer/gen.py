@@ -475,8 +475,17 @@ def llm_one(mid, system, user, attempt=0):
     try: return json.loads(m.group(0) if m else txt), usage
     except json.JSONDecodeError:
         fixed = lenient_json(txt)
-        if fixed is None: raise
+        if fixed is None:
+            print("llm", mid, "answer is not JSON; it begins:", repr(txt[:240]), "| ends:", repr(txt[-120:]), flush=True)
+            raise
         return fixed, usage
+
+def user_error(msg):
+    """The text the member sees when the video fails (render_job adds 'No daily quota was used.')."""
+    f = os.environ.get("USER_ERROR_FILE")
+    if f:
+        try: open(f, "w", encoding="utf-8").write(msg)
+        except Exception: pass
 
 RK_DEAD_UNTIL = [0.0]
 
@@ -512,6 +521,7 @@ def llm(system, user, model="deepseek"):
             except Exception as e:
                 last = e; print(f"llm {mid} attempt {attempt}: {type(e).__name__} {str(e)[:200]}", flush=True)
                 if patient: time.sleep(4)
+    user_error("The AI writer could not turn this source into a script (it answered, but not in a usable form). Try again, or make the video from a smaller part of it.")
     raise RuntimeError(f"all script models failed: {last}")
 
 OTHER = {"vi": ("Vietnamese", "vi-VN-HoaiMyNeural", "vi-VN-NamMinhNeural"), "id": ("Indonesian", "id-ID-GadisNeural", "id-ID-ArdiNeural"),
@@ -585,6 +595,7 @@ async def tts(text, voice, path):
             if os.path.getsize(path) > 2000: return
         except Exception as e:
             last = e; await asyncio.sleep(1.5)
+    user_error("The narration voice service did not answer. Please try again in a few minutes.")
     raise RuntimeError(f"tts failed: {last}")
 
 def trim_tail(path):
