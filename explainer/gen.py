@@ -1,6 +1,6 @@
 """Paper -> grounded scene script -> narration audio -> script json for player.html.
 usage: python gen.py 1706.03762 [--seconds 24] [--voice-en en-US-AriaNeural] [--voice-zh zh-CN-XiaoxiaoNeural]"""
-import sys, os, re, json, html, time, asyncio, subprocess, argparse, urllib.request
+import sys, os, re, json, html, time, asyncio, subprocess, argparse, urllib.request, urllib.error
 sys.stdout.reconfigure(encoding="utf-8")
 import edge_tts
 
@@ -47,6 +47,16 @@ def get_bytes(url, ms=40):
 
 def get(url, ms=40):
     return urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "paper-explainer/0.1"}), timeout=ms).read().decode("utf-8", "ignore")
+
+def article_html(h):
+    """A news or blog page: the article body without the menus, footers, ads and comment forms around it. Whole page if no article tag is found."""
+    h = re.sub(r"<(nav|header|footer|aside|form|noscript|svg|figure|iframe|button)\b.*?</\1>", " ", h, flags=re.S | re.I)
+    for tag in ("article", "main"):
+        parts = re.findall(rf"<{tag}\b[^>]*>(.*?)</{tag}>", h, flags=re.S | re.I)
+        if parts:
+            best = max(parts, key=len)
+            if len(re.sub(r"<[^>]+>", "", best)) > 1500: return best
+    return h
 
 def clean(h):
     h = re.sub(r"<script.*?</script>|<style.*?</style>|<annotation.*?</annotation>", " ", h, flags=re.S)
@@ -102,7 +112,7 @@ def ocr_pages(data, limit=OCR_PAGES):
     progress(f"reading the source: this PDF is a scan, reading {n} pages one by one")
     model = ENV.get("OCR_MODEL") or os.environ.get("RKAPI_MODEL", "claude-haiku-4-5-20251001")
     base = (ENV.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
-    ask = ("Transcribe all the text on this scanned page exactly as printed, in its own language, keeping every diacritic, number, date and legal reference (for example Dieu, Khoan, Muc). "
+    ask = ("Transcribe all the text on this scanned page exactly as written or printed (handwriting too: read it as carefully as you can, and write [unclear] for a word you cannot read), in its own language, keeping every diacritic, number, date and legal reference (for example Dieu, Khoan, Muc). "
            "Keep headings and numbering on their own lines. Write a table as one row per line with ' | ' between the cells. Ignore stamps, signatures and page decoration. "
            "If the page is a slide with a chart, diagram, map or photo that carries meaning, add one line after the text: [Picture: what it shows, in a few words]. "
            "Output only the transcription, nothing else. If the page has no text, output nothing.")
@@ -177,29 +187,71 @@ def pdf_text_or_ocr(data, text):
     if garbled: return got if len(got) >= 200 else text   # a garbled layer is never better than what the pictures say, however long it is
     return got if len(got) > len(text) else text
 
+UA_BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+
+def render_html(url, wait=3.0):
+    """The page as a browser shows it, for a news site that builds its text with JavaScript or turns a plain request away. Runs in its own thread (the browser API cannot run inside the event loop)."""
+    import concurrent.futures
+    def go():
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            b = p.chromium.launch(args=["--no-sandbox"])
+            try:
+                pg = b.new_context(user_agent=BROWSER_UA, locale="en-US").new_page()
+                pg.goto(url, wait_until="domcontentloaded", timeout=45000); pg.wait_for_timeout(int(wait * 1000))
+                pg.mouse.wheel(0, 4000); pg.wait_for_timeout(800)   # a page that loads the rest of the story on scroll
+                return pg.content()
+            finally: b.close()
+    with concurrent.futures.ThreadPoolExecutor(1) as ex: return ex.submit(go).result(timeout=90)
+
+def fetch_page(url):
+    """(data, content-type, final url). A plain request first; a page that refuses it (403 and the like) is left to the browser by the caller."""
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA, "Accept": "application/pdf,text/html,application/xhtml+xml;q=0.9,*/*;q=0.5", "Accept-Language": "en-US,en;q=0.9,vi;q=0.7,zh-CN;q=0.6"})
+    r = urllib.request.urlopen(req, timeout=60)
+    return r.read(30_000_000), (r.headers.get("content-type") or "").lower(), r.geturl()
+
 def paper_url(url):
-    """Any paper that is not on arXiv: a direct PDF, a paper page, or a DOI. Returns (title, abstract, text)."""
+    """Any source that is not on arXiv: a direct PDF or Word file, a paper page, a DOI, a news article or a blog post. Returns (title, abstract, text)."""
+    import readers
     safe_url(url)
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (paper-explainer)", "Accept": "application/pdf,text/html;q=0.9,*/*;q=0.5"})
-    r = urllib.request.urlopen(req, timeout=60); data = r.read(30_000_000); ctype = (r.headers.get("content-type") or "").lower()
-    safe_url(r.geturl())
-    if "pdf" in ctype or data[:5] == b"%PDF-" or url.lower().split("?")[0].endswith(".pdf"):
+    try:
+        data, ctype, final = fetch_page(url)
+        safe_url(final)
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403, 429, 451, 503): data, ctype, final = b"", "text/html", url   # the site turns a plain request away: try it like a browser below
+        elif e.code in (404, 410): raise RuntimeError("That link does not open (page not found). Check the link and try again.") from e
+        else: raise RuntimeError(f"That site answered with an error ({e.code}). Try again later or paste the text instead.") from e
+    except (urllib.error.URLError, TimeoutError, OSError) as e:
+        raise RuntimeError("We could not reach that link. Check it opens in your browser, or paste the text instead.") from e
+    office = readers.is_office(data)
+    if office:
+        title, text = readers.office_text(data)
+    elif "pdf" in ctype or data[:5] == b"%PDF-" or url.lower().split("?")[0].endswith(".pdf"):
         import fitz
-        doc = fitz.open(stream=data, filetype="pdf"); text = "\n".join(p.get_text() for p in doc)
+        doc = fitz.open(stream=data, filetype="pdf"); text = chr(10).join(p.get_text() for p in doc)
         text = pdf_text_or_ocr(data, text)
         title = (doc.metadata or {}).get("title") or ""
         if len(title.strip()) < 6 or GENERIC_TITLE.match(title.strip()): title = next((l.strip() for l in text.splitlines() if len(l.strip()) > 12), "Paper")
     else:
         h = data.decode("utf-8", "ignore")
-        m = re.search(r"<meta[^>]+name=[\"']citation_title[\"'][^>]+content=[\"']([^\"']+)", h, re.I) or re.search(r"<title>(.*?)</title>", h, re.S | re.I)
-        title = html.unescape(re.sub(r"\s+", " ", m.group(1))).strip() if m else "Paper"
-        text = clean(h)
+        text = readers.article_text(h) if h else ""
         pm = re.search(r"<meta[^>]+href=[\"']([^\"']+\.pdf)[\"']|<meta[^>]+name=[\"']citation_pdf_url[\"'][^>]+content=[\"']([^\"']+)", h, re.I)
         if len(text) < 3000 and pm:   # a landing page: follow its PDF link
             from urllib.parse import urljoin
-            return paper_url(urljoin(r.geturl(), pm.group(1) or pm.group(2)))
-    text = re.sub(r"[ \t]+", " ", text).strip()
-    if len(text) < 1500: raise RuntimeError("Could not read enough text from that link. Try a direct PDF link.")
+            return paper_url(urljoin(final, pm.group(1) or pm.group(2)))
+        if len(text) < 800:   # nothing, or a stub: the text is built by JavaScript, or the site wants a real browser
+            try:
+                progress("reading the source: opening the page like a browser")
+                h2 = render_html(final); t2 = readers.article_text(h2)
+                if len(t2) > len(text): h, text = h2, t2
+            except Exception as e: print("browser read skipped:", str(e)[:120])
+        if len(text) < 800 and h: text = max(text, clean(h), key=len) if len(clean(h)) > 800 else text
+        title = readers.page_title(h) if h else "Article"
+    text = re.sub(r"[ 	]+", " ", text).strip()
+    if len(text) < 600:
+        raise RuntimeError("We could not read the text of that page. It may need a login or be behind a paywall. Paste the article text instead, or try another link.")
     ensure_readable(text, "link")
     return title[:200], text[:1500], text[:60000]
 
@@ -257,6 +309,13 @@ def paper_file(path):
     """A PDF the visitor uploaded (already saved on this machine). Returns (title, abstract, text)."""
     import fitz
     data = open(path, "rb").read(30_000_000)
+    import readers
+    if readers.is_office(data):   # a Word or PowerPoint file (the upload keeps its bytes under a .pdf name)
+        try: title, text = readers.office_text(data)
+        except Exception: raise RuntimeError("That Word or PowerPoint file could not be opened. It may be damaged or password protected. Save it again, or paste the text instead.")
+        if len(text) < 300: raise RuntimeError("There is not enough text in that file to explain (a file made only of pictures cannot be read). Add text, or paste it instead.")
+        ensure_readable(text, "document")
+        return title[:200], text[:1500], text[:60000]
     if data[:5] != b"%PDF-":   # pasted text or a .txt / .md file: any subject, not only papers
         text = re.sub(r"[ \t]+", " ", data.decode("utf-8", "ignore").replace(chr(0), " ")).strip()
         if len(text) < 300: raise RuntimeError("That text is too short to explain. Paste at least a few paragraphs.")
@@ -724,4 +783,5 @@ async def main():
                      **({"sources": [SRC[k_] for k_ in sorted({x.get("src") for x in part if isinstance(x.get("src"), int) and x.get("src") in SRC})]} if SRC else {}),
                      **({f"title_{a.langs}": sec.get(f"title_{a.langs}") or sec.get("title") or "", f"text_{a.langs}": sec.get(f"text_{a.langs}") or " ".join(s[a.langs] for s in part), f"takeaway_{a.langs}": sec.get(f"takeaway_{a.langs}") or ""} if a.langs in OTHER else {})})
     json.dump(meta, open(os.path.join(out, "sections.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
