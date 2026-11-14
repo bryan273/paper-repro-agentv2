@@ -86,6 +86,20 @@ Deno.serve(async (req) => {
       if (!usr[0]) return json({ error: "no such member" }, 404);
       return json({ user: usr[0], plan: plan[0]?.meta ?? null, ledger, jobs });
     }
+    // Unfoldia Studio pilot: the jobs the converter has run (events of type "studio"), and one result file (admin only; the path must be inside studio/)
+    if (req.method === "GET" && !viewer && q.get("studio")) {
+      const rows = await db(`explainer_events?type=eq.studio&select=id,created_at,meta&order=created_at.desc&limit=200`);
+      return json({ jobs: rows });
+    }
+    if (req.method === "GET" && !viewer && q.get("studio_file")) {
+      const path = String(q.get("studio_file"));
+      if (!/^studio\/[A-Za-z0-9_-]+\/[A-Za-z0-9_.-]+$/.test(path)) return json({ error: "bad path" }, 400);
+      const fr = await fetch(`${SB_URL}/storage/v1/object/explainer-uploads/${path}`, { headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}` } });
+      if (!fr.ok) return json({ error: "not found" }, 404);
+      const type = path.endsWith(".docx") ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : path.endsWith(".html") ? "text/html; charset=utf-8" : path.endsWith(".json") ? "application/json" : "application/octet-stream";
+      return new Response(await fr.arrayBuffer(), { headers: { ...CORS, "Content-Type": type, "Content-Disposition": `attachment; filename="${path.split("/").pop()}"`, "Cache-Control": "no-store" } });
+    }
+
     if (req.method === "GET" && !viewer && (q.get("proof") || q.get("shot"))) {   // a proof or payment file, shown to the admin; a photo sent as a PDF is unwrapped so the browser can show it
       let path = "";
       if (q.get("proof")) {

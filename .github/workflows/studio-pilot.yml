@@ -1,0 +1,46 @@
+name: studio-pilot
+
+# Unfoldia Studio pilot: turn a scanned PDF (already uploaded to the private bucket) into clean HTML and Word, and record what it cost.
+# Customer files stay in the private Supabase bucket; this log prints only numbers, never document text.
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: "path of the PDF inside the private explainer-uploads bucket"
+        required: true
+      client:
+        description: "client name for the cost ledger"
+        default: "pilot"
+      pages:
+        description: "page range, empty = all (example 1-5)"
+        default: ""
+      model:
+        description: "fast model"
+        default: "claude-haiku-4-5-20251001"
+
+permissions:
+  contents: read
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_URL: https://wzdkroxbfrlqijbeiwpk.supabase.co
+      SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
+      RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}
+      STUDIO_MODEL: ${{ github.event.inputs.model }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q pymupdf python-docx
+      - name: Convert
+        run: |
+          set -e
+          mkdir -p work/out
+          curl -sS -f -o work/in.pdf -H "apikey: $SUPABASE_SECRET" -H "Authorization: Bearer $SUPABASE_SECRET" "$SUPABASE_URL/storage/v1/object/explainer-uploads/${{ github.event.inputs.path }}"
+          python studio/convert.py work/in.pdf work/out ${{ github.event.inputs.pages != '' && format('--pages {0}', github.event.inputs.pages) || '' }}
+      - name: Save results and ledger
+        run: python studio/save.py work/out "${{ github.event.inputs.client }}" "${{ github.run_id }}"
