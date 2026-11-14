@@ -17,6 +17,12 @@ on:
       model:
         description: "reading model (strong by default; use claude-haiku-4-5-20251001 for a cheap draft)"
         default: "claude-sonnet-4-6"
+      key_group:
+        description: "claude or openai (which RKAPI key: the Claude group or the OpenAI group)"
+        default: "claude"
+      fallback:
+        description: "model used when the first one keeps failing on a page (empty = Haiku)"
+        default: ""
 
 permissions:
   contents: read
@@ -30,6 +36,8 @@ jobs:
       SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
       RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}
       STUDIO_MODEL: ${{ github.event.inputs.model }}
+      STUDIO_KEY: ${{ github.event.inputs.key_group == 'openai' && secrets.RKAPI_OPENAI_KEY || secrets.RKAPI_API_KEY }}
+      STUDIO_FALLBACK_MODEL: ${{ github.event.inputs.fallback }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
