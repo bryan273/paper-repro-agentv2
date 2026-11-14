@@ -15,8 +15,9 @@ from html.parser import HTMLParser
 
 BASE = (os.environ.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
 KEY = os.environ.get("RKAPI_API_KEY", "")
-FAST = os.environ.get("STUDIO_MODEL", "claude-haiku-4-5-20251001")
-STRONG = os.environ.get("STUDIO_STRONG_MODEL", "claude-sonnet-4-6")
+# The reading model is the strong one by default: names, numbers and diacritics are what a client pays for, and at RKAPI prices the strong model costs only a few cents for a whole document.
+FAST = os.environ.get("STUDIO_MODEL", "claude-sonnet-4-6")
+STRONG = os.environ.get("STUDIO_FALLBACK_MODEL", "claude-haiku-4-5-20251001")   # last resort when the first model keeps failing on a page
 # RKAPI credits per 1M tokens (in, out); one credit = 0.196 RMB, 6.75 RMB per USD (same ledger as explainer/usage.py)
 PRICE = {"claude-haiku-4-5": (1.0, 5.0), "claude-sonnet-4-6": (3.0, 15.0)}
 CREDIT_USD = 0.196 / 6.75
@@ -24,7 +25,7 @@ CREDIT_USD = 0.196 / 6.75
 PROMPT = """Convert this scanned document page into HTML that reproduces what the page shows. Output ONLY the HTML fragment: no <html>, <head>, <body>, no code fence, no comments.
 
 CONTENT
-- Reproduce EVERY word, number, date, name and symbol exactly as written, in its own language, with every diacritic. Never translate, summarise, correct or invent anything.
+- Reproduce EVERY word, number, date, name and symbol exactly as written, in its own language, with every diacritic. Read names, amounts and tax codes twice: one wrong letter or digit is a serious error. Never translate, summarise, correct or invent anything.
 - Printed, typed and handwritten text all count. Write [unclear] for a word you cannot read. Stamps and signatures: write [signature] or [stamp: text if readable] where they are.
 - Keep the order from top to bottom, and left to right inside a row.
 {PAGE_RULE}
@@ -35,6 +36,7 @@ LAYOUT (use inline style attributes)
 - Font size when it differs from body text: style="font-size:Npt" (body 11pt, big titles 14 to 16pt, small notes 9pt). Colour only if the text is not black: style="color:#RRGGBB".
 - Paragraphs are <p>. Line breaks inside a paragraph are <br>.
 - Numbered or lettered items ("1.", "a.", "(1)") are separate <p> elements that keep their number as plain text, indented with style="margin-left:Npt". Never use <ol>, <ul> or <li>.
+- Text that sits side by side (a letterhead beside the national motto, two signature blocks, a form with two columns) is a borderless two-column <table> (no border attribute), never stacked paragraphs. Short stacked lines that belong together (a signature block: title, name) stay in ONE cell, joined with <br>.
 - Every table is a real <table> with <tr>, <th> or <td>, one cell per printed cell. Use colspan or rowspan where cells are merged. Keep numbers in the cell they are in. Add border="1" to a table that has visible lines.
 - A photo or drawing with no text becomes <p><em>[image]</em></p>.
 - Do not use <h1> to <h6> for titles: use a centered <p> with <strong>."""
