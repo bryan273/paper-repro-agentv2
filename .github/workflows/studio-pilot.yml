@@ -15,8 +15,8 @@ on:
         description: "page range, empty = all (example 1-5)"
         default: ""
       model:
-        description: "fast model"
-        default: "claude-haiku-4-5-20251001"
+        description: "reading model (strong by default; use claude-haiku-4-5-20251001 for a cheap draft)"
+        default: "claude-sonnet-4-6"
 
 permissions:
   contents: read
