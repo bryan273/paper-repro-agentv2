@@ -15,13 +15,10 @@ on:
         description: "page range, empty = all (example 1-5)"
         default: ""
       model:
-        description: "reading model (strong by default; use claude-haiku-4-5-20251001 for a cheap draft)"
-        default: "claude-sonnet-4-6"
-      key_group:
-        description: "claude or openai (which RKAPI key: the Claude group or the OpenAI group)"
-        default: "claude"
+        description: "reading model (gpt-6.1-sol default; claude-sonnet-4-6 is the fallback)"
+        default: "gpt-6.1-sol"
       fallback:
-        description: "model used when the first one keeps failing on a page (empty = Haiku)"
+        description: "model used when the first one keeps failing on a page (empty = claude-sonnet-4-6)"
         default: ""
 
 permissions:
@@ -36,7 +33,7 @@ jobs:
       SUPABASE_SECRET: ${{ secrets.SUPABASE_SECRET }}
       RKAPI_API_KEY: ${{ secrets.RKAPI_API_KEY }}
       STUDIO_MODEL: ${{ github.event.inputs.model }}
-      STUDIO_KEY: ${{ github.event.inputs.key_group == 'openai' && secrets.RKAPI_OPENAI_KEY || secrets.RKAPI_API_KEY }}
+      RKAPI_OPENAI_KEY: ${{ secrets.RKAPI_OPENAI_KEY }}
       STUDIO_FALLBACK_MODEL: ${{ github.event.inputs.fallback }}
     steps:
       - uses: actions/checkout@v4

@@ -14,10 +14,12 @@ import argparse, base64, concurrent.futures, html, json, os, re, sys, time, urll
 from html.parser import HTMLParser
 
 BASE = (os.environ.get("RKAPI_BASE_URL") or "https://rkapi.com") + "/v1"
-KEY = os.environ.get("STUDIO_KEY") or os.environ.get("RKAPI_API_KEY", "")   # the Claude group key, or the OpenAI group key for gpt models
-# The reading model is the strong one by default: names, numbers and diacritics are what a client pays for, and at RKAPI prices the strong model costs only a few cents for a whole document.
-FAST = os.environ.get("STUDIO_MODEL") or "claude-sonnet-4-6"
-STRONG = os.environ.get("STUDIO_FALLBACK_MODEL") or "claude-haiku-4-5-20251001"   # last resort when the first model keeps failing on a page
+CLAUDE_KEY = os.environ.get("RKAPI_API_KEY", "")
+OPENAI_KEY = os.environ.get("RKAPI_OPENAI_KEY", "")
+def key_for(model): return (OPENAI_KEY if model.startswith("gpt") else CLAUDE_KEY) or CLAUDE_KEY or OPENAI_KEY   # RKAPI sells the two model families under two keys
+# Measured 14 Nov 2026 on the same pages: gpt-6.1-sol was as accurate as Claude Sonnet or better (it read a stamped number Sonnet got wrong) and 36% cheaper; terra cost 4x more and was worse; Haiku made diacritic errors.
+FAST = os.environ.get("STUDIO_MODEL") or "gpt-6.1-sol"
+STRONG = os.environ.get("STUDIO_FALLBACK_MODEL") or "claude-sonnet-4-6"   # used when the first model keeps failing on a page
 # RKAPI credits per 1M tokens (in, out); one credit = 0.196 RMB, 6.75 RMB per USD (same ledger as explainer/usage.py)
 PRICE = {"claude-haiku-4-5": (1.0, 5.0), "claude-sonnet-4-6": (3.0, 15.0), "gpt-6.1-sol": (2.0, 10.0), "gpt-5.6-terra": (4.0, 24.0)}
 CREDIT_USD = 0.196 / 6.75
@@ -58,7 +60,7 @@ def ask(model, b64, rule, label):
     t0 = time.time(); txt = ""; usage = {}
     for vi, extra in enumerate(variants):
         body = json.dumps({"model": model, "stream": True, "stream_options": {"include_usage": True}, "messages": msg, **extra}).encode()
-        req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + KEY, "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (unfoldia-studio)"})
+        req = urllib.request.Request(BASE + "/chat/completions", body, {"Authorization": "Bearer " + key_for(model), "Content-Type": "application/json", "User-Agent": "Mozilla/5.0 (unfoldia-studio)"})
         try:
             with urllib.request.urlopen(req, timeout=240) as resp:
                 for raw in resp:
@@ -244,7 +246,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("pdf"); ap.add_argument("out"); ap.add_argument("--pages", default=""); ap.add_argument("--keep-page-numbers", action="store_true")
     ap.add_argument("--dpi", type=int, default=140); ap.add_argument("--workers", type=int, default=6)
     a = ap.parse_args()
-    if not KEY: sys.exit("RKAPI_API_KEY is not set")
+    if not (CLAUDE_KEY or OPENAI_KEY): sys.exit("RKAPI_API_KEY / RKAPI_OPENAI_KEY is not set")
     import fitz
     os.makedirs(a.out, exist_ok=True)
     doc = fitz.open(a.pdf)
